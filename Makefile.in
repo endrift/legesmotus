@@ -1,0 +1,7 @@
+all:
+COMMON = $(BASEDIR)/common
+CLIENT = $(BASEDIR)/client
+SERVER = $(BASEDIR)/server
+
+CXXFLAGS += -Wall -fno-rtti
+LDFLAGS += $(CXXFLAGS)
