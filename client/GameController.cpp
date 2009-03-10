@@ -12,5 +12,5 @@
 GameController::GameController() {
 }
 
-GameController::run(int lockfps) {
+void	GameController::run(int lockfps) {
 }

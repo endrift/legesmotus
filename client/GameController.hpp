@@ -8,8 +8,8 @@
 #ifndef LM_CLIENT_GAMECONTROLLER_HPP
 #define LM_CLIENT_GAMECONTROLLER_HPP
 
-class GameWindow;
-class ClientNetwork;
+#include "GameWindow.hpp"
+#include "ClientNetwork.hpp"
 
 class GameController {
 private:

@@ -4,8 +4,8 @@ OBJS = #put .o filenames here (DO NOT PUT .cpp!)
 
 all: ../liblmcommon.a
 
-../liblmcommon.a: $(OBJ)
-	$(AR) crus liblmcommon.a $(OBJ)
+../liblmcommon.a: $(OBJS)
+	$(AR) crus ../liblmcommon.a $(OBJS)
 
 clean:
-	rm -f $(OBJ) *~
+	rm -f $(OBJS) *~
