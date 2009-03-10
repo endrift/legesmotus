@@ -1,7 +1,7 @@
 /*
  * GameController.cpp
  *
- * Copyright 2009 - Nathan Partlan, Andrew Ayer, Danny Schneider, and Jeff Pfau
+ * Copyright 2009 - Nathan Partlan, Andrew Ayer, Daniel Schneider, and Jeffrey Pfau
  * 
  */
  
