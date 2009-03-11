@@ -24,7 +24,7 @@ GameController::GameController() {
 }
 
 GameController::~GameController() {
-	m_window->~GameWindow();
+	m_window->destroy_instance();
 }
 
 void	GameController::run(int lockfps) {
