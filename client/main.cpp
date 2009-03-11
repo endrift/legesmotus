@@ -14,8 +14,12 @@ using namespace std;
 int main(int argc, const char* argv[]) try {
 	GameController		game_controller;
 
-	cout << "Hi." << endl;
-
+	cout << "Welcome to Leges Motus." << endl;
+	
+	game_controller.run();
+	
+	cout << "Leges Motus is now exiting." << endl;
+	
 	return 0;
 
 } catch (const LMException& e) {

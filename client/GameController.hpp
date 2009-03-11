@@ -16,9 +16,15 @@ private:
 	GameWindow* 	m_window;
 	ClientNetwork	m_network;
 	
+	int 		m_screen_width;
+	int 		m_screen_height;
+	int 		m_pixel_depth;
+	bool 		m_fullscreen;
+	
 public:
 	GameController();
-
+	~GameController();
+	
 	void		run(int lockfps=-1);
 };
 
