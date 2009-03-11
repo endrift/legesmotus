@@ -37,7 +37,9 @@ GameWindow::GameWindow(int width, int height, int depth, bool fullscreen) {
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_ShowCursor(SDL_DISABLE);
 	int flags = SDL_HWSURFACE|SDL_OPENGL;
-	if (fullscreen) flags |= SDL_FULLSCREEN;
+	if (fullscreen) {
+		flags |= SDL_FULLSCREEN;
+	}
 	m_context = SDL_SetVideoMode(width, height, depth, flags);
 }
 
@@ -62,7 +64,9 @@ GameWindow* GameWindow::get_instance() {
 
 void GameWindow::set_dimensions(int width, int height) {
 	int flags = SDL_HWSURFACE|SDL_OPENGL;
-	if (m_fullscreen) flags |= SDL_FULLSCREEN;
+	if (m_fullscreen) {
+		flags |= SDL_FULLSCREEN;
+	}
 	SDL_Surface* context = SDL_SetVideoMode(width, height, m_depth, flags);
 	if (context != NULL) {
 		m_context = context;
@@ -73,7 +77,9 @@ void GameWindow::set_dimensions(int width, int height) {
 
 void GameWindow::set_fullscreen(bool fullscreen) {
 	int flags = SDL_HWSURFACE|SDL_OPENGL;
-	if (fullscreen) flags |= SDL_FULLSCREEN;
+	if (fullscreen) {
+		flags |= SDL_FULLSCREEN;
+	}
 	SDL_Surface* context = SDL_SetVideoMode(m_width, m_height, m_depth, flags);
 	if(m_context != NULL) {
 		m_context = context;
