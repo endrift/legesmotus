@@ -3,7 +3,12 @@ COMMON = $(BASEDIR)/common
 CLIENT = $(BASEDIR)/client
 SERVER = $(BASEDIR)/server
 
+FLAGS_SDL = $(shell sdl-config --cflags)
+LIBS_SDL = $(shell sdl-config --libs)
+
 CXXFLAGS += -Wall -fno-rtti -g
 LDFLAGS += $(CXXFLAGS)
+CXXFLAGS += $(FLAGS_SDL)
+LIBS = $(LIBS_SDL)
 
 MACHINE = $(shell uname -s)
