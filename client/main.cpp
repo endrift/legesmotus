@@ -24,4 +24,5 @@ int main(int argc, const char* argv[]) try {
 
 } catch (const LMException& e) {
 	cerr << "Error: " << e.what() << endl;
+	return 1;
 }
