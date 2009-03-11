@@ -6,14 +6,18 @@
  */
 
 #include "GameController.hpp"
+#include "common/LMException.hpp"
 #include <iostream>
 
 using namespace std;
 
-int main(int argc, const char* argv[]) {
+int main(int argc, const char* argv[]) try {
 	GameController		game_controller;
 
 	cout << "Hi." << endl;
 
 	return 0;
+
+} catch (const LMException& e) {
+	cerr << "Error: " << e.what() << endl;
 }
