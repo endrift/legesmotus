@@ -59,7 +59,13 @@ cat > "$cfile" <<-EOF
  * 
  */
 
-#include "$hfile"
+#include "${classname}.hpp"
 
 EOF
 
+print "Adding $hfile..."
+svn add "$hfile"
+print "Adding $cfile..."
+svn add "$cfile"
+
+print "Make sure you add ${classname}.o to the OBJS variable in the Makefile."
