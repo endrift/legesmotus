@@ -11,19 +11,20 @@
 GameWindow* GameWindow::m_instance = NULL;
 
 GameWindow::GameWindow(int width, int height, int depth, bool fullscreen) {
-	SDL_InitSubSystem(SDL_INIT_VIDEO);
 	m_width = width;
 	m_height = height;
 	m_depth = depth;
 	m_fullscreen = fullscreen;
 	switch (depth) {
 	case 24:
+		SDL_InitSubSystem(SDL_INIT_VIDEO);
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 		break;
 	case 32:
+		SDL_InitSubSystem(SDL_INIT_VIDEO);
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
@@ -44,8 +45,10 @@ GameWindow::GameWindow(int width, int height, int depth, bool fullscreen) {
 }
 
 GameWindow::~GameWindow() {
-	SDL_QuitSubSystem(SDL_INIT_VIDEO);
-	m_context = NULL;
+	if (m_context != NULL) {
+		SDL_QuitSubSystem(SDL_INIT_VIDEO);
+	}
+	m_instance = NULL;
 }
 
 GameWindow* GameWindow::get_instance(int width, int height, int depth, bool fullscreen) {

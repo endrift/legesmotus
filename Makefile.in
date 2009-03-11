@@ -3,7 +3,7 @@ COMMON = $(BASEDIR)/common
 CLIENT = $(BASEDIR)/client
 SERVER = $(BASEDIR)/server
 
-CXXFLAGS += -Wall -fno-rtti
+CXXFLAGS += -Wall -fno-rtti -g
 LDFLAGS += $(CXXFLAGS)
 
 MACHINE = $(shell uname -s)

@@ -7,7 +7,9 @@ LIBS_SDL = $(shell sdl-config --libs) -lSDL_image -lSDL_ttf -lSDL_net -lSDL_mixe
 
 ifeq ($(MACHINE),Darwin)
 FLAGS_GL = -FOpenGL
-LIBS_GL = -lgl
+LIBS_GL = -framework OpenGL
+else
+LIBS_GL = -lGL
 endif
 
 INCLUDES = -I..
