@@ -1,6 +1,6 @@
 BASEDIR = ..
 include ../Makefile.in
-OBJS = #put .o filenames here (DO NOT PUT .cpp!)
+OBJS = LMException.o #put .o filenames here (DO NOT PUT .cpp!)
 
 all: ../liblmcommon.a
 
