@@ -1,6 +1,6 @@
 BASEDIR = ..
 include ../Makefile.in
-OBJS = ClientNetwork.o GameController.o GameWindow.o #put .o filenames here (DO NOT PUT .cpp!)
+OBJS = ClientNetwork.o ClientSDL.o GameController.o GameWindow.o #put .o filenames here (DO NOT PUT .cpp!)
 
 LIBS += -lSDL_image -lSDL_ttf -lSDL_net -lSDL_mixer
 

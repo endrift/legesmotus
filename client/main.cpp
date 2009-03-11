@@ -6,12 +6,14 @@
  */
 
 #include "GameController.hpp"
+#include "ClientSDL.hpp"
 #include "common/LMException.hpp"
 #include <iostream>
 
 using namespace std;
 
 extern "C" int main(int argc, char* argv[]) try {
+	ClientSDL		client_sdl;
 	GameController		game_controller;
 
 	cout << "Welcome to Leges Motus." << endl;
