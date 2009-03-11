@@ -9,6 +9,9 @@ FLAGS_GL = -FOpenGL
 LIBS_GL = -framework OpenGL
 else
 LIBS_GL = -lGL
+ifneq ($(MACHINE),Windows)
+LIBS_GL = -L/usr/X11/lib/
+endif
 endif
 
 INCLUDES = -I..

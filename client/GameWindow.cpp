@@ -4,7 +4,8 @@
  * Copyright 2009 - Nathan Partlan, Andrew Ayer, Daniel Schneider, and Jeffrey Pfau
  * 
  */
- 
+
+#include "common/LMException.hpp"
 #include "GameWindow.hpp"
 #include "compat_gl.h"
 
@@ -32,7 +33,7 @@ GameWindow::GameWindow(int width, int height, int depth, bool fullscreen) {
 		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 32);
 		break;
 	default:
-		//TODO error report of some form
+		throw LMException("Bad depth");
 		return;
 	}
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
@@ -42,6 +43,9 @@ GameWindow::GameWindow(int width, int height, int depth, bool fullscreen) {
 		flags |= SDL_FULLSCREEN;
 	}
 	m_context = SDL_SetVideoMode(width, height, depth, flags);
+	if (m_context == NULL) {
+		throw LMException(SDL_GetError());
+	}
 }
 
 GameWindow::~GameWindow() {

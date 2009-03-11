@@ -12,3 +12,6 @@ CXXFLAGS += $(FLAGS_SDL)
 LIBS = $(LIBS_SDL)
 
 MACHINE = $(shell uname -s)
+ifeq ($(MACHINE),)
+MACHINE = Windows
+endif

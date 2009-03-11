@@ -11,7 +11,7 @@
 
 using namespace std;
 
-extern "C" int main(int argc, const char* argv[]) try {
+extern "C" int main(int argc, char* argv[]) try {
 	GameController		game_controller;
 
 	cout << "Welcome to Leges Motus." << endl;
