@@ -5,3 +5,5 @@ SERVER = $(BASEDIR)/server
 
 CXXFLAGS += -Wall -fno-rtti
 LDFLAGS += $(CXXFLAGS)
+
+MACHINE = $(shell uname -s)

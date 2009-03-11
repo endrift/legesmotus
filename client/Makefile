@@ -5,10 +5,15 @@ OBJS = ClientNetwork.o GameController.o GameWindow.o #put .o filenames here (DO 
 FLAGS_SDL = $(shell sdl-config --cflags)
 LIBS_SDL = $(shell sdl-config --libs) -lSDL_image -lSDL_ttf -lSDL_net -lSDL_mixer
 
+ifeq ($(MACHINE),Darwin)
+FLAGS_GL = -FOpenGL
+LIBS_GL = -lgl
+endif
+
 INCLUDES = -I..
 
-CXXFLAGS += $(FLAGS_SDL) $(INCLUDES)
-LDFLAGS += $(LIBS_SDL)
+CXXFLAGS += $(FLAGS_SDL) $(FLAGS_GL) $(INCLUDES)
+LDFLAGS += $(LIBS_SDL) $(LIBS_GL)
 
 all: legesmotus
 

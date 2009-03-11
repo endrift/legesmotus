@@ -8,10 +8,10 @@ legesmotus: common server client
 common:
 	$(MAKE) -C common
 
-server:
+server: common
 	$(MAKE) -C server
 
-client:
+client: common
 	$(MAKE) -C client
 
 clean:

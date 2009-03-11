@@ -13,7 +13,7 @@
 
 class GameController {
 private:
-	GameWindow 	m_window;
+	GameWindow* 	m_window;
 	ClientNetwork	m_network;
 	
 public:
