@@ -20,8 +20,8 @@ private:
 	bool			m_fullscreen;
 
 	GameWindow(int width, int height, int depth, bool fullscreen);
-public:
 	~GameWindow();
+public:
 
 	// Will get the current GameWindow, adjusted to these dimensions, if one exists
 	// If it doesn't exist, it will construct it
@@ -29,6 +29,7 @@ public:
 	static GameWindow*	get_instance(int width, int height, int depth, bool fullscreen);
 	// Get the current instance, or NULL if there is no such instance
 	static GameWindow*	get_instance();
+	static void		destroy_instance();
 
 	void			set_dimensions(int width, int height);
 	void			set_fullscreen(bool fullscreen);

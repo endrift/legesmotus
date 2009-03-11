@@ -65,6 +65,14 @@ GameWindow* GameWindow::get_instance() {
 	return m_instance;
 }
 
+void GameWindow::destroy_instance() {
+	if (m_instance == NULL) {
+		return;
+	}
+	delete m_instance;
+	m_instance = NULL;
+}
+
 void GameWindow::set_dimensions(int width, int height) {
 	int flags = SDL_HWSURFACE|SDL_OPENGL;
 	if (m_fullscreen) {
