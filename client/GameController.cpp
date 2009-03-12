@@ -39,6 +39,8 @@ void	GameController::run(int lockfps) {
 	cerr << "SDL window is: " << m_window->get_width() << " pixels wide and " 
 		<< m_window->get_height() << " pixels tall." << endl;
 	
+	SDL_Delay(1000);
+	
 	int i = 0;
 	while(i < 5) {
 		m_window->redraw();
