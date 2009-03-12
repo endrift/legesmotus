@@ -28,4 +28,4 @@ legesmotus: ../liblmclient.a ../liblmcommon.a main.o
 	$(AR) crus ../liblmclient.a $(OBJS)
 
 clean:
-	rm -f $(OBJS) *~
+	rm -f $(OBJS) *~ main.o legesmotus
