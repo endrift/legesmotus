@@ -15,6 +15,23 @@ using namespace std;
 extern "C" int main(int argc, char* argv[]) try {
 	ClientSDL		client_sdl;
 	GameController		game_controller;
+	int			width = 0;
+	int			height = 0;
+	
+	for (int i = 0; i < argc; i++) {
+		if (strcmp(argv[i], "-w") == 0 && argc > i+1) {
+			width = atoi(argv[i+1]);
+		} else if (strcmp(argv[i], "-h") == 0 && argc > i+1) {
+			height = atoi(argv[i+1]);
+		}
+		//cerr << "Argument " << i << ": " << argv[i] << endl;
+	}
+	
+	if (width != 0 && height != 0) {
+		game_controller = GameController(width, height);
+	} else {
+		game_controller = GameController();
+	}
 
 	cout << "Welcome to Leges Motus." << endl;
 	

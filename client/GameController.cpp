@@ -16,9 +16,17 @@
 using namespace std;
 
 GameController::GameController() {
-	m_screen_width = 1680;
-	m_screen_height = 1050;
-	m_pixel_depth = 32;
+	m_screen_width = 1024;
+	m_screen_height = 768;
+	m_pixel_depth = 24;
+	m_fullscreen = true;
+	m_window = GameWindow::get_instance(m_screen_width, m_screen_height, m_pixel_depth, m_fullscreen);
+}
+
+GameController::GameController(int width, int height) {
+	m_screen_width = width;
+	m_screen_height = height;
+	m_pixel_depth = 24;
 	m_fullscreen = true;
 	m_window = GameWindow::get_instance(m_screen_width, m_screen_height, m_pixel_depth, m_fullscreen);
 }
@@ -30,4 +38,16 @@ GameController::~GameController() {
 void	GameController::run(int lockfps) {
 	cerr << "SDL window is: " << m_window->get_width() << " pixels wide and " 
 		<< m_window->get_height() << " pixels tall." << endl;
+	
+	int i = 0;
+	while(i < 5) {
+		m_window->redraw();
+		SDL_Delay(1000);
+		i++;
+	}
+}
+
+void	GameController::set_screen_dimensions(int width, int height) {
+	m_screen_width = width;
+	m_screen_height = height;
 }

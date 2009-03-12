@@ -23,9 +23,11 @@ private:
 	
 public:
 	GameController();
+	GameController(int width, int height);
 	~GameController();
 	
 	void		run(int lockfps=-1);
+	void		set_screen_dimensions(int width, int height);
 };
 
 #endif
