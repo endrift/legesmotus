@@ -14,7 +14,7 @@ using namespace std;
 
 extern "C" int main(int argc, char* argv[]) try {
 	ClientSDL		client_sdl;
-	GameController		game_controller;
+	GameController*		game_controller;
 	int			width = 0;
 	int			height = 0;
 	
@@ -28,16 +28,18 @@ extern "C" int main(int argc, char* argv[]) try {
 	}
 	
 	if (width != 0 && height != 0) {
-		game_controller = GameController(width, height);
+		game_controller = new GameController(width, height);
 	} else {
-		game_controller = GameController();
+		game_controller = new GameController();
 	}
 
 	cout << "Welcome to Leges Motus." << endl;
 	
-	game_controller.run();
+	game_controller->run();
 	
 	cout << "Leges Motus is now exiting." << endl;
+	
+	delete game_controller;
 	
 	return 0;
 

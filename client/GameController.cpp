@@ -35,11 +35,9 @@ GameController::~GameController() {
 	m_window->destroy_instance();
 }
 
-void	GameController::run(int lockfps) {
+void GameController::run(int lockfps) {
 	cerr << "SDL window is: " << m_window->get_width() << " pixels wide and " 
 		<< m_window->get_height() << " pixels tall." << endl;
-	
-	SDL_Delay(1000);
 	
 	int i = 0;
 	while(i < 5) {
@@ -49,7 +47,7 @@ void	GameController::run(int lockfps) {
 	}
 }
 
-void	GameController::set_screen_dimensions(int width, int height) {
+void GameController::set_screen_dimensions(int width, int height) {
 	m_screen_width = width;
 	m_screen_height = height;
 }
