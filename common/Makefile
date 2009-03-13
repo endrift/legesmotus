@@ -9,3 +9,8 @@ all: ../liblmcommon.a
 
 clean:
 	rm -f $(OBJS) *~
+
+# ==================================== #
+
+CommonSDL.o: $(H_COMMONSDL) $(H_LMEXCEPTION) $(H_SDL)
+LMException.o: $(H_LMEXCEPTION)

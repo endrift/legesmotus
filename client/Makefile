@@ -29,3 +29,10 @@ legesmotus: ../liblmclient.a ../liblmcommon.a main.o
 
 clean:
 	rm -f $(OBJS) *~ main.o legesmotus
+
+# ==================================== #
+
+ClientNetwork.o: $(H_CLIENTNETWORK)
+ClientSDL.o: $(H_CLIENTSDL)
+GameController.o: $(H_GAMECONTROLLER) $(H_GAMEWINDOW) $(H_CLIENTNETWORK)
+GameWindow.o: $(H_EXCEPTION) $(H_GAMEWINDOW) $(H_GL)
