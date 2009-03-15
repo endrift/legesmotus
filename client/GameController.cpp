@@ -119,7 +119,7 @@ void GameController::initialize_key_bindings() {
 
 void GameController::parse_key_input() {
 	// For keys that can be held down:
-   	m_keys = SDL_GetKeyState(NULL);
+   	m_keys = SDL_GetKeyState(NULL);
 	if (m_keys[m_key_bindings.quit]) {
 		cerr << "Quit key pressed - quitting." << endl;
 		m_quit_game = true;
