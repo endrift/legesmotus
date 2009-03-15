@@ -8,6 +8,7 @@
 #include "GameController.hpp"
 #include "GameWindow.hpp"
 #include "ClientNetwork.hpp"
+#include "common/PacketReader.hpp"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -136,3 +137,21 @@ void GameController::parse_key_input() {
 
 void GameController::move_objects(float timescale) {
 }
+
+/* EXAMPLE
+void GameController::player_update(PacketReader& reader) {
+	long	player_id;
+	long	x;
+	long	y;
+	long	velocity_x;
+	long	velocity_y;
+	reader >> player_id >> x >> y >> velocity_x >> velocity_y;
+
+	PacketWriter		writer(PLAYER_UPDATE_PACKET);
+	writer << player_id << x << y << velocity_x << velocity_y;
+
+	network.send_packet(writer);
+}
+*/
+
+		//controller.player_update(reader);

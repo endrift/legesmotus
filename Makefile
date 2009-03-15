@@ -3,7 +3,7 @@ include Makefile.in
 
 all: legesmotus
 
-legesmotus: common client
+legesmotus: common server client
 
 common:
 	$(MAKE) -C common
