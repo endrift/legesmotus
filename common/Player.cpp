@@ -10,50 +10,52 @@
 #include <cmath>
 
 Player::Player() {
+	m_id = 0;
+	m_team = 0;
 	m_x = 0;
 	m_y = 0;
 	m_x_vel = 0;
 	m_y_vel = 0;
 	m_rotation = 0;
+	m_gun_rotation = 0;
+	m_is_invisible = true;
+	m_is_frozen = true;
 }
 
-Player::Player(double x, double y, double xvel, double yvel, double rotation) {
+Player::Player(const char* name, uint32_t id, char team, double x, double y, double xvel, double yvel, double rotation) : m_name(name) {
+	m_id = id;
+	m_team = team;
 	m_x = x;
 	m_y = y;
 	m_x_vel = xvel;
 	m_y_vel = yvel;
 	m_rotation = rotation;
+	m_gun_rotation = 0;
+	m_is_invisible = true;
+	m_is_frozen = true;
 }
 
 Player::~Player() {
 }
 
-double Player::PI() {
-	return (4.0*atan(1.0));
-}
-
-double Player::get_x() {
-	return m_x;
-}
-
-double Player::get_y() {
-	return m_y;
-}
-
-double Player::get_x_vel() {
-	return m_x_vel;
-}
-
-double Player::get_y_vel() {
-	return m_y_vel;
-}
-
-double Player::get_rotation_degrees() {
-	return m_rotation;
-}
-
-double Player::get_rotation_radians() {
+double Player::get_rotation_radians() const {
 	return m_rotation * PI() / 180;
+}
+
+double Player::get_gun_rotation_radians() const {
+	return m_gun_rotation * PI() / 180;
+}
+
+void Player::set_name(const char* name) {
+	m_name = name;
+}
+
+void Player::set_id(uint32_t id) {
+	m_id = id;
+}
+
+void Player::set_team(char team) {
+	m_team = team;
 }
 
 void Player::set_x(double x) {
@@ -93,6 +95,22 @@ void Player::set_rotation_degrees(double rotation) {
 
 void Player::set_rotation_radians(double rotation) {
 	m_rotation = rotation * PI() / 180;
+}
+
+void Player::set_gun_rotation_degrees(double gun_rotation) {
+	m_gun_rotation = gun_rotation;
+}
+
+void Player::set_gun_rotation_radians(double gun_rotation) {
+	m_gun_rotation = gun_rotation * PI() / 180;
+}
+
+void Player::set_is_invisible(bool is_invisible) {
+	m_is_invisible = is_invisible;
+}
+
+void Player::set_is_frozen(bool is_frozen) {
+	m_is_frozen = is_frozen;
 }
 
 
