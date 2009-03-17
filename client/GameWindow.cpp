@@ -29,7 +29,6 @@ GameWindow::GameWindow(int width, int height, int depth, bool fullscreen) {
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-		SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 32);
 		break;
 	default:
@@ -46,6 +45,10 @@ GameWindow::GameWindow(int width, int height, int depth, bool fullscreen) {
 	if (m_context == NULL) {
 		throw LMException(SDL_GetError());
 	}
+	glEnable(GL_BLEND);
+	glEnable(GL_TEXTURE_2D);
+	glViewport(0,0,width,height);
+	glOrtho(0,width,height,0,1,-1);
 }
 
 GameWindow::~GameWindow() {
@@ -114,7 +117,15 @@ bool GameWindow::is_fullscreen() const {
 	return m_fullscreen;
 }
 
+void GameWindow::register_sprite(Sprite* sprite) {
+	m_sprites.push_back(sprite);
+}
+
 void GameWindow::redraw() const {
 	// TODO fill in
+	glClear(GL_COLOR_BUFFER_BIT);
+	for(std::list<Sprite*>::const_iterator iter = m_sprites.begin(); iter != m_sprites.end(); ++iter) {
+		(*iter)->draw();
+	}
 	SDL_GL_SwapBuffers();
 }

@@ -3,18 +3,33 @@ COMMON = $(BASEDIR)/common
 CLIENT = $(BASEDIR)/client
 SERVER = $(BASEDIR)/server
 
-FLAGS_SDL = $(shell sdl-config --cflags)
-LIBS_SDL = $(shell sdl-config --libs)
-
-CXXFLAGS += -Wall -fno-rtti -g
-LDFLAGS += $(CXXFLAGS)
-CXXFLAGS += $(FLAGS_SDL)
-LIBS = $(LIBS_SDL)
-
 MACHINE = $(shell uname -s)
 ifeq ($(MACHINE),)
 MACHINE = Windows
 endif
+
+FLAGS_SDL = $(shell sdl-config --cflags)
+LIBS_SDL = $(shell sdl-config --libs)
+LIBS_SDL_OTHER = -lSDL_image -lSDL_ttf -lSDL_net -lSDL_mixer
+
+ifeq ($(MACHINE),Darwin)
+FLAGS_GL = -FOpenGL
+LIBS_GL = -framework OpenGL
+else
+LIBS_GL = -lGL
+ifneq ($(MACHINE),Windows)
+LIBS_GL = -L/usr/X11/lib/
+endif
+endif
+
+INCLUDES = -I$(BASEDIR)
+
+CXXFLAGS += -Wall -fno-rtti -g
+LDFLAGS += $(CXXFLAGS)
+CXXFLAGS += $(FLAGS_SDL) $(FLAGS_GL) $(INCLUDES)
+LIBS = $(LIBS_SDL)
+CLIENTLIBS = $(LIBS_SDL_OTHER) $(LIBS_GL)
+LDFLAGS += $(LIBS)
 
 H_GL	= $(CLIENT)/compat_gl.h
 H_SDL	= $(COMMON)/compat_sdl.h

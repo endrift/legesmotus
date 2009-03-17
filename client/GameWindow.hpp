@@ -9,6 +9,8 @@
 #define LM_CLIENT_GAMEWINDOW_HPP
 
 #include "common/compat_sdl.h"
+#include "Sprite.hpp"
+#include <list>
 
 class GameWindow {
 private:
@@ -18,6 +20,7 @@ private:
 	int			m_height;
 	int			m_depth;
 	bool			m_fullscreen;
+	std::list<Sprite*>	m_sprites;
 
 	GameWindow(int width, int height, int depth, bool fullscreen);
 	~GameWindow();
@@ -37,6 +40,8 @@ public:
 	int			get_width() const;
 	int			get_height() const;
 	bool			is_fullscreen() const;
+
+	void			register_sprite(Sprite* sprite);
 
 	void			redraw() const;
 };

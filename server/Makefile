@@ -11,7 +11,7 @@ CXXFLAGS += $(INCLUDES)
 all: lmserver
 
 lmserver: ../liblmserver.a ../liblmcommon.a main.o
-	$(CXX) $(LDFLAGS) $(LIBS) -o lmserver -L.. main.o -llmserver -llmcommon
+	$(CXX) $(LDFLAGS) -o lmserver -L.. main.o -llmserver -llmcommon
 
 ../liblmserver.a: $(OBJS)
 	$(AR) crus ../liblmserver.a $(OBJS)
