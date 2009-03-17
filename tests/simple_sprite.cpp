@@ -8,7 +8,7 @@ using namespace std;
 extern "C" int main(int argc, char* argv[]) {
 	ClientSDL sdl;
 	(void)(sdl);
-	GameWindow *window = GameWindow::get_instance(500, 500, 32, false);
+	GameWindow *window = GameWindow::get_instance(500, 500, 24, false);
 	Sprite s("data/sprites/blue_full.png");
 	s.set_center_x(24);
 	s.set_center_y(48);
