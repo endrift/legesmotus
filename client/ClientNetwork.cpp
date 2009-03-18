@@ -109,7 +109,7 @@ void	ClientNetwork::process_packet(GameController& controller, const RawPacket& 
 
 	case WELCOME_PACKET:
 		send_ack(reader.packet_id());
-		//controller.welcome(reader);
+		controller.welcome(reader);
 		break;
 
 	case ANNOUNCE_PACKET:

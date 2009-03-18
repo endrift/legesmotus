@@ -8,8 +8,12 @@
 #include "GameController.hpp"
 #include "GameWindow.hpp"
 #include "ClientNetwork.hpp"
+#include "GraphicalPlayer.hpp"
 #include "common/PacketReader.hpp"
+#include "common/PacketWriter.hpp"
+#include "common/network.hpp"
 
+#include <vector>
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
@@ -17,7 +21,7 @@
 using namespace std;
 
 GameController::GameController() {
-	init(1024, 768, 24, true);
+	init(1920, 1200, 24, true);
 }
 
 GameController::GameController(int width, int height) {
@@ -52,6 +56,8 @@ void GameController::run(int lockfps) {
 	while(m_quit_game == false) {
 		process_input();
 		
+		m_network.receive_packets(*this);
+		
 		if (m_quit_game == true) {
 			break;
 		}
@@ -70,6 +76,8 @@ void GameController::run(int lockfps) {
 			startframe = SDL_GetTicks();
 		}
 	}
+	
+	disconnect();
 }
 
 void GameController::set_screen_dimensions(int width, int height) {
@@ -136,6 +144,40 @@ void GameController::parse_key_input() {
 }
 
 void GameController::move_objects(float timescale) {
+}
+
+void GameController::connect_to_server(const char* host, unsigned int port) {
+	if (!m_network.connect(host, port)) {
+		cerr << "Error: Could not connect to server at " << host << ":" << port << endl;
+	}
+	
+	PacketWriter join_request(JOIN_PACKET);
+	join_request << m_version;
+	join_request << "TestName";
+	
+	m_network.send_packet(join_request);
+}
+
+void GameController::disconnect() {
+	PacketWriter leave_request(LEAVE_PACKET);
+	leave_request << m_player_id;
+	
+	m_network.send_packet(leave_request);
+	
+	m_network.disconnect();
+}
+
+void GameController::welcome(PacketReader& reader) {
+	string serverversion;
+	int playerid;
+	char team;
+	
+	reader >> serverversion >> playerid >> team;
+	
+	m_player_id = playerid;
+
+	cerr << "Received welcome packet. Version: " << serverversion << ", Player ID: " << playerid << ", Team: " << team << endl;
+	
 }
 
 /* EXAMPLE

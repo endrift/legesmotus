@@ -12,6 +12,7 @@
 #include "common/PacketReader.hpp"
 #include "common/network.hpp"
 #include <string>
+#include <iostream>
 
 using namespace std;
 

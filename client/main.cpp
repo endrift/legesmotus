@@ -35,6 +35,7 @@ extern "C" int main(int argc, char* argv[]) try {
 
 	cout << "Welcome to Leges Motus." << endl;
 	
+	game_controller->connect_to_server("localhost", 9009);
 	game_controller->run();
 	
 	cout << "Leges Motus is now exiting." << endl;

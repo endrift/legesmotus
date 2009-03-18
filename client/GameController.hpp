@@ -10,6 +10,10 @@
 
 #include "GameWindow.hpp"
 #include "ClientNetwork.hpp"
+#include "common/PacketReader.hpp"
+#include "GraphicalPlayer.hpp"
+
+#include <vector>
 
 class GameController {
 private:
@@ -24,6 +28,7 @@ private:
 	GameWindow* 	m_window;
 	ClientNetwork	m_network;
 	
+	#define m_version "0.0.1";
 	int 		m_screen_width;
 	int 		m_screen_height;
 	int 		m_pixel_depth;
@@ -31,6 +36,8 @@ private:
 	bool		m_quit_game;
 	Uint8*		m_keys;
 	KeyBindings	m_key_bindings;
+	vector<GraphicalPlayer> m_players;
+	int		m_player_id;
 	
 	void		init(int width, int height, int depth, bool fullscreen);
 	void		process_input();
@@ -44,6 +51,10 @@ public:
 	void		initialize_key_bindings();
 	void		parse_key_input();
 	void		move_objects(float timescale);
+	void		connect_to_server(const char* host, unsigned int port);
+	void		disconnect();
+	
+	void		welcome(PacketReader& reader);
 };
 
 #endif
