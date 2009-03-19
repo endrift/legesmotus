@@ -100,9 +100,16 @@ void	Server::run(int portno) // XXX: Prototype function ONLY!
 	}
 }
 
+// Arguments:
+//  - channel: the channel that the packet is coming from
+//  - player_id: the player ID which the packet claims to represent
 bool	Server::is_authorized(int channel, uint32_t player_id) const {
-	player_map::const_iterator	it(m_players.find(channel));
+	// Look up the player ID in the players map
+	player_map::const_iterator	it(m_players.find(player_id));
 	
+	// Make sure that both:
+	//  1. The alleged player actually exists, and
+	//  2. The player's stored channel matches the channel that the request is coming from
 	return it != m_players.end() && it->second.get_channel() == channel;
 }
 
