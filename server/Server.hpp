@@ -9,13 +9,25 @@
 #define LM_SERVER_SERVER_HPP
 
 #include "ServerNetwork.hpp"
+#include "ServerPlayer.hpp"
+#include <stdint.h>
+#include <map>
+
+using namespace std;
 
 class PacketReader;
 
 class Server {
 private:
-	ServerNetwork	m_network;
-	int		m_next_player_id;
+	static const int	SERVER_VERSION;
+	typedef map<uint32_t, ServerPlayer> player_map;
+
+	ServerNetwork		m_network;
+	uint32_t		m_next_player_id;
+	player_map		m_players;
+
+	// Make sure the given channel is authorized to speak for given player ID
+	bool			is_authorized(int channel, uint32_t player_id) const;
 
 public:
 	Server ();

@@ -16,6 +16,8 @@
 
 using namespace std;
 
+const int	Server::SERVER_VERSION = 1;
+
 Server::Server ()
 {
 	m_next_player_id = 1;
@@ -45,24 +47,46 @@ void	Server::join(int channel, PacketReader& packet)
 		team = 'A';
 	}
 
-	int			player_id = m_next_player_id++;
+	uint32_t		player_id = m_next_player_id++;
+
+	m_players[player_id].init(player_id, channel, client_version, name.c_str(), team);
 
 	// Send the welcome packet back to this client.
 	PacketWriter		welcome_packet(WELCOME_PACKET);
-	welcome_packet << client_version << player_id << team; // TODO: send back server version #
+	welcome_packet << SERVER_VERSION << player_id << team;
 	m_network.send_packet(channel, welcome_packet);
 
-	// Broadcast the announce packet back to all players
+	// Broadcast the announce packet back to all players, except for the new one
 	PacketWriter		announce_packet(ANNOUNCE_PACKET);
 	announce_packet << player_id << name << team;
-	m_network.broadcast_packet(announce_packet);
+	m_network.broadcast_packet(announce_packet, channel);
 
-	// TODO: actually save this player somewhere
+	// Send the new player an announce packet for every player currently in the game
+	player_map::const_iterator	it(m_players.begin());
+	while (it != m_players.end()) {
+		const ServerPlayer&	player((it++)->second);
+
+		PacketWriter	announce_packet(ANNOUNCE_PACKET);
+		announce_packet << player.get_id() << player.get_name() << player.get_team();
+		m_network.send_packet(channel, announce_packet);
+	}
 }
 
 void	Server::leave(int channel, PacketReader& packet)
 {
+	uint32_t	player_id;
+	packet >> player_id;
+
 	m_network.unbind(channel);
+
+	if (is_authorized(channel, player_id)) {
+		m_players.erase(player_id);
+
+		// Broadcast to the game that this player has left
+		PacketWriter	leave_packet(LEAVE_PACKET);
+		leave_packet << player_id;
+		m_network.broadcast_packet(leave_packet);
+	}
 }
 
 void	Server::run(int portno) // XXX: Prototype function ONLY!
@@ -76,5 +100,9 @@ void	Server::run(int portno) // XXX: Prototype function ONLY!
 	}
 }
 
-
+bool	Server::is_authorized(int channel, uint32_t player_id) const {
+	player_map::const_iterator	it(m_players.find(channel));
+	
+	return it != m_players.end() && it->second.get_channel() == channel;
+}
 

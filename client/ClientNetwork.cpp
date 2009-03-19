@@ -123,6 +123,10 @@ void	ClientNetwork::process_packet(GameController& controller, const RawPacket& 
 	case SHUTDOWN_PACKET:
 		//controller.shutdown(reader);
 		break;
+
+	case LEAVE_PACKET:
+		//controller.leave(reader);
+		break;
 	}
 }
 
