@@ -12,6 +12,9 @@
 #include "common/PacketWriter.hpp"
 #include "common/PacketReader.hpp"
 #include "common/RawPacket.hpp"
+#include <iostream>
+
+using namespace std;
 
 ClientNetwork::ClientNetwork() {
 	m_socket = NULL;
@@ -86,10 +89,10 @@ void	ClientNetwork::receive_packets(GameController& controller) {
 
 void	ClientNetwork::process_packet(GameController& controller, const RawPacket& raw_packet) {
 	PacketReader	reader(raw_packet);
-
+	
 	switch (reader.packet_type()) {
 	case PLAYER_UPDATE_PACKET:
-		//controller.player_update(reader);
+		controller.player_update(reader);
 		break;
 
 	case GUN_FIRED_PACKET:

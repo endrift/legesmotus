@@ -14,20 +14,26 @@ class Sprite;
 
 class GraphicalPlayer : public Player {
 private:
-	Sprite* m_sprite;
-	double m_bounding_radius;
-	
+	Sprite* 	m_sprite;
+	double 		m_bounding_radius;
 
 public:
 	GraphicalPlayer();
-	GraphicalPlayer(const char* name, uint32_t id, char team, double x, double y, double xvel, double yvel, double rotation);
+	GraphicalPlayer(const char* name, uint32_t id, char team, Sprite* sprite = NULL, double x = 0, double y = 0, double xvel = 0, double yvel = 0, double rotation = 0);
 	~GraphicalPlayer();
 
-	Sprite* getSprite() const { return m_sprite; }
-	double getRadius() const { return m_bounding_radius; }
-	
-	void setSprite(Sprite* s);
-	void setRadius(double radius);
+	Sprite* get_sprite() const { return m_sprite; }
+	double get_radius() const { return m_bounding_radius; }
+	double get_width();
+	double get_height();
+		
+	void set_sprite(Sprite* s);
+	void set_radius(double radius);
+	void set_is_invisible(bool is_invisible);
+	void set_x(double x);
+	void set_y(double y);
+	void set_rotation_degrees(double rotation);
+	void set_rotation_radians(double rotation);
 };
 
 #endif

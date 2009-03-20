@@ -15,7 +15,7 @@
 using namespace std;
 
 class Player {
-private:
+protected:
 	string		m_name;
 	uint32_t	m_id;
 	char		m_team;		// Should be 'A' or 'B'

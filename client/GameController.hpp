@@ -39,8 +39,15 @@ private:
 	vector<GraphicalPlayer> m_players;
 	int		m_player_id;
 	
+	// TEMPORARY SPRITE CODE
+	Sprite*		new_sprite;
+	Sprite*		m_crosshairs;
+	
 	void		init(int width, int height, int depth, bool fullscreen);
 	void		process_input();
+	GraphicalPlayer* get_player_by_id(unsigned int player_id);
+	void		send_my_player_update();
+	void		attempt_jump();
 public:
 	GameController();
 	GameController(int width, int height);
@@ -54,7 +61,9 @@ public:
 	void		connect_to_server(const char* host, unsigned int port);
 	void		disconnect();
 	
+	// Network callbacks:
 	void		welcome(PacketReader& reader);
+	void		player_update(PacketReader& reader);
 };
 
 #endif
