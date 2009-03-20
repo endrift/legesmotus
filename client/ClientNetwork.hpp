@@ -44,6 +44,16 @@ public:
 	// Send the given packet to the server
 	void		send_packet(const PacketWriter& packet);
 
+	// The following two functions are for internal use only.  They are public in order to facilitate testing.
+	// Use receive_packets and send_packet instead!
+
+	// Receive a _single_ packet, in raw form.  You should use receive_packets instead.
+	// Returns true if a packet was received, false if no packets waiting to be received
+	bool		receive_raw_packet(RawPacket& raw_packet);
+	// Send a packet, in raw form.  Primarily for testing.  You should use send_packet instead.
+	void		send_raw_packet(RawPacket& raw_packet);
+
+
 };
 
 #endif

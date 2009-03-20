@@ -54,21 +54,33 @@ void	ClientNetwork::disconnect() {
 
 void	ClientNetwork::send_packet(const PacketWriter& packet) {
 	RawPacket	raw_packet(MAX_PACKET_LENGTH);
-
 	raw_packet.fill(packet);
+	send_raw_packet(raw_packet);
+}
 
+void	ClientNetwork::send_raw_packet(RawPacket& raw_packet) {
 	SDLNet_UDP_Send(m_socket, m_server_channel, raw_packet);
+}
+
+bool	ClientNetwork::receive_raw_packet(RawPacket& raw_packet) {
+	while (SDLNet_UDP_Recv(m_socket, raw_packet) == 1) {
+		if (raw_packet->channel == m_server_channel) {
+			// Only accept packets coming from the server.
+			return true;
+		}
+		// If not from server, will loop back around to try again.
+	}
+
+	// No more packets to receive
+	return false;
 }
 
 void	ClientNetwork::receive_packets(GameController& controller) {
 	RawPacket	raw_packet(MAX_PACKET_LENGTH);
 
 	// Keep receiving packets for as long as we can.
-	while (SDLNet_UDP_Recv(m_socket, raw_packet) == 1) {
-		if (raw_packet->channel == m_server_channel) {
-			// Only process packets coming from the server.
-			process_packet(controller, raw_packet);
-		}
+	while (receive_raw_packet(raw_packet)) {
+		process_packet(controller, raw_packet);
 	}
 }
 
