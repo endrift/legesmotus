@@ -64,6 +64,7 @@ public:
 	// Network callbacks:
 	void		welcome(PacketReader& reader);
 	void		player_update(PacketReader& reader);
+	void		announce(PacketReader& reader);
 };
 
 #endif

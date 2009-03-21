@@ -258,6 +258,21 @@ void GameController::welcome(PacketReader& reader) {
 	send_my_player_update();
 }
 
+void GameController::announce(PacketReader& reader) {
+	int playerid;
+	string playername;
+	char team;
+	
+	reader >> playerid >> playername >> team;
+	if (playerid == m_player_id) {
+		return;
+	}
+	
+	// TEMPORARY SPRITE CODE
+	m_players.push_back(GraphicalPlayer((const char*)playername.c_str(), playerid, team, new Sprite("data/sprites/blue_full.png")));
+	m_window->register_sprite(m_players.at(m_players.size()-1).get_sprite());
+}
+
 void GameController::player_update(PacketReader& reader) {
 	unsigned int player_id;
 	long x;
