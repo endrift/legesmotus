@@ -81,6 +81,8 @@ void GameController::run(int lockfps) {
 			// the framerate:
 			int framerate = (1000/(currframe - startframe));
 			
+			send_my_player_update();
+			
 			m_window->redraw();
 			startframe = SDL_GetTicks();
 		}
