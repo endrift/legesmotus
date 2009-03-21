@@ -44,7 +44,7 @@ public:
 	uint32_t	packet_id() const { return m_packet_id; }
 
 	// Get the raw packet data:
-	std::string	packet_data() const { return m_out.str() + "\n"; }
+	std::string	packet_data() const { return m_out.str(); }
 
 	// Write a field into the packet:
 	template<class T> PacketWriter& operator<<(const T& obj) {
