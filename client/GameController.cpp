@@ -318,6 +318,10 @@ GraphicalPlayer* GameController::get_player_by_id(unsigned int player_id) {
 
 void GameController::send_my_player_update() {
 	PacketWriter player_update(PLAYER_UPDATE_PACKET);
+	if (m_players.size() == 0) {
+		return;
+	}
+	
 	GraphicalPlayer* my_player = &m_players.at(0);
 	string flags;
 	
