@@ -7,6 +7,7 @@
 
 #include "Sprite.hpp"
 #include "SDL_image.h"
+#include <stdint.h>
 
 static uint32_t toPow2(uint32_t num) {
 	--num;
