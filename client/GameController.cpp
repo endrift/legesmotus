@@ -338,6 +338,18 @@ void GameController::send_my_player_update() {
 	m_network.send_packet(player_update);
 }
 
+void GameController::leave(PacketReader& reader) {
+	unsigned int playerid;
+	reader >> playerid;
+	
+	for (unsigned int i = 0; i < m_players.size(); i++) {
+		if (m_players.at(i).get_id() == playerid) {
+			m_window->unregister_sprite(m_players.at(i).get_sprite());
+			m_players.erase(m_players.begin() + i);
+		}
+	}
+}
+
 /* EXAMPLE
 void GameController::player_update(PacketReader& reader) {
 	long	player_id;

@@ -65,6 +65,7 @@ public:
 	void		welcome(PacketReader& reader);
 	void		player_update(PacketReader& reader);
 	void		announce(PacketReader& reader);
+	void		leave(PacketReader& reader);
 };
 
 #endif

@@ -140,7 +140,7 @@ void	ClientNetwork::process_packet(GameController& controller, const RawPacket& 
 		break;
 
 	case LEAVE_PACKET:
-		//controller.leave(reader);
+		controller.leave(reader);
 		break;
 	}
 }
