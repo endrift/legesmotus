@@ -7,15 +7,16 @@
 
 #include "Sprite.hpp"
 #include "SDL_image.h"
+#include "common/LMException.hpp"
 #include <stdint.h>
 
 static uint32_t toPow2(uint32_t num) {
 	--num;
-	for(int i = 1; i < 32; i <<= 1) {
+	for (int i = 1; i < 32; i <<= 1) {
 		num |= num >> i;
 	}
 	++num;
-	return num;	
+	return num;
 }
 
 Sprite::Sprite(SDL_Surface* image) {
@@ -30,6 +31,7 @@ Sprite::Sprite(const char* filename) {
 Sprite::Sprite(const Sprite& other) {
 	m_x = other.m_x;
 	m_y = other.m_y;
+	m_alpha = m_alpha;
 	m_scale_x = other.m_scale_x;
 	m_scale_y = other.m_scale_y;
 	m_image_width = other.m_image_width;
@@ -53,15 +55,19 @@ Sprite::~Sprite() {
 }
 
 void Sprite::init(SDL_Surface* image) {
+	if (image == NULL) {
+		throw LMException("Sprite could not be loaded");
+	}
 	m_x = 0;
 	m_y = 0;
-	m_scale_x = 1;
-	m_scale_y = 1;
+	m_alpha = 1.0;
+	m_scale_x = 1.0;
+	m_scale_y = 1.0;
 	m_image_width = image->w;
 	m_image_height = image->h;
 	m_width = toPow2(m_image_width);
 	m_height = toPow2(m_image_height);
-	m_image = SDL_CreateRGBSurface(SDL_HWSURFACE, m_width, m_height, 32, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
+	m_image = SDL_CreateRGBSurface(SDL_HWSURFACE, m_width, m_height, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
 	SDL_BlitSurface(image, NULL, m_image, NULL);
 	m_rotation = 0;
 	m_center_x = get_image_width()/2.0;
@@ -72,7 +78,7 @@ void Sprite::init(SDL_Surface* image) {
 	glBindTexture(GL_TEXTURE_2D, m_tex_id);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, 4, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, m_image->pixels);
+	glTexImage2D(GL_TEXTURE_2D, 0, 4, m_width, m_height, 0, GL_ARGB, GL_UNSIGNED_INT_8_8_8_8_REV, m_image->pixels);
 }
 
 GLuint Sprite::get_texture_id() const {

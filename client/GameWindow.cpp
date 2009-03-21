@@ -29,6 +29,7 @@ GameWindow::GameWindow(int width, int height, int depth, bool fullscreen) {
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+		SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 32);
 		break;
 	default:
@@ -46,6 +47,7 @@ GameWindow::GameWindow(int width, int height, int depth, bool fullscreen) {
 		throw LMException(SDL_GetError());
 	}
 	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_TEXTURE_2D);
 	glViewport(0,0,width,height);
 	glOrtho(0,width,height,0,1,-1);
