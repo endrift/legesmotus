@@ -42,6 +42,7 @@ public:
 	bool			is_fullscreen() const;
 
 	void			register_sprite(Sprite* sprite);
+	void			unregister_sprite(Sprite* sprite);
 
 	void			redraw() const;
 };

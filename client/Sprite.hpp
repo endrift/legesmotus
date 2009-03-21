@@ -23,6 +23,7 @@ private:
 
 	double		m_x;
 	double		m_y;
+	int		m_priority;
 
 	double		m_scale_x;
 	double		m_scale_y;
@@ -50,6 +51,7 @@ public:
 
 	double	get_x() const;
 	double	get_y() const;
+	double	get_priority() const;
 
 	double	get_scale_x() const;
 	double	get_scale_y() const;
@@ -62,6 +64,7 @@ public:
 
 	void	set_x(double x);
 	void	set_y(double y);
+	void	set_priority(int priority);
 
 	void	set_scale_x(double scale_x);
 	void	set_scale_y(double scale_y);

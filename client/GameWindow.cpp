@@ -9,6 +9,8 @@
 #include "GameWindow.hpp"
 #include "compat_gl.h"
 
+using namespace std;
+
 GameWindow* GameWindow::m_instance = NULL;
 
 GameWindow::GameWindow(int width, int height, int depth, bool fullscreen) {
@@ -120,7 +122,17 @@ bool GameWindow::is_fullscreen() const {
 }
 
 void GameWindow::register_sprite(Sprite* sprite) {
+	for (list<Sprite*>::iterator iter = m_sprites.begin(); iter != m_sprites.end(); ++iter) {
+		if ((*iter)->get_priority() > sprite->get_priority()) {
+			m_sprites.insert(iter,sprite);
+			return;
+		}
+	}
 	m_sprites.push_back(sprite);
+}
+
+void GameWindow::unregister_sprite(Sprite* sprite) {
+	m_sprites.remove(sprite);
 }
 
 void GameWindow::redraw() const {

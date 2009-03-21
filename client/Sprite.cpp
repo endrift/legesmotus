@@ -31,6 +31,7 @@ Sprite::Sprite(const char* filename) {
 Sprite::Sprite(const Sprite& other) {
 	m_x = other.m_x;
 	m_y = other.m_y;
+	m_priority = other.m_priority;
 	m_alpha = m_alpha;
 	m_scale_x = other.m_scale_x;
 	m_scale_y = other.m_scale_y;
@@ -60,6 +61,7 @@ void Sprite::init(SDL_Surface* image) {
 	}
 	m_x = 0;
 	m_y = 0;
+	m_priority = 0;
 	m_alpha = 1.0;
 	m_scale_x = 1.0;
 	m_scale_y = 1.0;
@@ -110,6 +112,9 @@ double Sprite::get_y() const {
 	return m_y;
 }
 
+double Sprite::get_priority() const {
+	return m_priority;
+}
 
 double Sprite::get_scale_x() const {
 	return m_scale_x;

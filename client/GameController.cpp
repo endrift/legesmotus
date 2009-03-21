@@ -21,7 +21,7 @@
 using namespace std;
 
 GameController::GameController() {
-	init(1024, 768, 24, false);
+	init(1600, 1050, 24, true);
 }
 
 GameController::GameController(int width, int height) {
