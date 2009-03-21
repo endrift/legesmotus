@@ -9,6 +9,7 @@
 #define LM_CLIENT_CLIENTNETWORK_HPP
 
 #include "SDL_net.h"
+#include <stdint.h>
 
 class GameController;
 class PacketWriter;
