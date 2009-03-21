@@ -53,8 +53,8 @@ public:
 	void set_name(const char* name);
 	void set_id(uint32_t id);
 	void set_team(char team);
-	void set_x(double x);
-	void set_y(double y);
+	virtual void set_x(double x);
+	virtual void set_y(double y);
 	void set_position(double x, double y);
 	void update_position(unsigned long timediff); // Subject to change
 	void set_x_vel(double xvel);
