@@ -78,7 +78,7 @@ void Sprite::init(SDL_Surface* image) {
 	glBindTexture(GL_TEXTURE_2D, m_tex_id);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, 4, m_width, m_height, 0, GL_ARGB, GL_UNSIGNED_INT_8_8_8_8_REV, m_image->pixels);
+	glTexImage2D(GL_TEXTURE_2D, 0, 4, m_width, m_height, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, m_image->pixels);
 }
 
 GLuint Sprite::get_texture_id() const {
