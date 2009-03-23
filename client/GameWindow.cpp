@@ -41,6 +41,7 @@ GameWindow::GameWindow(int width, int height, int depth, bool fullscreen) {
 		return;
 	}
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1); // Deprecated in SDL 1.3
 	SDL_ShowCursor(SDL_DISABLE);
 	int flags = SDL_HWSURFACE|SDL_OPENGL;
 	if (fullscreen) {
@@ -159,5 +160,6 @@ void GameWindow::redraw() const {
 	for(std::list<Sprite*>::const_iterator iter = m_sprites.begin(); iter != m_sprites.end(); ++iter) {
 		(*iter)->draw(this);
 	}
+	glFinish();
 	SDL_GL_SwapBuffers();
 }
