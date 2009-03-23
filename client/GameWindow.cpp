@@ -18,6 +18,8 @@ GameWindow::GameWindow(int width, int height, int depth, bool fullscreen) {
 	m_height = height;
 	m_depth = depth;
 	m_fullscreen = fullscreen;
+	m_offset_x = 0;
+	m_offset_y = 0;
 	switch (depth) {
 	case 24:
 		SDL_InitSubSystem(SDL_INIT_VIDEO);
@@ -84,6 +86,22 @@ void GameWindow::destroy_instance() {
 	m_instance = NULL;
 }
 
+int GameWindow::get_width() const {
+	return m_width;
+}
+
+int GameWindow::get_height() const {
+	return m_height;
+}
+
+double GameWindow::get_offset_x() const {
+	return m_offset_x;
+}
+
+double GameWindow::get_offset_y() const {
+	return m_offset_y;
+}
+
 void GameWindow::set_dimensions(int width, int height) {
 	int flags = SDL_HWSURFACE|SDL_OPENGL;
 	if (m_fullscreen) {
@@ -109,16 +127,16 @@ void GameWindow::set_fullscreen(bool fullscreen) {
 	}
 }
 
-int GameWindow::get_width() const {
-	return m_width;
-}
-
-int GameWindow::get_height() const {
-	return m_height;
-}
-
 bool GameWindow::is_fullscreen() const {
 	return m_fullscreen;
+}
+
+void GameWindow::set_offset_x(double offset) {
+	m_offset_x = offset;
+}
+
+void GameWindow::set_offset_y(double offset) {
+	m_offset_y = offset;
 }
 
 void GameWindow::register_sprite(Sprite* sprite) {
@@ -139,7 +157,7 @@ void GameWindow::redraw() const {
 	// TODO fill in
 	glClear(GL_COLOR_BUFFER_BIT);
 	for(std::list<Sprite*>::const_iterator iter = m_sprites.begin(); iter != m_sprites.end(); ++iter) {
-		(*iter)->draw();
+		(*iter)->draw(this);
 	}
 	SDL_GL_SwapBuffers();
 }

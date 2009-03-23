@@ -7,6 +7,7 @@
 
 #include "Sprite.hpp"
 #include "SDL_image.h"
+#include "GameWindow.hpp"
 #include "common/LMException.hpp"
 #include <stdint.h>
 
@@ -168,13 +169,14 @@ void Sprite::set_alpha(double alpha) {
 	m_alpha = alpha;
 }
 
-void Sprite::draw() const {
+void Sprite::draw(const GameWindow* window) const {
 	glColor4d(1.0, 1.0, 1.0, m_alpha);
 	glBindTexture(GL_TEXTURE_2D,m_tex_id);
 	glPushMatrix();
 	glTranslated(m_x, m_y, 0.0);
 	glRotated(m_rotation, 0.0, 0.0, 1.0);
 	glTranslated(-m_center_x, -m_center_y, 0.0);
+	glTranslated(-window->get_offset_x(), -window->get_offset_y(), 0.0);
 	glScaled(m_scale_x, m_scale_y, 1.0);
 	glBegin(GL_QUADS);
 	glTexCoord2d(0.0,0.0);

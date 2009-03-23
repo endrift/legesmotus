@@ -11,6 +11,7 @@
 #include "compat_gl.h"
 #include "common/compat_sdl.h"
 
+class GameWindow;
 class Sprite {
 private:
 	SDL_Surface*	m_image;
@@ -75,7 +76,7 @@ public:
 
 	void	set_alpha(double alpha);
 
-	void	draw() const;
+	void	draw(const GameWindow* window) const;
 };
 
 #endif

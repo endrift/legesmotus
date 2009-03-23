@@ -22,6 +22,9 @@ private:
 	bool			m_fullscreen;
 	std::list<Sprite*>	m_sprites;
 
+	int			m_offset_x;
+	int			m_offset_y;
+
 	GameWindow(int width, int height, int depth, bool fullscreen);
 	~GameWindow();
 public:
@@ -34,12 +37,18 @@ public:
 	static GameWindow*	get_instance();
 	static void		destroy_instance();
 
-	void			set_dimensions(int width, int height);
-	void			set_fullscreen(bool fullscreen);
-
 	int			get_width() const;
 	int			get_height() const;
 	bool			is_fullscreen() const;
+
+	double			get_offset_x() const;
+	double			get_offset_y() const;
+
+	void			set_dimensions(int width, int height);
+	void			set_fullscreen(bool fullscreen);
+
+	void			set_offset_x(double offset);
+	void			set_offset_y(double offset);
 
 	void			register_sprite(Sprite* sprite);
 	void			unregister_sprite(Sprite* sprite);
