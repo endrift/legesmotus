@@ -32,7 +32,7 @@ protected:
 public:
 	Player();
 	Player(const char* name, uint32_t id, char team, double x = 0, double y = 0, double xvel = 0, double yvel = 0, double rotation = 0);
-	~Player();
+	virtual ~Player();
 	
 	const char* get_name() const { return m_name.c_str(); }
 	uint32_t get_id() const { return m_id; }
