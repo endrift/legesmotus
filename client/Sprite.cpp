@@ -113,7 +113,7 @@ double Sprite::get_y() const {
 	return m_y;
 }
 
-double Sprite::get_priority() const {
+int Sprite::get_priority() const {
 	return m_priority;
 }
 
@@ -143,6 +143,10 @@ void Sprite::set_x(double x) {
 
 void Sprite::set_y(double y) {
 	m_y = y;
+}
+
+void Sprite::set_priority(int priority) {
+	m_priority = priority;
 }
 
 void Sprite::set_scale_x(double scale_x) {

@@ -142,7 +142,7 @@ void GameWindow::set_offset_y(double offset) {
 
 void GameWindow::register_sprite(Sprite* sprite) {
 	for (list<Sprite*>::iterator iter = m_sprites.begin(); iter != m_sprites.end(); ++iter) {
-		if ((*iter)->get_priority() > sprite->get_priority()) {
+		if ((*iter)->get_priority() < sprite->get_priority()) {
 			m_sprites.insert(iter,sprite);
 			return;
 		}

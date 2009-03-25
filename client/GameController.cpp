@@ -54,6 +54,7 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	// TEMPORARY SPRITE CODE
 	new_sprite = new Sprite("data/sprites/blue_full.png");
 	m_crosshairs = new Sprite("data/sprites/crosshairs.png");
+	m_crosshairs->set_priority(-1);
 	m_window->register_sprite(m_crosshairs);
 }
 

@@ -52,7 +52,7 @@ public:
 
 	double	get_x() const;
 	double	get_y() const;
-	double	get_priority() const;
+	int	get_priority() const;
 
 	double	get_scale_x() const;
 	double	get_scale_y() const;
