@@ -9,6 +9,7 @@
 #include "GameWindow.hpp"
 #include "ClientNetwork.hpp"
 #include "GraphicalPlayer.hpp"
+#include "TiledGraphic.hpp"
 #include "common/PacketReader.hpp"
 #include "common/PacketWriter.hpp"
 #include "common/network.hpp"
@@ -35,6 +36,7 @@ GameController::~GameController() {
 	// TEMPORARY SPRITE CODE
 	delete new_sprite;
 	delete m_crosshairs;
+	delete m_background;
 }
 
 void GameController::init(int width, int height, int depth, bool fullscreen) {
@@ -57,6 +59,13 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_crosshairs = new Sprite("data/sprites/crosshairs.png");
 	m_crosshairs->set_priority(-1);
 	m_window->register_graphic(m_crosshairs);
+	m_background = new TiledGraphic("data/sprites/blue_bgtile.png");
+	m_background->set_start_x(0);
+	m_background->set_start_y(0);
+	m_background->set_width(m_map_width);
+	m_background->set_height(m_map_height);
+	m_background->set_priority(1);
+	m_window->register_graphic(m_background);
 }
 
 void GameController::run(int lockfps) {

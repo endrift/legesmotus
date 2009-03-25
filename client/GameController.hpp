@@ -16,6 +16,8 @@
 #include <vector>
 #include <map>
 
+class TiledGraphic;
+
 class GameController {
 private:
 	struct KeyBindings {
@@ -49,6 +51,7 @@ private:
 	// TEMPORARY SPRITE CODE
 	Sprite*		new_sprite;
 	Sprite*		m_crosshairs;
+	TiledGraphic*	m_background;
 	
 	void		init(int width, int height, int depth, bool fullscreen);
 	void		process_input();
