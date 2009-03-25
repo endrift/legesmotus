@@ -28,7 +28,7 @@ protected:
 	bool		m_is_invisible;
 	bool		m_is_frozen;
 
-	static inline double	PI() { return 3.14159265358979323844; } // TODO: do this more elegantly
+	//static inline double	PI() { return 3.14159265358979323844; } // TODO: do this more elegantly
 public:
 	Player();
 	Player(const char* name, uint32_t id, char team, double x = 0, double y = 0, double xvel = 0, double yvel = 0, double rotation = 0);

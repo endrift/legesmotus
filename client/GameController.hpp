@@ -43,9 +43,8 @@ private:
 	double		m_mouse_y;
 	Uint8*		m_keys;
 	KeyBindings	m_key_bindings;
-	//vector<GraphicalPlayer> m_players;
 	map<int, GraphicalPlayer> m_players;
-	int		m_player_id;
+	unsigned int	m_player_id;
 	
 	// TEMPORARY SPRITE CODE
 	Sprite*		new_sprite;
@@ -68,12 +67,14 @@ public:
 	void		move_objects(float timescale);
 	void		connect_to_server(const char* host, unsigned int port);
 	void		disconnect();
+	void		player_fired(unsigned int player_id, double start_x, double start_y, double direction);
 	
 	// Network callbacks:
 	void		welcome(PacketReader& reader);
 	void		player_update(PacketReader& reader);
 	void		announce(PacketReader& reader);
 	void		leave(PacketReader& reader);
+	void		gun_fired(PacketReader& reader);
 };
 
 #endif

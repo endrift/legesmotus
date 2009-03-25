@@ -7,10 +7,12 @@
 
 #include "GraphicalPlayer.hpp"
 #include "Sprite.hpp"
+#include "common/math.hpp"
 
 #include <iostream>
 
 GraphicalPlayer::GraphicalPlayer() : Player::Player() {
+	m_sprite = NULL;
 }
 
 GraphicalPlayer::GraphicalPlayer(const char* name, uint32_t id, char team, Sprite* sprite, double x, double y, double xvel, double yvel, double rotation)
@@ -93,7 +95,7 @@ void GraphicalPlayer::set_rotation_degrees(double rotation) {
 }
 
 void GraphicalPlayer::set_rotation_radians(double rotation) {
-	m_rotation = rotation * PI() / 180;
+	m_rotation = rotation * RADIANS_TO_DEGREES;
 	if (m_sprite != NULL) {
 		m_sprite->set_rotation(m_rotation);
 	}

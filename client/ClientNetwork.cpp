@@ -96,7 +96,7 @@ void	ClientNetwork::process_packet(GameController& controller, const RawPacket& 
 		break;
 
 	case GUN_FIRED_PACKET:
-		//controller.gun_fired(reader);
+		controller.gun_fired(reader);
 		break;
 
 	case PLAYER_SHOT_PACKET:

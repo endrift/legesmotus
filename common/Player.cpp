@@ -8,6 +8,7 @@
 #include "Player.hpp"
 
 #include <cmath>
+#include "common/math.hpp"
 
 Player::Player() {
 	m_id = 0;
@@ -39,11 +40,11 @@ Player::~Player() {
 }
 
 double Player::get_rotation_radians() const {
-	return m_rotation * PI() / 180;
+	return m_rotation * DEGREES_TO_RADIANS;
 }
 
 double Player::get_gun_rotation_radians() const {
-	return m_gun_rotation * PI() / 180;
+	return m_gun_rotation * DEGREES_TO_RADIANS;
 }
 
 void Player::set_name(const char* name) {
@@ -94,7 +95,7 @@ void Player::set_rotation_degrees(double rotation) {
 }
 
 void Player::set_rotation_radians(double rotation) {
-	m_rotation = rotation * PI() / 180;
+	m_rotation = rotation * RADIANS_TO_DEGREES;
 }
 
 void Player::set_gun_rotation_degrees(double gun_rotation) {
@@ -102,7 +103,7 @@ void Player::set_gun_rotation_degrees(double gun_rotation) {
 }
 
 void Player::set_gun_rotation_radians(double gun_rotation) {
-	m_gun_rotation = gun_rotation * PI() / 180;
+	m_gun_rotation = gun_rotation * RADIANS_TO_DEGREES;
 }
 
 void Player::set_is_invisible(bool is_invisible) {

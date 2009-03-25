@@ -12,6 +12,7 @@
 #include "common/PacketReader.hpp"
 #include "common/PacketWriter.hpp"
 #include "common/network.hpp"
+#include "common/math.hpp"
 
 #include <vector>
 #include <stdio.h>
@@ -89,13 +90,15 @@ void GameController::run(int lockfps) {
 			
 			send_my_player_update();
 			
-			m_offset_x = m_players[m_player_id].get_x() - (m_screen_width/2.0);
-			m_offset_y = m_players[m_player_id].get_y() - (m_screen_height/2.0);
-			m_window->set_offset_x(m_offset_x);
-			m_window->set_offset_y(m_offset_y);
+			if (!m_players.empty()) {
+				m_offset_x = m_players[m_player_id].get_x() - (m_screen_width/2.0);
+				m_offset_y = m_players[m_player_id].get_y() - (m_screen_height/2.0);
+				m_window->set_offset_x(m_offset_x);
+				m_window->set_offset_y(m_offset_y);
 			
-			m_crosshairs->set_x(m_mouse_x + m_offset_x);
-			m_crosshairs->set_y(m_mouse_y + m_offset_y);
+				m_crosshairs->set_x(m_mouse_x + m_offset_x);
+				m_crosshairs->set_y(m_mouse_y + m_offset_y);
+			}
 			
 			m_window->redraw();
 			startframe = SDL_GetTicks();
@@ -136,6 +139,15 @@ void GameController::process_input() {
 				
 			case SDL_MOUSEBUTTONDOWN:
 				// Firing code, use event.button.button, event.button.x, event.button.y
+				if (event.button.button == 1) {
+					if (m_players.empty()) {
+						return;
+					}
+					double x_dist = m_players[m_player_id].get_x() - (event.button.x + m_offset_x);
+					double y_dist = m_players[m_player_id].get_y() - (event.button.y + m_offset_y);
+					double direction = atan2(x_dist, y_dist) * RADIANS_TO_DEGREES;
+					player_fired(m_player_id, m_players[m_player_id].get_x(), m_players[m_player_id].get_y(), direction);
+				}
 				break;
 				
 			case SDL_MOUSEBUTTONUP:
@@ -174,7 +186,7 @@ void GameController::parse_key_input() {
 }
 
 void GameController::move_objects(float timescale) {
-	if (m_players.size() == 0) {
+	if (m_players.empty()) {
 		return;
 	}
 	
@@ -207,6 +219,10 @@ void GameController::move_objects(float timescale) {
 }
 
 void GameController::attempt_jump() {
+	if (m_players.empty()) {
+		return;
+	}
+	
 	GraphicalPlayer* player = &m_players[m_player_id];
 	
 	double x_dist = m_crosshairs->get_x() - player->get_x();
@@ -228,6 +244,20 @@ void GameController::attempt_jump() {
 	} else if (player->get_y() + (player->get_height()/2) >= m_map_height - 5) {
 		player->set_x_vel(x_vel);
 		player->set_y_vel(y_vel);
+	}
+}
+
+void GameController::player_fired(unsigned int player_id, double start_x, double start_y, double direction) {
+	// TODO: Check collisions
+	
+	if (player_id == m_player_id) {
+		PacketWriter gun_fired(GUN_FIRED_PACKET);
+		gun_fired << player_id;
+		gun_fired << start_x;
+		gun_fired << start_y;
+		gun_fired << direction;
+		
+		m_network.send_packet(gun_fired);
 	}
 }
 
@@ -277,7 +307,7 @@ void GameController::welcome(PacketReader& reader) {
 }
 
 void GameController::announce(PacketReader& reader) {
-	int playerid;
+	unsigned int playerid;
 	string playername;
 	char team;
 	
@@ -323,19 +353,9 @@ void GameController::player_update(PacketReader& reader) {
 	
 }
 
-/*GraphicalPlayer* GameController::get_player_by_id(unsigned int player_id) {
-	return &m_players[player_id];
-	for (unsigned int i = 0; i < m_players.size(); i++) {
-		if (m_players.at(i).get_id() == player_id) {
-			return &m_players.at(i);
-		}
-	}
-	//return NULL;
-}*/
-
 void GameController::send_my_player_update() {
 	PacketWriter player_update(PLAYER_UPDATE_PACKET);
-	if (m_players.size() == 0) {
+	if (m_players.empty()) {
 		return;
 	}
 	
@@ -361,12 +381,20 @@ void GameController::leave(PacketReader& reader) {
 	
 	m_window->unregister_sprite(m_players[playerid].get_sprite());
 	m_players.erase(playerid);
-	/*for (unsigned int i = 0; i < m_players.size(); i++) {
-		if (m_players.at(i).get_id() == playerid) {
-			m_window->unregister_sprite(m_players.at(i).get_sprite());
-			m_players.erase(m_players.begin() + i);
-		}
-	}*/
+}
+
+void GameController::gun_fired(PacketReader& reader) {
+	unsigned int playerid;
+	double start_x;
+	double start_y;
+	double rotation;
+	reader >> playerid >> start_x >> start_y >> rotation;
+	
+	if (playerid == m_player_id) {
+		return;
+	}
+	
+	player_fired(playerid, start_x, start_y, rotation);
 }
 
 /* EXAMPLE
@@ -384,5 +412,3 @@ void GameController::player_update(PacketReader& reader) {
 	network.send_packet(writer);
 }
 */
-
-		//controller.player_update(reader);
