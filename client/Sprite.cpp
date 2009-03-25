@@ -35,8 +35,9 @@ Sprite::Sprite(const Sprite& other) {
 	m_rotation = other.m_rotation;
 	m_center_x = other.m_center_x;
 	m_center_y = other.m_center_y;
-	m_tex_count = new int;
-	*m_tex_count = 1;
+	m_tex_id = other.m_tex_id;
+	m_tex_count = other.m_tex_count;
+	++*m_tex_count;
 }
 
 Sprite::~Sprite() {

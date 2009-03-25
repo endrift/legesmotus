@@ -317,7 +317,7 @@ void GameController::announce(PacketReader& reader) {
 	}
 	
 	// TEMPORARY SPRITE CODE
-	m_players.insert(pair<int, GraphicalPlayer>(playerid,GraphicalPlayer((const char*)playername.c_str(), playerid, team, new Sprite("data/sprites/blue_full.png"))));
+	m_players.insert(pair<int, GraphicalPlayer>(playerid,GraphicalPlayer((const char*)playername.c_str(), playerid, team, new Sprite(*new_sprite))));
 	m_window->register_sprite(m_players[playerid].get_sprite());
 }
 
@@ -380,6 +380,7 @@ void GameController::leave(PacketReader& reader) {
 	reader >> playerid;
 	
 	m_window->unregister_sprite(m_players[playerid].get_sprite());
+	delete m_players[playerid].get_sprite();
 	m_players.erase(playerid);
 }
 
