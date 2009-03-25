@@ -153,6 +153,10 @@ void GameController::process_input() {
 			case SDL_MOUSEBUTTONUP:
 				break;
 				
+			case SDL_QUIT:
+				m_quit_game = true;
+				break;
+				
 			default:
 				break;
 		}
