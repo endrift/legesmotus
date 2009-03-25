@@ -41,6 +41,11 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	
 	m_screen_width = width;
 	m_screen_height = height;
+	
+	// TEMPORARY MAP WIDTH AND HEIGHT
+	m_map_width = 500;
+	m_map_height = 500;
+	
 	m_pixel_depth = depth;
 	m_fullscreen = fullscreen;
 	m_quit_game = false;
@@ -83,6 +88,14 @@ void GameController::run(int lockfps) {
 			
 			send_my_player_update();
 			
+			m_offset_x = m_players[m_player_id].get_x() - (m_screen_width/2.0);
+			m_offset_y = m_players[m_player_id].get_y() - (m_screen_height/2.0);
+			m_window->set_offset_x(m_offset_x);
+			m_window->set_offset_y(m_offset_y);
+			
+			m_crosshairs->set_x(m_mouse_x + m_offset_x);
+			m_crosshairs->set_y(m_mouse_y + m_offset_y);
+			
 			m_window->redraw();
 			startframe = SDL_GetTicks();
 		}
@@ -114,8 +127,10 @@ void GameController::process_input() {
 			case SDL_MOUSEMOTION:
 				// Send motion to the GameWindow, telling it where the mouse is.
 				// Use: event.motion.xrel, event.motion.yrel (changes in position), event.motion.x, event.motion.y
-				m_crosshairs->set_x(event.motion.x);
-				m_crosshairs->set_y(event.motion.y);
+				m_mouse_x = event.motion.x;
+				m_mouse_y = event.motion.y;
+				m_crosshairs->set_x(m_mouse_x + m_offset_x);
+				m_crosshairs->set_y(m_mouse_y + m_offset_y);
 				break;
 				
 			case SDL_MOUSEBUTTONDOWN:
@@ -162,36 +177,36 @@ void GameController::move_objects(float timescale) {
 		return;
 	}
 	
-	double player_x_vel = m_players.at(0).get_x_vel() * timescale;
-	double player_y_vel = m_players.at(0).get_y_vel() * timescale;
+	double player_x_vel = m_players[m_player_id].get_x_vel() * timescale;
+	double player_y_vel = m_players[m_player_id].get_y_vel() * timescale;
 	
-	double new_x = m_players.at(0).get_x() + player_x_vel;
-	double new_y = m_players.at(0).get_y() + player_y_vel;
-	double half_width = m_players.at(0).get_width() / 2;
-	double half_height = m_players.at(0).get_height() / 2;
+	double new_x = m_players[m_player_id].get_x() + player_x_vel;
+	double new_y = m_players[m_player_id].get_y() + player_y_vel;
+	double half_width = m_players[m_player_id].get_width() / 2;
+	double half_height = m_players[m_player_id].get_height() / 2;
 	
 	if (new_x - half_width < 0) {
 		new_x = half_width;
-		m_players.at(0).set_velocity(0, 0);
-	} else if (new_x + half_width > m_screen_width) {
-		new_x = m_screen_width - half_width;
-		m_players.at(0).set_velocity(0, 0);
+		m_players[m_player_id].set_velocity(0, 0);
+	} else if (new_x + half_width > m_map_width) {
+		new_x = m_map_width - half_width;
+		m_players[m_player_id].set_velocity(0, 0);
 	}
 	
 	if (new_y - half_height < 0) {
 		new_y = half_height;
-		m_players.at(0).set_velocity(0, 0);
-	} else if (new_y + half_height > m_screen_height) {
-		new_y = m_screen_height - half_height;
-		m_players.at(0).set_velocity(0, 0);
+		m_players[m_player_id].set_velocity(0, 0);
+	} else if (new_y + half_height > m_map_height) {
+		new_y = m_map_height - half_height;
+		m_players[m_player_id].set_velocity(0, 0);
 	}
 	
-	m_players.at(0).set_x(new_x);
-	m_players.at(0).set_y(new_y);
+	m_players[m_player_id].set_x(new_x);
+	m_players[m_player_id].set_y(new_y);
 }
 
 void GameController::attempt_jump() {
-	GraphicalPlayer* player = &m_players.at(0);
+	GraphicalPlayer* player = &m_players[m_player_id];
 	
 	double x_dist = m_crosshairs->get_x() - player->get_x();
 	double y_dist = m_crosshairs->get_y() - player->get_y();
@@ -201,7 +216,7 @@ void GameController::attempt_jump() {
 	if (player->get_x() - (player->get_width()/2) <= 5) {
 		player->set_x_vel(x_vel);
 		player->set_y_vel(y_vel);
-	} else if (player->get_x() + (player->get_width()/2) >= m_screen_width - 5) {
+	} else if (player->get_x() + (player->get_width()/2) >= m_map_width - 5) {
 		player->set_x_vel(x_vel);
 		player->set_y_vel(y_vel);
 	}
@@ -209,7 +224,7 @@ void GameController::attempt_jump() {
 	if (player->get_y() - (player->get_height()/2) <= 5) {
 		player->set_x_vel(x_vel);
 		player->set_y_vel(y_vel);
-	} else if (player->get_y() + (player->get_height()/2) >= m_screen_height - 5) {
+	} else if (player->get_y() + (player->get_height()/2) >= m_map_height - 5) {
 		player->set_x_vel(x_vel);
 		player->set_y_vel(y_vel);
 	}
@@ -248,14 +263,14 @@ void GameController::welcome(PacketReader& reader) {
 	cerr << "Received welcome packet. Version: " << serverversion << ", Player ID: " << playerid << ", Team: " << team << endl;
 	
 	m_players.clear();
-	m_players.push_back(GraphicalPlayer("MyName", m_player_id, team, new_sprite, new_sprite->get_width()/2, new_sprite->get_height()/2));
+	m_players.insert(pair<int, GraphicalPlayer>(m_player_id,GraphicalPlayer("MyName", m_player_id, team, new_sprite, new_sprite->get_width()/2, new_sprite->get_height()/2)));
 	
 	// TEMPORARY SPRITE CODE
 	m_window->register_sprite(new_sprite);
 	
 	// PUT THESE BACK WHEN THE SERVER SENDS GAME START, ETC.
-	//m_players.at(0).set_is_invisible(true);
-	//m_players.at(0).set_is_frozen(true);
+	//m_players[m_player_id].set_is_invisible(true);
+	//m_players[m_player_id].set_is_frozen(true);
 	
 	send_my_player_update();
 }
@@ -271,8 +286,8 @@ void GameController::announce(PacketReader& reader) {
 	}
 	
 	// TEMPORARY SPRITE CODE
-	m_players.push_back(GraphicalPlayer((const char*)playername.c_str(), playerid, team, new Sprite("data/sprites/blue_full.png")));
-	m_window->register_sprite(m_players.at(m_players.size()-1).get_sprite());
+	m_players.insert(pair<int, GraphicalPlayer>(playerid,GraphicalPlayer((const char*)playername.c_str(), playerid, team, new Sprite("data/sprites/blue_full.png"))));
+	m_window->register_sprite(m_players[playerid].get_sprite());
 }
 
 void GameController::player_update(PacketReader& reader) {
@@ -284,7 +299,7 @@ void GameController::player_update(PacketReader& reader) {
 	string flags;
 	reader >> player_id >> x >> y >> velocity_x >> velocity_y >> flags;
 	
-	GraphicalPlayer* currplayer = get_player_by_id(player_id);
+	GraphicalPlayer* currplayer = &m_players[player_id];
 	if (currplayer == NULL) {
 		cerr << "Error: Received update packet for non-existent player " << player_id << endl;
 		return;
@@ -307,14 +322,15 @@ void GameController::player_update(PacketReader& reader) {
 	
 }
 
-GraphicalPlayer* GameController::get_player_by_id(unsigned int player_id) {
+/*GraphicalPlayer* GameController::get_player_by_id(unsigned int player_id) {
+	return &m_players[player_id];
 	for (unsigned int i = 0; i < m_players.size(); i++) {
 		if (m_players.at(i).get_id() == player_id) {
 			return &m_players.at(i);
 		}
 	}
-	return NULL;
-}
+	//return NULL;
+}*/
 
 void GameController::send_my_player_update() {
 	PacketWriter player_update(PLAYER_UPDATE_PACKET);
@@ -322,7 +338,7 @@ void GameController::send_my_player_update() {
 		return;
 	}
 	
-	GraphicalPlayer* my_player = &m_players.at(0);
+	GraphicalPlayer* my_player = &m_players[m_player_id];
 	string flags;
 	
 	if (my_player->is_invisible()) {
@@ -342,12 +358,14 @@ void GameController::leave(PacketReader& reader) {
 	unsigned int playerid;
 	reader >> playerid;
 	
-	for (unsigned int i = 0; i < m_players.size(); i++) {
+	m_window->unregister_sprite(m_players[playerid].get_sprite());
+	m_players.erase(playerid);
+	/*for (unsigned int i = 0; i < m_players.size(); i++) {
 		if (m_players.at(i).get_id() == playerid) {
 			m_window->unregister_sprite(m_players.at(i).get_sprite());
 			m_players.erase(m_players.begin() + i);
 		}
-	}
+	}*/
 }
 
 /* EXAMPLE

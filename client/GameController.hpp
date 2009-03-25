@@ -14,6 +14,7 @@
 #include "GraphicalPlayer.hpp"
 
 #include <vector>
+#include <map>
 
 class GameController {
 private:
@@ -31,12 +32,19 @@ private:
 	#define m_version "0.0.1";
 	int 		m_screen_width;
 	int 		m_screen_height;
+	int		m_map_width;
+	int		m_map_height;
 	int 		m_pixel_depth;
 	bool 		m_fullscreen;
 	bool		m_quit_game;
+	double		m_offset_x;
+	double		m_offset_y;
+	double		m_mouse_x;
+	double		m_mouse_y;
 	Uint8*		m_keys;
 	KeyBindings	m_key_bindings;
-	vector<GraphicalPlayer> m_players;
+	//vector<GraphicalPlayer> m_players;
+	map<int, GraphicalPlayer> m_players;
 	int		m_player_id;
 	
 	// TEMPORARY SPRITE CODE
@@ -45,7 +53,7 @@ private:
 	
 	void		init(int width, int height, int depth, bool fullscreen);
 	void		process_input();
-	GraphicalPlayer* get_player_by_id(unsigned int player_id);
+	//GraphicalPlayer* get_player_by_id(unsigned int player_id);
 	void		send_my_player_update();
 	void		attempt_jump();
 public:
