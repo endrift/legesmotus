@@ -9,16 +9,7 @@
 #include "SDL_image.h"
 #include "GameWindow.hpp"
 #include "common/LMException.hpp"
-#include <stdint.h>
-
-static uint32_t toPow2(uint32_t num) {
-	--num;
-	for (int i = 1; i < 32; i <<= 1) {
-		num |= num >> i;
-	}
-	++num;
-	return num;
-}
+#include "common/math.hpp"
 
 Sprite::Sprite(SDL_Surface* image) {
 	init(image);
