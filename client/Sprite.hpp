@@ -8,23 +8,15 @@
 #ifndef LM_CLIENT_SPRITE_HPP
 #define LM_CLIENT_SPRITE_HPP
 
-#include "compat_gl.h"
-#include "common/compat_sdl.h"
+#include "Graphic.hpp"
 
-class GameWindow;
-class Sprite {
+class Sprite : public Graphic {
 private:
-	SDL_Surface*	m_image;
-	GLuint		m_tex_id;
 	int		m_width;
 	int		m_height;
-	int		m_image_width;
-	int		m_image_height;
-	int*		m_tex_count;
 
 	double		m_x;
 	double		m_y;
-	int		m_priority;
 
 	double		m_scale_x;
 	double		m_scale_y;
@@ -35,24 +27,17 @@ private:
 
 	double		m_alpha;
 
-	void		init(SDL_Surface* image);
+	void		init();
 
 public:
 	Sprite(SDL_Surface* image);
 	Sprite(const char* filename);
 	Sprite(const Sprite& other);
-	~Sprite();
 
-	GLuint	get_texture_id() const;
 	int	get_width() const;
 	int	get_height() const;
-	
-	int	get_image_width() const;
-	int	get_image_height() const;
-
 	double	get_x() const;
 	double	get_y() const;
-	int	get_priority() const;
 
 	double	get_scale_x() const;
 	double	get_scale_y() const;
@@ -65,7 +50,6 @@ public:
 
 	void	set_x(double x);
 	void	set_y(double y);
-	void	set_priority(int priority);
 
 	void	set_scale_x(double scale_x);
 	void	set_scale_y(double scale_y);

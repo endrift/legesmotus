@@ -140,24 +140,24 @@ void GameWindow::set_offset_y(double offset) {
 	m_offset_y = offset;
 }
 
-void GameWindow::register_sprite(Sprite* sprite) {
-	for (list<Sprite*>::iterator iter = m_sprites.begin(); iter != m_sprites.end(); ++iter) {
-		if ((*iter)->get_priority() < sprite->get_priority()) {
-			m_sprites.insert(iter,sprite);
+void GameWindow::register_graphic(Graphic* graphic) {
+	for (list<Graphic*>::iterator iter = m_graphics.begin(); iter != m_graphics.end(); ++iter) {
+		if ((*iter)->get_priority() < graphic->get_priority()) {
+			m_graphics.insert(iter,graphic);
 			return;
 		}
 	}
-	m_sprites.push_back(sprite);
+	m_graphics.push_back(graphic);
 }
 
-void GameWindow::unregister_sprite(Sprite* sprite) {
-	m_sprites.remove(sprite);
+void GameWindow::unregister_graphic(Graphic* graphic) {
+	m_graphics.remove(graphic);
 }
 
 void GameWindow::redraw() const {
 	// TODO fill in
 	glClear(GL_COLOR_BUFFER_BIT);
-	for(std::list<Sprite*>::const_iterator iter = m_sprites.begin(); iter != m_sprites.end(); ++iter) {
+	for(std::list<Graphic*>::const_iterator iter = m_graphics.begin(); iter != m_graphics.end(); ++iter) {
 		(*iter)->draw(this);
 	}
 	glFinish();

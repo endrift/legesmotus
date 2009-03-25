@@ -6,79 +6,41 @@
  */
 
 #include "Sprite.hpp"
-#include "SDL_image.h"
 #include "GameWindow.hpp"
-#include "common/LMException.hpp"
 #include "common/math.hpp"
 
-Sprite::Sprite(SDL_Surface* image) {
-	init(image);
+Sprite::Sprite(SDL_Surface* image) : Graphic(image) {
+	init();
 }
 
-Sprite::Sprite(const char* filename) {
-	SDL_Surface* loaded = IMG_Load(filename);
-	init(loaded);
+Sprite::Sprite(const char* filename) : Graphic(filename) {	
+	init();
 }
 
-Sprite::Sprite(const Sprite& other) {
+Sprite::Sprite(const Sprite& other) : Graphic(other) {
 	m_x = other.m_x;
 	m_y = other.m_y;
-	m_priority = other.m_priority;
 	m_alpha = m_alpha;
 	m_scale_x = other.m_scale_x;
 	m_scale_y = other.m_scale_y;
-	m_image_width = other.m_image_width;
-	m_image_height = other.m_image_height;
 	m_width = other.m_width;
 	m_height = other.m_height;
-	m_image = other.m_image;
 	m_rotation = other.m_rotation;
 	m_center_x = other.m_center_x;
 	m_center_y = other.m_center_y;
-	m_tex_id = other.m_tex_id;
-	m_tex_count = other.m_tex_count;
-	++*m_tex_count;
 }
 
-Sprite::~Sprite() {
-	if(*m_tex_count <= 1) {
-		glDeleteTextures(1,&m_tex_id);
-		SDL_FreeSurface(m_image);
-		delete m_tex_count;
-	}
-}
-
-void Sprite::init(SDL_Surface* image) {
-	if (image == NULL) {
-		throw LMException("Sprite could not be loaded");
-	}
+void Sprite::init() {
 	m_x = 0;
 	m_y = 0;
-	m_priority = 0;
 	m_alpha = 1.0;
 	m_scale_x = 1.0;
 	m_scale_y = 1.0;
-	m_image_width = image->w;
-	m_image_height = image->h;
-	m_width = toPow2(m_image_width);
-	m_height = toPow2(m_image_height);
-	m_image = SDL_CreateRGBSurface(SDL_HWSURFACE, m_width, m_height, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
-	SDL_SetAlpha(image, 0, SDL_ALPHA_OPAQUE);
-	SDL_BlitSurface(image, NULL, m_image, NULL);
+	m_width = toPow2(get_image_width());
+	m_height = toPow2(get_image_height());
 	m_rotation = 0;
 	m_center_x = get_image_width()/2.0;
 	m_center_y = get_image_height()/2.0;
-	m_tex_count = new int;
-	*m_tex_count = 1;
-	glGenTextures(1, &m_tex_id);
-	glBindTexture(GL_TEXTURE_2D, m_tex_id);
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, 4, m_width, m_height, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, m_image->pixels);
-}
-
-GLuint Sprite::get_texture_id() const {
-	return m_tex_id;
 }
 
 int Sprite::get_width() const {
@@ -89,24 +51,12 @@ int Sprite::get_height() const {
 	return m_height;
 }
 
-int Sprite::get_image_width() const {
-	return m_image_width;
-}
-
-int Sprite::get_image_height() const {
-	return m_image_height;
-}
-
 double Sprite::get_x() const {
 	return m_x;
 }
 
 double Sprite::get_y() const {
 	return m_y;
-}
-
-int Sprite::get_priority() const {
-	return m_priority;
 }
 
 double Sprite::get_scale_x() const {
@@ -137,10 +87,6 @@ void Sprite::set_y(double y) {
 	m_y = y;
 }
 
-void Sprite::set_priority(int priority) {
-	m_priority = priority;
-}
-
 void Sprite::set_scale_x(double scale_x) {
 	m_scale_x = scale_x;
 }
@@ -167,13 +113,13 @@ void Sprite::set_alpha(double alpha) {
 
 void Sprite::draw(const GameWindow* window) const {
 	glColor4d(1.0, 1.0, 1.0, m_alpha);
-	glBindTexture(GL_TEXTURE_2D,m_tex_id);
+	glBindTexture(GL_TEXTURE_2D,get_texture_id());
 	glPushMatrix();
 	glTranslated(m_x, m_y, 0.0);
 	glRotated(m_rotation, 0.0, 0.0, 1.0);
 	glTranslated(-m_center_x, -m_center_y, 0.0);
-	glTranslated(-window->get_offset_x(), -window->get_offset_y(), 0.0);
 	glScaled(m_scale_x, m_scale_y, 1.0);
+	glTranslated(-window->get_offset_x(), -window->get_offset_y(), 0.0);
 	glBegin(GL_QUADS);
 	glTexCoord2d(0.0,0.0);
 	glVertex2i(0,0);

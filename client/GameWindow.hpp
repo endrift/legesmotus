@@ -20,7 +20,7 @@ private:
 	int			m_height;
 	int			m_depth;
 	bool			m_fullscreen;
-	std::list<Sprite*>	m_sprites;
+	std::list<Graphic*>	m_graphics;
 
 	int			m_offset_x;
 	int			m_offset_y;
@@ -50,8 +50,8 @@ public:
 	void			set_offset_x(double offset);
 	void			set_offset_y(double offset);
 
-	void			register_sprite(Sprite* sprite);
-	void			unregister_sprite(Sprite* sprite);
+	void			register_graphic(Graphic* graphic);
+	void			unregister_graphic(Graphic* graphic);
 
 	void			redraw() const;
 };

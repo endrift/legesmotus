@@ -56,7 +56,7 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	new_sprite = new Sprite("data/sprites/blue_full.png");
 	m_crosshairs = new Sprite("data/sprites/crosshairs.png");
 	m_crosshairs->set_priority(-1);
-	m_window->register_sprite(m_crosshairs);
+	m_window->register_graphic(m_crosshairs);
 }
 
 void GameController::run(int lockfps) {
@@ -301,7 +301,7 @@ void GameController::welcome(PacketReader& reader) {
 	m_players.insert(pair<int, GraphicalPlayer>(m_player_id,GraphicalPlayer("MyName", m_player_id, team, new_sprite, new_sprite->get_width()/2, new_sprite->get_height()/2)));
 	
 	// TEMPORARY SPRITE CODE
-	m_window->register_sprite(new_sprite);
+	m_window->register_graphic(new_sprite);
 	
 	// PUT THESE BACK WHEN THE SERVER SENDS GAME START, ETC.
 	//m_players[m_player_id].set_is_invisible(true);
@@ -322,7 +322,7 @@ void GameController::announce(PacketReader& reader) {
 	
 	// TEMPORARY SPRITE CODE
 	m_players.insert(pair<int, GraphicalPlayer>(playerid,GraphicalPlayer((const char*)playername.c_str(), playerid, team, new Sprite(*new_sprite))));
-	m_window->register_sprite(m_players[playerid].get_sprite());
+	m_window->register_graphic(m_players[playerid].get_sprite());
 }
 
 void GameController::player_update(PacketReader& reader) {
@@ -383,7 +383,7 @@ void GameController::leave(PacketReader& reader) {
 	unsigned int playerid;
 	reader >> playerid;
 	
-	m_window->unregister_sprite(m_players[playerid].get_sprite());
+	m_window->unregister_graphic(m_players[playerid].get_sprite());
 	delete m_players[playerid].get_sprite();
 	m_players.erase(playerid);
 }
