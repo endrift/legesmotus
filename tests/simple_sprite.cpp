@@ -27,6 +27,9 @@ extern "C" int main(int argc, char* argv[]) {
 		SDL_Event e;
 		while(SDL_PollEvent(&e) != 0) {
 			switch(e.type) {
+			case SDL_QUIT:
+				running = 0;
+				break;
 			case SDL_KEYDOWN:
 				if(e.key.keysym.sym == SDLK_ESCAPE) {
 					running = 0;
@@ -34,11 +37,11 @@ extern "C" int main(int argc, char* argv[]) {
 			}
 		}
 
-		s.set_rotation(frame / 5000.0 * 360);
-		s.set_x(cos(frame / 5000.0 * 2*M_PI)*100+250);
-		s.set_y(sin(frame / 5000.0 * 2*M_PI)*100+250);
+		s.set_rotation(frame / 500.0 * 360);
+		s.set_x(cos(frame / 500.0 * 2*M_PI)*100+250);
+		s.set_y(sin(frame / 500.0 * 2*M_PI)*100+250);
 		++frame;
-		frame %= 5000;
+		frame %= 500;
 		window->redraw();
 	}
 	GameWindow::destroy_instance();
