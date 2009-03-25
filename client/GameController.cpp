@@ -64,7 +64,7 @@ void GameController::run(int lockfps) {
 		<< m_window->get_height() << " pixels tall." << endl;
 	
 	unsigned long startframe = SDL_GetTicks();
-	unsigned long lastmoveframe = SDL_GetTicks();
+	unsigned long lastmoveframe = startframe;
 	
 	/* 1 second / FPS = milliseconds per frame */
 	double delay = 1000.0 / lockfps;
@@ -83,7 +83,7 @@ void GameController::run(int lockfps) {
 		lastmoveframe = SDL_GetTicks();
 		
 		// Update graphics if frame rate is correct
-		unsigned long currframe = SDL_GetTicks();
+		unsigned long currframe = lastmoveframe;
 		if((currframe - startframe) >= delay) {
 			// the framerate:
 			int framerate = (1000/(currframe - startframe));
