@@ -101,7 +101,7 @@ void	ClientNetwork::process_packet(GameController& controller, const RawPacket& 
 
 	case PLAYER_SHOT_PACKET:
 		send_ack(reader.packet_id());
-		//controller.player_shot(reader);
+		controller.player_shot(reader);
 		break;
 
 	case MESSAGE_PACKET:

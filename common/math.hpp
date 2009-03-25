@@ -10,6 +10,9 @@
 
 #include <stdint.h>
 #include <cmath>
+#include <vector>
+
+using namespace std;
 
 #ifndef M_PI
 #define M_PI 3.141592653589793
@@ -25,6 +28,12 @@ static inline uint32_t toPow2(uint32_t num) {
 	}
 	++num;
 	return num;
+}
+
+vector<int> closest_point_on_line(int x1, int y1, int x2, int y2, int x3, int y3);
+
+static inline double dist_between_points(int x1, int y1, int x2, int y2) {
+	return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
 }
 
 #endif

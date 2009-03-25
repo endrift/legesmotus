@@ -54,6 +54,8 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_quit_game = false;
 	m_window = GameWindow::get_instance(m_screen_width, m_screen_height, m_pixel_depth, m_fullscreen);
 
+	m_time_to_unfreeze = 0;
+
 	// TEMPORARY SPRITE CODE
 	new_sprite = new Sprite("data/sprites/blue_full.png");
 	m_crosshairs = new Sprite("data/sprites/crosshairs.png");
@@ -85,6 +87,10 @@ void GameController::run(int lockfps) {
 		
 		if (m_quit_game == true) {
 			break;
+		}
+		
+		if (!m_players.empty() && m_time_to_unfreeze < SDL_GetTicks()) {
+			m_players[m_player_id].set_is_frozen(false);
 		}
 		
 		move_objects((SDL_GetTicks() - lastmoveframe) / delay); // scale all position changes to keep game speed constant. 
@@ -152,9 +158,9 @@ void GameController::process_input() {
 					if (m_players.empty()) {
 						return;
 					}
-					double x_dist = m_players[m_player_id].get_x() - (event.button.x + m_offset_x);
-					double y_dist = m_players[m_player_id].get_y() - (event.button.y + m_offset_y);
-					double direction = atan2(x_dist, y_dist) * RADIANS_TO_DEGREES;
+					double x_dist = (event.button.x + m_offset_x) - m_players[m_player_id].get_x();
+					double y_dist = (event.button.y + m_offset_y) - m_players[m_player_id].get_y();
+					double direction = atan2(y_dist, x_dist) * RADIANS_TO_DEGREES;
 					player_fired(m_player_id, m_players[m_player_id].get_x(), m_players[m_player_id].get_y(), direction);
 				}
 				break;
@@ -261,9 +267,25 @@ void GameController::attempt_jump() {
 }
 
 void GameController::player_fired(unsigned int player_id, double start_x, double start_y, double direction) {
-	// TODO: Check collisions
-	
 	if (player_id == m_player_id) {
+		map<int, GraphicalPlayer>::iterator it;
+		for ( it=m_players.begin() ; it != m_players.end(); it++ ) {
+			GraphicalPlayer currplayer = (*it).second;
+			if (currplayer.get_id() == player_id) {
+				continue;
+			}
+			double playerdist = dist_between_points(start_x, start_y, currplayer.get_x(), currplayer.get_y());
+			int end_x = start_x + playerdist * cos(direction * DEGREES_TO_RADIANS);
+			int end_y = start_y + playerdist * sin(direction * DEGREES_TO_RADIANS);
+			vector<int> closestpoint = closest_point_on_line(start_x, start_y, end_x, end_y, currplayer.get_x(), currplayer.get_y());
+			double dist = dist_between_points(currplayer.get_x(), currplayer.get_y(), closestpoint.at(0), closestpoint.at(1));
+			
+			// If the shot hit the player:
+			if (dist < currplayer.get_radius()) {
+				send_player_shot(player_id, currplayer.get_id());
+			}
+		}
+	
 		PacketWriter gun_fired(GUN_FIRED_PACKET);
 		gun_fired << player_id;
 		gun_fired << start_x;
@@ -272,6 +294,14 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 		
 		m_network.send_packet(gun_fired);
 	}
+}
+
+void GameController::send_player_shot(unsigned int shooter_id, unsigned int hit_player_id) {
+	PacketWriter player_shot(PLAYER_SHOT_PACKET);
+	player_shot << shooter_id;
+	player_shot << hit_player_id;
+	
+	m_network.send_packet(player_shot);
 }
 
 void GameController::connect_to_server(const char* host, unsigned int port) {
@@ -308,6 +338,7 @@ void GameController::welcome(PacketReader& reader) {
 	
 	m_players.clear();
 	m_players.insert(pair<int, GraphicalPlayer>(m_player_id,GraphicalPlayer("MyName", m_player_id, team, new_sprite, new_sprite->get_width()/2, new_sprite->get_height()/2)));
+	m_players[m_player_id].set_radius(50);
 	
 	// TEMPORARY SPRITE CODE
 	m_window->register_graphic(new_sprite);
@@ -332,6 +363,7 @@ void GameController::announce(PacketReader& reader) {
 	// TEMPORARY SPRITE CODE
 	m_players.insert(pair<int, GraphicalPlayer>(playerid,GraphicalPlayer((const char*)playername.c_str(), playerid, team, new Sprite(*new_sprite))));
 	m_window->register_graphic(m_players[playerid].get_sprite());
+	m_players[playerid].set_radius(50);
 }
 
 void GameController::player_update(PacketReader& reader) {
@@ -409,6 +441,20 @@ void GameController::gun_fired(PacketReader& reader) {
 	}
 	
 	player_fired(playerid, start_x, start_y, rotation);
+}
+
+void GameController::player_shot(PacketReader& reader) {
+	unsigned int shooter_id;
+	unsigned int shot_id;
+	unsigned long time_to_unfreeze;
+	
+	reader >> shooter_id >> shot_id >> time_to_unfreeze;
+	
+	if (shot_id == m_player_id) {
+		cerr << "I was hit! Time to unfreeze: " << time_to_unfreeze << endl;
+		m_players[m_player_id].set_is_frozen(true);
+		m_time_to_unfreeze = SDL_GetTicks() + time_to_unfreeze;
+	}
 }
 
 /* EXAMPLE

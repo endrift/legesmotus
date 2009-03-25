@@ -48,6 +48,9 @@ private:
 	map<int, GraphicalPlayer> m_players;
 	unsigned int	m_player_id;
 	
+	// Do we want to keep it this way?
+	unsigned long	m_time_to_unfreeze;
+	
 	// TEMPORARY SPRITE CODE
 	Sprite*		new_sprite;
 	Sprite*		m_crosshairs;
@@ -71,6 +74,7 @@ public:
 	void		connect_to_server(const char* host, unsigned int port);
 	void		disconnect();
 	void		player_fired(unsigned int player_id, double start_x, double start_y, double direction);
+	void		send_player_shot(unsigned int shooter_id, unsigned int hit_player_id);
 	
 	// Network callbacks:
 	void		welcome(PacketReader& reader);
@@ -78,6 +82,7 @@ public:
 	void		announce(PacketReader& reader);
 	void		leave(PacketReader& reader);
 	void		gun_fired(PacketReader& reader);
+	void		player_shot(PacketReader& reader);
 };
 
 #endif
