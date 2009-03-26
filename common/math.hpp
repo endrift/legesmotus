@@ -33,7 +33,7 @@ static inline uint32_t toPow2(uint32_t num) {
 vector<int> closest_point_on_line(int x1, int y1, int x2, int y2, int x3, int y3);
 
 static inline double dist_between_points(int x1, int y1, int x2, int y2) {
-	return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+	return sqrt(double((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)));
 }
 
 #endif
