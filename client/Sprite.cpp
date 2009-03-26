@@ -18,10 +18,10 @@ Sprite::Sprite(const char* filename) : Graphic(filename) {
 }
 
 Sprite::Sprite(const Sprite& other) : Graphic(other) {
-	m_alpha = m_alpha;
-	m_red = m_red;
-	m_green = m_green;
-	m_blue = m_blue;
+	m_alpha = other.m_alpha;
+	m_red = other.m_red;
+	m_green = other.m_green;
+	m_blue = other.m_blue;
 	m_width = other.m_width;
 	m_height = other.m_height;
 	m_center_x = other.m_center_x;
