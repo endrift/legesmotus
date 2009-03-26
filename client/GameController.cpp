@@ -159,7 +159,7 @@ void GameController::process_input() {
 			case SDL_MOUSEBUTTONDOWN:
 				// Firing code, use event.button.button, event.button.x, event.button.y
 				if (event.button.button == 1) {
-					if (m_players.empty()) {
+					if (m_players.empty() | m_players[m_player_id].is_frozen()) {
 						return;
 					}
 					double x_dist = (event.button.x + m_offset_x) - m_players[m_player_id].get_x();
