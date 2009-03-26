@@ -87,7 +87,6 @@ void TiledGraphic::draw(const GameWindow* window) const {
 	glColor4d(1.0, 1.0, 1.0, 1.0);
 	glBindTexture(GL_TEXTURE_2D,get_texture_id());
 	glPushMatrix();
-	glTranslated(-window->get_offset_x(), -window->get_offset_y(), 0.0);
 	glTranslated(m_start_x, m_start_y, 0.0);
 	glBegin(GL_QUADS);
 	glTexCoord2d(0.0,0.0);

@@ -155,11 +155,15 @@ void GameWindow::unregister_graphic(Graphic* graphic) {
 }
 
 void GameWindow::redraw() const {
-	// TODO fill in
 	glClear(GL_COLOR_BUFFER_BIT);
+	glMatrixMode(GL_PROJECTION_MATRIX);
+	glPushMatrix();
+	glTranslated(-get_offset_x(), -get_offset_y(), 0.0);
 	for(std::list<Graphic*>::const_iterator iter = m_graphics.begin(); iter != m_graphics.end(); ++iter) {
 		(*iter)->draw(this);
 	}
+	glMatrixMode(GL_PROJECTION_MATRIX);
+	glPopMatrix();
 	glFinish();
 	SDL_GL_SwapBuffers();
 }
