@@ -46,6 +46,8 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_screen_width = width;
 	m_screen_height = height;
 	
+	m_client_version = "0.0.1";
+	
 	// TEMPORARY MAP WIDTH AND HEIGHT
 	m_map_width = 500;
 	m_map_height = 500;
@@ -311,7 +313,7 @@ void GameController::connect_to_server(const char* host, unsigned int port) {
 	}
 	
 	PacketWriter join_request(JOIN_PACKET);
-	join_request << m_version;
+	join_request << m_client_version;
 	join_request << "TestName";
 	
 	m_network.send_packet(join_request);
