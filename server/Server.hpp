@@ -19,7 +19,7 @@ class PacketReader;
 
 class Server {
 private:
-	static const int	SERVER_VERSION;
+	enum { SERVER_PROTOCOL_VERSION = 1 };
 	typedef map<uint32_t, ServerPlayer> player_map;
 
 	ServerNetwork		m_network;

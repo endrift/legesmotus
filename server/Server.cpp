@@ -16,8 +16,6 @@
 
 using namespace std;
 
-const int	Server::SERVER_VERSION = 1;
-
 Server::Server ()
 {
 	m_next_player_id = 1;
@@ -69,7 +67,7 @@ void	Server::join(int channel, PacketReader& packet)
 
 	// Send the welcome packet back to this client.
 	PacketWriter		welcome_packet(WELCOME_PACKET);
-	welcome_packet << SERVER_VERSION << player_id << team;
+	welcome_packet << SERVER_PROTOCOL_VERSION << player_id << team;
 	m_network.send_packet(channel, welcome_packet);
 
 	// Broadcast the announce packet back to all players, except for the new one
