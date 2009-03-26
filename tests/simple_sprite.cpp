@@ -53,15 +53,15 @@ extern "C" int main(int argc, char* argv[]) {
 			}
 		}
 
-		g.set_rotation(frame / 500.0 * 360);
-		afront.set_rotation(frame / 125.0 * 360);
-		aback.set_rotation(-frame / 125.0 * 360);
-		g.set_x(cos(frame / 500.0 * 2*M_PI)*100+250);
-		g.set_y(sin(frame / 500.0 * 2*M_PI)*100+250);
-		g.set_scale_x(sin(frame / 250.0 * 2*M_PI));
-		g.set_scale_y(sin(frame / 250.0 * 2*M_PI));
+		g.set_rotation(-frame / 400.0 * 360);
+		afront.set_rotation(frame / 100.0 * 360);
+		aback.set_rotation(-frame / 100.0 * 360);
+		g.set_x(cos(frame / 400.0 * 2*M_PI)*100+250);
+		g.set_y(sin(frame / 400.0 * 2*M_PI)*100+250);
+		g.set_scale_x(sin(frame / 200.0 * 2*M_PI));
+		g.set_scale_y(sin(frame / 200.0 * 2*M_PI));
 		++frame;
-		frame %= 500;
+		frame %= 400;
 		window->redraw();
 	}
 	GameWindow::destroy_instance();
