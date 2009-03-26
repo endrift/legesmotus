@@ -9,8 +9,7 @@
 #define LM_CLIENT_GAMEWINDOW_HPP
 
 #include "common/compat_sdl.h"
-#include "Sprite.hpp"
-#include <list>
+#include "GraphicGroup.hpp"
 
 class GameWindow {
 private:
@@ -20,7 +19,8 @@ private:
 	int			m_height;
 	int			m_depth;
 	bool			m_fullscreen;
-	std::list<Graphic*>	m_graphics;
+	
+	GraphicGroup		m_graphics;
 
 	int			m_offset_x;
 	int			m_offset_y;

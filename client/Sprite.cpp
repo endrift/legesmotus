@@ -18,33 +18,23 @@ Sprite::Sprite(const char* filename) : Graphic(filename) {
 }
 
 Sprite::Sprite(const Sprite& other) : Graphic(other) {
-	m_x = other.m_x;
-	m_y = other.m_y;
 	m_alpha = m_alpha;
 	m_red = m_red;
 	m_green = m_green;
 	m_blue = m_blue;
-	m_scale_x = other.m_scale_x;
-	m_scale_y = other.m_scale_y;
 	m_width = other.m_width;
 	m_height = other.m_height;
-	m_rotation = other.m_rotation;
 	m_center_x = other.m_center_x;
 	m_center_y = other.m_center_y;
 }
 
 void Sprite::init() {
-	m_x = 0;
-	m_y = 0;
 	m_alpha = 1.0;
 	m_red = 1.0;
 	m_green = 1.0;
 	m_blue = 1.0;
-	m_scale_x = 1.0;
-	m_scale_y = 1.0;
 	m_width = toPow2(get_image_width());
 	m_height = toPow2(get_image_height());
-	m_rotation = 0;
 	m_center_x = get_image_width()/2.0;
 	m_center_y = get_image_height()/2.0;
 }
@@ -55,26 +45,6 @@ int Sprite::get_width() const {
 
 int Sprite::get_height() const {
 	return m_height;
-}
-
-double Sprite::get_x() const {
-	return m_x;
-}
-
-double Sprite::get_y() const {
-	return m_y;
-}
-
-double Sprite::get_scale_x() const {
-	return m_scale_x;
-}
-
-double Sprite::get_scale_y() const {
-	return m_scale_y;
-}
-
-double Sprite::get_rotation() const {
-	return m_rotation;
 }
 
 double Sprite::get_center_x() const {
@@ -99,26 +69,6 @@ double Sprite::get_green_intensity() const {
 
 double Sprite::get_blue_intensity() const {
 	return m_blue;
-}
-
-void Sprite::set_x(double x) {
-	m_x = x;
-}
-
-void Sprite::set_y(double y) {
-	m_y = y;
-}
-
-void Sprite::set_scale_x(double scale_x) {
-	m_scale_x = scale_x;
-}
-
-void Sprite::set_scale_y(double scale_y) {
-	m_scale_y = scale_y;
-}
-
-void Sprite::set_rotation(double rotation) {
-	m_rotation = rotation;
 }
 
 void Sprite::set_center_x(double center_x) {
@@ -148,11 +98,8 @@ void Sprite::set_blue_intensity(double blue) {
 void Sprite::draw(const GameWindow* window) const {
 	glColor4d(m_red, m_green, m_blue, m_alpha);
 	glBindTexture(GL_TEXTURE_2D,get_texture_id());
-	glMatrixMode(GL_MODELVIEW_MATRIX);
 	glPushMatrix();
-	glTranslated(m_x, m_y, 0.0);
-	glRotated(m_rotation, 0.0, 0.0, 1.0);
-	glScaled(m_scale_x, m_scale_y, 1.0);
+	transform_gl();
 	glTranslated(-m_center_x, -m_center_y, 0.0);
 	glBegin(GL_QUADS);
 	glTexCoord2d(0.0,0.0);

@@ -141,17 +141,11 @@ void GameWindow::set_offset_y(double offset) {
 }
 
 void GameWindow::register_graphic(Graphic* graphic) {
-	for (list<Graphic*>::iterator iter = m_graphics.begin(); iter != m_graphics.end(); ++iter) {
-		if ((*iter)->get_priority() < graphic->get_priority()) {
-			m_graphics.insert(iter,graphic);
-			return;
-		}
-	}
-	m_graphics.push_back(graphic);
+	m_graphics.add_graphic(graphic);
 }
 
 void GameWindow::unregister_graphic(Graphic* graphic) {
-	m_graphics.remove(graphic);
+	m_graphics.remove_graphic(graphic);
 }
 
 void GameWindow::redraw() const {
@@ -159,9 +153,8 @@ void GameWindow::redraw() const {
 	glMatrixMode(GL_PROJECTION_MATRIX);
 	glPushMatrix();
 	glTranslated(-get_offset_x(), -get_offset_y(), 0.0);
-	for(std::list<Graphic*>::const_iterator iter = m_graphics.begin(); iter != m_graphics.end(); ++iter) {
-		(*iter)->draw(this);
-	}
+	glMatrixMode(GL_MODELVIEW_MATRIX);
+	m_graphics.draw(this);
 	glMatrixMode(GL_PROJECTION_MATRIX);
 	glPopMatrix();
 	glFinish();

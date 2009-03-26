@@ -9,6 +9,7 @@
 #include "GameWindow.hpp"
 #include "ClientNetwork.hpp"
 #include "GraphicalPlayer.hpp"
+#include "Sprite.hpp"
 #include "TiledGraphic.hpp"
 #include "common/PacketReader.hpp"
 #include "common/PacketWriter.hpp"

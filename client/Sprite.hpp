@@ -15,13 +15,6 @@ private:
 	int		m_width;
 	int		m_height;
 
-	double		m_x;
-	double		m_y;
-
-	double		m_scale_x;
-	double		m_scale_y;
-	double		m_rotation;
-
 	double		m_center_x;
 	double		m_center_y;
 
@@ -39,12 +32,6 @@ public:
 
 	int	get_width() const;
 	int	get_height() const;
-	double	get_x() const;
-	double	get_y() const;
-
-	double	get_scale_x() const;
-	double	get_scale_y() const;
-	double	get_rotation() const;
 
 	double	get_center_x() const;
 	double	get_center_y() const;
@@ -53,13 +40,6 @@ public:
 	double	get_red_intensity() const;
 	double	get_green_intensity() const;
 	double	get_blue_intensity() const;
-
-	void	set_x(double x);
-	void	set_y(double y);
-
-	void	set_scale_x(double scale_x);
-	void	set_scale_y(double scale_y);
-	void	set_rotation(double rotation);
 
 	void	set_center_x(double center_x);
 	void	set_center_y(double center_y);
