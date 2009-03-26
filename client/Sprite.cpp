@@ -21,6 +21,9 @@ Sprite::Sprite(const Sprite& other) : Graphic(other) {
 	m_x = other.m_x;
 	m_y = other.m_y;
 	m_alpha = m_alpha;
+	m_red = m_red;
+	m_green = m_green;
+	m_blue = m_blue;
 	m_scale_x = other.m_scale_x;
 	m_scale_y = other.m_scale_y;
 	m_width = other.m_width;
@@ -34,6 +37,9 @@ void Sprite::init() {
 	m_x = 0;
 	m_y = 0;
 	m_alpha = 1.0;
+	m_red = 1.0;
+	m_green = 1.0;
+	m_blue = 1.0;
 	m_scale_x = 1.0;
 	m_scale_y = 1.0;
 	m_width = toPow2(get_image_width());
@@ -79,6 +85,22 @@ double Sprite::get_center_y() const {
 	return m_center_y;
 }
 
+double Sprite::get_alpha() const {
+	return m_alpha;
+}
+
+double Sprite::get_red_intensity() const {
+	return m_red;
+}
+
+double Sprite::get_green_intensity() const {
+	return m_green;
+}
+
+double Sprite::get_blue_intensity() const {
+	return m_blue;
+}
+
 void Sprite::set_x(double x) {
 	m_x = x;
 }
@@ -111,8 +133,20 @@ void Sprite::set_alpha(double alpha) {
 	m_alpha = alpha;
 }
 
+void Sprite::set_red_intensity(double red) {
+	m_red = red;
+}
+
+void Sprite::set_green_intensity(double green) {
+	m_green = green;
+}
+
+void Sprite::set_blue_intensity(double blue) {
+	m_blue = blue;
+}
+
 void Sprite::draw(const GameWindow* window) const {
-	glColor4d(1.0, 1.0, 1.0, m_alpha);
+	glColor4d(m_red, m_green, m_blue, m_alpha);
 	glBindTexture(GL_TEXTURE_2D,get_texture_id());
 	glPushMatrix();
 	glTranslated(m_x, m_y, 0.0);

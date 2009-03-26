@@ -26,6 +26,9 @@ private:
 	double		m_center_y;
 
 	double		m_alpha;
+	double		m_red;
+	double		m_green;
+	double		m_blue;
 
 	void		init();
 
@@ -47,6 +50,9 @@ public:
 	double	get_center_y() const;
 
 	double	get_alpha() const;
+	double	get_red_intensity() const;
+	double	get_green_intensity() const;
+	double	get_blue_intensity() const;
 
 	void	set_x(double x);
 	void	set_y(double y);
@@ -59,6 +65,9 @@ public:
 	void	set_center_y(double center_y);
 
 	void	set_alpha(double alpha);
+	void	set_red_intensity(double r);
+	void	set_green_intensity(double g);
+	void	set_blue_intensity(double b);
 
 	void	draw(const GameWindow* window) const;
 };
