@@ -26,10 +26,26 @@ Server::Server ()
 void	Server::player_update(int channel, PacketReader& packet)
 {
 	// Just broadcast this packet to all other players
-	PacketWriter		resent_packet(PLAYER_UPDATE_PACKET);
-	resent_packet << packet;
-	m_network.broadcast_packet(resent_packet, channel);
+	rebroadcast_packet(packet, channel);
 }
+
+void	Server::player_shot(int channel, PacketReader& packet)
+{
+	// Just broadcast this packet to all other players
+	// But add the time to unfreeze to the end, as per the network spec
+	PacketWriter		resent_packet(PLAYER_SHOT_PACKET);
+	resent_packet << packet << 15; // TODO: make time to unfreeze customizable
+	m_network.broadcast_packet(resent_packet, channel);
+	// TODO: REQUIRE ACK
+}
+
+void	Server::gun_fired(int channel, PacketReader& packet)
+{
+	// Just broadcast this packet to all other players
+	rebroadcast_packet(packet, channel);
+	// TODO: REQUIRE ACK
+}
+
 
 void	Server::join(int channel, PacketReader& packet)
 {
@@ -111,5 +127,11 @@ bool	Server::is_authorized(int channel, uint32_t player_id) const {
 	//  1. The alleged player actually exists, and
 	//  2. The player's stored channel matches the channel that the request is coming from
 	return it != m_players.end() && it->second.get_channel() == channel;
+}
+
+void	Server::rebroadcast_packet(PacketReader& packet, int exclude_channel) {
+	PacketWriter		resent_packet(packet.packet_type());
+	resent_packet << packet;
+	m_network.broadcast_packet(resent_packet, exclude_channel);
 }
 

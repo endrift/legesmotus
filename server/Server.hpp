@@ -29,6 +29,8 @@ private:
 	// Make sure the given channel is authorized to speak for given player ID
 	bool			is_authorized(int channel, uint32_t player_id) const;
 
+	void			rebroadcast_packet(PacketReader& packet, int exclude_channel =-1);
+
 public:
 	Server ();
 
@@ -36,6 +38,8 @@ public:
 	void		player_update(int channel, PacketReader& packet);
 	void		join(int channel, PacketReader& packet);
 	void		leave(int channel, PacketReader& packet);
+	void		player_shot(int channel, PacketReader& packet);
+	void		gun_fired(int channel, PacketReader& packet);
 
 	// For testing only (interface likely to change):
 	void		run(int portno);

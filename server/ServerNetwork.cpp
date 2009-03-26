@@ -116,11 +116,11 @@ void	ServerNetwork::process_packet(Server& server, const RawPacket& raw_packet) 
 		break;
 
 	case GUN_FIRED_PACKET:
-		//server.gun_fired(channel, reader);
+		server.gun_fired(channel, reader);
 		break;
 
 	case PLAYER_SHOT_PACKET:
-		//server.player_shot(channel, reader);
+		server.player_shot(channel, reader);
 		break;
 
 	case MESSAGE_PACKET:
