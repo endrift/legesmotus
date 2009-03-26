@@ -31,7 +31,8 @@ private:
 	GameWindow* 	m_window;
 	ClientNetwork	m_network;
 	
-	string m_client_version;
+	string 		m_client_version;
+	int		m_protocol_number;
 	int 		m_screen_width;
 	int 		m_screen_height;
 	int		m_map_width;

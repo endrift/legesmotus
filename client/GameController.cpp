@@ -47,6 +47,7 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_screen_height = height;
 	
 	m_client_version = "0.0.1";
+	m_protocol_number = 1;
 	
 	// TEMPORARY MAP WIDTH AND HEIGHT
 	m_map_width = 500;
@@ -245,6 +246,10 @@ void GameController::attempt_jump() {
 		return;
 	}
 	
+	if (m_players[m_player_id].is_frozen()) {
+		return;
+	}
+	
 	GraphicalPlayer* player = &m_players[m_player_id];
 	
 	double x_dist = m_crosshairs->get_x() - player->get_x();
@@ -313,7 +318,7 @@ void GameController::connect_to_server(const char* host, unsigned int port) {
 	}
 	
 	PacketWriter join_request(JOIN_PACKET);
-	join_request << m_client_version;
+	join_request << m_protocol_number;
 	join_request << "TestName";
 	
 	m_network.send_packet(join_request);
@@ -439,6 +444,8 @@ void GameController::gun_fired(PacketReader& reader) {
 	double rotation;
 	reader >> playerid >> start_x >> start_y >> rotation;
 	
+	//cerr << "Received gun_fired" << endl;
+	
 	if (playerid == m_player_id) {
 		return;
 	}
@@ -456,7 +463,7 @@ void GameController::player_shot(PacketReader& reader) {
 	if (shot_id == m_player_id) {
 		cerr << "I was hit! Time to unfreeze: " << time_to_unfreeze << endl;
 		m_players[m_player_id].set_is_frozen(true);
-		m_time_to_unfreeze = SDL_GetTicks() + time_to_unfreeze;
+		m_time_to_unfreeze = SDL_GetTicks() + time_to_unfreeze * 1000;
 	}
 }
 
