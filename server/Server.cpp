@@ -16,6 +16,9 @@
 
 using namespace std;
 
+// This can't be an enum because we want overloading of operator<< to work OK.
+const int	Server::SERVER_PROTOCOL_VERSION = 1;
+
 Server::Server ()
 {
 	m_next_player_id = 1;
