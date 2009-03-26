@@ -151,8 +151,8 @@ void Sprite::draw(const GameWindow* window) const {
 	glPushMatrix();
 	glTranslated(m_x, m_y, 0.0);
 	glRotated(m_rotation, 0.0, 0.0, 1.0);
-	glTranslated(-m_center_x, -m_center_y, 0.0);
 	glScaled(m_scale_x, m_scale_y, 1.0);
+	glTranslated(-m_center_x, -m_center_y, 0.0);
 	glTranslated(-window->get_offset_x(), -window->get_offset_y(), 0.0);
 	glBegin(GL_QUADS);
 	glTexCoord2d(0.0,0.0);
