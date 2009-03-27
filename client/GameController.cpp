@@ -285,8 +285,18 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 			double playerdist = dist_between_points(start_x, start_y, currplayer.get_x(), currplayer.get_y());
 			int end_x = start_x + playerdist * cos(direction * DEGREES_TO_RADIANS);
 			int end_y = start_y + playerdist * sin(direction * DEGREES_TO_RADIANS);
-			vector<int> closestpoint = closest_point_on_line(start_x, start_y, end_x, end_y, currplayer.get_x(), currplayer.get_y());
+			vector<double> closestpoint = closest_point_on_line(start_x, start_y, end_x, end_y, currplayer.get_x(), currplayer.get_y());
+			
+			if (closestpoint.size() == 0) {
+				continue;
+			}
+			
 			double dist = dist_between_points(currplayer.get_x(), currplayer.get_y(), closestpoint.at(0), closestpoint.at(1));
+			
+			// If the closest point was behind the beginning of the shot, it's not a hit.
+			if (closestpoint.at(2) < 0) {
+				continue;
+			}
 			
 			// If the shot hit the player:
 			if (dist < currplayer.get_radius()) {
