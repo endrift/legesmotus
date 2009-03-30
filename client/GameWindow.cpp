@@ -134,10 +134,12 @@ bool GameWindow::is_fullscreen() const {
 
 void GameWindow::set_offset_x(double offset) {
 	m_offset_x = offset;
+	m_graphics.set_x(-offset);
 }
 
 void GameWindow::set_offset_y(double offset) {
 	m_offset_y = offset;
+	m_graphics.set_y(-offset);
 }
 
 void GameWindow::register_graphic(Graphic* graphic) {
@@ -148,15 +150,19 @@ void GameWindow::unregister_graphic(Graphic* graphic) {
 	m_graphics.remove_graphic(graphic);
 }
 
+
+void GameWindow::register_hud_graphic(Graphic* graphic) {
+	m_hud_graphics.add_graphic(graphic);
+}
+
+void GameWindow::unregister_hud_graphic(Graphic* graphic) {
+	m_hud_graphics.remove_graphic(graphic);
+}
+
 void GameWindow::redraw() const {
 	glClear(GL_COLOR_BUFFER_BIT);
-	glMatrixMode(GL_PROJECTION_MATRIX);
-	glPushMatrix();
-	glTranslated(-get_offset_x(), -get_offset_y(), 0.0);
-	glMatrixMode(GL_MODELVIEW_MATRIX);
 	m_graphics.draw(this);
-	glMatrixMode(GL_PROJECTION_MATRIX);
-	glPopMatrix();
+	m_hud_graphics.draw(this);
 	glFinish();
 	SDL_GL_SwapBuffers();
 }

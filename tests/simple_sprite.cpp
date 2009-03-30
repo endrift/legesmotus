@@ -18,9 +18,9 @@ extern "C" int main(int argc, char* argv[]) {
 	s.set_center_x(32);
 	s.set_center_y(48);
 	afront.set_center_x(46);
-	afront.set_center_y(25);
+	afront.set_center_y(26);
 	afront.set_x(14);
-	afront.set_y(-25);
+	afront.set_y(-24);
 	aback.set_center_x(28);
 	aback.set_center_y(25);
 	aback.set_x(-4);
@@ -54,12 +54,12 @@ extern "C" int main(int argc, char* argv[]) {
 		}
 
 		g.set_rotation(-frame / 400.0 * 360);
-		afront.set_rotation(frame / 100.0 * 360);
-		aback.set_rotation(-frame / 100.0 * 360);
+		afront.set_rotation(frame / 80.0 * 360);
+		aback.set_rotation(-frame / 80.0 * 360);
 		g.set_x(cos(frame / 400.0 * 2*M_PI)*100+250);
 		g.set_y(sin(frame / 400.0 * 2*M_PI)*100+250);
-		g.set_scale_x(sin(frame / 200.0 * 2*M_PI));
-		g.set_scale_y(sin(frame / 200.0 * 2*M_PI));
+		g.set_scale_x((sin(frame / 200.0 * 2*M_PI)+1)/2.0);
+		g.set_scale_y((sin(frame / 200.0 * 2*M_PI)+1)/2.0);
 		++frame;
 		frame %= 400;
 		window->redraw();

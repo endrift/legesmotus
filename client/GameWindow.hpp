@@ -21,6 +21,7 @@ private:
 	bool			m_fullscreen;
 	
 	GraphicGroup		m_graphics;
+	GraphicGroup		m_hud_graphics;
 
 	int			m_offset_x;
 	int			m_offset_y;
@@ -52,6 +53,9 @@ public:
 
 	void			register_graphic(Graphic* graphic);
 	void			unregister_graphic(Graphic* graphic);
+	
+	void			register_hud_graphic(Graphic* graphic);
+	void			unregister_hud_graphic(Graphic* graphic);
 
 	void			redraw() const;
 };

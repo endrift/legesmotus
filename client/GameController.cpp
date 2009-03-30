@@ -64,7 +64,7 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	new_sprite = new Sprite("data/sprites/blue_full.png");
 	m_crosshairs = new Sprite("data/sprites/crosshairs.png");
 	m_crosshairs->set_priority(-1);
-	m_window->register_graphic(m_crosshairs);
+	m_window->register_hud_graphic(m_crosshairs);
 	m_background = new TiledGraphic("data/sprites/blue_bgtile.png");
 	m_background->set_start_x(0);
 	m_background->set_start_y(0);
@@ -115,8 +115,8 @@ void GameController::run(int lockfps) {
 				m_window->set_offset_x(m_offset_x);
 				m_window->set_offset_y(m_offset_y);
 			
-				m_crosshairs->set_x(m_mouse_x + m_offset_x);
-				m_crosshairs->set_y(m_mouse_y + m_offset_y);
+				m_crosshairs->set_x(m_mouse_x);
+				m_crosshairs->set_y(m_mouse_y);
 			}
 			
 			m_window->redraw();
@@ -152,12 +152,13 @@ void GameController::process_input() {
 				// Use: event.motion.xrel, event.motion.yrel (changes in position), event.motion.x, event.motion.y
 				m_mouse_x = event.motion.x;
 				m_mouse_y = event.motion.y;
-				m_crosshairs->set_x(m_mouse_x + m_offset_x);
-				m_crosshairs->set_y(m_mouse_y + m_offset_y);
+				m_crosshairs->set_x(m_mouse_x);
+				m_crosshairs->set_y(m_mouse_y);
 				break;
 				
 			case SDL_MOUSEBUTTONDOWN:
 				// Firing code, use event.button.button, event.button.x, event.button.y
+				// TODO relocate to function
 				if (event.button.button == 1) {
 					if (m_players.empty() | m_players[m_player_id].is_frozen()) {
 						return;
@@ -252,8 +253,8 @@ void GameController::attempt_jump() {
 	
 	GraphicalPlayer* player = &m_players[m_player_id];
 	
-	double x_dist = m_crosshairs->get_x() - player->get_x();
-	double y_dist = m_crosshairs->get_y() - player->get_y();
+	double x_dist = (m_crosshairs->get_x() + m_offset_x) - player->get_x();
+	double y_dist = (m_crosshairs->get_y() + m_offset_y) - player->get_y();
 	double x_vel = 6 * cos(atan2(y_dist, x_dist));
 	double y_vel = 6 * sin(atan2(y_dist, x_dist));
 	
