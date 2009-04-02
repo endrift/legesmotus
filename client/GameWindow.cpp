@@ -163,6 +163,5 @@ void GameWindow::redraw() const {
 	glClear(GL_COLOR_BUFFER_BIT);
 	m_graphics.draw(this);
 	m_hud_graphics.draw(this);
-	glFinish();
 	SDL_GL_SwapBuffers();
 }

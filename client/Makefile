@@ -5,7 +5,7 @@ OBJS = ClientNetwork.o ClientSDL.o GameController.o GameWindow.o Sprite.o Graphi
 all: legesmotus
 
 legesmotus: ../liblmclient.a ../liblmcommon.a main.o
-	$(CXX) $(LDFLAGS) $(CLIENTLIBS) -o legesmotus -L.. main.o -llmclient -llmcommon
+	$(CXX) $(LDFLAGS) -o legesmotus -L.. main.o -llmclient -llmcommon $(CLIENTLIBS)
 
 ../liblmclient.a: $(OBJS)
 	$(AR) crus ../liblmclient.a $(OBJS)

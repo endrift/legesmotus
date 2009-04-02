@@ -6,6 +6,10 @@ SERVER = $(BASEDIR)/server
 MACHINE = $(shell uname -s)
 ifeq ($(MACHINE),)
 MACHINE = Windows
+else
+ifeq ($(shell echo $(MACHINE) | cut -c 1-5),MINGW)
+MACHINE = Windows
+endif
 endif
 
 FLAGS_SDL = $(shell sdl-config --cflags)
@@ -16,9 +20,10 @@ ifeq ($(MACHINE),Darwin)
 FLAGS_GL = -FOpenGL
 LIBS_GL = -framework OpenGL
 else
-LIBS_GL = -lGL
-ifneq ($(MACHINE),Windows)
-LIBS_GL += -L/usr/X11/lib/
+ifeq ($(MACHINE),Windows)
+LIBS_GL = -lopengl32
+else
+LIBS_GL = -L/usr/X11/lib/ -lGL
 endif
 endif
 
@@ -28,8 +33,7 @@ CXXFLAGS += -Wall -fno-rtti -g
 LDFLAGS += $(CXXFLAGS)
 CXXFLAGS += $(FLAGS_SDL) $(FLAGS_GL) $(INCLUDES)
 LIBS = $(LIBS_SDL)
-CLIENTLIBS = $(LIBS_SDL_OTHER) $(LIBS_GL)
-LDFLAGS += $(LIBS)
+CLIENTLIBS = $(LIBS_GL) $(LIBS_SDL) $(LIBS_SDL_OTHER)
 
 H_GL	= $(CLIENT)/compat_gl.h
 H_SDL	= $(COMMON)/compat_sdl.h
