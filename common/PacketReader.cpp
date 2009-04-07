@@ -6,7 +6,7 @@
  */
 
 #include "PacketReader.hpp"
-#include "network.hpp"
+#include "Point.hpp"
 #include <cstring>
 #include <cstdlib>
 #include <ostream>
@@ -23,7 +23,7 @@ const char*	PacketReader::get_next() {
 	char*		start = m_next_field;
 
 	// Advance until we either hit the end of the data or reach a field separator
-	while (*m_next_field != '\0' && *m_next_field != PACKET_FIELD_SEPARATOR) {
+	while (*m_next_field != '\0' && *m_next_field != m_separator) {
 		++m_next_field;
 	}
 	
@@ -38,7 +38,9 @@ const char*	PacketReader::get_next() {
 
 
 
-PacketReader::PacketReader(const char* packet_data) {
+PacketReader::PacketReader(const char* packet_data, char separator) {
+	m_separator = separator;
+
 	// Copy in the packet data
 	m_buffer = new char[strlen(packet_data) + 1];
 	strcpy(m_buffer, packet_data);
@@ -50,6 +52,8 @@ PacketReader::PacketReader(const char* packet_data) {
 }
 
 PacketReader::PacketReader(const RawPacket& packet) {
+	m_separator = PACKET_FIELD_SEPARATOR;
+
 	// Copy in the packet data
 	m_buffer = new char[packet->len + 1];
 	memcpy(m_buffer, packet->data, packet->len);
@@ -164,6 +168,15 @@ PacketReader&	PacketReader::operator>> (std::string& s)
 	else
 		s.clear();
 
+	return *this;
+}
+
+PacketReader&	PacketReader::operator>> (Point& point) {
+	if (const char* p = get_next()) {
+		point.init_from_string(p);
+	} else {
+		point.clear();
+	}
 	return *this;
 }
 

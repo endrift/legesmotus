@@ -10,9 +10,12 @@
 
 #include "RawPacket.hpp"
 #include "SDL_net.h"
+#include "network.hpp"
 #include <string>
 #include <stdint.h>
 #include <iosfwd>
+
+class Point;
 
 /*
  * The packet reader provides a convenient inteface for reading fields from packets.
@@ -39,6 +42,7 @@ private:
 	uint32_t	m_packet_type;
 	uint32_t	m_packet_id;
 
+	char		m_separator;	// The character that separates fields in the packet
 	char*		m_buffer;	// The packet data is stored in here.
 	char*		m_next_field;	// Points to the field that will be processed next. (NULL if at end)
 
@@ -46,7 +50,7 @@ private:
 
 public:
 	// Construct a packet reader from the given raw packet data
-	explicit PacketReader(const char* packet_data);
+	explicit PacketReader(const char* packet_data, char separator =PACKET_FIELD_SEPARATOR);
 	explicit PacketReader(const RawPacket& packet);
 	~PacketReader();
 
@@ -73,6 +77,8 @@ public:
 
 	PacketReader&	operator>> (float&);
 	PacketReader&	operator>> (double&);
+
+	PacketReader&	operator>> (Point&);
 
 	PacketReader&	operator>> (std::string&);
 
