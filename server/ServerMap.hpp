@@ -31,6 +31,9 @@ private:
 
 public:
 	ServerMap();
+	virtual ~ServerMap();
+
+	virtual void	clear();
 
 	void		reset();	// Reset the map for a new round - call before assigning spawnpoints
 

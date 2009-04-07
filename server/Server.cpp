@@ -108,6 +108,9 @@ void	Server::leave(int channel, PacketReader& packet)
 
 void	Server::run(int portno) // XXX: Prototype function ONLY!
 {
+	if (!m_current_map.load_file("data/maps/test.map")) { // TODO: Make configurable!
+		throw LMException("Failed to load test map.");
+	}
 	if (!m_network.start(portno)) {
 		throw LMException("Failed to start server network on port.");
 	}
@@ -134,5 +137,12 @@ void	Server::rebroadcast_packet(PacketReader& packet, int exclude_channel) {
 	PacketWriter		resent_packet(packet.packet_type());
 	resent_packet << packet;
 	m_network.broadcast_packet(resent_packet, exclude_channel);
+}
+
+void	Server::start_game() {
+	PacketWriter		packet(GAME_START_PACKET);
+	packet << m_current_map.get_name() << 86400; // TODO: Configurable values here!
+
+	// TODO: Spawn everyone! Wheeee!
 }
 

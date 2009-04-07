@@ -58,6 +58,9 @@ public:
 	uint32_t	packet_type() const { return m_packet_type; }
 	uint32_t	packet_id() const { return m_packet_id; }
 
+	// Discard (i.e. ignore) the next field
+	void		discard_next() { get_next(); }
+
 	// Get the remaining un-processed packet data in raw form:
 	const char*	get_rest () const;
 

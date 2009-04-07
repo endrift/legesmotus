@@ -8,6 +8,7 @@
 #include "Map.hpp"
 #include "PacketReader.hpp"
 #include <iostream>
+#include <fstream>
 #include <string>
 
 using namespace std;
@@ -16,7 +17,13 @@ Map::Map() {
 	m_width = m_height = 0;
 }
 
-void	Map::load_file(istream& in) {
+Map::~Map() {
+	Map::clear();
+}
+
+bool	Map::load(istream& in) {
+	clear();
+
 	in >> m_name >> m_width >> m_height;
 
 	string			line;
@@ -24,5 +31,16 @@ void	Map::load_file(istream& in) {
 		PacketReader	reader(line.c_str(), '~');
 		add_object(reader);
 	}
+
+	return true;
 }
 
+bool	Map::load_file(const char* path) {
+	ifstream	file(path);
+	return file && load(file);
+}
+
+void	Map::clear() {
+	m_name.clear();
+	m_width = m_height = 0;
+}

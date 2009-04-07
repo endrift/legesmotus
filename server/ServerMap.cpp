@@ -12,6 +12,17 @@ ServerMap::ServerMap() {
 	reset();
 }
 
+ServerMap::~ServerMap() {
+	clear();
+}
+
+void	ServerMap::clear() {
+	m_Aspawnpoints.clear();
+	m_Bspawnpoints.clear();
+	reset();
+	Map::clear();
+}
+
 void	ServerMap::reset() {
 	m_remaining_Aspots = m_Aspawnpoints.size();
 	m_remaining_Bspots = m_Bspawnpoints.size();

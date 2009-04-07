@@ -14,15 +14,22 @@
 
 using namespace std;
 
+class GameWindow;
+
 /*
  * Derives from Map, and adds graphics stuff.
  */
 class GraphicalMap : public Map {
 private:
+	GameWindow* 		m_window;
 	list<MapObject>		m_objects;
 
 public:
+	explicit GraphicalMap(GameWindow* window);
+	virtual ~GraphicalMap();
+
 	const list<MapObject>&	get_objects() const { return m_objects; }
+	virtual void		clear(); // Remove all objects
 
 	virtual void		add_object(PacketReader& data);
 };

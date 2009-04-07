@@ -10,6 +10,7 @@
 
 #include "ServerNetwork.hpp"
 #include "ServerPlayer.hpp"
+#include "ServerMap.hpp"
 #include <stdint.h>
 #include <map>
 
@@ -25,11 +26,14 @@ private:
 	ServerNetwork		m_network;
 	uint32_t		m_next_player_id;
 	player_map		m_players;
+	ServerMap		m_current_map;
 
 	// Make sure the given channel is authorized to speak for given player ID
 	bool			is_authorized(int channel, uint32_t player_id) const;
 
 	void			rebroadcast_packet(PacketReader& packet, int exclude_channel =-1);
+
+	void			start_game();
 
 public:
 	Server ();

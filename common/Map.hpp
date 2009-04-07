@@ -35,14 +35,16 @@ protected:
 
 public:
 	Map();
-	virtual ~Map() { }
+	virtual ~Map();
 
 	const char*	get_name() const { return m_name.c_str(); }
 	int		get_width() const { return m_width; }
 	int		get_height() const { return m_height; }
 	
-	void		load_file(istream& in);
+	bool		load(istream& in);
+	bool		load_file(const char* path);
 
+	virtual void	clear();
 	virtual void	add_object(PacketReader& data) = 0;
 };
 
