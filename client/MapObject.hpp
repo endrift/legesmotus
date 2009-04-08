@@ -16,17 +16,24 @@
 class MapObject {
 private:
 	int			m_type;			// As defined in the enum in the Map class.
-	Sprite*			m_sprite;
 	Point			m_upper_left;
-	Polygon			m_bounding_polygon;
+	Sprite*			m_sprite;
+	char			m_team;			// 'A', 'B', or 0
+	Polygon			m_bounding_polygon;	// Note: coordinates in this polygon are RELATIVE to m_upper_left
 
 public:
-	MapObject();
-	MapObject(int type, Sprite* sprite, Point upper_left);
+	MapObject(int type, Point upper_left);
 
 	int		get_type() const { return m_type; }
-	Sprite*		get_sprite() const { return m_sprite; }
 	Point		get_upper_left() const { return m_upper_left; }
+
+	Sprite*		get_sprite() const { return m_sprite; }
+	void		set_sprite(Sprite* sprite);
+	bool		has_sprite() const { return m_sprite != NULL; }
+
+	char		get_team() const { return m_team; }
+	void		set_team(char team) { m_team = team; }
+
 	Polygon&	get_bounding_polygon() { return m_bounding_polygon; }
 	const Polygon&	get_bounding_polygon() const { return m_bounding_polygon; }
 

@@ -9,6 +9,7 @@
 #define LM_CLIENT_GAMECONTROLLER_HPP
 
 #include "GameWindow.hpp"
+#include "GraphicalMap.hpp"
 #include "ClientNetwork.hpp"
 #include "common/PacketReader.hpp"
 #include "GraphicalPlayer.hpp"
@@ -56,6 +57,9 @@ private:
 	Sprite*		new_sprite;
 	Sprite*		m_crosshairs;
 	TiledGraphic*	m_background;
+
+	// TEMPORARY MAP CODE BY ANDREW
+	GraphicalMap*	m_map;
 	
 	void		init(int width, int height, int depth, bool fullscreen);
 	void		process_input();

@@ -32,12 +32,16 @@ GameController::GameController(int width, int height) {
 }
 
 GameController::~GameController() {
-	m_window->destroy_instance();
-	
 	// TEMPORARY SPRITE CODE
 	delete new_sprite;
 	delete m_crosshairs;
 	delete m_background;
+
+	// TEMPORARY MAP CODE BY ANDREW
+	delete m_map;
+
+	// The GameWindow instance should always be destroyed last, since other stuff may depend on it.
+	m_window->destroy_instance();
 }
 
 void GameController::init(int width, int height, int depth, bool fullscreen) {
@@ -49,16 +53,18 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_client_version = "0.0.1";
 	m_protocol_number = 1;
 	
-	// TEMPORARY MAP WIDTH AND HEIGHT
-	m_map_width = 500;
-	m_map_height = 500;
-	
 	m_pixel_depth = depth;
 	m_fullscreen = fullscreen;
 	m_quit_game = false;
 	m_window = GameWindow::get_instance(m_screen_width, m_screen_height, m_pixel_depth, m_fullscreen);
 
 	m_time_to_unfreeze = 0;
+
+	// TEMPORARY MAP CODE BY ANDREW
+	m_map = new GraphicalMap(m_window);
+	m_map->load_file("data/maps/test.map");
+	m_map_width = m_map->get_width();
+	m_map_height = m_map->get_height();
 
 	// TEMPORARY SPRITE CODE
 	new_sprite = new Sprite("data/sprites/blue_full.png");

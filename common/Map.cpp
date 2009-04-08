@@ -25,11 +25,16 @@ bool	Map::load(istream& in) {
 	clear();
 
 	in >> m_name >> m_width >> m_height;
+	// TODO: specify background here too
 
 	string			line;
 	while (getline(in, line)) {
-		PacketReader	reader(line.c_str(), '~');
-		add_object(reader);
+		// Ignore blank lines and lines starting with # (for comments)
+		// Not ignoring blank lines does cause problems, even if the map file doesn't appear to have blank lines in it.
+		if (!line.empty() && line[0] != '#') {
+			PacketReader	reader(line.c_str(), '~');
+			add_object(reader);
+		}
 	}
 
 	return true;
