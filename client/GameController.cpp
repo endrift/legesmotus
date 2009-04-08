@@ -65,7 +65,7 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_crosshairs = new Sprite("data/sprites/crosshairs.png");
 	m_crosshairs->set_priority(-1);
 	m_window->register_hud_graphic(m_crosshairs);
-	m_background = new TiledGraphic("data/sprites/blue_bgtile.png");
+	m_background = new TiledGraphic("data/sprites/metal_bgtile.png");
 	m_background->set_start_x(0);
 	m_background->set_start_y(0);
 	m_background->set_width(m_map_width);
