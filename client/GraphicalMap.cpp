@@ -53,9 +53,30 @@ void	GraphicalMap::add_object(PacketReader& object_data) {
 			sprite_path += sprite_name;
 			sprite_path += ".png";
 
-			map_object.set_sprite(new Sprite(sprite_path.c_str()));
+			Sprite*		sprite = new Sprite(sprite_path.c_str());
+			map_object.set_sprite(sprite);
 
-			// TODO: set bounding polygon
+			// Bounding polygon - specified by a list of points in the map file
+			// The points are converted into a list of lines for internal representation.
+			Polygon&	bounding_polygon(map_object.get_bounding_polygon());
+			if (object_data.has_more()) {
+				Point		first_point;
+				object_data >> first_point;
+
+				Point		previous_point(first_point);
+				while (object_data.has_more()) {
+					Point	next_point;
+					object_data >> next_point;
+					bounding_polygon.add_line(previous_point, next_point);
+
+					previous_point = next_point;
+				}
+				bounding_polygon.add_line(previous_point, first_point);
+			} else {
+				// If no points were specified in the file, assume it's a rectangle representing the width and height of the sprite.
+				bounding_polygon.make_rectangle(sprite->get_image_width(), sprite->get_image_height());
+			}
+
 	
 		}
 		break;

@@ -181,14 +181,6 @@ PacketReader&	PacketReader::operator>> (Point& point) {
 }
 
 
-bool		PacketReader::operator!() const {
-	return m_next_field == NULL;
-}
-
-PacketReader::operator const void* () const {
-	return m_next_field == NULL ? NULL : this;
-}
-
 std::ostream&	operator<<(std::ostream& out, const PacketReader& packet_reader) {
 	return out << packet_reader.get_rest();
 }

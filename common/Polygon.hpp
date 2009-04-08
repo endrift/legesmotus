@@ -21,6 +21,10 @@ private:
 public:
 
 	void			add_line(Point a, Point b);
+	void			clear() { m_lines.clear(); }
+
+	// Set the polygon to a rectangle of the given width and height
+	void			make_rectangle(int width, int height);
 
 	// Return true if this bounding polygon contains the point
 	bool			contains(Point point) const;
