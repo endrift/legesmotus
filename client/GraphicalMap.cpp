@@ -89,9 +89,6 @@ void	GraphicalMap::add_object(PacketReader& object_data) {
 		}
 
 		break;
-	case SPAWN_POINT:
-	
-		break;
 	}
 
 	if (map_object.has_sprite()) {

@@ -21,7 +21,7 @@ class PacketReader;
 class Server {
 private:
 	static const int	SERVER_PROTOCOL_VERSION;
-	typedef map<uint32_t, ServerPlayer> player_map;
+	typedef map<uint32_t, ServerPlayer> player_map;	// A map from player_id to the player object
 
 	ServerNetwork		m_network;
 	uint32_t		m_next_player_id;
@@ -33,7 +33,8 @@ private:
 
 	void			rebroadcast_packet(PacketReader& packet, int exclude_channel =-1);
 
-	void			start_game();
+	void			new_game();
+	void			spawn_players();
 
 public:
 	Server ();

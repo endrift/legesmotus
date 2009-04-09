@@ -30,6 +30,7 @@ public:
 
 protected:
 	string		m_name;		// Should be unique
+	string		m_background;	// Name of the background sprite
 	int		m_width;
 	int		m_height;
 
@@ -38,6 +39,7 @@ public:
 	virtual ~Map();
 
 	const char*	get_name() const { return m_name.c_str(); }
+	const char*	get_background() const { return m_background.c_str(); }
 	int		get_width() const { return m_width; }
 	int		get_height() const { return m_height; }
 	

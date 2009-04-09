@@ -73,6 +73,11 @@ void	Server::join(int channel, PacketReader& packet)
 	welcome_packet << SERVER_PROTOCOL_VERSION << player_id << team;
 	m_network.send_packet(channel, welcome_packet);
 
+	// Tell the player what map is currently in use, and how much time is left in the game
+	PacketWriter		game_start_packet(GAME_START_PACKET);
+	game_start_packet << m_current_map.get_name() << 86400; // TODO: Time left in game
+	m_network.send_packet(channel, game_start_packet); // TODO: REQUIRE ACK
+
 	// Broadcast the announce packet back to all players, except for the new one
 	PacketWriter		announce_packet(ANNOUNCE_PACKET);
 	announce_packet << player_id << name << team;
@@ -139,10 +144,25 @@ void	Server::rebroadcast_packet(PacketReader& packet, int exclude_channel) {
 	m_network.broadcast_packet(resent_packet, exclude_channel);
 }
 
-void	Server::start_game() {
+void	Server::new_game() {
 	PacketWriter		packet(GAME_START_PACKET);
 	packet << m_current_map.get_name() << 86400; // TODO: Configurable values here!
+	m_network.broadcast_packet(packet);
+	// TODO: REQUIRE ACK
+}
 
-	// TODO: Spawn everyone! Wheeee!
+void	Server::spawn_players() {
+	m_current_map.reset();
+	for (player_map::iterator it(m_players.begin()); it != m_players.end(); ++it) {
+		ServerPlayer&		player(it->second);
+		if (const Point* point = m_current_map.next_spawnpoint(player.get_team())) {
+			PacketWriter	update_packet(PLAYER_UPDATE_PACKET);
+			update_packet << player.get_id() << point->x << point->y << 0 << 0 << "";
+			m_network.send_packet(player.get_channel(), update_packet);
+		} else {
+			// Oh noes! No place to spawn this player. TODO: do something about it
+		}
+	}
+	// TODO: REQUIRE ACKs for these
 }
 
