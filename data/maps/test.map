@@ -1,9 +1,9 @@
 test
-800 500
-1~1~100,250~metal_obstacle64
-1~1~100,250~metal_obstacle64
-1~1~300,300~metal_obstacle64
-1~1~500,80~metal_obstacle64
-1~1~500,400~metal_obstacle64
-1~1~600,200~metal_obstacle64
-1~1~600,264~metal_obstacle64
+640 480
+1~1~128,256~metal_obstacle64
+1~1~128,256~metal_obstacle64
+1~1~320,320~metal_obstacle64
+1~1~512,96~metal_obstacle64
+1~1~512,416~metal_obstacle64
+1~1~608,192~metal_obstacle64
+1~1~608,256~metal_obstacle64
