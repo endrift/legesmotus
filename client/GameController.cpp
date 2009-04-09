@@ -166,7 +166,7 @@ void GameController::process_input() {
 				// Firing code, use event.button.button, event.button.x, event.button.y
 				// TODO relocate to function
 				if (event.button.button == 1) {
-					if (m_players.empty() | m_players[m_player_id].is_frozen()) {
+					if (m_players.empty() || m_players[m_player_id].is_frozen()) {
 						return;
 					}
 					double x_dist = (event.button.x + m_offset_x) - m_players[m_player_id].get_x();
@@ -400,7 +400,7 @@ void GameController::player_update(PacketReader& reader) {
 	string flags;
 	reader >> player_id >> x >> y >> velocity_x >> velocity_y >> flags;
 	
-	GraphicalPlayer* currplayer = &m_players[player_id];
+	GraphicalPlayer* currplayer = get_player_by_id(player_id);
 	if (currplayer == NULL) {
 		cerr << "Error: Received update packet for non-existent player " << player_id << endl;
 		return;
@@ -483,6 +483,12 @@ void GameController::player_shot(PacketReader& reader) {
 		m_time_to_unfreeze = SDL_GetTicks() + time_to_unfreeze * 1000;
 	}
 }
+
+GraphicalPlayer* GameController::get_player_by_id(unsigned int player_id) {
+	map<int, GraphicalPlayer>::iterator it(m_players.find(player_id));
+	return it == m_players.end() ? NULL : &it->second;
+}
+
 
 /* EXAMPLE
 void GameController::player_update(PacketReader& reader) {
