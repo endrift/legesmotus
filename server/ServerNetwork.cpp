@@ -77,6 +77,11 @@ void	ServerNetwork::broadcast_packet(const PacketWriter& packet, int exclude_cha
 }
 
 bool	ServerNetwork::receive_packets(Server& server, long timeout) {
+	if (timeout == 0) {
+		// Immediately timeout.
+		return false;
+	}
+
 	int result = SDLNet_CheckSockets(m_socket_set, timeout);
 
 	if (result <= 0) {
@@ -128,7 +133,7 @@ void	ServerNetwork::process_packet(Server& server, const RawPacket& raw_packet) 
 		break;
 
 	case GATE_DOWN_PACKET:
-		//server.gate_down(channel, reader);
+		server.gate_down(channel, reader);
 		break;
 
 	case JOIN_PACKET:
