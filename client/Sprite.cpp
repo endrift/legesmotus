@@ -37,6 +37,8 @@ void Sprite::init() {
 	m_height = toPow2(get_image_height());
 	m_center_x = get_image_width()/2.0;
 	m_center_y = get_image_height()/2.0;
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 }
 
 int Sprite::get_width() const {
@@ -97,19 +99,19 @@ void Sprite::set_blue_intensity(double blue) {
 
 void Sprite::draw(const GameWindow* window) const {
 	glColor4d(m_red, m_green, m_blue, m_alpha);
-	glBindTexture(GL_TEXTURE_2D,get_texture_id());
+	glBindTexture(GL_TEXTURE_2D, get_texture_id());
 	glPushMatrix();
 	transform_gl();
 	glTranslated(-m_center_x, -m_center_y, 0.0);
 	glBegin(GL_QUADS);
-	glTexCoord2d(0.0,0.0);
+	glTexCoord2d(0.0, 0.0);
 	glVertex2i(0,0);
-	glTexCoord2d(1.0,0.0);
-	glVertex2i(m_width,0);
-	glTexCoord2d(1.0,1.0);
-	glVertex2i(m_width,m_height);
-	glTexCoord2d(0.0,1.0);
-	glVertex2i(0,m_height);
+	glTexCoord2d(1.0, 0.0);
+	glVertex2i(m_width, 0);
+	glTexCoord2d(1.0, 1.0);
+	glVertex2i(m_width, m_height);
+	glTexCoord2d(0.0, 1.0);
+	glVertex2i(0, m_height);
 	glEnd();
 	glPopMatrix();
 }

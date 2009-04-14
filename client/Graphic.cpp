@@ -75,8 +75,8 @@ void Graphic::init(SDL_Surface* image) {
 	*m_tex_count = 1;
 	glGenTextures(1, &m_tex_id);
 	glBindTexture(GL_TEXTURE_2D, m_tex_id);
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, m_image->pixels);
 }
 
@@ -85,7 +85,7 @@ GLuint Graphic::get_texture_id() const {
 }
 
 void Graphic::transform_gl() const {	
-	glTranslated(m_x, m_y, 0.0);
+	glTranslated(round(m_x), round(m_y), 0.0); //TODO find alternative method
 	glRotated(m_rotation, 0.0, 0.0, 1.0);
 	glScaled(m_scale_x, m_scale_y, 1.0);
 }
