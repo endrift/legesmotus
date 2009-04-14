@@ -29,6 +29,9 @@ public:
 	// Return true if this bounding polygon contains the point
 	bool			contains(Point point) const;
 
+	bool			is_empty() const { return m_lines.empty(); }
+	bool			is_filled() const { return !m_lines.empty(); }
+
 };
 
 #endif

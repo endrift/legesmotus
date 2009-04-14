@@ -45,6 +45,7 @@ void	GraphicalMap::add_object(PacketReader& object_data) {
 
 	switch (type) {
 	case OBSTACLE:
+	case DECORATION:
 		{
 			string	sprite_name;
 			object_data >> sprite_name;
@@ -56,27 +57,30 @@ void	GraphicalMap::add_object(PacketReader& object_data) {
 			Sprite*		sprite = new Sprite(sprite_path.c_str());
 			map_object.set_sprite(sprite);
 
-			// Bounding polygon - specified by a list of points in the map file
-			// The points are converted into a list of lines for internal representation.
-			Polygon&	bounding_polygon(map_object.get_bounding_polygon());
-			if (object_data.has_more()) {
-				Point		first_point;
-				object_data >> first_point;
+			if (type == OBSTACLE) {
+				// Bounding polygon - specified by a list of points in the map file
+				// The points are converted into a list of lines for internal representation.
+				Polygon&	bounding_polygon(map_object.get_bounding_polygon());
+				if (object_data.has_more()) {
+					Point		first_point;
+					object_data >> first_point;
 
-				Point		previous_point(first_point);
-				while (object_data.has_more()) {
-					Point	next_point;
-					object_data >> next_point;
-					bounding_polygon.add_line(previous_point, next_point);
+					Point		previous_point(first_point);
+					while (object_data.has_more()) {
+						Point	next_point;
+						object_data >> next_point;
+						bounding_polygon.add_line(previous_point, next_point);
 
-					previous_point = next_point;
+						previous_point = next_point;
+					}
+					bounding_polygon.add_line(previous_point, first_point);
+				} else {
+					// If no points were specified in the file, assume it's a rectangle representing the width and height of the sprite.
+					bounding_polygon.make_rectangle(sprite->get_image_width(), sprite->get_image_height());
 				}
-				bounding_polygon.add_line(previous_point, first_point);
-			} else {
-				// If no points were specified in the file, assume it's a rectangle representing the width and height of the sprite.
-				bounding_polygon.make_rectangle(sprite->get_image_width(), sprite->get_image_height());
 			}
 
+			// TODO: allow decorations to specify tiling...
 	
 		}
 		break;

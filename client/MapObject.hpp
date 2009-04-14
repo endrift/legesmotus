@@ -37,6 +37,8 @@ public:
 	Polygon&	get_bounding_polygon() { return m_bounding_polygon; }
 	const Polygon&	get_bounding_polygon() const { return m_bounding_polygon; }
 
+	bool		is_intersectable() const { return m_bounding_polygon.is_filled(); }
+
 };
 
 #endif

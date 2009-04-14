@@ -25,7 +25,8 @@ public:
 	enum {
 		OBSTACLE = 1,
 		GATE = 2,
-		SPAWN_POINT = 3
+		SPAWN_POINT = 3,
+		DECORATION = 4
 	};
 
 protected:
