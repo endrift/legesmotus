@@ -12,11 +12,9 @@
 #include <string>
 #include <stdint.h>
 
-using namespace std;
-
 class Player {
 protected:
-	string		m_name;
+	std::string	m_name;
 	uint32_t	m_id;
 	char		m_team;		// Should be 'A' or 'B'
 	double		m_x;

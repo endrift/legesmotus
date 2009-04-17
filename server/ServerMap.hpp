@@ -18,14 +18,14 @@
 class ServerMap : public Map {
 private:
 	// Spawnpoints for each team:
-	list<Point>	m_Aspawnpoints;
-	list<Point>	m_Bspawnpoints;
+	std::list<Point>	m_Aspawnpoints;
+	std::list<Point>	m_Bspawnpoints;
 
 	// Where the next team member should spawn:
-	int				m_remaining_Aspots;
-	int				m_remaining_Bspots;
-	list<Point>::const_iterator	m_next_Aspawnpoint;
-	list<Point>::const_iterator	m_next_Bspawnpoint;
+	int					m_remaining_Aspots;
+	int					m_remaining_Bspots;
+	std::list<Point>::const_iterator	m_next_Aspawnpoint;
+	std::list<Point>::const_iterator	m_next_Bspawnpoint;
 
 	virtual void	add_object(PacketReader& object_data);
 

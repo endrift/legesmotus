@@ -14,14 +14,12 @@
 #include <stdint.h>
 #include <map>
 
-using namespace std;
-
 class PacketReader;
 
 class Server {
 private:
 	static const int	SERVER_PROTOCOL_VERSION;
-	typedef map<uint32_t, ServerPlayer> player_map;	// A map from player_id to the player object
+	typedef std::map<uint32_t, ServerPlayer> player_map;	// A map from player_id to the player object
 
 	// in milliseconds
 	enum {

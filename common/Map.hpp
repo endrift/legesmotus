@@ -11,8 +11,6 @@
 #include <string>
 #include <iosfwd>
 
-using namespace std;
-
 class PacketReader;
 
 /*
@@ -30,8 +28,8 @@ public:
 	};
 
 protected:
-	string		m_name;		// Should be unique
-	string		m_background;	// Name of the background sprite
+	std::string	m_name;		// Should be unique
+	std::string	m_background;	// Name of the background sprite
 	int		m_width;
 	int		m_height;
 
@@ -44,7 +42,7 @@ public:
 	int		get_width() const { return m_width; }
 	int		get_height() const { return m_height; }
 	
-	bool		load(istream& in);
+	bool		load(std::istream& in);
 	bool		load_file(const char* path);
 
 	virtual void	clear();

@@ -7,6 +7,8 @@
 
 #include "Polygon.hpp"
 
+using namespace std;
+
 void	Polygon::add_line(Point a, Point b) {
 	m_lines.push_back(make_pair(a, b));
 }

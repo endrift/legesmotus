@@ -12,8 +12,6 @@
 #include "client/MapObject.hpp"
 #include <list>
 
-using namespace std;
-
 class GameWindow;
 
 /*
@@ -21,17 +19,17 @@ class GameWindow;
  */
 class GraphicalMap : public Map {
 private:
-	GameWindow* 		m_window;
-	list<MapObject>		m_objects;
+	GameWindow* 			m_window;
+	std::list<MapObject>		m_objects;
 
 public:
 	explicit GraphicalMap(GameWindow* window);
 	virtual ~GraphicalMap();
 
-	const list<MapObject>&	get_objects() const { return m_objects; }
-	virtual void		clear(); // Remove all objects
+	const std::list<MapObject>&	get_objects() const { return m_objects; }
+	virtual void			clear(); // Remove all objects
 
-	virtual void		add_object(PacketReader& data);
+	virtual void			add_object(PacketReader& data);
 };
 
 #endif

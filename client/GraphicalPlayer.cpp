@@ -11,6 +11,8 @@
 
 #include <iostream>
 
+using namespace std;
+
 GraphicalPlayer::GraphicalPlayer() : Player::Player() {
 	m_sprite = NULL;
 }

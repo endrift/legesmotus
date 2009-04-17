@@ -32,7 +32,7 @@ private:
 	GameWindow* 	m_window;
 	ClientNetwork	m_network;
 	
-	string 		m_client_version;
+	std::string 	m_client_version;
 	int		m_protocol_number;
 	int 		m_screen_width;
 	int 		m_screen_height;
@@ -47,7 +47,7 @@ private:
 	double		m_mouse_y;
 	Uint8*		m_keys;
 	KeyBindings	m_key_bindings;
-	map<int, GraphicalPlayer> m_players;
+	std::map<int, GraphicalPlayer> m_players;
 	unsigned int	m_player_id;
 	
 	// Do we want to keep it this way?

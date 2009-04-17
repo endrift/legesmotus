@@ -8,6 +8,8 @@
 #include "math.hpp"
 #include <iostream>
 
+using namespace std;
+
 const double RADIANS_TO_DEGREES = 57.29577951308232;
 const double DEGREES_TO_RADIANS = 1.745329251994e-02;
 

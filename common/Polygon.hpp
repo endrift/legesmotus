@@ -12,11 +12,9 @@
 #include <utility>
 #include "common/Point.hpp"
 
-using namespace std;
-
 class Polygon {
 private:
-	list<pair<Point, Point> >	m_lines;
+	std::list<std::pair<Point, Point> >	m_lines;
 
 public:
 
