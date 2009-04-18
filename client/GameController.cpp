@@ -286,7 +286,7 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 		map<int, GraphicalPlayer>::iterator it;
 		for ( it=m_players.begin() ; it != m_players.end(); it++ ) {
 			GraphicalPlayer currplayer = (*it).second;
-			if (currplayer.get_id() == player_id) {
+			if (currplayer.get_id() == player_id || currplayer.is_frozen()) {
 				continue;
 			}
 			double playerdist = dist_between_points(start_x, start_y, currplayer.get_x(), currplayer.get_y());

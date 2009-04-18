@@ -29,7 +29,7 @@ private:
 
 	// in seconds
 	enum {
-		FREEZE_TIME = 15,			// Players stay frozen for 15 seconds
+		FREEZE_TIME = 10,			// Players stay frozen for 10 seconds
 		GATE_HOLD_TIME = 15			// Gate must be held down for 15 seconds
 	};
 

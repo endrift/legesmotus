@@ -49,21 +49,21 @@ public:
 	bool is_unfrozen() const { return !m_is_frozen; }
 	
 	void set_name(const char* name);
-	void set_id(uint32_t id);
-	void set_team(char team);
+	virtual void set_id(uint32_t id);
+	virtual void set_team(char team);
 	virtual void set_x(double x);
 	virtual void set_y(double y);
-	void set_position(double x, double y);
-	void update_position(unsigned long timediff); // Subject to change
-	void set_x_vel(double xvel);
-	void set_y_vel(double yvel);
-	void set_velocity(double xvel, double yvel);
-	void set_rotation_degrees(double rotation);
-	void set_rotation_radians(double rotation);
-	void set_gun_rotation_degrees(double gun_rotation);
-	void set_gun_rotation_radians(double gun_rotation);
-	void set_is_invisible(bool is_invisible);
-	void set_is_frozen(bool is_frozen);
+	virtual void set_position(double x, double y);
+	virtual void update_position(unsigned long timediff); // Subject to change
+	virtual void set_x_vel(double xvel);
+	virtual void set_y_vel(double yvel);
+	virtual void set_velocity(double xvel, double yvel);
+	virtual void set_rotation_degrees(double rotation);
+	virtual void set_rotation_radians(double rotation);
+	virtual void set_gun_rotation_degrees(double gun_rotation);
+	virtual void set_gun_rotation_radians(double gun_rotation);
+	virtual void set_is_invisible(bool is_invisible);
+	virtual void set_is_frozen(bool is_frozen);
 
 };
 

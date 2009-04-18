@@ -34,6 +34,7 @@ public:
 	void set_y(double y);
 	void set_rotation_degrees(double rotation);
 	void set_rotation_radians(double rotation);
+	void set_is_frozen(bool is_frozen);
 };
 
 #endif
