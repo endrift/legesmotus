@@ -40,6 +40,11 @@ protected:
 	void transform_gl() const;
 
 public:
+	enum Priority {
+		FOREGROUND = -256,
+		OBSTACLE = 256,
+		BACKGROUND = 512
+	};
 	virtual		~Graphic();
 	
 	int		get_image_width() const;
