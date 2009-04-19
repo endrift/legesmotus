@@ -8,9 +8,10 @@
 #ifndef LM_CLIENT_FONT_HPP
 #define LM_CLIENT_FONT_HPP
 
-#include <map>
 #include "SDL_ttf.h"
 #include "Sprite.hpp"
+#include <string>
+#include <map>
 
 class Font {
 private:
