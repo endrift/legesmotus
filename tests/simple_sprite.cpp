@@ -2,6 +2,7 @@
 #include "client/GameWindow.hpp"
 #include "client/Sprite.hpp"
 #include "client/TiledGraphic.hpp"
+#include "common/PathManager.hpp"
 #include <cmath>
 
 using namespace std;
@@ -10,10 +11,11 @@ extern "C" int main(int argc, char* argv[]) {
 	ClientSDL sdl;
 	(void)(sdl);
 	GameWindow *window = GameWindow::get_instance(500, 500, 24, false);
-	Sprite s("data/sprites/blue_armless.png");
-	Sprite aback("data/sprites/blue_backarm.png");
-	Sprite afront("data/sprites/blue_frontarm.png");
-	TiledGraphic tg("data/sprites/blue_bgtile.png");
+	PathManager pman(argv[0]);
+	Sprite s(pman.data_path("blue_armless.png","sprites"));
+	Sprite aback(pman.data_path("blue_backarm.png","sprites"));
+	Sprite afront(pman.data_path("blue_frontarm.png","sprites"));
+	TiledGraphic tg(pman.data_path("metal_bgtile.png","sprites"));
 	GraphicGroup g;
 	s.set_center_x(32);
 	s.set_center_y(48);
@@ -63,6 +65,7 @@ extern "C" int main(int argc, char* argv[]) {
 		++frame;
 		frame %= 400;
 		window->redraw();
+		SDL_Delay(20);
 	}
 	GameWindow::destroy_instance();
 	return 0;

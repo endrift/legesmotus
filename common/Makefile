@@ -1,6 +1,7 @@
 BASEDIR = ..
 include ../Makefile.in
-OBJS = Map.o LMException.o Player.o Polygon.o Point.o PacketReader.o PacketWriter.o CommonSDL.o RawPacket.o math.o #put .o filenames here (DO NOT PUT .cpp!)
+OBJS = Map.o LMException.o Player.o Polygon.o Point.o PacketReader.o PacketWriter.o CommonSDL.o RawPacket.o math.o \
+	PathManager.o #put .o filenames here (DO NOT PUT .cpp!)
 
 all: ../liblmcommon.a
 

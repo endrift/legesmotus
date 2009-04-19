@@ -2,6 +2,7 @@
 #include "client/GameWindow.hpp"
 #include "client/TextManager.hpp"
 #include "client/ClientSDL.hpp"
+#include "common/PathManager.hpp"
 #include <string>
 
 using namespace std;
@@ -10,7 +11,8 @@ extern "C" int main(int argc, char* argv[]) {
 	ClientSDL sdl;
 	(void)(sdl);
 	GameWindow *window = GameWindow::get_instance(300, 60, 24, false);
-	Font font("data/fonts/JuraMedium.ttf",12);
+	PathManager pman(argv[0]);
+	Font font(pman.data_path("JuraMedium.ttf","fonts"),12);
 	TextManager texts(&font);
 	texts.place_string("FIRST POST",150.0,0.0,TextManager::CENTER,window);
 	texts.set_active_color(0x87/255.0,0x68/255.0,0x16/255.0);
