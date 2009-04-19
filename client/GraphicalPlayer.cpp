@@ -56,6 +56,10 @@ void GraphicalPlayer::set_sprite(Sprite* s) {
 	}
 }
 
+void GraphicalPlayer::set_name_sprite(Sprite* ns) {
+	m_name_sprite = ns;
+}
+
 void GraphicalPlayer::set_radius(double radius) {
 	if (radius >= 0) {
 		m_bounding_radius = radius;

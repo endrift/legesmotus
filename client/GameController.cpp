@@ -40,6 +40,9 @@ GameController::~GameController() {
 	// TEMPORARY MAP CODE BY ANDREW
 	delete m_map;
 
+	delete m_text_manager;
+	delete m_font;
+
 	// The GameWindow instance should always be destroyed last, since other stuff may depend on it.
 	m_window->destroy_instance();
 }
@@ -50,7 +53,7 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_screen_width = width;
 	m_screen_height = height;
 	
-	m_client_version = "0.0.1";
+	m_client_version = "0.0.2";
 	m_protocol_number = 1;
 	
 	m_pixel_depth = depth;
@@ -59,6 +62,9 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_window = GameWindow::get_instance(m_screen_width, m_screen_height, m_pixel_depth, m_fullscreen);
 
 	m_time_to_unfreeze = 0;
+
+	m_font = new Font("data/fonts/JuraMedium.ttf", 10);
+	m_text_manager = new TextManager(m_font);
 
 	// TEMPORARY MAP CODE BY ANDREW
 	m_map = new GraphicalMap(m_window);
@@ -244,6 +250,7 @@ void GameController::move_objects(float timescale) {
 		m_players[m_player_id].set_velocity(0, 0);
 	}
 	
+	//m_text_manager->reposition_string(m_players[m_player_id].get_name_sprite(), new_x, new_y, TextManager::CENTER);
 	m_players[m_player_id].set_x(new_x);
 	m_players[m_player_id].set_y(new_y);
 }
@@ -336,7 +343,7 @@ void GameController::connect_to_server(const char* host, unsigned int port) {
 	
 	PacketWriter join_request(JOIN_PACKET);
 	join_request << m_protocol_number;
-	join_request << "TestName";
+	join_request << "MyName";
 	
 	m_network.send_packet(join_request);
 }
@@ -365,6 +372,8 @@ void GameController::welcome(PacketReader& reader) {
 	m_players.insert(pair<int, GraphicalPlayer>(m_player_id,GraphicalPlayer("MyName", m_player_id, team, new_sprite, new_sprite->get_width()/2, new_sprite->get_height()/2)));
 	m_players[m_player_id].set_radius(50);
 	
+	m_text_manager->set_active_color(0.4, 0.3, 0.0);
+	m_players[m_player_id].set_name_sprite(m_text_manager->place_string(m_players[m_player_id].get_name(), m_screen_width/2, (m_screen_height/2)-m_players[m_player_id].get_height()/2, TextManager::CENTER, m_window));
 	// TEMPORARY SPRITE CODE
 	m_window->register_graphic(new_sprite);
 	
@@ -385,9 +394,11 @@ void GameController::announce(PacketReader& reader) {
 		return;
 	}
 	
+	m_text_manager->set_active_color(0.4, 0.3, 0.0);
 	// TEMPORARY SPRITE CODE
 	m_players.insert(pair<int, GraphicalPlayer>(playerid,GraphicalPlayer((const char*)playername.c_str(), playerid, team, new Sprite(*new_sprite))));
 	m_window->register_graphic(m_players[playerid].get_sprite());
+	m_players[playerid].set_name_sprite(m_text_manager->place_string(m_players[playerid].get_name(), m_players[playerid].get_x(), m_players[playerid].get_y()-m_players[playerid].get_height()/2, TextManager::CENTER, m_window));
 	m_players[playerid].set_radius(50);
 }
 
@@ -408,6 +419,8 @@ void GameController::player_update(PacketReader& reader) {
 	
 	currplayer->set_position(x, y);
 	currplayer->set_velocity(velocity_x, velocity_y);
+	
+	m_text_manager->reposition_string(m_players[player_id].get_name_sprite(), x + m_screen_width/2 - m_players[m_player_id].get_x(), y - m_players[player_id].get_height()/2 + m_screen_height/2 - m_players[m_player_id].get_y(), TextManager::CENTER);
 	
 	if (flags.find_first_of('I') == string::npos) {
 		currplayer->set_is_invisible(false);

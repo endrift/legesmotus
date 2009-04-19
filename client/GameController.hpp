@@ -11,8 +11,10 @@
 #include "GameWindow.hpp"
 #include "GraphicalMap.hpp"
 #include "ClientNetwork.hpp"
+#include "TextManager.hpp"
 #include "common/PacketReader.hpp"
 #include "GraphicalPlayer.hpp"
+#include "Font.hpp"
 
 #include <vector>
 #include <map>
@@ -31,6 +33,8 @@ private:
 	
 	GameWindow* 	m_window;
 	ClientNetwork	m_network;
+	TextManager*	m_text_manager;
+	Font*		m_font;
 	
 	std::string 	m_client_version;
 	int		m_protocol_number;
