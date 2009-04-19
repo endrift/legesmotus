@@ -1,6 +1,6 @@
 BASEDIR = ..
 include ../Makefile.in
-OBJS = client_network simple_sprite
+OBJS = client_network simple_sprite simple_text
 
 all: $(OBJS)
 

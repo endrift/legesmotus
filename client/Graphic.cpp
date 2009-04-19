@@ -84,7 +84,7 @@ GLuint Graphic::get_texture_id() const {
 	return m_tex_id;
 }
 
-void Graphic::transform_gl() const {	
+void Graphic::transform_gl() const {
 	glTranslated(round(m_x), round(m_y), 0.0); //TODO find alternative method
 	glRotated(m_rotation, 0.0, 0.0, 1.0);
 	glScaled(m_scale_x, m_scale_y, 1.0);

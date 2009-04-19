@@ -45,6 +45,10 @@ public:
 		OBSTACLE = 256,
 		BACKGROUND = 512
 	};
+	enum HudPriority {
+		TEXT = -256
+	};
+
 	virtual		~Graphic();
 	
 	int		get_image_width() const;

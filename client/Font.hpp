@@ -14,14 +14,14 @@
 
 class Font {
 private:
-	std::map<short,Sprite*>	m_glyph_cache;
-	TTF_Font*		m_font;
+	TTF_Font*	m_font;
 public:
 	Font(const char* filename, int size);
-	~Font();
 
-	Sprite* master_glyph(short ch);
-	bool glyph_metrics(short ch, int *minx, int *maxx, int *miny, int *maxy, int *advance) const;
+	Sprite*	render_string(const std::string& text);
+	int	line_skip() const;
+	int	ascent() const;
+	int	descent() const;
 };
 
 #endif

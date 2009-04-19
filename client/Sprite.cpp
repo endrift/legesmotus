@@ -102,7 +102,7 @@ void Sprite::draw(const GameWindow* window) const {
 	glBindTexture(GL_TEXTURE_2D, get_texture_id());
 	glPushMatrix();
 	transform_gl();
-	glTranslated(-m_center_x, -m_center_y, 0.0);
+	glTranslated(-round(m_center_x), -round(m_center_y), 0.0);
 	glBegin(GL_QUADS);
 	glTexCoord2d(0.0, 0.0);
 	glVertex2i(0,0);

@@ -20,25 +20,21 @@ Font::Font(const char* filename, int size) {
 	}
 }
 
-Font::~Font() {
-	for(map<short,Sprite*>::iterator iter = m_glyph_cache.begin(); iter != m_glyph_cache.end(); ++iter) {
-		delete iter->second;
-	}
+Sprite* Font::render_string(const string& text) {
+	SDL_Color white = { 255, 255, 255 };
+	SDL_Surface* rendered = TTF_RenderUTF8_Blended(m_font,text.c_str(),white);
+	if(!rendered) return NULL;
+	return new Sprite(rendered);
 }
 
-Sprite* Font::master_glyph(short ch) {
-	Sprite *glyph = m_glyph_cache[ch];
-	if(glyph == NULL) {
-		SDL_Color color = { 255, 255, 255 };
-		SDL_Surface *image = TTF_RenderGlyph_Blended(m_font,ch,color);
-		if(image != NULL) {
-			glyph = new Sprite(image);
-			m_glyph_cache[ch] = glyph;
-		}
-	}
-	return glyph;
+int Font::line_skip() const {
+	return TTF_FontLineSkip(m_font);
 }
 
-bool Font::glyph_metrics(short ch, int *minx, int *maxx, int *miny, int *maxy, int *advance) const {
-	return TTF_GlyphMetrics(m_font, ch, minx, maxx, miny, maxy, advance) == 0;
+int Font::ascent() const {
+	return TTF_FontAscent(m_font);
+}
+
+int Font::descent() const {
+	return TTF_FontDescent(m_font);
 }
