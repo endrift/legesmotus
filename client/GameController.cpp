@@ -97,7 +97,7 @@ void GameController::run(int lockfps) {
 			break;
 		}
 		
-		if (!m_players.empty() && m_time_to_unfreeze < SDL_GetTicks()) {
+		if (!m_players.empty() && m_time_to_unfreeze < SDL_GetTicks() && m_time_to_unfreeze != 0) {
 			m_players[m_player_id].set_is_frozen(false);
 		}
 		
@@ -249,10 +249,11 @@ void GameController::move_objects(float timescale) {
 	map<int, GraphicalPlayer>::iterator it;
 	for ( it=m_players.begin() ; it != m_players.end(); it++ ) {
 		GraphicalPlayer currplayer = (*it).second;
-		if (currplayer.get_id() == m_player_id) {
-			continue;
+		if (currplayer.is_invisible()) {
+			m_text_manager->reposition_string(currplayer.get_name_sprite(), -1000, -1000, TextManager::CENTER); // MOVE STRING OFF SCREEN
+		} else {
+			m_text_manager->reposition_string(currplayer.get_name_sprite(), currplayer.get_x() + m_screen_width/2 - m_players[m_player_id].get_x(), currplayer.get_y() - currplayer.get_height()/2 + m_screen_height/2 - m_players[m_player_id].get_y(), TextManager::CENTER);
 		}
-		m_text_manager->reposition_string(currplayer.get_name_sprite(), currplayer.get_x() + m_screen_width/2 - m_players[m_player_id].get_x(), currplayer.get_y() - currplayer.get_height()/2 + m_screen_height/2 - m_players[m_player_id].get_y(), TextManager::CENTER);
 	}
 }
 
@@ -379,8 +380,8 @@ void GameController::welcome(PacketReader& reader) {
 	m_window->register_graphic(new_sprite);
 	
 	// PUT THESE BACK WHEN THE SERVER SENDS GAME START, ETC.
-	//m_players[m_player_id].set_is_invisible(true);
-	//m_players[m_player_id].set_is_frozen(true);
+	m_players[m_player_id].set_is_invisible(true);
+	m_players[m_player_id].set_is_frozen(true);
 	
 	send_my_player_update();
 }
@@ -421,12 +422,13 @@ void GameController::player_update(PacketReader& reader) {
 	currplayer->set_position(x, y);
 	currplayer->set_velocity(velocity_x, velocity_y);
 	
-	m_text_manager->reposition_string(m_players[player_id].get_name_sprite(), x + m_screen_width/2 - m_players[m_player_id].get_x(), y - m_players[player_id].get_height()/2 + m_screen_height/2 - m_players[m_player_id].get_y(), TextManager::CENTER);
 	
 	if (flags.find_first_of('I') == string::npos) {
 		currplayer->set_is_invisible(false);
+		m_text_manager->reposition_string(m_players[player_id].get_name_sprite(), x + m_screen_width/2 - m_players[m_player_id].get_x(), y - m_players[player_id].get_height()/2 + m_screen_height/2 - m_players[m_player_id].get_y(), TextManager::CENTER);
 	} else {
 		currplayer->set_is_invisible(true);
+		m_text_manager->reposition_string(m_players[player_id].get_name_sprite(), -1000, -1000, TextManager::CENTER); // MOVE STRING OFF SCREEN
 	}
 	
 	if (flags.find_first_of('F') == string::npos) {

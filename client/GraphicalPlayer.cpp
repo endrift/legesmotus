@@ -72,9 +72,9 @@ void GraphicalPlayer::set_is_invisible(bool is_invisible) {
 	m_is_invisible = is_invisible;
 	if (m_sprite != NULL) {
 		if (is_invisible) {
-			m_sprite->set_alpha(255);
-		} else {
 			m_sprite->set_alpha(0);
+		} else {
+			m_sprite->set_alpha(255);
 		}
 	}
 }
