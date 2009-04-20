@@ -10,6 +10,7 @@
 
 #include "SDL_net.h"
 #include <set>
+#include <stdint.h>
 
 class Server;
 class PacketWriter;

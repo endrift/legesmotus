@@ -14,7 +14,7 @@ MapObject::MapObject(int type, Point upper_left) {
 	m_team = 0;
 }
 
-void MapObject::set_sprite(Sprite* s) {
+void MapObject::set_sprite(Graphic* s) {
 	m_sprite = s;
 	if (m_sprite != NULL) {
 		m_sprite->set_x(m_upper_left.x);

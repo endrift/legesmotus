@@ -35,7 +35,6 @@ GameController::~GameController() {
 	// TEMPORARY SPRITE CODE
 	delete new_sprite;
 	delete m_crosshairs;
-	delete m_background;
 
 	// TEMPORARY MAP CODE BY ANDREW
 	delete m_map;
@@ -77,13 +76,6 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_crosshairs = new Sprite("data/sprites/crosshairs.png");
 	m_crosshairs->set_priority(-1);
 	m_window->register_hud_graphic(m_crosshairs);
-	m_background = new TiledGraphic("data/sprites/metal_bgtile.png"); // TODO: use background sprite specified in the map
-	m_background->set_start_x(0);
-	m_background->set_start_y(0);
-	m_background->set_width(m_map_width);
-	m_background->set_height(m_map_height);
-	m_background->set_priority(1);
-	m_window->register_graphic(m_background);
 }
 
 void GameController::run(int lockfps) {
@@ -502,7 +494,7 @@ void GameController::player_shot(PacketReader& reader) {
 	if (shot_id == m_player_id) {
 		cerr << "I was hit! Time to unfreeze: " << time_to_unfreeze << endl;
 		m_players[m_player_id].set_is_frozen(true);
-		m_time_to_unfreeze = SDL_GetTicks() + time_to_unfreeze * 1000;
+		m_time_to_unfreeze = SDL_GetTicks() + time_to_unfreeze;
 	}
 }
 

@@ -24,6 +24,8 @@ Server::Server ()
 {
 	m_next_player_id = 1;
 	m_is_running = false;
+	m_game_start_time = 0;
+	m_players_have_spawned = false;
 }
 
 void	Server::player_update(int channel, PacketReader& packet)
@@ -37,7 +39,7 @@ void	Server::player_shot(int channel, PacketReader& packet)
 	// Just broadcast this packet to all other players
 	// But add the time to unfreeze to the end, as per the network spec
 	PacketWriter		resent_packet(PLAYER_SHOT_PACKET);
-	resent_packet << packet << int(FREEZE_TIME / 1000); // XXX: Send back milliseconds, change client
+	resent_packet << packet << int(FREEZE_TIME);
 	m_network.broadcast_packet(resent_packet, channel);
 	// TODO: REQUIRE ACK
 }
@@ -66,6 +68,12 @@ void	Server::join(int channel, PacketReader& packet)
 		team = 'A';
 	}
 
+	if (m_players.empty()) {
+		// First player to join, woot!
+		// Start a new game.
+		new_game();
+	}
+
 	uint32_t		player_id = m_next_player_id++;
 
 	m_players[player_id].init(player_id, channel, client_version, name.c_str(), team);
@@ -75,9 +83,9 @@ void	Server::join(int channel, PacketReader& packet)
 	welcome_packet << SERVER_PROTOCOL_VERSION << player_id << team;
 	m_network.send_packet(channel, welcome_packet);
 
-	// Tell the player what map is currently in use, and how much time is left in the game
+	// Tell the player what map is currently in use, and how much time until the round starts (i.e. players spawn)
 	PacketWriter		game_start_packet(GAME_START_PACKET);
-	game_start_packet << m_current_map.get_name() << 86400; // TODO: Time left in game
+	game_start_packet << m_current_map.get_name() << time_until_spawn();
 	m_network.send_packet(channel, game_start_packet); // TODO: REQUIRE ACK
 
 	// Broadcast the announce packet back to all players, except for the new one
@@ -122,7 +130,7 @@ void	Server::leave(int channel, PacketReader& packet)
 	}
 }
 
-void	Server::run(int portno) // XXX: Prototype function ONLY!
+void	Server::run(int portno)
 {
 	if (!m_current_map.load_file("data/maps/test.map")) { // TODO: Make configurable!
 		throw LMException("Failed to load test map.");
@@ -135,19 +143,26 @@ void	Server::run(int portno) // XXX: Prototype function ONLY!
 	process_input();
 
 	while (m_is_running) {
-		// See if a gate has fallen
-		if (get_gate('A').has_fallen()) {
-			game_over('B');
-		} else if (get_gate('B').has_fallen()) {
-			game_over('A');
-		}
-		
-		// If a gate is being lowered, broadcast a status report on it
-		if (get_gate('A').is_lowering()) {
-			report_gate_status('A');
-		}
-		if (get_gate('B').is_lowering()) {
-			report_gate_status('B');
+		if (m_players_have_spawned) {
+			// See if a gate has fallen
+			if (get_gate('A').has_fallen()) {
+				game_over('B');
+			} else if (get_gate('B').has_fallen()) {
+				game_over('A');
+			}
+			
+			// If a gate is being lowered, broadcast a status report on it
+			if (get_gate('A').is_lowering()) {
+				report_gate_status('A');
+			}
+			if (get_gate('B').is_lowering()) {
+				report_gate_status('B');
+			}
+
+		} else if (waiting_to_spawn()) {
+			if (time_until_spawn() == 0) {
+				spawn_players();
+			}
 		}
 		
 		while (m_is_running && m_network.receive_packets(*this, server_sleep_time())) {
@@ -178,11 +193,14 @@ void	Server::rebroadcast_packet(PacketReader& packet, int exclude_channel) {
 }
 
 void	Server::new_game() {
-	PacketWriter		packet(GAME_START_PACKET);
-	packet << m_current_map.get_name() << 86400; // TODO: Configurable values here!
-	m_network.broadcast_packet(packet);
+	m_game_start_time = SDL_GetTicks();
+	m_players_have_spawned = false;
 	m_gates[0].reset();
 	m_gates[1].reset();
+
+	PacketWriter		packet(GAME_START_PACKET);
+	packet << m_current_map.get_name() << time_until_spawn();
+	m_network.broadcast_packet(packet);
 	// TODO: REQUIRE ACK
 }
 
@@ -192,10 +210,13 @@ void	Server::game_over(char winning_team) {
 	m_network.broadcast_packet(packet);
 	m_gates[0].reset();
 	m_gates[1].reset();
+	m_game_start_time = 0;
+	m_players_have_spawned = false;
 	// TODO: REQUIRE ACK
 }
 
 void	Server::spawn_players() {
+	m_players_have_spawned = true;
 	m_current_map.reset();
 	for (player_map::iterator it(m_players.begin()); it != m_players.end(); ++it) {
 		ServerPlayer&		player(it->second);
@@ -208,6 +229,10 @@ void	Server::spawn_players() {
 		}
 	}
 	// TODO: REQUIRE ACKs for these
+
+	PacketWriter		packet(GAME_START_PACKET);
+	packet << m_current_map.get_name() << 0;
+	m_network.broadcast_packet(packet);
 }
 
 void	Server::gate_lowering(int channel, PacketReader& packet) {
@@ -229,14 +254,18 @@ void	Server::gate_lowering(int channel, PacketReader& packet) {
 uint32_t	Server::server_sleep_time() const {
 	uint32_t	sleep_time = INPUT_POLL_FREQUENCY;
 
-	if (get_gate('A').is_lowering() || get_gate('B').is_lowering()) {
-		sleep_time = std::min(sleep_time, uint32_t(GATE_UPDATE_FREQUENCY));
-	}
-	if (get_gate('A').is_lowering()) {
-		sleep_time = std::min(sleep_time, get_gate('A').time_remaining());
-	}
-	if (get_gate('B').is_lowering()) {
-		sleep_time = std::min(sleep_time, get_gate('B').time_remaining());
+	if (m_players_have_spawned) {
+		if (get_gate('A').is_lowering() || get_gate('B').is_lowering()) {
+			sleep_time = std::min(sleep_time, uint32_t(GATE_UPDATE_FREQUENCY));
+		}
+		if (get_gate('A').is_lowering()) {
+			sleep_time = std::min(sleep_time, get_gate('A').time_remaining());
+		}
+		if (get_gate('B').is_lowering()) {
+			sleep_time = std::min(sleep_time, get_gate('B').time_remaining());
+		}
+	} else if (waiting_to_spawn()) {
+		sleep_time = std::min(sleep_time, time_until_spawn());
 	}
 
 	return sleep_time;
@@ -263,7 +292,7 @@ Server::GateStatus::GateStatus() {
 }
 
 uint32_t Server::GateStatus::time_elapsed() const {
-	return m_is_lowering ? tick_difference(SDL_GetTicks(), m_start_time) : 0;
+	return m_is_lowering ? SDL_GetTicks() - m_start_time : 0;
 }
 
 uint32_t Server::GateStatus::time_remaining() const {
@@ -326,5 +355,18 @@ bool	Server::GateStatus::set(bool new_is_lowering, uint32_t new_player_id) {
 
 	// Nothing changed about the gate
 	return false;
+}
+
+bool	Server::waiting_to_spawn() const {
+	return !m_players.empty() && !m_players_have_spawned;
+}
+uint32_t Server::time_until_spawn() const {
+	if (waiting_to_spawn()) {
+		uint32_t	time_elapsed = SDL_GetTicks() - m_game_start_time;
+		if (time_elapsed < GRACE_PERIOD) {
+			return GRACE_PERIOD - time_elapsed;
+		}
+	}
+	return 0;
 }
 

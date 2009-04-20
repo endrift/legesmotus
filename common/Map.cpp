@@ -24,7 +24,7 @@ Map::~Map() {
 bool	Map::load(istream& in) {
 	clear();
 
-	in >> m_name >> m_background >> m_width >> m_height;
+	in >> m_name >> m_width >> m_height;
 
 	string			line;
 	while (getline(in, line)) {
@@ -46,6 +46,5 @@ bool	Map::load_file(const char* path) {
 
 void	Map::clear() {
 	m_name.clear();
-	m_background.clear();
 	m_width = m_height = 0;
 }

@@ -1,6 +1,6 @@
 test
-metal_bgtile
 800 480
+5~1~0,0~metal_bgtile~800~480~0,0
 1~1~128,256~metal_obstacle64
 1~1~128,256~metal_obstacle64
 1~1~320,320~metal_obstacle64

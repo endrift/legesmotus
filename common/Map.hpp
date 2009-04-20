@@ -24,12 +24,12 @@ public:
 		OBSTACLE = 1,
 		GATE = 2,
 		SPAWN_POINT = 3,
-		DECORATION = 4
+		DECORATION = 4,
+		BACKGROUND = 5		// Basically a tiled decoration
 	};
 
 protected:
 	std::string	m_name;		// Should be unique
-	std::string	m_background;	// Name of the background sprite
 	int		m_width;
 	int		m_height;
 
@@ -38,7 +38,6 @@ public:
 	virtual ~Map();
 
 	const char*	get_name() const { return m_name.c_str(); }
-	const char*	get_background() const { return m_background.c_str(); }
 	int		get_width() const { return m_width; }
 	int		get_height() const { return m_height; }
 	

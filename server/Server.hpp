@@ -18,8 +18,8 @@ class PacketReader;
 
 class Server {
 private:
-	static const int	SERVER_PROTOCOL_VERSION;
-	typedef std::map<uint32_t, ServerPlayer> player_map;	// A map from player_id to the player object
+	static const int	SERVER_PROTOCOL_VERSION;	// Defined in Server.cpp
+	typedef std::map<uint32_t, ServerPlayer> player_map;	// A std::map from player_id to the player object
 
 	// in milliseconds
 	enum {
@@ -30,7 +30,8 @@ private:
 	// in milliseconds
 	enum {
 		FREEZE_TIME = 10000,			// Players stay frozen for 10 seconds
-		GATE_LOWER_TIME = 15000			// Gate must be lowered for 15 seconds to fall
+		GATE_LOWER_TIME = 15000,		// Gate must be lowered for 15 seconds to fall
+		GRACE_PERIOD = 15000			// Allow 15 seconds for players to join before the round starts
 	};
 
 	// Keeps track of the info for a gate:
@@ -62,37 +63,73 @@ private:
 		bool		set(bool is_lowering, uint32_t player_id);
 	};
 
+
+	//
+	// Game State
+	//
 	bool			m_is_running;
 	ServerNetwork		m_network;
 	uint32_t		m_next_player_id;	// Used to allocate next player ID
 	player_map		m_players;
 	ServerMap		m_current_map;
-	GateStatus		m_gates[2];
+	GateStatus		m_gates[2];		// [0] = Team A's gate  [1] = Team B's gate
+	uint32_t		m_game_start_time;	// Time at which the game started
+	bool			m_players_have_spawned;	// True if players have spawned
 
+
+	//
+	// Gate Helpers
+	//
 	GateStatus&		get_gate(char team) { return m_gates[team - 'A']; }
 	const GateStatus&	get_gate(char team) const { return m_gates[team - 'A']; }
 
+	void			report_gate_status(char team);
+
+
+	//
+	// Network Helpers
+	//
 
 	// Make sure the given channel is authorized to speak for given player ID
 	bool			is_authorized(int channel, uint32_t player_id) const;
 
+	// Relay the received packet to all clients, except the client on specified channel (if not -1)
 	void			rebroadcast_packet(PacketReader& packet, int exclude_channel =-1);
 
-	void			game_over(char winning_team);
-
-	void			new_game();
-	void			spawn_players();
-
-	void			report_gate_status(char team);
-
+	// Use to sanitize input:
 	static inline bool	is_valid_team(char c) { return c == 'A' || c == 'B'; }
 
-	void			process_input();			// Process and discard all pending SDL input
+
+	//
+	// Game State Helpers
+	//
+
+	// Call this to start a new game.  A new game starts:
+	//  1. After the first player joins, OR
+	//  2. After the game ends
+	// It will reset the game state, and broadcast a game start packet to all players with the map name
+	void			new_game();
+
+	// Call this when the round actually starts (GRACE_PERIOD seconds have elapsed after the game starts)
+	// It will unfreeze all players and place them at distinct spawnpoints.
+	void			spawn_players();
+
+	// Call this when a game ends: broadcasts the game over packet and resets the game state
+	void			game_over(char winning_team);
+
+	bool			waiting_to_spawn() const; // Return true if we're waiting to spawn players
+	uint32_t		time_until_spawn() const; // Time in ms until players should spawn
+
+	//
+	// Main Loop Helpers
+	//
+
+	// Process and discard all pending SDL input
+	// Should be called at least once in every INPUT_POLL_FREQUENCY seconds.
+	void			process_input();
 
 	// What's the maximum amount of time the server should sleep for between requests? (in milliseconds)
 	uint32_t		server_sleep_time() const;
-
-	static inline uint32_t	tick_difference(uint32_t newer, uint32_t older) { return newer >= older ? newer - older : older - newer; }
 
 public:
 	Server ();

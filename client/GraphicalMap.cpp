@@ -9,6 +9,7 @@
 #include "GameWindow.hpp"
 #include "MapObject.hpp"
 #include "Sprite.hpp"
+#include "TiledGraphic.hpp"
 #include "common/PacketReader.hpp"
 #include <memory>
 #include <limits>
@@ -46,6 +47,7 @@ void	GraphicalMap::add_object(PacketReader& object_data) {
 	switch (type) {
 	case OBSTACLE:
 	case DECORATION:
+	case BACKGROUND:
 		{
 			string	sprite_name;
 			object_data >> sprite_name;
@@ -54,10 +56,10 @@ void	GraphicalMap::add_object(PacketReader& object_data) {
 			sprite_path += sprite_name;
 			sprite_path += ".png";
 
-			Sprite*		sprite = new Sprite(sprite_path.c_str());
-			map_object.set_sprite(sprite);
-
 			if (type == OBSTACLE) {
+				Sprite*		sprite = new Sprite(sprite_path.c_str());
+				map_object.set_sprite(sprite);
+
 				// Bounding polygon - specified by a list of points in the map file
 				// The points are converted into a list of lines for internal representation.
 				Polygon&	bounding_polygon(map_object.get_bounding_polygon());
@@ -78,10 +80,34 @@ void	GraphicalMap::add_object(PacketReader& object_data) {
 					// If no points were specified in the file, assume it's a rectangle representing the width and height of the sprite.
 					bounding_polygon.make_rectangle(sprite->get_image_width(), sprite->get_image_height());
 				}
-			}
 
-			// TODO: allow decorations to specify tiling...
-	
+				sprite->set_priority(Graphic::OBSTACLE);
+
+			} else if (type == DECORATION) {
+				Sprite*		sprite = new Sprite(sprite_path.c_str());
+				sprite->set_priority(Graphic::BACKGROUND);
+				map_object.set_sprite(sprite);
+
+			} else if (type == BACKGROUND) {
+				TiledGraphic*	background = new TiledGraphic(sprite_path.c_str());
+				map_object.set_sprite(background);
+
+				int		width;
+				int		height;
+				object_data >> width >> height;
+				background->set_width(width);
+				background->set_height(height);
+
+				if (object_data.has_more()) {
+					Point		start_point;
+					object_data >> start_point;
+
+					background->set_start_x(start_point.x);
+					background->set_start_y(start_point.y);
+				}
+
+				background->set_priority(Graphic::BACKGROUND);
+			}
 		}
 		break;
 	case GATE:
@@ -97,9 +123,8 @@ void	GraphicalMap::add_object(PacketReader& object_data) {
 
 	if (map_object.has_sprite()) {
 		// Register the map object's sprite.
-		Sprite*	sprite = map_object.get_sprite();
-		//sprite->set_priority(numeric_limits<int>::max()); // TODO: should have standard enums in Graphic class
-		m_window->register_graphic(sprite);
+		m_window->register_graphic(map_object.get_sprite());
 	}
+
 }
 

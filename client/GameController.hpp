@@ -60,7 +60,6 @@ private:
 	// TEMPORARY SPRITE CODE
 	Sprite*		new_sprite;
 	Sprite*		m_crosshairs;
-	TiledGraphic*	m_background;
 
 	// TEMPORARY MAP CODE BY ANDREW
 	GraphicalMap*	m_map;

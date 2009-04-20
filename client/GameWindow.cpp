@@ -41,7 +41,9 @@ GameWindow::GameWindow(int width, int height, int depth, bool fullscreen) {
 		return;
 	}
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+#ifdef SDL_GL_SWAP_CONTROL
 	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1); // Deprecated in SDL 1.3
+#endif
 	SDL_ShowCursor(SDL_DISABLE);
 	int flags = SDL_HWSURFACE|SDL_OPENGL;
 	if (fullscreen) {
