@@ -68,14 +68,9 @@ void	Server::join(int channel, PacketReader& packet)
 		team = 'A';
 	}
 
-	if (m_players.empty()) {
-		// First player to join, woot!
-		// Start a new game.
-		new_game();
-	}
+	bool			is_first_player = m_players.empty();
 
 	uint32_t		player_id = m_next_player_id++;
-
 	m_players[player_id].init(player_id, channel, client_version, name.c_str(), team);
 
 	// Send the welcome packet back to this client.
@@ -83,10 +78,16 @@ void	Server::join(int channel, PacketReader& packet)
 	welcome_packet << SERVER_PROTOCOL_VERSION << player_id << team;
 	m_network.send_packet(channel, welcome_packet);
 
-	// Tell the player what map is currently in use, and how much time until the round starts (i.e. players spawn)
-	PacketWriter		game_start_packet(GAME_START_PACKET);
-	game_start_packet << m_current_map.get_name() << time_until_spawn();
-	m_network.send_packet(channel, game_start_packet); // TODO: REQUIRE ACK
+	if (is_first_player) {
+		// This is the first player.  Start a new game.
+		new_game();
+	} else {
+		// Joining a game with players.
+		// Tell the player what map is currently in use, and how much time until the round starts (i.e. players spawn)
+		PacketWriter		game_start_packet(GAME_START_PACKET);
+		game_start_packet << m_current_map.get_name() << time_until_spawn();
+		m_network.send_packet(channel, game_start_packet); // TODO: REQUIRE ACK
+	}
 
 	// Broadcast the announce packet back to all players, except for the new one
 	PacketWriter		announce_packet(ANNOUNCE_PACKET);
