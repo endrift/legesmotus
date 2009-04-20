@@ -253,6 +253,15 @@ void GameController::move_objects(float timescale) {
 	//m_text_manager->reposition_string(m_players[m_player_id].get_name_sprite(), new_x, new_y, TextManager::CENTER);
 	m_players[m_player_id].set_x(new_x);
 	m_players[m_player_id].set_y(new_y);
+	
+	map<int, GraphicalPlayer>::iterator it;
+	for ( it=m_players.begin() ; it != m_players.end(); it++ ) {
+		GraphicalPlayer currplayer = (*it).second;
+		if (currplayer.get_id() == m_player_id) {
+			continue;
+		}
+		m_text_manager->reposition_string(currplayer.get_name_sprite(), currplayer.get_x() + m_screen_width/2 - m_players[m_player_id].get_x(), currplayer.get_y() - currplayer.get_height()/2 + m_screen_height/2 - m_players[m_player_id].get_y(), TextManager::CENTER);
+	}
 }
 
 void GameController::attempt_jump() {
