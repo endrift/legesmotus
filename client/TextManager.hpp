@@ -36,6 +36,7 @@ public:
 	void	remove_all_strings(GameWindow* window = NULL);
 	void	set_active_color(double r, double g, double b);
 	void	set_active_alpha(double a);
+	void	set_active_font(Font* font);
 };
 
 #endif

@@ -88,3 +88,7 @@ void TextManager::set_active_color(double r, double g, double b) {
 void TextManager::set_active_alpha(double a) {
 	m_active_alpha = a;
 }
+
+void TextManager::set_active_font(Font* font) {
+	m_font = font;
+}
