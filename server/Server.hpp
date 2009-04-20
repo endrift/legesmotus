@@ -23,43 +23,55 @@ private:
 
 	// in milliseconds
 	enum {
-		INPUT_POLL_FREQUENCY = 5 * 60 * 1000,	// Poll for input from SDL at least every 5 minutes
+		INPUT_POLL_FREQUENCY = 3000,		// Poll for input from SDL at least every 3 seconds
 		GATE_UPDATE_FREQUENCY = 500		// When a gate is down, update players at least every 500 ms
 	};
 
-	// in seconds
+	// in milliseconds
 	enum {
-		FREEZE_TIME = 10,			// Players stay frozen for 10 seconds
-		GATE_HOLD_TIME = 15			// Gate must be held down for 15 seconds
+		FREEZE_TIME = 10000,			// Players stay frozen for 10 seconds
+		GATE_LOWER_TIME = 15000			// Gate must be lowered for 15 seconds to fall
+	};
+
+	// Keeps track of the info for a gate:
+	class GateStatus {
+	private:
+		bool		m_is_lowering;		// True if the gate is being lowered
+		uint32_t	m_player_id;		// The player who is lowering the gate
+		uint32_t	m_start_time;		// The time (in SDL ticks) at which the gate started to be lowered
+
+	public:
+		GateStatus();
+
+		bool		is_lowering() const { return m_is_lowering; }
+		uint32_t	get_player_id() const { return m_player_id; }
+
+		uint32_t	time_elapsed() const;	// How many milliseconds have passed since gate started lowering?
+		uint32_t	time_remaining() const;	// How many milliseconds until the gate FALLS?
+		bool		has_fallen() const;	// Returns true if the gate has fallen.
+		double		get_progress() const;	// Number in range [0,1] to indicate progress of gate (i.e. 0%-100%)
+
+		void		reset();		// Call at beginning of new games to completely reset
+
+		// Reset this gate if the given player is lowering it:
+		// Returns true if the gate state changed, false otherwise
+		bool		reset_player(uint32_t player_id);
+
+		// Set the gate to a new state
+		// Returns true if the gate state changed, false otherwise
+		bool		set(bool is_lowering, uint32_t player_id);
 	};
 
 	bool			m_is_running;
 	ServerNetwork		m_network;
-	uint32_t		m_next_player_id;
+	uint32_t		m_next_player_id;	// Used to allocate next player ID
 	player_map		m_players;
 	ServerMap		m_current_map;
+	GateStatus		m_gates[2];
 
-	// The times (relative to Epoch) at which gates will fall, as long as a player keeps holding it down
-	// 0 if the gate is not being held down
-	time_t			m_gate_times[2];
-	// Who's holding the given gate down? (0 if nobody)
-	uint32_t		m_gate_holders[2];
+	GateStatus&		get_gate(char team) { return m_gates[team - 'A']; }
+	const GateStatus&	get_gate(char team) const { return m_gates[team - 'A']; }
 
-	// Return true if gate for given team is being held down, false otherwise
-	bool			gate_is_down(char team) const { return m_gate_times[team - 'A'] > 0; }
-
-	// Get/set the time at which the gates will fall:
-	time_t			get_gate_time(char team) const { return m_gate_times[team - 'A']; }
-	void			set_gate_time(char team, time_t time);
-
-	// Get/set the player who's holding a gate down:
-	uint32_t		get_gate_holder(char team) const { return m_gate_holders[team - 'A']; }
-	void			set_gate_holder(char team, uint32_t holder);
-
-	// How long from now until the given gate falls?
-	long			time_till_gate_falls(char team, time_t now) const;
-	// Has the given gate fallen yet?
-	bool			gate_has_fallen(char team, time_t now) const { return gate_is_down(team) && m_gate_times[team - 'A'] <= now; }
 
 	// Make sure the given channel is authorized to speak for given player ID
 	bool			is_authorized(int channel, uint32_t player_id) const;
@@ -76,8 +88,11 @@ private:
 	static inline bool	is_valid_team(char c) { return c == 'A' || c == 'B'; }
 
 	void			process_input();			// Process and discard all pending SDL input
-	long			server_sleep_time(time_t now) const;	// Maximum time the server should block waiting for packets (in ms)
 
+	// What's the maximum amount of time the server should sleep for between requests? (in milliseconds)
+	uint32_t		server_sleep_time() const;
+
+	static inline uint32_t	tick_difference(uint32_t newer, uint32_t older) { return newer >= older ? newer - older : older - newer; }
 
 public:
 	Server ();
@@ -88,7 +103,7 @@ public:
 	void		leave(int channel, PacketReader& packet);
 	void		player_shot(int channel, PacketReader& packet);
 	void		gun_fired(int channel, PacketReader& packet);
-	void		gate_down(int channel, PacketReader& packet);
+	void		gate_lowering(int channel, PacketReader& packet);
 
 	// For testing only (interface likely to change):
 	void		run(int portno);

@@ -76,7 +76,7 @@ void	ServerNetwork::broadcast_packet(const PacketWriter& packet, int exclude_cha
 	}
 }
 
-bool	ServerNetwork::receive_packets(Server& server, long timeout) {
+bool	ServerNetwork::receive_packets(Server& server, uint32_t timeout) {
 	if (timeout == 0) {
 		// Immediately timeout.
 		return false;
@@ -132,8 +132,8 @@ void	ServerNetwork::process_packet(Server& server, const RawPacket& raw_packet) 
 		//server.message(channel, reader);
 		break;
 
-	case GATE_DOWN_PACKET:
-		server.gate_down(channel, reader);
+	case GATE_LOWERING_PACKET:
+		server.gate_lowering(channel, reader);
 		break;
 
 	case JOIN_PACKET:

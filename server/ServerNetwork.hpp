@@ -38,9 +38,9 @@ public:
 	bool		is_running() const { return m_socket != NULL; }
 
 	// Process all packets and notify the server of their receipt
-	// Wait up to the given timeout (in ms) for packets (-1 == wait forever)
+	// Wait up to the given timeout (in ms) for packets
 	// Returns: true if packets were received, false if timeout happened first
-	bool		receive_packets(Server& server, long timeout);
+	bool		receive_packets(Server& server, uint32_t timeout);
 	// Send the given packet to a specific channel
 	void		send_packet(int channel, const PacketWriter& packet);
 	// Send the given packet to all clients

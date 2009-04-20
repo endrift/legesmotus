@@ -13,6 +13,7 @@
 #include "common/network.hpp"
 #include <string>
 #include <iostream>
+#include <limits>
 
 using namespace std;
 
@@ -23,8 +24,6 @@ Server::Server ()
 {
 	m_next_player_id = 1;
 	m_is_running = false;
-	m_gate_times[0] = m_gate_times[1] = 0;
-	m_gate_holders[0] = m_gate_holders[1] = 0;
 }
 
 void	Server::player_update(int channel, PacketReader& packet)
@@ -38,7 +37,7 @@ void	Server::player_shot(int channel, PacketReader& packet)
 	// Just broadcast this packet to all other players
 	// But add the time to unfreeze to the end, as per the network spec
 	PacketWriter		resent_packet(PLAYER_SHOT_PACKET);
-	resent_packet << packet << int(FREEZE_TIME); // TODO: make time to unfreeze customizable
+	resent_packet << packet << int(FREEZE_TIME / 1000); // XXX: Send back milliseconds, change client
 	m_network.broadcast_packet(resent_packet, channel);
 	// TODO: REQUIRE ACK
 }
@@ -113,15 +112,11 @@ void	Server::leave(int channel, PacketReader& packet)
 		m_network.broadcast_packet(leave_packet);
 
 		// If this player was holding down a gate, make sure the gate status is cleared:
-		if (gate_is_down('A') && get_gate_holder('A') == player_id) {
-			set_gate_time('A', 0);
+		if (get_gate('A').reset_player(player_id)) {
 			report_gate_status('A');
-			set_gate_holder('A', 0);
 		}
-		if (gate_is_down('B') && get_gate_holder('B') == player_id) {
-			set_gate_time('B', 0);
+		if (get_gate('B').reset_player(player_id)) {
 			report_gate_status('B');
-			set_gate_holder('B', 0);
 		}
 
 	}
@@ -140,24 +135,22 @@ void	Server::run(int portno) // XXX: Prototype function ONLY!
 	process_input();
 
 	while (m_is_running) {
-		time_t		now = time(0);
-
 		// See if a gate has fallen
-		if (gate_has_fallen('A', now)) {
+		if (get_gate('A').has_fallen()) {
 			game_over('B');
-		} else if (gate_has_fallen('B', now)) {
+		} else if (get_gate('B').has_fallen()) {
 			game_over('A');
 		}
 		
-		// If a gate is being held down, broadcast a status report on it
-		if (gate_is_down('A')) {
+		// If a gate is being lowered, broadcast a status report on it
+		if (get_gate('A').is_lowering()) {
 			report_gate_status('A');
 		}
-		if (gate_is_down('B')) {
+		if (get_gate('B').is_lowering()) {
 			report_gate_status('B');
 		}
 		
-		while (m_is_running && m_network.receive_packets(*this, server_sleep_time(time(0)))) {
+		while (m_is_running && m_network.receive_packets(*this, server_sleep_time())) {
 			process_input();
 		}
 
@@ -188,8 +181,8 @@ void	Server::new_game() {
 	PacketWriter		packet(GAME_START_PACKET);
 	packet << m_current_map.get_name() << 86400; // TODO: Configurable values here!
 	m_network.broadcast_packet(packet);
-	set_gate_time('A', 0);
-	set_gate_time('B', 0);
+	m_gates[0].reset();
+	m_gates[1].reset();
 	// TODO: REQUIRE ACK
 }
 
@@ -197,8 +190,8 @@ void	Server::game_over(char winning_team) {
 	PacketWriter		packet(GAME_STOP_PACKET);
 	packet << winning_team << 0 << 0; // TODO: send scores
 	m_network.broadcast_packet(packet);
-	set_gate_time('A', 0);
-	set_gate_time('B', 0);
+	m_gates[0].reset();
+	m_gates[1].reset();
 	// TODO: REQUIRE ACK
 }
 
@@ -217,46 +210,33 @@ void	Server::spawn_players() {
 	// TODO: REQUIRE ACKs for these
 }
 
-void	Server::gate_down(int channel, PacketReader& packet) {
+void	Server::gate_lowering(int channel, PacketReader& packet) {
 	uint32_t		player_id;
 	char			team;
-	bool			is_down;
-	packet >> player_id >> team >> is_down;
+	bool			is_lowering;
+	packet >> player_id >> team >> is_lowering;
 
 	if (!is_authorized(channel, player_id) || !is_valid_team(team)) {
 		// Invalid packet
 		return;
 	}
 
-	if (gate_is_down(team) == is_down) {
-		// Gate already in reported state.
-		return;
-	}
-
-	if (is_down) {
-		// Make the gate go down
-		set_gate_time(team, time(0) + GATE_HOLD_TIME);
-		set_gate_holder(team, player_id);
+	if (get_gate(team).set(is_lowering, player_id)) {
 		report_gate_status(team);
-
-	} else if (player_id == get_gate_holder(team)) {
-		// Make the gate go up
-		set_gate_time(team, 0);
-		report_gate_status(team);
-		set_gate_holder(team, 0);
 	}
-
 }
 
-long	Server::server_sleep_time(time_t now) const {
-	long		sleep_time = INPUT_POLL_FREQUENCY;
+uint32_t	Server::server_sleep_time() const {
+	uint32_t	sleep_time = INPUT_POLL_FREQUENCY;
 
-	if (gate_is_down('A')) {
-		sleep_time = std::min(sleep_time, std::min(long(GATE_UPDATE_FREQUENCY), time_till_gate_falls('A', now) * 1000L));
+	if (get_gate('A').is_lowering() || get_gate('B').is_lowering()) {
+		sleep_time = std::min(sleep_time, uint32_t(GATE_UPDATE_FREQUENCY));
 	}
-
-	if (gate_is_down('B')) {
-		sleep_time = std::min(sleep_time, std::min(long(GATE_UPDATE_FREQUENCY), time_till_gate_falls('B', now) * 1000L));
+	if (get_gate('A').is_lowering()) {
+		sleep_time = std::min(sleep_time, get_gate('A').time_remaining());
+	}
+	if (get_gate('B').is_lowering()) {
+		sleep_time = std::min(sleep_time, get_gate('B').time_remaining());
 	}
 
 	return sleep_time;
@@ -271,27 +251,80 @@ void Server::process_input() {
 	}
 }
 
-void	Server::set_gate_time(char team, time_t time) {
-	m_gate_times[team - 'A'] = time;
-}
-
-void	Server::set_gate_holder(char team, uint32_t holder) {
-	m_gate_holders[team - 'A'] = holder;
-}
-
-long	Server::time_till_gate_falls(char team, time_t now) const {
-	long	time = get_gate_time(team);
-	return now < time ? time - now : 0L;
-}
-
 void	Server::report_gate_status(char team) {
-	PacketWriter		packet(GAME_START_PACKET);
-	packet << get_gate_holder(team) << team;
-	if (gate_is_down(team)) {
-		packet << (GATE_HOLD_TIME - time_till_gate_falls(team, time(0))) * 100.0 / GATE_HOLD_TIME;
-	} else {
-		packet << 0;
-	}
+	const GateStatus&	gate(get_gate(team));
+	PacketWriter		packet(GATE_LOWERING_PACKET);
+	packet << gate.get_player_id() << team << gate.get_progress();
 	m_network.broadcast_packet(packet);
+}
+
+Server::GateStatus::GateStatus() {
+	reset();
+}
+
+uint32_t Server::GateStatus::time_elapsed() const {
+	return m_is_lowering ? tick_difference(SDL_GetTicks(), m_start_time) : 0;
+}
+
+uint32_t Server::GateStatus::time_remaining() const {
+	if (m_is_lowering) {
+		uint32_t	elapsed_time = time_elapsed();
+		if (elapsed_time < GATE_LOWER_TIME) {
+			return GATE_LOWER_TIME - elapsed_time;
+		} else {
+			// Gate should have already fallen.
+			return 0;
+		}
+	} else {
+		// Gate is not being lowered.
+		return numeric_limits<uint32_t>::max();
+	}
+}
+
+bool Server::GateStatus::has_fallen() const {
+	return m_is_lowering && time_elapsed() >= GATE_LOWER_TIME;
+}
+
+double	Server::GateStatus::get_progress() const {
+	return m_is_lowering ? time_elapsed() / double(GATE_LOWER_TIME) : 0.0;
+}
+
+void	Server::GateStatus::reset() {
+	m_is_lowering = false;
+	m_player_id = 0;
+	m_start_time = 0;
+}
+
+bool	Server::GateStatus::reset_player(uint32_t player_id) {
+	if (m_is_lowering && m_player_id == player_id) {
+		reset();
+		return true;
+	}
+	return false;
+}
+
+bool	Server::GateStatus::set(bool new_is_lowering, uint32_t new_player_id) {
+	if (m_is_lowering != new_is_lowering) {
+		// Only continue if the state of the gate is actually changing...
+
+		if (new_is_lowering) {
+			// Gate is being lowered!
+			m_is_lowering = true;
+			m_player_id = new_player_id;
+			m_start_time = SDL_GetTicks();
+
+			return true;
+		} else if (m_player_id == new_player_id) {
+			// Only the same player is allowed to stop lowering the gate.
+			m_is_lowering = false;
+			m_player_id = 0;
+			m_start_time = 0;
+
+			return true;
+		}
+	}
+
+	// Nothing changed about the gate
+	return false;
 }
 
