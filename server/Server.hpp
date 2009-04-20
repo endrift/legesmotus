@@ -31,7 +31,7 @@ private:
 	enum {
 		FREEZE_TIME = 10000,			// Players stay frozen for 10 seconds
 		GATE_LOWER_TIME = 15000,		// Gate must be lowered for 15 seconds to fall
-		GRACE_PERIOD = 15000			// Allow 15 seconds for players to join before the round starts
+		GRACE_PERIOD = 5000			// Allow 5 seconds for players to join before the round starts (TODO: increase to 15 during production)
 	};
 
 	// Keeps track of the info for a gate:
