@@ -342,14 +342,18 @@ void GameController::send_player_shot(unsigned int shooter_id, unsigned int hit_
 	m_network.send_packet(player_shot);
 }
 
-void GameController::connect_to_server(const char* host, unsigned int port) {
+void GameController::connect_to_server(const char* host, unsigned int port, string name) {
 	if (!m_network.connect(host, port)) {
 		cerr << "Error: Could not connect to server at " << host << ":" << port << endl;
 	}
 	
 	PacketWriter join_request(JOIN_PACKET);
 	join_request << m_protocol_number;
-	join_request << "MyName";
+	if (name.empty()) {
+		name = "MyName";
+	}
+	m_name = name;
+	join_request << name;
 	int team = rand() % 2;
 	if (team == 0) {
 		join_request << 'A';
@@ -383,11 +387,11 @@ void GameController::welcome(PacketReader& reader) {
 	m_players.clear();
 	
 	if (team == 'A') {
-		m_players.insert(pair<int, GraphicalPlayer>(m_player_id,GraphicalPlayer("MyName", m_player_id, team, new_sprite, new_sprite->get_width()/2, new_sprite->get_height()/2)));
+		m_players.insert(pair<int, GraphicalPlayer>(m_player_id,GraphicalPlayer(m_name.c_str(), m_player_id, team, new_sprite, new_sprite->get_width()/2, new_sprite->get_height()/2)));
 		m_text_manager->set_active_color(0.0, 0.0, 0.7);
 		m_window->register_graphic(new_sprite);
 	} else {
-		m_players.insert(pair<int, GraphicalPlayer>(m_player_id,GraphicalPlayer("MyName", m_player_id, team, new_sprite_b, new_sprite_b->get_width()/2, new_sprite_b->get_height()/2)));
+		m_players.insert(pair<int, GraphicalPlayer>(m_player_id,GraphicalPlayer(m_name.c_str(), m_player_id, team, new_sprite_b, new_sprite_b->get_width()/2, new_sprite_b->get_height()/2)));
 		m_text_manager->set_active_color(0.7, 0.0, 0.0);
 		m_window->register_graphic(new_sprite_b);
 	}

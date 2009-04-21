@@ -16,6 +16,7 @@
 #include "GraphicalPlayer.hpp"
 #include "Font.hpp"
 
+#include <string>
 #include <vector>
 #include <map>
 
@@ -36,6 +37,7 @@ private:
 	TextManager*	m_text_manager;
 	Font*		m_font;
 	
+	std::string	m_name;
 	std::string 	m_client_version;
 	int		m_protocol_number;
 	int 		m_screen_width;
@@ -80,7 +82,7 @@ public:
 	void		initialize_key_bindings();
 	void		parse_key_input();
 	void		move_objects(float timescale);
-	void		connect_to_server(const char* host, unsigned int port);
+	void		connect_to_server(const char* host, unsigned int port, std::string name);
 	void		disconnect();
 	void		player_fired(unsigned int player_id, double start_x, double start_y, double direction);
 	void		send_player_shot(unsigned int shooter_id, unsigned int hit_player_id);
