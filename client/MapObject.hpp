@@ -11,6 +11,7 @@
 #include "common/Point.hpp"
 #include "common/Polygon.hpp"
 #include "client/Graphic.hpp"
+#include "client/Sprite.hpp"
 
 /* Represents an object on the map */
 class MapObject {
@@ -28,6 +29,7 @@ public:
 	Point		get_upper_left() const { return m_upper_left; }
 
 	Graphic*	get_sprite() const { return m_sprite; }
+	void		set_sprite(Sprite* sprite);
 	void		set_sprite(Graphic* sprite);
 	bool		has_sprite() const { return m_sprite != NULL; }
 
