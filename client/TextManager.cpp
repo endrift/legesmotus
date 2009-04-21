@@ -22,9 +22,9 @@ TextManager::~TextManager() {
 	remove_all_strings();
 }
 
-Sprite* TextManager::place_string(const std::string& text, double x, double y, Align align, GameWindow* window) {
+Sprite* TextManager::place_string(const std::string& text, double x, double y, Align align, Layer layer, GameWindow* window) {
 	Sprite* rendered = m_font->render_string(text);
-	if(!rendered) {
+	if (!rendered) {
 		return NULL;
 	}
 	m_texts.push_back(rendered);
@@ -33,14 +33,21 @@ Sprite* TextManager::place_string(const std::string& text, double x, double y, A
 	rendered->set_blue_intensity(m_active_blue);
 	rendered->set_alpha(m_active_alpha);
 	reposition_string(rendered,x,y,align);
-	if(window != NULL) {
-		window->register_hud_graphic(rendered);
+	if (window != NULL) {
+		switch(layer) {
+		case LAYER_HUD:
+			window->register_hud_graphic(rendered);
+			break;
+		case LAYER_MAIN:
+			window->register_graphic(rendered);
+			break;
+		}
 	}
 	return rendered;
 }
 
 void TextManager::reposition_string(Sprite* text, double x, double y, Align align) {
-	switch(align) {
+	switch (align) {
 	case LEFT:
 		text->set_center_x(0);
 		break;
@@ -57,22 +64,23 @@ void TextManager::reposition_string(Sprite* text, double x, double y, Align alig
 }
 
 void TextManager::remove_string(Sprite *text, GameWindow* window) {
-	for(vector<Sprite*>::iterator iter = m_texts.begin(); iter != m_texts.end(); ++iter) {
-		if(*iter != text) {
-			continue;
+	for (vector<Sprite*>::iterator iter = m_texts.begin(); iter != m_texts.end(); ++iter) {
+		if (*iter == text) {
+			m_texts.erase(iter);
+			break;
 		}
-		m_texts.erase(iter);
-		break;
 	}
-	if(window != NULL) {
+	if (window != NULL) {
+		window->unregister_graphic(text);
 		window->unregister_hud_graphic(text);
 	}
 	delete text;
 }
 	
 void TextManager::remove_all_strings(GameWindow* window) {
-	for(vector<Sprite*>::iterator iter = m_texts.begin(); iter != m_texts.end(); ++iter) {
+	for (vector<Sprite*>::iterator iter = m_texts.begin(); iter != m_texts.end(); ++iter) {
 		if(window != NULL) {
+			window->unregister_graphic(*iter);
 			window->unregister_hud_graphic(*iter);
 		}
 		delete *iter;

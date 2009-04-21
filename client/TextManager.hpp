@@ -27,10 +27,14 @@ public:
 		CENTER = 1,
 		RIGHT = 2
 	};
+	enum Layer {
+		LAYER_HUD,
+		LAYER_MAIN
+	};
 	TextManager(Font* font);
 	~TextManager();
 
-	Sprite*	place_string(const std::string& text, double x, double y, Align = LEFT, GameWindow *window = NULL);
+	Sprite*	place_string(const std::string& text, double x, double y, Align = LEFT, Layer layer = LAYER_HUD, GameWindow *window = NULL);
 	void	reposition_string(Sprite* text, double x, double y, Align = LEFT);
 	void	remove_string(Sprite* text, GameWindow* window = NULL);
 	void	remove_all_strings(GameWindow* window = NULL);

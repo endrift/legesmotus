@@ -283,7 +283,7 @@ void GameController::move_objects(float timescale) {
 		if (currplayer.is_invisible()) {
 			m_text_manager->reposition_string(currplayer.get_name_sprite(), -1000, -1000, TextManager::CENTER); // MOVE STRING OFF SCREEN
 		} else {
-			m_text_manager->reposition_string(currplayer.get_name_sprite(), currplayer.get_x() + m_screen_width/2 - m_players[m_player_id].get_x(), currplayer.get_y() - currplayer.get_height()/2 + m_screen_height/2 - m_players[m_player_id].get_y(), TextManager::CENTER);
+			m_text_manager->reposition_string(currplayer.get_name_sprite(), currplayer.get_x(), currplayer.get_y() - currplayer.get_height()/2, TextManager::CENTER);
 		}
 	}
 }
@@ -439,7 +439,7 @@ void GameController::welcome(PacketReader& reader) {
 	}
 	
 	m_players[m_player_id].set_radius(30);
-	m_players[m_player_id].set_name_sprite(m_text_manager->place_string(m_players[m_player_id].get_name(), m_screen_width/2, (m_screen_height/2)-m_players[m_player_id].get_height()/2, TextManager::CENTER, m_window));
+	m_players[m_player_id].set_name_sprite(m_text_manager->place_string(m_players[m_player_id].get_name(), m_screen_width/2, (m_screen_height/2)-m_players[m_player_id].get_height()/2, TextManager::CENTER, TextManager::LAYER_MAIN, m_window));
 	
 	// REMOVE THESE WHEN THE SERVER SENDS GAME START, ETC.
 	m_players[m_player_id].set_is_invisible(false);
@@ -467,7 +467,7 @@ void GameController::announce(PacketReader& reader) {
 	}
 	// TEMPORARY SPRITE CODE
 	m_window->register_graphic(m_players[playerid].get_sprite());
-	m_players[playerid].set_name_sprite(m_text_manager->place_string(m_players[playerid].get_name(), m_players[playerid].get_x(), m_players[playerid].get_y()-m_players[playerid].get_height()/2, TextManager::CENTER, m_window));
+	m_players[playerid].set_name_sprite(m_text_manager->place_string(m_players[playerid].get_name(), m_players[playerid].get_x(), m_players[playerid].get_y()-m_players[playerid].get_height()/2, TextManager::CENTER, TextManager::LAYER_MAIN, m_window));
 	m_players[playerid].set_radius(50);
 }
 
@@ -492,7 +492,7 @@ void GameController::player_update(PacketReader& reader) {
 	
 	if (flags.find_first_of('I') == string::npos) {
 		currplayer->set_is_invisible(false);
-		m_text_manager->reposition_string(m_players[player_id].get_name_sprite(), x + m_screen_width/2 - m_players[m_player_id].get_x(), y - m_players[player_id].get_height()/2 + m_screen_height/2 - m_players[m_player_id].get_y(), TextManager::CENTER);
+		m_text_manager->reposition_string(m_players[player_id].get_name_sprite(), x, y - m_players[player_id].get_height()/2, TextManager::CENTER);
 	} else {
 		currplayer->set_is_invisible(true);
 		m_text_manager->reposition_string(m_players[player_id].get_name_sprite(), -1000, -1000, TextManager::CENTER); // MOVE STRING OFF SCREEN
