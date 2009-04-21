@@ -486,6 +486,7 @@ void GameController::leave(PacketReader& reader) {
 	unsigned int playerid;
 	reader >> playerid;
 	
+	m_text_manager->remove_string(m_players[playerid].get_name_sprite(), m_window);
 	m_window->unregister_graphic(m_players[playerid].get_sprite());
 	delete m_players[playerid].get_sprite();
 	m_players.erase(playerid);

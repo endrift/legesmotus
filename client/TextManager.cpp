@@ -62,6 +62,7 @@ void TextManager::remove_string(Sprite *text, GameWindow* window) {
 			continue;
 		}
 		m_texts.erase(iter);
+		break;
 	}
 	if(window != NULL) {
 		window->unregister_hud_graphic(text);
