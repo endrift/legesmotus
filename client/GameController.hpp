@@ -59,6 +59,7 @@ private:
 	
 	// TEMPORARY SPRITE CODE
 	Sprite*		new_sprite;
+	Sprite*		new_sprite_b;
 	Sprite*		m_crosshairs;
 
 	// TEMPORARY MAP CODE BY ANDREW

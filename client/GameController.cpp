@@ -34,6 +34,7 @@ GameController::GameController(int width, int height) {
 GameController::~GameController() {
 	// TEMPORARY SPRITE CODE
 	delete new_sprite;
+	delete new_sprite_b;
 	delete m_crosshairs;
 
 	// TEMPORARY MAP CODE BY ANDREW
@@ -47,6 +48,8 @@ GameController::~GameController() {
 }
 
 void GameController::init(int width, int height, int depth, bool fullscreen) {
+	srand ( time(NULL) );
+	
 	initialize_key_bindings();
 	
 	m_screen_width = width;
@@ -73,6 +76,7 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 
 	// TEMPORARY SPRITE CODE
 	new_sprite = new Sprite("data/sprites/blue_full.png");
+	new_sprite_b = new Sprite("data/sprites/red_full.png");
 	m_crosshairs = new Sprite("data/sprites/crosshairs.png");
 	m_crosshairs->set_priority(-1);
 	m_window->register_hud_graphic(m_crosshairs);
@@ -346,6 +350,12 @@ void GameController::connect_to_server(const char* host, unsigned int port) {
 	PacketWriter join_request(JOIN_PACKET);
 	join_request << m_protocol_number;
 	join_request << "MyName";
+	int team = rand() % 2;
+	if (team == 0) {
+		join_request << 'A';
+	} else {
+		join_request << 'B';
+	}
 	
 	m_network.send_packet(join_request);
 }
@@ -371,13 +381,19 @@ void GameController::welcome(PacketReader& reader) {
 	cerr << "Received welcome packet. Version: " << serverversion << ", Player ID: " << playerid << ", Team: " << team << endl;
 	
 	m_players.clear();
-	m_players.insert(pair<int, GraphicalPlayer>(m_player_id,GraphicalPlayer("MyName", m_player_id, team, new_sprite, new_sprite->get_width()/2, new_sprite->get_height()/2)));
-	m_players[m_player_id].set_radius(50);
 	
-	m_text_manager->set_active_color(0.4, 0.3, 0.0);
+	if (team == 'A') {
+		m_players.insert(pair<int, GraphicalPlayer>(m_player_id,GraphicalPlayer("MyName", m_player_id, team, new_sprite, new_sprite->get_width()/2, new_sprite->get_height()/2)));
+		m_text_manager->set_active_color(0.0, 0.0, 0.7);
+		m_window->register_graphic(new_sprite);
+	} else {
+		m_players.insert(pair<int, GraphicalPlayer>(m_player_id,GraphicalPlayer("MyName", m_player_id, team, new_sprite_b, new_sprite_b->get_width()/2, new_sprite_b->get_height()/2)));
+		m_text_manager->set_active_color(0.7, 0.0, 0.0);
+		m_window->register_graphic(new_sprite_b);
+	}
+	
+	m_players[m_player_id].set_radius(50);
 	m_players[m_player_id].set_name_sprite(m_text_manager->place_string(m_players[m_player_id].get_name(), m_screen_width/2, (m_screen_height/2)-m_players[m_player_id].get_height()/2, TextManager::CENTER, m_window));
-	// TEMPORARY SPRITE CODE
-	m_window->register_graphic(new_sprite);
 	
 	// PUT THESE BACK WHEN THE SERVER SENDS GAME START, ETC.
 	m_players[m_player_id].set_is_invisible(true);
@@ -396,9 +412,14 @@ void GameController::announce(PacketReader& reader) {
 		return;
 	}
 	
-	m_text_manager->set_active_color(0.4, 0.3, 0.0);
+	if (team == 'A') {
+		m_players.insert(pair<int, GraphicalPlayer>(playerid,GraphicalPlayer((const char*)playername.c_str(), playerid, team, new Sprite(*new_sprite))));
+		m_text_manager->set_active_color(0.0, 0.0, 0.6);
+	} else {
+		m_players.insert(pair<int, GraphicalPlayer>(playerid,GraphicalPlayer((const char*)playername.c_str(), playerid, team, new Sprite(*new_sprite_b))));
+		m_text_manager->set_active_color(0.6, 0.0, 0.0);
+	}
 	// TEMPORARY SPRITE CODE
-	m_players.insert(pair<int, GraphicalPlayer>(playerid,GraphicalPlayer((const char*)playername.c_str(), playerid, team, new Sprite(*new_sprite))));
 	m_window->register_graphic(m_players[playerid].get_sprite());
 	m_players[playerid].set_name_sprite(m_text_manager->place_string(m_players[playerid].get_name(), m_players[playerid].get_x(), m_players[playerid].get_y()-m_players[playerid].get_height()/2, TextManager::CENTER, m_window));
 	m_players[playerid].set_radius(50);
