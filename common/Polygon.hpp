@@ -27,6 +27,9 @@ public:
 
 	// Return true if this bounding polygon contains the point
 	bool			contains(Point point) const;
+	
+	// Return the distance if this bounding polygon intersects with the circle. Otherwise returns -1.
+	double			intersects_circle(Point* point, double radius) const;
 
 	bool			is_empty() const { return m_lines.empty(); }
 	bool			is_filled() const { return !m_lines.empty(); }

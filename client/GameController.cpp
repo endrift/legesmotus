@@ -105,13 +105,15 @@ void GameController::run(int lockfps) {
 			m_players[m_player_id].set_is_frozen(false);
 		}
 		
-		move_objects((SDL_GetTicks() - lastmoveframe) / delay); // scale all position changes to keep game speed constant. 
-		
-		lastmoveframe = SDL_GetTicks();
-		
 		// Update graphics if frame rate is correct
-		unsigned long currframe = lastmoveframe;
+		unsigned long currframe = SDL_GetTicks();
 		if((currframe - startframe) >= delay) {
+		
+				
+			move_objects((SDL_GetTicks() - lastmoveframe) / delay); // scale all position changes to keep game speed constant. 
+		
+			lastmoveframe = SDL_GetTicks();
+			
 			// the framerate:
 			int framerate = (1000/(currframe - startframe));
 			
@@ -246,6 +248,31 @@ void GameController::move_objects(float timescale) {
 		m_players[m_player_id].set_velocity(0, 0);
 	}
 	
+	const list<MapObject>& map_objects(m_map->get_objects());
+	list<MapObject>::const_iterator thisobj;
+	int radius = m_players[m_player_id].get_radius();
+	Point currpos = Point(new_x, new_y);
+	Point oldpos = Point(m_players[m_player_id].get_x(), m_players[m_player_id].get_y());
+	//cerr << "Start: " << SDL_GetTicks() << endl;
+	for (thisobj = map_objects.begin(); thisobj != map_objects.end(); thisobj++) {
+		if (thisobj->get_sprite() == NULL) {
+			continue;
+		}
+		const Polygon& poly(thisobj->get_bounding_polygon());
+		double newdist = poly.intersects_circle(&currpos, radius);
+		double olddist = poly.intersects_circle(&oldpos, radius);
+		if (newdist != -1) {
+			if (newdist < olddist) {
+				//cerr << "New dist: " << newdist << " Old dist: " << olddist << endl;
+				//cerr << "Hitting object" << endl;
+				m_players[m_player_id].set_velocity(0, 0);
+				new_x = m_players[m_player_id].get_x();
+				new_y = m_players[m_player_id].get_y();
+			}
+		}
+	}
+	//cerr << "End: " << SDL_GetTicks() << endl;
+	
 	//m_text_manager->reposition_string(m_players[m_player_id].get_name_sprite(), new_x, new_y, TextManager::CENTER);
 	m_players[m_player_id].set_x(new_x);
 	m_players[m_player_id].set_y(new_y);
@@ -291,6 +318,21 @@ void GameController::attempt_jump() {
 	} else if (player->get_y() + (player->get_height()/2) >= m_map_height - 5) {
 		player->set_x_vel(x_vel);
 		player->set_y_vel(y_vel);
+	}
+
+	list<MapObject>::const_iterator thisobj;
+	const list<MapObject>& map_objects(m_map->get_objects());
+	Point currpos = Point(player->get_x(), player->get_y());
+	for (thisobj = map_objects.begin(); thisobj != map_objects.end(); thisobj++) {
+		if (thisobj->get_sprite() == NULL) {
+			continue;
+		}
+		const Polygon& poly(thisobj->get_bounding_polygon());
+		double newdist = poly.intersects_circle(&currpos, player->get_radius());
+		if (newdist != -1) {
+			player->set_x_vel(x_vel);
+			player->set_y_vel(y_vel);
+		}
 	}
 }
 
@@ -396,7 +438,7 @@ void GameController::welcome(PacketReader& reader) {
 		m_window->register_graphic(new_sprite_b);
 	}
 	
-	m_players[m_player_id].set_radius(50);
+	m_players[m_player_id].set_radius(30);
 	m_players[m_player_id].set_name_sprite(m_text_manager->place_string(m_players[m_player_id].get_name(), m_screen_width/2, (m_screen_height/2)-m_players[m_player_id].get_height()/2, TextManager::CENTER, m_window));
 	
 	// REMOVE THESE WHEN THE SERVER SENDS GAME START, ETC.
