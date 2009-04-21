@@ -71,14 +71,14 @@ void	GraphicalMap::add_object(PacketReader& object_data) {
 					while (object_data.has_more()) {
 						Point	next_point;
 						object_data >> next_point;
-						bounding_polygon.add_line(previous_point, next_point);
+						bounding_polygon.add_line(upper_left + previous_point, upper_left + next_point); // Translate to be relative to the upper left of the map
 
 						previous_point = next_point;
 					}
-					bounding_polygon.add_line(previous_point, first_point);
+					bounding_polygon.add_line(upper_left + previous_point, upper_left + first_point); // Translate to be relative to the upper left of the map
 				} else {
 					// If no points were specified in the file, assume it's a rectangle representing the width and height of the sprite.
-					bounding_polygon.make_rectangle(sprite->get_image_width(), sprite->get_image_height());
+					bounding_polygon.make_rectangle(sprite->get_image_width(), sprite->get_image_height(), upper_left);
 				}
 
 				sprite->set_priority(Graphic::OBSTACLE);

@@ -23,6 +23,7 @@ public:
 
 	// Set the polygon to a rectangle of the given width and height
 	void			make_rectangle(int width, int height);
+	void			make_rectangle(int width, int height, Point upper_left); // make the rectangle starting at given upper left corner
 
 	// Return true if this bounding polygon contains the point
 	bool			contains(Point point) const;

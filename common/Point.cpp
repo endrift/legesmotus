@@ -19,3 +19,7 @@ void	Point::init_from_string(const char* str) {
 ostream&	operator<<(ostream& out, Point point) {
 	return out << point.x << ',' << point.y;
 }
+
+Point	operator+(Point a, Point b) {
+	return Point(a.x + b.x, a.y + b.y);
+}

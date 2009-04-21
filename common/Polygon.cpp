@@ -21,6 +21,14 @@ void	Polygon::make_rectangle(int width, int height) {
 	add_line(Point(0, height), Point(0, 0));
 }
 
+void	Polygon::make_rectangle(int width, int height, Point upper_left) {
+	clear();
+	add_line(upper_left, upper_left + Point(width, 0));
+	add_line(upper_left + Point(width, 0), upper_left + Point(width, height));
+	add_line(upper_left + Point(width, height), upper_left + Point(0, height));
+	add_line(upper_left + Point(0, height), upper_left);
+}
+
 bool	Polygon::contains(Point a) const { // TODO
 	return false;
 }

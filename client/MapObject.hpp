@@ -19,7 +19,7 @@ private:
 	Point			m_upper_left;
 	Graphic*		m_sprite;
 	char			m_team;			// 'A', 'B', or 0
-	Polygon			m_bounding_polygon;	// Note: coordinates in this polygon are RELATIVE to m_upper_left
+	Polygon			m_bounding_polygon;	// Note: coordinates in this polygon are relative to upper left corner of MAP
 
 public:
 	MapObject(int type, Point upper_left);
