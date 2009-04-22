@@ -39,8 +39,8 @@ test
 3~1~0,350~B
 3~1~0,400~B
 # Obstacles
-1~1~128,256~metal_obstacle64
-1~1~128,256~metal_obstacle64
+1~1~64,256~metal_obstacle64
+1~1~128,256~metal_obstacle128
 1~1~320,320~metal_obstacle64
 1~1~512,96~metal_obstacle64
 1~1~512,416~metal_obstacle64
