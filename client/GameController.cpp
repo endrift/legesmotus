@@ -259,8 +259,8 @@ void GameController::move_objects(float timescale) {
 			continue;
 		}
 		const Polygon& poly(thisobj->get_bounding_polygon());
-		double newdist = poly.intersects_circle(&currpos, radius);
-		double olddist = poly.intersects_circle(&oldpos, radius);
+		double newdist = poly.intersects_circle(currpos, radius);
+		double olddist = poly.intersects_circle(oldpos, radius);
 		if (newdist != -1) {
 			if (newdist < olddist) {
 				//cerr << "New dist: " << newdist << " Old dist: " << olddist << endl;
@@ -328,7 +328,7 @@ void GameController::attempt_jump() {
 			continue;
 		}
 		const Polygon& poly(thisobj->get_bounding_polygon());
-		double newdist = poly.intersects_circle(&currpos, player->get_radius());
+		double newdist = poly.intersects_circle(currpos, player->get_radius());
 		if (newdist != -1) {
 			player->set_x_vel(x_vel);
 			player->set_y_vel(y_vel);

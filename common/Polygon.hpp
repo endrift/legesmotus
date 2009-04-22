@@ -12,6 +12,7 @@
 #include <utility>
 #include "common/Point.hpp"
 
+// A polygon is collection of lines which should all join together to create a polygon
 class Polygon {
 private:
 	std::list<std::pair<Point, Point> >	m_lines;
@@ -25,12 +26,11 @@ public:
 	void			make_rectangle(int width, int height);
 	void			make_rectangle(int width, int height, Point upper_left); // make the rectangle starting at given upper left corner
 
-	// Return true if this bounding polygon contains the point
-	bool			contains(Point point) const;
-	
 	// Return the distance if this bounding polygon intersects with the circle. Otherwise returns -1.
-	double			intersects_circle(Point* point, double radius) const;
+	double			intersects_circle(Point point, double radius) const;
 
+	// Are there any lines in this polygon?
+	// An empty polygon would be used (for example) in a non-intersectable map object (i.e. a decoration or background)
 	bool			is_empty() const { return m_lines.empty(); }
 	bool			is_filled() const { return !m_lines.empty(); }
 

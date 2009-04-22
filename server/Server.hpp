@@ -120,6 +120,10 @@ private:
 	bool			waiting_to_spawn() const; // Return true if we're waiting to spawn players
 	uint32_t		time_until_spawn() const; // Time in ms until players should spawn
 
+	// Returns the player with given player_id, NULL if not found
+	ServerPlayer*		get_player(uint32_t player_id);
+	const ServerPlayer*	get_player(uint32_t player_id) const;
+
 	//
 	// Main Loop Helpers
 	//
@@ -139,6 +143,7 @@ public:
 	void		join(int channel, PacketReader& packet);
 	void		leave(int channel, PacketReader& packet);
 	void		player_shot(int channel, PacketReader& packet);
+	void		message(int channel, PacketReader& packet);
 	void		gun_fired(int channel, PacketReader& packet);
 	void		gate_lowering(int channel, PacketReader& packet);
 

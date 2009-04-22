@@ -34,6 +34,43 @@ void	Server::player_update(int channel, PacketReader& packet)
 	rebroadcast_packet(packet, channel);
 }
 
+void	Server::message(int channel, PacketReader& packet)
+{
+	uint32_t		sender_id = 0;
+	string			recipient;
+	string			message;
+
+	packet >> sender_id >> recipient >> message;
+
+	if (!is_authorized(channel, sender_id)) {
+		return;
+	}
+
+	PacketWriter		outbound_packet(MESSAGE_PACKET);
+	outbound_packet << sender_id << recipient << message;
+
+	if (recipient.empty()) {
+		// To everyone
+		m_network.broadcast_packet(outbound_packet);
+	} else if (recipient == "A" || recipient == "B") {
+		// Specific Team
+		char				recipient_team = recipient[0];
+		player_map::const_iterator	it(m_players.begin());
+		while (it != m_players.end()) {
+			if (it->second.get_team() == recipient_team) {
+				m_network.send_packet(it->second.get_channel(), outbound_packet);
+			}
+			++it;
+		}
+	} else {
+		// Specific player
+		uint32_t	recipient_id = atol(recipient.c_str());
+		if (const ServerPlayer* recipient_player = get_player(recipient_id)) {
+			m_network.send_packet(recipient_player->get_channel(), outbound_packet);
+		}
+	}
+}
+
 void	Server::player_shot(int channel, PacketReader& packet)
 {
 	// Just broadcast this packet to all other players
@@ -179,12 +216,12 @@ void	Server::run(int portno)
 //  - player_id: the player ID which the packet claims to represent
 bool	Server::is_authorized(int channel, uint32_t player_id) const {
 	// Look up the player ID in the players map
-	player_map::const_iterator	it(m_players.find(player_id));
+	const ServerPlayer*	player = get_player(player_id);
 	
 	// Make sure that both:
 	//  1. The alleged player actually exists, and
 	//  2. The player's stored channel matches the channel that the request is coming from
-	return it != m_players.end() && it->second.get_channel() == channel;
+	return player != NULL && player->get_channel() == channel;
 }
 
 void	Server::rebroadcast_packet(PacketReader& packet, int exclude_channel) {
@@ -369,5 +406,15 @@ uint32_t Server::time_until_spawn() const {
 		}
 	}
 	return 0;
+}
+
+ServerPlayer*		Server::get_player(uint32_t player_id) {
+	player_map::iterator it(m_players.find(player_id));
+	return it != m_players.end() ? &it->second : NULL;
+}
+
+const ServerPlayer*	Server::get_player(uint32_t player_id) const {
+	player_map::const_iterator it(m_players.find(player_id));
+	return it != m_players.end() ? &it->second : NULL;
 }
 

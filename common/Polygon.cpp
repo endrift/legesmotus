@@ -32,29 +32,25 @@ void	Polygon::make_rectangle(int width, int height, Point upper_left) {
 	add_line(upper_left + Point(0, height), upper_left);
 }
 
-bool	Polygon::contains(Point a) const { // TODO
-	return false;
-}
-
-double	Polygon::intersects_circle(Point* p, double radius) const {
+double	Polygon::intersects_circle(Point p, double radius) const {
 	list<pair<Point, Point> >::const_iterator it;
 	for ( it=m_lines.begin() ; it != m_lines.end(); it++ ) {
 		int x1 = it->first.x;
 		int y1 = it->first.y;
 		int x2 = it->second.x;
 		int y2 = it->second.y;
-		double dtoline = fabs( (x2-x1)*(y1-p->y) - (x1-p->x)*(y2-y1) ) / sqrt( (x2-x1)*(x2-x1) + (y2-y1)*(y2-y1) );
-		double partofline = ((p->x - x1) * (x2 - x1) + (p->y - y1) * (y2 - y1)) / fabs(((x2-x1) * (x2-x1)) + ((y2-y1) * (y2-y1)));
+		double dtoline = fabs( (x2-x1)*(y1-p.y) - (x1-p.x)*(y2-y1) ) / sqrt( (x2-x1)*(x2-x1) + (y2-y1)*(y2-y1) );
+		double partofline = ((p.x - x1) * (x2 - x1) + (p.y - y1) * (y2 - y1)) / fabs(((x2-x1) * (x2-x1)) + ((y2-y1) * (y2-y1)));
 		if (dtoline < radius && partofline > 0 && partofline < 1) {
 			return dtoline;
 		}
 		
-		double dtocorner = sqrt((x1-p->x) * (x1-p->x) + (y1-p->y) * (y1-p->y));
+		double dtocorner = sqrt((x1-p.x) * (x1-p.x) + (y1-p.y) * (y1-p.y));
 		if (dtocorner < radius) {
 			return dtocorner;
 		}
 		
-		dtocorner = sqrt((x2-p->x) * (x2-p->x) + (y2-p->y) * (y2-p->y));
+		dtocorner = sqrt((x2-p.x) * (x2-p.x) + (y2-p.y) * (y2-p.y));
 		if (dtocorner < radius) {
 			return dtocorner;
 		}
