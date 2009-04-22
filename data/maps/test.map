@@ -1,6 +1,27 @@
 test
-800 480
-5~1~0,0~metal_bgtile~800~480~0,0
+800 512
+# Background
+5~1~0,0~metal_bgtile~800~512~0,0
+5~1~-64,192~metal_bgtile~64~128~0,0
+5~1~800,192~metal_bgtile~64~128~0,0
+# Walls
+5~1~0,512~metal_wall_s32~800~32~0,0
+5~1~0,-32~metal_wall_n32~800~32~0,0
+5~1~800,0~metal_wall_e32~32~192~0,0
+4~1~800,192~metal_gate_e
+5~1~800,320~metal_wall_e32~32~192~0,0
+5~1~-32,0~metal_wall_w32~32~192~0,0
+4~1~-64,192~metal_gate_w
+5~1~-32,320~metal_wall_w32~32~192~0,0
+# Wall Corners
+4~1~800,-32~metal_wall_ne32
+4~1~-32,-32~metal_wall_nw32
+4~1~-32,512~metal_wall_sw32
+4~1~800,512~metal_wall_se32
+# Gates
+#2~1~-8,200~E~A
+#2~1~744,200~W~B
+# Spawnpoints
 3~1~0,50~A
 3~1~0,100~A
 3~1~0,150~A
@@ -17,6 +38,7 @@ test
 3~1~0,300~B
 3~1~0,350~B
 3~1~0,400~B
+# Obstacles
 1~1~128,256~metal_obstacle64
 1~1~128,256~metal_obstacle64
 1~1~320,320~metal_obstacle64
@@ -24,11 +46,3 @@ test
 1~1~512,416~metal_obstacle64
 1~1~608,192~metal_obstacle64
 1~1~608,256~metal_obstacle64
-5~1~0,480~metal_wall_s32~800~32~0,0
-5~1~0,-32~metal_wall_n32~800~32~0,0
-5~1~800,0~metal_wall_e32~32~480~0,0
-5~1~-32,0~metal_wall_w32~32~480~0,0
-4~1~800,-32~metal_wall_ne32
-4~1~-32,-32~metal_wall_nw32
-4~1~-32,480~metal_wall_sw32
-4~1~800,480~metal_wall_se32
