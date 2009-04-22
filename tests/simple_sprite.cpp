@@ -22,11 +22,11 @@ extern "C" int main(int argc, char* argv[]) {
 	afront.set_center_x(46);
 	afront.set_center_y(26);
 	afront.set_x(14);
-	afront.set_y(-24);
+	afront.set_y(-20);
 	aback.set_center_x(28);
 	aback.set_center_y(25);
 	aback.set_x(-4);
-	aback.set_y(-25);
+	aback.set_y(-21);
 	tg.set_start_x(250-64);
 	tg.set_start_y(250-64);
 	tg.set_width(128);
