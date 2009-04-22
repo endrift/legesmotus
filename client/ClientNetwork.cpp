@@ -105,7 +105,7 @@ void	ClientNetwork::process_packet(GameController& controller, const RawPacket& 
 		break;
 
 	case MESSAGE_PACKET:
-		//controller.message(reader);
+		controller.message(reader);
 		break;
 
 	case GAME_START_PACKET:

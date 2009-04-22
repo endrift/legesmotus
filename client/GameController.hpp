@@ -30,7 +30,10 @@ private:
 		int show_overlay;
 		int show_menu;
 		int open_chat;
+		int send_chat;
 	};
+	
+	const static int MESSAGE_DISPLAY_TIME = 10000;
 	
 	GameWindow* 	m_window;
 	ClientNetwork	m_network;
@@ -39,6 +42,8 @@ private:
 	
 	std::string	m_name;
 	std::string 	m_client_version;
+	std::string	m_input_text;
+	std::vector<std::pair<Sprite*, int> > m_messages;
 	int		m_protocol_number;
 	int 		m_screen_width;
 	int 		m_screen_height;
@@ -63,6 +68,7 @@ private:
 	Sprite*		new_sprite;
 	Sprite*		new_sprite_b;
 	Sprite*		m_crosshairs;
+	Sprite*		m_input_bar;
 
 	// TEMPORARY MAP CODE BY ANDREW
 	GraphicalMap*	m_map;
@@ -86,6 +92,8 @@ public:
 	void		disconnect();
 	void		player_fired(unsigned int player_id, double start_x, double start_y, double direction);
 	void		send_player_shot(unsigned int shooter_id, unsigned int hit_player_id);
+	void		send_message(std::string message);
+	void		display_message(std::string message, double red=1, double green=1, double blue=1);
 	
 	// Network callbacks:
 	void		welcome(PacketReader& reader);
@@ -94,6 +102,7 @@ public:
 	void		leave(PacketReader& reader);
 	void		gun_fired(PacketReader& reader);
 	void		player_shot(PacketReader& reader);
+	void		message(PacketReader& reader);
 };
 
 #endif

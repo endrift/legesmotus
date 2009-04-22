@@ -55,6 +55,8 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_screen_width = width;
 	m_screen_height = height;
 	
+	m_input_text = "> ";
+	
 	m_client_version = "0.0.2";
 	m_protocol_number = 1;
 	
@@ -65,7 +67,7 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 
 	m_time_to_unfreeze = 0;
 
-	m_font = new Font("data/fonts/JuraMedium.ttf", 10);
+	m_font = new Font("data/fonts/JuraMedium.ttf", 12);
 	m_text_manager = new TextManager(m_font);
 
 	// TEMPORARY MAP CODE BY ANDREW
@@ -92,6 +94,8 @@ void GameController::run(int lockfps) {
 	/* 1 second / FPS = milliseconds per frame */
 	double delay = 1000.0 / lockfps;
 	
+	display_message("Welcome to Leges Motus!");
+	
 	while(m_quit_game == false) {
 		process_input();
 		
@@ -108,7 +112,17 @@ void GameController::run(int lockfps) {
 		// Update graphics if frame rate is correct
 		unsigned long currframe = SDL_GetTicks();
 		if((currframe - startframe) >= delay) {
-		
+			for (unsigned int i = 0; i < m_messages.size(); i++) {
+				if (m_messages[i].second < currframe) {
+					m_text_manager->remove_string(m_messages[i].first, m_window);
+					m_messages.erase(m_messages.begin() + i);
+				}
+			}
+			
+			for (unsigned int i = 0; i < m_messages.size(); i++) {
+				int y = 20 + (m_font->ascent() + m_font->descent() + 5) * i;
+				m_text_manager->reposition_string(m_messages[i].first, 20, y, TextManager::LEFT);
+			}
 				
 			move_objects((SDL_GetTicks() - lastmoveframe) / delay); // scale all position changes to keep game speed constant. 
 		
@@ -148,9 +162,54 @@ void GameController::process_input() {
 	while(SDL_PollEvent(&event) != 0) {
 		switch(event.type) {
 			case SDL_KEYDOWN:
-				//Check which key using: event.key.keysym.sym == SDLK_<SOMETHING>
-				if (event.key.keysym.sym == m_key_bindings.jump) {
-					attempt_jump();
+				if (event.key.keysym.sym == m_key_bindings.quit) {
+					if (m_input_bar != NULL) {
+						SDL_EnableUNICODE(0);
+						m_text_manager->remove_string(m_input_bar, m_window);
+						m_input_bar = NULL;
+						m_input_text = "> ";
+					} else {
+						cerr << "Quit key pressed - quitting." << endl;
+						m_quit_game = true;
+					}
+				}
+				
+				if (m_input_bar != NULL) {
+					if (event.key.keysym.sym == m_key_bindings.send_chat) {
+						send_message(m_input_text.substr(2));
+					
+						SDL_EnableUNICODE(0);
+						m_text_manager->remove_string(m_input_bar, m_window);
+						m_input_bar = NULL;
+						m_input_text = "> ";
+					} else if (event.key.keysym.sym == SDLK_BACKSPACE) {
+						m_input_text.erase(m_input_text.length() - 1);
+						m_text_manager->remove_string(m_input_bar, m_window);
+						m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD, m_window);
+					} else {
+						if ( (event.key.keysym.unicode & 0xFF80) == 0 && event.key.keysym.unicode != 0) {
+							m_input_text.push_back(event.key.keysym.unicode & 0x7F);
+						} else {
+							// INTERNATIONAL CHARACTER... DO SOMETHING.
+						}
+						m_text_manager->remove_string(m_input_bar, m_window);
+						m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD, m_window);
+					}
+				} else {
+					//Check which key using: event.key.keysym.sym == SDLK_<SOMETHING>
+					if (event.key.keysym.sym == m_key_bindings.jump) {
+						attempt_jump();
+					} else if (event.key.keysym.sym == m_key_bindings.show_overlay) {
+						// TODO: Show the overlay.
+					} else if (event.key.keysym.sym == m_key_bindings.open_chat) {
+						SDL_EnableUNICODE(1);
+						m_text_manager->set_active_color(1, 1, 1);
+						if (m_input_bar == NULL) {
+							m_input_bar = m_text_manager->place_string("> ", 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD, m_window);
+						}
+					} else if (event.key.keysym.sym == m_key_bindings.show_menu) {
+						// TODO: Show the menu.
+					}
 				}
 				break;
 
@@ -201,22 +260,13 @@ void GameController::initialize_key_bindings() {
 	m_key_bindings.jump = SDLK_SPACE;
 	m_key_bindings.show_overlay = -1;
 	m_key_bindings.show_menu = -1;
-	m_key_bindings.open_chat = -1;
+	m_key_bindings.open_chat = SDLK_t;
+	m_key_bindings.send_chat = SDLK_RETURN;
 }
 
 void GameController::parse_key_input() {
 	// For keys that can be held down:
    	m_keys = SDL_GetKeyState(NULL);
-	if (m_keys[m_key_bindings.quit]) {
-		cerr << "Quit key pressed - quitting." << endl;
-		m_quit_game = true;
-	} else if (m_keys[m_key_bindings.show_overlay]) {
-		// TODO: Show the overlay.
-	} else if (m_keys[m_key_bindings.open_chat]) {
-		// TODO: Show the chat interface.
-	} else if (m_keys[m_key_bindings.show_menu]) {
-		// TODO: Show the menu.
-	}
 }
 
 void GameController::move_objects(float timescale) {
@@ -528,6 +578,13 @@ void GameController::send_my_player_update() {
 	m_network.send_packet(player_update);
 }
 
+void GameController::send_message(string message) {
+	PacketWriter message_writer(MESSAGE_PACKET);
+	// TODO: Add recipient before message.
+	message_writer << m_player_id << "" << message;
+	m_network.send_packet(message_writer);
+}
+
 void GameController::leave(PacketReader& reader) {
 	unsigned int playerid;
 	reader >> playerid;
@@ -566,6 +623,32 @@ void GameController::player_shot(PacketReader& reader) {
 		m_players[m_player_id].set_is_frozen(true);
 		m_time_to_unfreeze = SDL_GetTicks() + time_to_unfreeze;
 	}
+}
+
+void GameController::message(PacketReader& reader) {
+	unsigned int sender_id;
+	string recipient;
+	string message_text;
+	
+	reader >> sender_id >> recipient >> message_text;
+	
+	string message = m_players[sender_id].get_name();
+	message.append(": ");
+	message.append(message_text);
+	
+	char team = m_players[sender_id].get_team();
+	if (team == 'A') {
+		display_message(message, 0.0, 0.0, 1);
+	} else {
+		display_message(message, 1, 0.0, 0.0);
+	}
+}
+
+void GameController::display_message(string message, double red, double green, double blue) {
+	m_text_manager->set_active_color(red, green, blue);
+	int y = 20 + (m_font->ascent() + m_font->descent() + 5) * m_messages.size();
+	Sprite* message_sprite = m_text_manager->place_string(message, 20, y, TextManager::LEFT, TextManager::LAYER_HUD, m_window);
+	m_messages.push_back(pair<Sprite*, int>(message_sprite, SDL_GetTicks() + MESSAGE_DISPLAY_TIME));
 }
 
 GraphicalPlayer* GameController::get_player_by_id(unsigned int player_id) {

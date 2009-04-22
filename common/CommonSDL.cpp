@@ -14,6 +14,7 @@ CommonSDL::CommonSDL() {
 	if (SDL_Init(0) == - 1) {
 		throw LMException("Failed to initialize SDL.");
 	}
+	
 	if (SDLNet_Init() == -1) {
 		SDL_Quit();
 		throw LMException("Failed to initialize SDLNet.");
