@@ -56,6 +56,7 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_screen_height = height;
 	
 	m_input_text = "> ";
+	m_input_bar = NULL;
 	
 	m_client_version = "0.0.2";
 	m_protocol_number = 1;
