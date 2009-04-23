@@ -9,14 +9,18 @@
 #define LM_CLIENT_SOUNDCONTROLLER_HPP
 
 #include <string>
+#include "SDL_mixer.h"
 
 class SoundController {
+private:
+	Mix_Chunk* 	m_gunshot_sound;
+
 public:
 	SoundController();
 	~SoundController();
 	
-	void	play_sound(std::string sound);
-	int	main();
+	void		play_sound(std::string sound);
+	int		main();
 	
 };
 
