@@ -8,12 +8,14 @@
 #ifndef LM_CLIENT_SOUNDCONTROLLER_HPP
 #define LM_CLIENT_SOUNDCONTROLLER_HPP
 
+#include <string>
+
 class SoundController {
 public:
 	SoundController();
 	~SoundController();
 	
-	void	playSound(String sound);
+	void	play_sound(std::string sound);
 	int	main();
 	
 };

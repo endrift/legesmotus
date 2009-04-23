@@ -5,7 +5,8 @@
  * 
  */
 
-#include <SoundController.hpp>
+#include "SoundController.hpp"
+#include <iostream>
 
 using namespace std;
 
@@ -13,11 +14,11 @@ SoundController::SoundController() {
 
 }
 
-~SoundController::SoundController {
+SoundController::~SoundController() {
 
 }
 
-void SoundController::play_sound (String sound) {
+void SoundController::play_sound (string sound) {
 	cout << "HelloWorld" << endl;
 }
 
