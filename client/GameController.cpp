@@ -303,6 +303,8 @@ void GameController::move_objects(float timescale) {
 		m_players[m_player_id].set_velocity(0, 0);
 	}
 	
+	bool holdinggate = false;
+	
 	const list<MapObject>& map_objects(m_map->get_objects());
 	list<MapObject>::const_iterator thisobj;
 	int radius = m_players[m_player_id].get_radius();
@@ -326,12 +328,23 @@ void GameController::move_objects(float timescale) {
 					new_y = m_players[m_player_id].get_y();
 				}
 			}
-			if (thisobj->get_type() == Map::GATE) {
-				//cerr << "Holding down gate for team " << thisobj->get_team() << endl;
+			if (thisobj->get_type() == Map::GATE && !m_players[m_player_id].is_frozen()) {
+				if (!m_holding_gate) {
+					send_gate_hold(true);
+				}
+				m_holding_gate = true;
+				holdinggate = true;
 			}
 		}
 	}
 	//cerr << "End: " << SDL_GetTicks() << endl;
+	
+	if (!holdinggate) {
+		if (m_holding_gate) {
+			send_gate_hold(false);
+		}
+		m_holding_gate = false;
+	}
 	
 	//m_text_manager->reposition_string(m_players[m_player_id].get_name_sprite(), new_x, new_y, TextManager::CENTER);
 	m_players[m_player_id].set_x(new_x);
@@ -662,10 +675,22 @@ void GameController::gate_lowering(PacketReader& reader) {
 	uint32_t	lowering_player_id; 	// Who's lowering the gate?
 	char		team;			// Which team's gate is being lowered
 	double		progress;		// How much has the gate gone down? 0 == not at all .. 1 == all the way
-
+	reader >> lowering_player_id >> team >> progress;
+	
+	cerr << "Progress: " << progress << endl;
 	m_map->set_gate_progress(team, progress);
 
 	// TODO: use the player id to display a HUD message or something...
+}
+
+void GameController::send_gate_hold(bool holding) {
+	PacketWriter gate_hold(GATE_LOWERING_PACKET);
+	if (holding) {
+		gate_hold << m_player_id << m_players[m_player_id].get_team() << 1;
+	} else {
+		gate_hold << m_player_id << m_players[m_player_id].get_team() << 0;
+	}
+	m_network.send_packet(gate_hold);
 }
 
 void GameController::display_message(string message, double red, double green, double blue) {

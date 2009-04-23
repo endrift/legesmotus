@@ -62,6 +62,7 @@ private:
 	KeyBindings	m_key_bindings;
 	std::map<int, GraphicalPlayer> m_players;
 	unsigned int	m_player_id;
+	bool		m_holding_gate;
 	
 	// Do we want to keep it this way?
 	unsigned long	m_time_to_unfreeze;
@@ -96,6 +97,7 @@ public:
 	void		send_player_shot(unsigned int shooter_id, unsigned int hit_player_id);
 	void		send_message(std::string message);
 	void		display_message(std::string message, double red=1, double green=1, double blue=1);
+	void		send_gate_hold(bool holding);
 	
 	// Network callbacks:
 	void		welcome(PacketReader& reader);
