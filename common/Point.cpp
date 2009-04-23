@@ -23,3 +23,6 @@ ostream&	operator<<(ostream& out, Point point) {
 Point	operator+(Point a, Point b) {
 	return Point(a.x + b.x, a.y + b.y);
 }
+Point	operator-(Point a, Point b) {
+	return Point(a.x - b.x, a.y - b.y);
+}

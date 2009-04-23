@@ -18,6 +18,7 @@ using namespace std;
 
 GraphicalMap::GraphicalMap(GameWindow* window) {
 	m_window = window;
+	m_gates[0] = m_gates[1] = NULL;
 }
 
 GraphicalMap::~GraphicalMap() {
@@ -112,10 +113,27 @@ void	GraphicalMap::add_object(PacketReader& object_data) {
 		break;
 	case GATE:
 		{
-			// TODO: will gates have standard sprites/polygons?
 			char	team;
 			object_data >> team;
+
 			map_object.set_team(team);
+
+			string	sprite_path("data/sprites/"); // TODO: don't hard code, really
+			if (team == 'A') {
+				sprite_path += "blue_gate.png";
+				m_gates[0] = &map_object;
+			} else if (team == 'B') {
+				sprite_path += "red_gate.png";
+				m_gates[1] = &map_object;
+			}
+
+			// XXX: This assumes the height of the sprite is 1 pixel.
+			Sprite*	sprite = new Sprite(sprite_path.c_str());
+			sprite->set_priority(Graphic::BACKGROUND);
+			sprite->set_scale_y(double(GATE_HEIGHT));
+			map_object.set_sprite(sprite);
+
+			map_object.get_bounding_polygon().make_rectangle(sprite->get_image_width() + GATE_EXTENT * 2, GATE_HEIGHT, upper_left - Point(GATE_EXTENT, 0));
 		}
 
 		break;
@@ -126,5 +144,22 @@ void	GraphicalMap::add_object(PacketReader& object_data) {
 		m_window->register_graphic(map_object.get_sprite());
 	}
 
+}
+
+// progress is in [0.0,1.0]
+void	GraphicalMap::set_gate_progress(char team, double progress) {
+	if (MapObject* object = get_gate_object(team)) {
+		if (object->has_sprite()) {
+			object->get_sprite()->set_scale_y(GATE_HEIGHT * progress);
+		}
+	}
+}
+
+MapObject* 	GraphicalMap::get_gate_object(char team) {
+	if (team == 'A' || team == 'B') {
+		return m_gates[team - 'A'];
+	} else {
+		return NULL;
+	}
 }
 

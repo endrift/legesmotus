@@ -21,6 +21,14 @@ class GraphicalMap : public Map {
 private:
 	GameWindow* 			m_window;
 	std::list<MapObject>		m_objects;
+	MapObject*			m_gates[2];
+
+	enum {
+		GATE_HEIGHT = 109,	// Height of the gate bar
+		GATE_EXTENT = 24	// Extent to which the gate's bounding polygon should extend outwards horizontally from the actual sprite
+	}; // XXX: Don't hard code
+
+	MapObject*			get_gate_object(char team);
 
 public:
 	explicit GraphicalMap(GameWindow* window);
@@ -30,6 +38,9 @@ public:
 	virtual void			clear(); // Remove all objects
 
 	virtual void			add_object(PacketReader& data);
+
+	// progress is in [0.0,1.0]
+	void				set_gate_progress(char team, double progress);
 };
 
 #endif

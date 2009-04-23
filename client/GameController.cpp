@@ -316,9 +316,14 @@ void GameController::move_objects(float timescale) {
 			if (newdist < olddist) {
 				//cerr << "New dist: " << newdist << " Old dist: " << olddist << endl;
 				//cerr << "Hitting object" << endl;
-				m_players[m_player_id].set_velocity(0, 0);
-				new_x = m_players[m_player_id].get_x();
-				new_y = m_players[m_player_id].get_y();
+				if (thisobj->get_type() == Map::OBSTACLE) {
+					m_players[m_player_id].set_velocity(0, 0);
+					new_x = m_players[m_player_id].get_x();
+					new_y = m_players[m_player_id].get_y();
+				}
+			}
+			if (thisobj->get_type() == Map::GATE) {
+				//cerr << "Holding down gate for team " << thisobj->get_team() << endl;
 			}
 		}
 	}
@@ -376,6 +381,10 @@ void GameController::attempt_jump() {
 	Point currpos = Point(player->get_x(), player->get_y());
 	for (thisobj = map_objects.begin(); thisobj != map_objects.end(); thisobj++) {
 		if (thisobj->get_sprite() == NULL) {
+			continue;
+		}
+		if (thisobj->get_type() != Map::OBSTACLE) {
+			// Only obstacles can be jumped from
 			continue;
 		}
 		const Polygon& poly(thisobj->get_bounding_polygon());
@@ -645,6 +654,16 @@ void GameController::message(PacketReader& reader) {
 	}
 }
 
+void GameController::gate_lowering(PacketReader& reader) {
+	uint32_t	lowering_player_id; 	// Who's lowering the gate?
+	char		team;			// Which team's gate is being lowered
+	double		progress;		// How much has the gate gone down? 0 == not at all .. 1 == all the way
+
+	m_map->set_gate_progress(team, progress);
+
+	// TODO: use the player id to display a HUD message or something...
+}
+
 void GameController::display_message(string message, double red, double green, double blue) {
 	m_text_manager->set_active_color(red, green, blue);
 	int y = 20 + (m_font->ascent() + m_font->descent() + 5) * m_messages.size();
@@ -657,19 +676,3 @@ GraphicalPlayer* GameController::get_player_by_id(unsigned int player_id) {
 	return it == m_players.end() ? NULL : &it->second;
 }
 
-
-/* EXAMPLE
-void GameController::player_update(PacketReader& reader) {
-	long	player_id;
-	long	x;
-	long	y;
-	long	velocity_x;
-	long	velocity_y;
-	reader >> player_id >> x >> y >> velocity_x >> velocity_y;
-
-	PacketWriter		writer(PLAYER_UPDATE_PACKET);
-	writer << player_id << x << y << velocity_x << velocity_y;
-
-	network.send_packet(writer);
-}
-*/

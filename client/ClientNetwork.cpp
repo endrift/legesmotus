@@ -132,7 +132,7 @@ void	ClientNetwork::process_packet(GameController& controller, const RawPacket& 
 		break;
 
 	case GATE_LOWERING_PACKET:
-		//controller.gate_lowering(reader);
+		controller.gate_lowering(reader);
 		break;
 
 	case SHUTDOWN_PACKET:

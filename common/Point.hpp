@@ -25,5 +25,6 @@ public:
 std::ostream& operator<< (std::ostream& out, Point point);
 
 Point	operator+(Point a, Point b);
+Point	operator-(Point a, Point b);
 
 #endif

@@ -103,6 +103,7 @@ public:
 	void		gun_fired(PacketReader& reader);
 	void		player_shot(PacketReader& reader);
 	void		message(PacketReader& reader);
+	void		gate_lowering(PacketReader& reader);
 };
 
 #endif
