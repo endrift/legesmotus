@@ -255,6 +255,7 @@ void	Server::game_over(char winning_team) {
 
 void	Server::spawn_players() {
 	m_players_have_spawned = true;
+	/* TEMPORARILY DISABLE SERVER SPAWNING because it's ANNOYING
 	m_current_map.reset();
 	for (player_map::iterator it(m_players.begin()); it != m_players.end(); ++it) {
 		ServerPlayer&		player(it->second);
@@ -266,6 +267,7 @@ void	Server::spawn_players() {
 			// Oh noes! No place to spawn this player. TODO: do something about it
 		}
 	}
+	*/
 	// TODO: REQUIRE ACKs for these
 
 	PacketWriter		packet(GAME_START_PACKET);
