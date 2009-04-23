@@ -20,6 +20,31 @@ SoundController::SoundController() {
 	if(!m_gunshot_sound) {
 		printf("Mix_LoadWAV: %s\n", Mix_GetError());
 	}
+
+	m_freeze_sound = Mix_LoadWAV("data/sounds/enchant.mp3");
+	if(!m_freeze_sound) {
+		printf("Mix_LoadWAV: %s\n", Mix_GetError());
+	}
+
+	m_unfreeze_sound = Mix_LoadWAV("data/sounds/disenchant.mp3");
+	if(!m_unfreeze_sound) {
+		printf("Mix_LoadWAV: %s\n", Mix_GetError());
+	}
+
+	m_gate_siren_sound = Mix_LoadWAV("data/sounds/LMGateSiren.wav");
+	if(!m_gate_siren_sound) {
+		printf("Mix_LoadWAV: %s\n", Mix_GetError());
+	}
+
+	m_victory_sound = Mix_LoadWAV("data/sounds/LMGateSiren.wav");
+	if(!m_victory_sound) {
+		printf("Mix_LoadWAV: %s\n", Mix_GetError());
+	}
+
+	m_begin_sound = Mix_LoadWAV("data/sounds/clockchime1.wav");
+	if(!m_begin_sound) {
+		printf("Mix_LoadWAV: %s\n", Mix_GetError());
+	}
 }
 
 SoundController::~SoundController() {
@@ -29,6 +54,27 @@ SoundController::~SoundController() {
 void SoundController::play_sound (string sound) {
 	if(sound == "fire") {
 		if(Mix_PlayChannel(-1, m_gunshot_sound, 0) == -1) {
+			printf("Mix_PlayChannel: %s\n", Mix_GetError());
+		}
+	} else if(sound == "freeze") {
+		if(Mix_PlayChannel(-1, m_freeze_sound, 0) == -1) {
+			printf("Mix_PlayChannel: %s\n", Mix_GetError());
+		}
+	} else if(sound == "unfreeze") {
+		if(Mix_PlayChannel(-1, m_unfreeze_sound, 0) == -1) {
+			printf("Mix_PlayChannel: %s\n", Mix_GetError());
+		}
+	} else if(sound == "gatelower") {
+		if(Mix_PlayChannel(-1, m_gate_siren_sound, 0) == -1) {
+			printf("Mix_PlayChannel: %s\n", Mix_GetError());
+		}
+	} else if(sound == "victory") {
+		if(Mix_PlayChannel(-1, m_victory_sound, 0) == -1) {
+			printf("Mix_PlayChannel: %s\n", Mix_GetError());
+		}
+	}
+	else if(sound == "begin") {
+		if(Mix_PlayChannel(-1, m_begin_sound, 0) == -1) {
 			printf("Mix_PlayChannel: %s\n", Mix_GetError());
 		}
 	}

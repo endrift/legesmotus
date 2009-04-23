@@ -14,6 +14,11 @@
 class SoundController {
 private:
 	Mix_Chunk* 	m_gunshot_sound;
+	Mix_Chunk* 	m_freeze_sound;
+	Mix_Chunk* 	m_unfreeze_sound;
+	Mix_Chunk* 	m_gate_siren_sound;
+	Mix_Chunk* 	m_victory_sound;
+	Mix_Chunk* 	m_begin_sound;
 
 public:
 	SoundController();
