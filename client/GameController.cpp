@@ -110,7 +110,9 @@ void GameController::run(int lockfps) {
 		}
 		
 		if (!m_players.empty() && m_time_to_unfreeze < SDL_GetTicks() && m_time_to_unfreeze != 0) {
+			m_sound_controller->play_sound("unfreeze");
 			m_players[m_player_id].set_is_frozen(false);
+			m_time_to_unfreeze = 0;
 		}
 		
 		// Update graphics if frame rate is correct
@@ -635,6 +637,7 @@ void GameController::gun_fired(PacketReader& reader) {
 		return;
 	}
 	
+	m_sound_controller->play_sound("fire");
 	player_fired(playerid, start_x, start_y, rotation);
 }
 
@@ -646,6 +649,7 @@ void GameController::player_shot(PacketReader& reader) {
 	reader >> shooter_id >> shot_id >> time_to_unfreeze;
 	
 	if (shot_id == m_player_id) {
+		m_sound_controller->play_sound("freeze");
 		cerr << "I was hit! Time to unfreeze: " << time_to_unfreeze << endl;
 		m_players[m_player_id].set_is_frozen(true);
 		m_time_to_unfreeze = SDL_GetTicks() + time_to_unfreeze;
@@ -677,6 +681,10 @@ void GameController::gate_lowering(PacketReader& reader) {
 	double		progress;		// How much has the gate gone down? 0 == not at all .. 1 == all the way
 	reader >> lowering_player_id >> team >> progress;
 	
+	if (progress < .05) {
+		m_sound_controller->play_sound("gatelower");
+	}
+	
 	cerr << "Progress: " << progress << endl;
 	m_map->set_gate_progress(team, progress);
 
@@ -686,8 +694,10 @@ void GameController::gate_lowering(PacketReader& reader) {
 void GameController::send_gate_hold(bool holding) {
 	PacketWriter gate_hold(GATE_LOWERING_PACKET);
 	if (holding) {
+		cerr << "Sending: hold" << endl;
 		gate_hold << m_player_id << m_players[m_player_id].get_team() << 1;
 	} else {
+		cerr << "Sending: release" << endl;
 		gate_hold << m_player_id << m_players[m_player_id].get_team() << 0;
 	}
 	m_network.send_packet(gate_hold);
