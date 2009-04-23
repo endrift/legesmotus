@@ -12,6 +12,7 @@
 #include "GraphicalMap.hpp"
 #include "ClientNetwork.hpp"
 #include "TextManager.hpp"
+#include "SoundController.hpp"
 #include "common/PacketReader.hpp"
 #include "GraphicalPlayer.hpp"
 #include "Font.hpp"
@@ -38,6 +39,7 @@ private:
 	GameWindow* 	m_window;
 	ClientNetwork	m_network;
 	TextManager*	m_text_manager;
+	SoundController* m_sound_controller;
 	Font*		m_font;
 	
 	std::string	m_name;

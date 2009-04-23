@@ -41,6 +41,7 @@ GameController::~GameController() {
 	delete m_map;
 
 	delete m_text_manager;
+	delete m_sound_controller;
 	delete m_font;
 
 	// The GameWindow instance should always be destroyed last, since other stuff may depend on it.
@@ -70,6 +71,8 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 
 	m_font = new Font("data/fonts/JuraMedium.ttf", 12);
 	m_text_manager = new TextManager(m_font);
+	
+	m_sound_controller = new SoundController();
 
 	// TEMPORARY MAP CODE BY ANDREW
 	m_map = new GraphicalMap(m_window);
@@ -237,6 +240,7 @@ void GameController::process_input() {
 					double y_dist = (event.button.y + m_offset_y) - m_players[m_player_id].get_y();
 					double direction = atan2(y_dist, x_dist) * RADIANS_TO_DEGREES;
 					player_fired(m_player_id, m_players[m_player_id].get_x(), m_players[m_player_id].get_y(), direction);
+					m_sound_controller->play_sound("fire");
 				}
 				break;
 				
