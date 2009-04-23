@@ -146,11 +146,11 @@ void	GraphicalMap::add_object(PacketReader& object_data) {
 
 }
 
-// progress is in [0.0,1.0]
+// progress is in [0.0,1.0)
 void	GraphicalMap::set_gate_progress(char team, double progress) {
 	if (MapObject* object = get_gate_object(team)) {
 		if (object->has_sprite()) {
-			object->get_sprite()->set_scale_y(GATE_HEIGHT * progress);
+			object->get_sprite()->set_scale_y(GATE_HEIGHT * (1.0-progress));
 		}
 	}
 }

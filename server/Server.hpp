@@ -24,7 +24,7 @@ private:
 	// in milliseconds
 	enum {
 		INPUT_POLL_FREQUENCY = 3000,		// Poll for input from SDL at least every 3 seconds
-		GATE_UPDATE_FREQUENCY = 500		// When a gate is down, update players at least every 500 ms
+		GATE_UPDATE_FREQUENCY = 100		// When a gate is down, update players at least every 100 ms
 	};
 
 	// in milliseconds

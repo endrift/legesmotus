@@ -203,9 +203,7 @@ void	Server::run(int portno)
 			}
 		}
 		
-		while (m_is_running && m_network.receive_packets(*this, server_sleep_time())) {
-			process_input();
-		}
+		m_network.receive_packets(*this, server_sleep_time());
 
 		process_input();
 	}
