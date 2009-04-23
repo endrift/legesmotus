@@ -16,32 +16,32 @@ SoundController::SoundController() {
 		cout << "Error calling Mix_OpenAudio" << endl;
 	}
 
-	m_gunshot_sound = Mix_LoadWAV("data/sounds/LMGunshot.wav");
+	m_gunshot_sound = Mix_LoadWAV("data/sounds/LMGunshot.ogg");
 	if(!m_gunshot_sound) {
 		printf("Mix_LoadWAV: %s\n", Mix_GetError());
 	}
 
-	m_freeze_sound = Mix_LoadWAV("data/sounds/enchant.mp3");
+	m_freeze_sound = Mix_LoadWAV("data/sounds/enchant.ogg");
 	if(!m_freeze_sound) {
 		printf("Mix_LoadWAV: %s\n", Mix_GetError());
 	}
 
-	m_unfreeze_sound = Mix_LoadWAV("data/sounds/disenchant.mp3");
+	m_unfreeze_sound = Mix_LoadWAV("data/sounds/disenchant.ogg");
 	if(!m_unfreeze_sound) {
 		printf("Mix_LoadWAV: %s\n", Mix_GetError());
 	}
 
-	m_gate_siren_sound = Mix_LoadWAV("data/sounds/LMGateSiren.wav");
+	m_gate_siren_sound = Mix_LoadWAV("data/sounds/LMGateSiren.ogg");
 	if(!m_gate_siren_sound) {
 		printf("Mix_LoadWAV: %s\n", Mix_GetError());
 	}
 
-	m_victory_sound = Mix_LoadWAV("data/sounds/LMGateSiren.wav");
+	m_victory_sound = Mix_LoadWAV("data/sounds/LMGateSiren.ogg");
 	if(!m_victory_sound) {
 		printf("Mix_LoadWAV: %s\n", Mix_GetError());
 	}
 
-	m_begin_sound = Mix_LoadWAV("data/sounds/clockchime1.wav");
+	m_begin_sound = Mix_LoadWAV("data/sounds/clockchime1.ogg");
 	if(!m_begin_sound) {
 		printf("Mix_LoadWAV: %s\n", Mix_GetError());
 	}
