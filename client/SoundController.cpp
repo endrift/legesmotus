@@ -21,12 +21,12 @@ SoundController::SoundController() {
 		printf("Mix_LoadWAV: %s\n", Mix_GetError());
 	}
 
-	m_freeze_sound = Mix_LoadWAV("data/sounds/enchant.ogg");
+	m_unfreeze_sound = Mix_LoadWAV("data/sounds/enchant.ogg");
 	if(!m_freeze_sound) {
 		printf("Mix_LoadWAV: %s\n", Mix_GetError());
 	}
 
-	m_unfreeze_sound = Mix_LoadWAV("data/sounds/disenchant.ogg");
+	m_freeze_sound = Mix_LoadWAV("data/sounds/disenchant.ogg");
 	if(!m_unfreeze_sound) {
 		printf("Mix_LoadWAV: %s\n", Mix_GetError());
 	}

@@ -681,7 +681,7 @@ void GameController::gate_lowering(PacketReader& reader) {
 	double		progress;		// How much has the gate gone down? 0 == not at all .. 1 == all the way
 	reader >> lowering_player_id >> team >> progress;
 	
-	if (progress < .05) {
+	if (progress == 0) {
 		m_sound_controller->play_sound("gatelower");
 	}
 	
