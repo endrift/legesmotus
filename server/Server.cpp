@@ -178,8 +178,6 @@ void	Server::run(int portno)
 	}
 
 	m_is_running = true;
-	process_input();
-
 	while (m_is_running) {
 		if (m_players_have_spawned) {
 			// See if a gate has fallen
@@ -204,8 +202,6 @@ void	Server::run(int portno)
 		}
 		
 		m_network.receive_packets(*this, server_sleep_time());
-
-		process_input();
 	}
 }
 
@@ -290,7 +286,7 @@ void	Server::gate_lowering(int channel, PacketReader& packet) {
 }
 
 uint32_t	Server::server_sleep_time() const {
-	uint32_t	sleep_time = INPUT_POLL_FREQUENCY;
+	uint32_t	sleep_time = std::numeric_limits<uint32_t>::max();
 
 	if (m_players_have_spawned) {
 		if (get_gate('A').is_lowering() || get_gate('B').is_lowering()) {

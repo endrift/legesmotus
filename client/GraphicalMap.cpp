@@ -120,10 +120,10 @@ void	GraphicalMap::add_object(PacketReader& object_data) {
 
 			string	sprite_path("data/sprites/"); // TODO: don't hard code, really
 			if (team == 'A') {
-				sprite_path += "blue_gate.png";
+				sprite_path += "red_gate.png";
 				m_gates[0] = &map_object;
 			} else if (team == 'B') {
-				sprite_path += "red_gate.png";
+				sprite_path += "blue_gate.png";
 				m_gates[1] = &map_object;
 			}
 
@@ -146,11 +146,11 @@ void	GraphicalMap::add_object(PacketReader& object_data) {
 
 }
 
-// progress is in [0.0,1.0)
+// progress is in [0.0,1.0], where 0 == not lowered .. 1 == lowered all the way
 void	GraphicalMap::set_gate_progress(char team, double progress) {
 	if (MapObject* object = get_gate_object(team)) {
 		if (object->has_sprite()) {
-			object->get_sprite()->set_scale_y(GATE_HEIGHT * (1.0-progress));
+			object->get_sprite()->set_scale_y(GATE_HEIGHT * (1.0 - progress));
 		}
 	}
 }
