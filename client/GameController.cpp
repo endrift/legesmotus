@@ -71,7 +71,7 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 
 	m_time_to_unfreeze = 0;
 
-	m_font = new Font("data/fonts/JuraMedium.ttf", 12);
+	m_font = new Font("data/fonts/JuraMedium.ttf", 14);
 	m_text_manager = new TextManager(m_font, m_window);
 	
 	m_menu_font = new Font("data/fonts/JuraDemiBold.ttf", 34);
@@ -104,6 +104,10 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_main_menu_items["Options"] = m_text_manager->place_string("Options", 50, 250, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_main_menu_items["Quit"] = m_text_manager->place_string("Quit", 50, 300, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_text_manager->set_active_font(m_font);
+	m_text_manager->set_shadow_color(0.0, 0.0, 0.0);
+	m_text_manager->set_shadow_alpha(0.7);
+	m_text_manager->set_shadow_offset(1.0, 1.0);
+	m_text_manager->set_shadow(true);
 }
 
 void GameController::run(int lockfps) {
@@ -602,11 +606,11 @@ void GameController::welcome(PacketReader& reader) {
 	
 	if (team == 'A') {
 		m_players.insert(pair<int, GraphicalPlayer>(m_player_id,GraphicalPlayer(m_name.c_str(), m_player_id, team, new_sprite, new_sprite->get_width()/2, new_sprite->get_height()/2)));
-		m_text_manager->set_active_color(0.0, 0.0, 0.7);
+		m_text_manager->set_active_color(0.2, 0.2, 1.0);
 		m_window->register_graphic(new_sprite);
 	} else {
 		m_players.insert(pair<int, GraphicalPlayer>(m_player_id,GraphicalPlayer(m_name.c_str(), m_player_id, team, new_sprite_b, new_sprite_b->get_width()/2, new_sprite_b->get_height()/2)));
-		m_text_manager->set_active_color(0.7, 0.0, 0.0);
+		m_text_manager->set_active_color(1.0, 0.2, 0.2);
 		m_window->register_graphic(new_sprite_b);
 	}
 	
@@ -632,10 +636,10 @@ void GameController::announce(PacketReader& reader) {
 	
 	if (team == 'A') {
 		m_players.insert(pair<int, GraphicalPlayer>(playerid,GraphicalPlayer((const char*)playername.c_str(), playerid, team, new Sprite(*new_sprite))));
-		m_text_manager->set_active_color(0.0, 0.0, 0.6);
+		m_text_manager->set_active_color(0.2, 0.2, 1.0);
 	} else {
 		m_players.insert(pair<int, GraphicalPlayer>(playerid,GraphicalPlayer((const char*)playername.c_str(), playerid, team, new Sprite(*new_sprite_b))));
-		m_text_manager->set_active_color(0.6, 0.0, 0.0);
+		m_text_manager->set_active_color(1.0, 0.2, 0.2);
 	}
 	// TEMPORARY SPRITE CODE
 	m_window->register_graphic(m_players[playerid].get_sprite());
