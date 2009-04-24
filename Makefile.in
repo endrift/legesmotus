@@ -12,8 +12,8 @@ MACHINE = Windows
 endif
 endif
 
-FLAGS_SDL = $(shell sdl-config --cflags) -I/home/legesmotus/include/SDL
-LIBS_SDL = $(shell sdl-config --libs) -L/home/legesmotus/lib
+FLAGS_SDL = $(shell sdl-config --cflags)
+LIBS_SDL = $(shell sdl-config --libs)
 LIBS_SDL_OTHER = -lSDL_image -lSDL_ttf -lSDL_net -lSDL_mixer
 
 ifeq ($(MACHINE),Darwin)
