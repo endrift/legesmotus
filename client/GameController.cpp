@@ -53,6 +53,8 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	
 	initialize_key_bindings();
 	
+	m_game_state = SHOW_MENUS;
+	
 	m_screen_width = width;
 	m_screen_height = height;
 	
@@ -72,6 +74,8 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_font = new Font("data/fonts/JuraMedium.ttf", 12);
 	m_text_manager = new TextManager(m_font, m_window);
 	
+	m_menu_font = new Font("data/fonts/JuraDemiBold.ttf", 34);
+	
 	m_sound_controller = new SoundController();
 
 	// TEMPORARY MAP CODE BY ANDREW
@@ -86,6 +90,20 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_crosshairs = new Sprite("data/sprites/crosshairs.png");
 	m_crosshairs->set_priority(-1);
 	m_window->register_hud_graphic(m_crosshairs);
+	
+	m_logo = new Sprite("data/sprites/legesmotuslogo.png");
+	m_logo->set_x(m_screen_width/2);
+	m_logo->set_y(100);
+	m_logo->set_priority(-1);
+	m_window->register_hud_graphic(m_logo);
+	
+	m_main_menu_items = map<string, Graphic*>();
+	
+	m_text_manager->set_active_font(m_menu_font);
+	m_main_menu_items["Resume Game"] = m_text_manager->place_string("Resume Game", 50, 200, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_main_menu_items["Options"] = m_text_manager->place_string("Options", 50, 250, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_main_menu_items["Quit"] = m_text_manager->place_string("Quit", 50, 300, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_text_manager->set_active_font(m_font);
 }
 
 void GameController::run(int lockfps) {
@@ -129,17 +147,17 @@ void GameController::run(int lockfps) {
 				int y = 20 + (m_font->ascent() + m_font->descent() + 5) * i;
 				m_text_manager->reposition_string(m_messages[i].first, 20, y, TextManager::LEFT);
 			}
-				
+			
 			move_objects((SDL_GetTicks() - lastmoveframe) / delay); // scale all position changes to keep game speed constant. 
-		
+			
 			lastmoveframe = SDL_GetTicks();
 			
 			// the framerate:
 			int framerate = (1000/(currframe - startframe));
 			
-			send_my_player_update();
-			
 			if (!m_players.empty()) {
+				send_my_player_update();
+				
 				m_offset_x = m_players[m_player_id].get_x() - (m_screen_width/2.0);
 				m_offset_y = m_players[m_player_id].get_y() - (m_screen_height/2.0);
 				m_window->set_offset_x(m_offset_x);
@@ -147,6 +165,28 @@ void GameController::run(int lockfps) {
 			
 				m_crosshairs->set_x(m_mouse_x);
 				m_crosshairs->set_y(m_mouse_y);
+				
+				if (m_game_state == SHOW_MENUS) {
+					m_map->set_visible(false);
+					set_players_visible(false);
+					
+					m_logo->set_invisible(false);
+					map<string, Graphic*>::iterator it;
+					for ( it=m_main_menu_items.begin() ; it != m_main_menu_items.end(); it++ ) {
+						Graphic* thisitem = (*it).second;
+						thisitem->set_invisible(false);
+					}
+				} else {
+					m_map->set_visible(true);
+					set_players_visible(true);
+					
+					m_logo->set_invisible(true);
+					map<string, Graphic*>::iterator it;
+					for ( it=m_main_menu_items.begin() ; it != m_main_menu_items.end(); it++ ) {
+						Graphic* thisitem = (*it).second;
+						thisitem->set_invisible(true);
+					}
+				}
 			}
 			
 			m_window->redraw();
@@ -215,7 +255,11 @@ void GameController::process_input() {
 							m_input_bar = m_text_manager->place_string("> ", 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
 						}
 					} else if (event.key.keysym.sym == m_key_bindings.show_menu) {
-						// TODO: Show the menu.
+						if (m_game_state == SHOW_MENUS) {
+							m_game_state = GAME_IN_PROGRESS;
+						} else {
+							m_game_state = SHOW_MENUS;
+						}
 					}
 				}
 				break;
@@ -234,17 +278,7 @@ void GameController::process_input() {
 				
 			case SDL_MOUSEBUTTONDOWN:
 				// Firing code, use event.button.button, event.button.x, event.button.y
-				// TODO relocate to function
-				if (event.button.button == 1) {
-					if (m_players.empty() || m_players[m_player_id].is_frozen()) {
-						return;
-					}
-					double x_dist = (event.button.x + m_offset_x) - m_players[m_player_id].get_x();
-					double y_dist = (event.button.y + m_offset_y) - m_players[m_player_id].get_y();
-					double direction = atan2(y_dist, x_dist) * RADIANS_TO_DEGREES;
-					player_fired(m_player_id, m_players[m_player_id].get_x(), m_players[m_player_id].get_y(), direction);
-					m_sound_controller->play_sound("fire");
-				}
+				process_mouse_click(event);
 				break;
 				
 			case SDL_MOUSEBUTTONUP:
@@ -267,7 +301,7 @@ void GameController::initialize_key_bindings() {
 	m_key_bindings.quit = SDLK_ESCAPE;
 	m_key_bindings.jump = SDLK_SPACE;
 	m_key_bindings.show_overlay = -1;
-	m_key_bindings.show_menu = -1;
+	m_key_bindings.show_menu = SDLK_m;
 	m_key_bindings.open_chat = SDLK_t;
 	m_key_bindings.send_chat = SDLK_RETURN;
 }
@@ -275,6 +309,39 @@ void GameController::initialize_key_bindings() {
 void GameController::parse_key_input() {
 	// For keys that can be held down:
    	m_keys = SDL_GetKeyState(NULL);
+}
+
+void GameController::process_mouse_click(SDL_Event event) {
+	if (m_game_state == SHOW_MENUS) {
+		map<string, Graphic*>::iterator it;
+		for ( it=m_main_menu_items.begin() ; it != m_main_menu_items.end(); it++ ) {
+			Graphic* thisitem = (*it).second;
+			int x = thisitem->get_x();
+			int y = thisitem->get_y();
+			if (event.button.x >= x && event.button.x <= x + thisitem->get_image_width()
+			    && event.button.y >= y && event.button.y <= y + thisitem->get_image_height()) {
+				if ((*it).first == "Quit") {
+					m_quit_game = true;
+					break;
+				} else if ((*it).first == "Options") {
+					// TODO: Options menu.
+				} else if ((*it).first == "Resume Game") {
+					m_game_state = GAME_IN_PROGRESS;
+				}
+			}
+		}
+	} else if (m_game_state == GAME_IN_PROGRESS) {
+		if (event.button.button == 1) {
+			if (m_players.empty() || m_players[m_player_id].is_frozen()) {
+				return;
+			}
+			double x_dist = (event.button.x + m_offset_x) - m_players[m_player_id].get_x();
+			double y_dist = (event.button.y + m_offset_y) - m_players[m_player_id].get_y();
+			double direction = atan2(y_dist, x_dist) * RADIANS_TO_DEGREES;
+			player_fired(m_player_id, m_players[m_player_id].get_x(), m_players[m_player_id].get_y(), direction);
+			m_sound_controller->play_sound("fire");
+		}
+	}
 }
 
 void GameController::move_objects(float timescale) {
@@ -287,8 +354,8 @@ void GameController::move_objects(float timescale) {
 	
 	double new_x = m_players[m_player_id].get_x() + player_x_vel;
 	double new_y = m_players[m_player_id].get_y() + player_y_vel;
-	double half_width = m_players[m_player_id].get_width() / 2;
-	double half_height = m_players[m_player_id].get_height() / 2;
+	double half_width = m_players[m_player_id].get_radius();
+	double half_height = m_players[m_player_id].get_radius();
 	
 	if (new_x - half_width < 0) {
 		new_x = half_width;
@@ -357,8 +424,9 @@ void GameController::move_objects(float timescale) {
 	for ( it=m_players.begin() ; it != m_players.end(); it++ ) {
 		GraphicalPlayer currplayer = (*it).second;
 		if (currplayer.is_invisible()) {
-			m_text_manager->reposition_string(currplayer.get_name_sprite(), -1000, -1000, TextManager::CENTER); // MOVE STRING OFF SCREEN
+			currplayer.get_name_sprite()->set_invisible(true);
 		} else {
+			currplayer.get_name_sprite()->set_invisible(false);
 			m_text_manager->reposition_string(currplayer.get_name_sprite(), currplayer.get_x(), currplayer.get_y() - currplayer.get_height()/2, TextManager::CENTER);
 		}
 	}
@@ -375,23 +443,26 @@ void GameController::attempt_jump() {
 	
 	GraphicalPlayer* player = &m_players[m_player_id];
 	
+	double half_width = m_players[m_player_id].get_radius();
+	double half_height = m_players[m_player_id].get_radius();
+	
 	double x_dist = (m_crosshairs->get_x() + m_offset_x) - player->get_x();
 	double y_dist = (m_crosshairs->get_y() + m_offset_y) - player->get_y();
 	double x_vel = 6 * cos(atan2(y_dist, x_dist));
 	double y_vel = 6 * sin(atan2(y_dist, x_dist));
 	
-	if (player->get_x() - (player->get_width()/2) <= 5) {
+	if (player->get_x() - (half_width) <= 5) {
 		player->set_x_vel(x_vel);
 		player->set_y_vel(y_vel);
-	} else if (player->get_x() + (player->get_width()/2) >= m_map_width - 5) {
+	} else if (player->get_x() + (half_width) >= m_map_width - 5) {
 		player->set_x_vel(x_vel);
 		player->set_y_vel(y_vel);
 	}
 	
-	if (player->get_y() - (player->get_height()/2) <= 5) {
+	if (player->get_y() - (half_height) <= 5) {
 		player->set_x_vel(x_vel);
 		player->set_y_vel(y_vel);
-	} else if (player->get_y() + (player->get_height()/2) >= m_map_height - 5) {
+	} else if (player->get_y() + (half_height) >= m_map_height - 5) {
 		player->set_x_vel(x_vel);
 		player->set_y_vel(y_vel);
 	}
@@ -408,7 +479,7 @@ void GameController::attempt_jump() {
 			continue;
 		}
 		const Polygon& poly(thisobj->get_bounding_polygon());
-		double newdist = poly.intersects_circle(currpos, player->get_radius());
+		double newdist = poly.intersects_circle(currpos, player->get_radius()+5);
 		if (newdist != -1) {
 			player->set_x_vel(x_vel);
 			player->set_y_vel(y_vel);
@@ -453,6 +524,27 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 		gun_fired << direction;
 		
 		m_network.send_packet(gun_fired);
+	}
+}
+
+void GameController::set_players_visible(bool visible) {
+	if (m_players.empty()) {
+		return;
+	}
+
+	map<int, GraphicalPlayer>::iterator it;
+	for ( it=m_players.begin() ; it != m_players.end(); it++ ) {
+		GraphicalPlayer currplayer = (*it).second;
+		if (currplayer.get_sprite() == NULL) {
+			continue;
+		}
+		if (visible) {
+			currplayer.get_sprite()->set_invisible(currplayer.is_invisible());
+			currplayer.get_name_sprite()->set_invisible(currplayer.is_invisible());
+		} else {
+			currplayer.get_sprite()->set_invisible(true);
+			currplayer.get_name_sprite()->set_invisible(true);
+		}
 	}
 }
 
@@ -552,6 +644,10 @@ void GameController::announce(PacketReader& reader) {
 }
 
 void GameController::player_update(PacketReader& reader) {
+	if (m_players.empty()) {
+		return;
+	}
+
 	unsigned int player_id;
 	long x;
 	long y;
@@ -573,9 +669,10 @@ void GameController::player_update(PacketReader& reader) {
 	if (flags.find_first_of('I') == string::npos) {
 		currplayer->set_is_invisible(false);
 		m_text_manager->reposition_string(m_players[player_id].get_name_sprite(), x, y - m_players[player_id].get_height()/2, TextManager::CENTER);
+		m_players[player_id].get_name_sprite()->set_invisible(false);
 	} else {
 		currplayer->set_is_invisible(true);
-		m_text_manager->reposition_string(m_players[player_id].get_name_sprite(), -1000, -1000, TextManager::CENTER); // MOVE STRING OFF SCREEN
+		m_players[player_id].get_name_sprite()->set_invisible(true);
 	}
 	
 	if (flags.find_first_of('F') == string::npos) {

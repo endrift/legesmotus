@@ -17,8 +17,6 @@ private:
 	SDL_Surface*	m_image;
 	GLuint		m_tex_id;
 	int*		m_tex_count;
-	int		m_image_width;
-	int		m_image_height;
 
 	double		m_x;
 	double		m_y;
@@ -39,6 +37,8 @@ protected:
 	Graphic(SDL_Surface* image);
 	Graphic(const char* filename);
 	Graphic(const Graphic& other);
+	int		m_image_width;
+	int		m_image_height;
 
 	void transform_gl() const;
 
@@ -54,8 +54,8 @@ public:
 
 	virtual		~Graphic();
 	
-	int		get_image_width() const;
-	int		get_image_height() const;
+	virtual int		get_image_width() const;
+	virtual int		get_image_height() const;
 
 	double		get_x() const;
 	double		get_y() const;

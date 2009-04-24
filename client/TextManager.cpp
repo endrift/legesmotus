@@ -99,7 +99,6 @@ void TextManager::remove_string(Graphic *text) {
 			delete m_owned[text].first;
 			delete m_owned[text].second;
 			m_owned.erase(text);
-			delete text;
 			break;
 		}
 	}

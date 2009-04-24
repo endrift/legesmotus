@@ -37,6 +37,7 @@ public:
 	const std::list<MapObject>&	get_objects() const { return m_objects; }
 	virtual void			clear(); // Remove all objects
 
+	virtual void			set_visible(bool visible);
 	virtual void			add_object(PacketReader& data);
 
 	// progress is in [0.0,1.0], where 0 == not lowered .. 1 == lowered all the way

@@ -155,6 +155,14 @@ void	GraphicalMap::set_gate_progress(char team, double progress) {
 	}
 }
 
+void	GraphicalMap::set_visible(bool visible) {
+	for (list<MapObject>::iterator it(m_objects.begin()); it != m_objects.end(); ++it) {
+		if (it->has_sprite()) {
+			it->get_sprite()->set_invisible(!visible);
+		}
+	}
+}
+
 MapObject* 	GraphicalMap::get_gate_object(char team) {
 	if (team == 'A' || team == 'B') {
 		return m_gates[team - 'A'];

@@ -34,6 +34,12 @@ private:
 		int send_chat;
 	};
 	
+	enum {
+		SHOW_MENUS = 0,
+		GAME_IN_PROGRESS = 1,
+		GAME_OVER = 2
+	};
+
 	const static int MESSAGE_DISPLAY_TIME = 10000;
 	
 	GameWindow* 	m_window;
@@ -41,17 +47,19 @@ private:
 	TextManager*	m_text_manager;
 	SoundController* m_sound_controller;
 	Font*		m_font;
+	Font*		m_menu_font;
 	
 	std::string	m_name;
 	std::string 	m_client_version;
 	std::string	m_input_text;
-	std::vector<std::pair<Graphic*, int> > m_messages;
+	std::vector<std::pair<Graphic*, unsigned int> > m_messages;
 	int		m_protocol_number;
 	int 		m_screen_width;
 	int 		m_screen_height;
 	int		m_map_width;
 	int		m_map_height;
 	int 		m_pixel_depth;
+	int		m_game_state;
 	bool 		m_fullscreen;
 	bool		m_quit_game;
 	double		m_offset_x;
@@ -71,7 +79,10 @@ private:
 	Sprite*		new_sprite;
 	Sprite*		new_sprite_b;
 	Sprite*		m_crosshairs;
-	Graphic*		m_input_bar;
+	Graphic*	m_input_bar;
+
+	Sprite*		m_logo;
+	std::map<std::string, Graphic*> m_main_menu_items;
 
 	// TEMPORARY MAP CODE BY ANDREW
 	GraphicalMap*	m_map;
@@ -98,6 +109,8 @@ public:
 	void		send_message(std::string message);
 	void		display_message(std::string message, double red=1, double green=1, double blue=1);
 	void		send_gate_hold(bool holding);
+	void		set_players_visible(bool visible);
+	void		process_mouse_click(SDL_Event event);
 	
 	// Network callbacks:
 	void		welcome(PacketReader& reader);

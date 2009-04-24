@@ -16,10 +16,13 @@ private:
 	std::list<Graphic*>	m_graphics;
 public:
 	GraphicGroup();
+	~GraphicGroup();
 
 	void		add_graphic(Graphic *graphic);
 	void		remove_graphic(Graphic *graphic);
-
+	virtual int	get_image_width() const;
+	virtual int	get_image_height() const;
+	
 	void		draw(const GameWindow* window) const;
 };
 
