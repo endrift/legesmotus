@@ -45,7 +45,7 @@ private:
 	std::string	m_name;
 	std::string 	m_client_version;
 	std::string	m_input_text;
-	std::vector<std::pair<Sprite*, int> > m_messages;
+	std::vector<std::pair<Graphic*, int> > m_messages;
 	int		m_protocol_number;
 	int 		m_screen_width;
 	int 		m_screen_height;
@@ -71,7 +71,7 @@ private:
 	Sprite*		new_sprite;
 	Sprite*		new_sprite_b;
 	Sprite*		m_crosshairs;
-	Sprite*		m_input_bar;
+	Graphic*		m_input_bar;
 
 	// TEMPORARY MAP CODE BY ANDREW
 	GraphicalMap*	m_map;

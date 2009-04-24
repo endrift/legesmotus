@@ -11,12 +11,13 @@
 #include "common/Player.hpp"
 
 class Sprite;
+class Graphic;
 
 class GraphicalPlayer : public Player {
 private:
-	Sprite* 	m_sprite;
-	Sprite*		m_name_sprite;
-	double 		m_bounding_radius;
+	Sprite* 		m_sprite;
+	Graphic*		m_name_sprite;
+	double 			m_bounding_radius;
 
 public:
 	GraphicalPlayer();
@@ -24,13 +25,13 @@ public:
 	~GraphicalPlayer();
 
 	Sprite* get_sprite() const { return m_sprite; }
-	Sprite* get_name_sprite() const { return m_name_sprite; }
+	Graphic* get_name_sprite() const { return m_name_sprite; }
 	double get_radius() const { return m_bounding_radius; }
 	double get_width();
 	double get_height();
 		
 	void set_sprite(Sprite* s);
-	void set_name_sprite(Sprite* ns);
+	void set_name_sprite(Graphic* ns);
 	void set_radius(double radius);
 	void set_is_invisible(bool is_invisible);
 	void set_x(double x);

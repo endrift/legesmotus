@@ -17,10 +17,10 @@ private:
 public:
 	GraphicGroup();
 
-	void	add_graphic(Graphic *graphic);
-	void	remove_graphic(Graphic *graphic);
+	void		add_graphic(Graphic *graphic);
+	void		remove_graphic(Graphic *graphic);
 
-	void	draw(const GameWindow* window) const;
+	void		draw(const GameWindow* window) const;
 };
 
 #endif

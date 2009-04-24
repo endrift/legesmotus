@@ -22,6 +22,8 @@ private:
 
 	double		m_x;
 	double		m_y;
+	double		m_center_x;
+	double		m_center_y;
 	double		m_scale_x;
 	double		m_scale_y;
 	double		m_rotation;
@@ -69,6 +71,12 @@ public:
 	void		set_scale_x(double scale_x);
 	void		set_scale_y(double scale_y);
 	void		set_rotation(double rotation);
+
+	double	get_center_x() const;
+	double	get_center_y() const;
+
+	void	set_center_x(double center_x);
+	void	set_center_y(double center_y);
 
 	bool		is_invisible() const;
 	void		set_invisible(bool invisible);

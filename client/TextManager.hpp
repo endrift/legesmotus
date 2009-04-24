@@ -10,17 +10,28 @@
 
 #include "Font.hpp"
 #include <vector>
+#include <map>
 
 class GameWindow;
 class TextManager {
 private:
-	Font			*m_font;
-	std::vector<Sprite*>	m_texts;
+	Font*			m_font;
+	std::vector<Graphic*>	m_texts;
+	std::map<Graphic*,std::pair<Sprite*,Sprite*> >	m_owned;
+	GameWindow*		m_window;
 	
 	double			m_active_red;
 	double			m_active_green;
 	double			m_active_blue;
 	double			m_active_alpha;
+
+	bool			m_shadow;
+	double			m_shadow_x;
+	double			m_shadow_y;
+	double			m_shadow_red;
+	double			m_shadow_green;
+	double			m_shadow_blue;
+	double			m_shadow_alpha;
 public:
 	enum Align {
 		LEFT = 0,
@@ -31,16 +42,21 @@ public:
 		LAYER_HUD,
 		LAYER_MAIN
 	};
-	TextManager(Font* font);
+	TextManager(Font* font, GameWindow* window = NULL);
 	~TextManager();
 
-	Sprite*	place_string(const std::string& text, double x, double y, Align = LEFT, Layer layer = LAYER_HUD, GameWindow *window = NULL);
-	void	reposition_string(Sprite* text, double x, double y, Align = LEFT);
-	void	remove_string(Sprite* text, GameWindow* window = NULL);
-	void	remove_all_strings(GameWindow* window = NULL);
-	void	set_active_color(double r, double g, double b);
-	void	set_active_alpha(double a);
-	void	set_active_font(Font* font);
+	Graphic*	place_string(const std::string& text, double x, double y, Align = LEFT, Layer layer = LAYER_HUD);
+	void		reposition_string(Graphic* text, double x, double y, Align = LEFT);
+	void		remove_string(Graphic* text);
+	void		remove_all_strings();
+	void		set_window(GameWindow* window);
+	void		set_active_color(double r, double g, double b);
+	void		set_active_alpha(double a);
+	void		set_active_font(Font* font);
+	void		set_shadow_color(double r, double g, double b);
+	void		set_shadow_alpha(double a);
+	void		set_shadow_offset(double x, double y);
+	void		set_shadow(bool enable);
 };
 
 #endif

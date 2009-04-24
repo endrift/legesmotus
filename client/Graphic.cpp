@@ -26,6 +26,9 @@ Graphic::Graphic(const char* filename) {
 Graphic::Graphic(const Graphic& other) {
 	m_x = other.m_x;
 	m_y = other.m_y;
+	m_invisible = other.m_invisible;
+	m_center_x = other.m_center_x;
+	m_center_y = other.m_center_y;
 	m_rotation = other.m_rotation;
 	m_scale_x = other.m_scale_x;
 	m_scale_y = other.m_scale_y;
@@ -51,6 +54,9 @@ Graphic::~Graphic() {
 void Graphic::init(SDL_Surface* image) {
 	m_image_width = 0;
 	m_image_height = 0;
+	m_center_x = 0.0;
+	m_center_y = 0.0;
+	m_invisible = false;
 	m_tex_count = NULL;
 	m_image = NULL;
 	m_priority = 0;
@@ -88,6 +94,7 @@ void Graphic::transform_gl() const {
 	glTranslated(round(m_x), round(m_y), 0.0); //TODO find alternative method
 	glRotated(m_rotation, 0.0, 0.0, 1.0);
 	glScaled(m_scale_x, m_scale_y, 1.0);
+	glTranslated(-round(m_center_x), -round(m_center_y), 0.0);
 }
 
 int Graphic::get_image_width() const {
@@ -144,6 +151,22 @@ void Graphic::set_scale_y(double scale_y) {
 
 void Graphic::set_rotation(double rotation) {
 	m_rotation = rotation;
+}
+
+double Graphic::get_center_x() const {
+	return m_center_x;
+}
+
+double Graphic::get_center_y() const {
+	return m_center_y;
+}
+
+void Graphic::set_center_x(double center_x) {
+	m_center_x = center_x;
+}
+
+void Graphic::set_center_y(double center_y) {
+	m_center_y = center_y;
 }
 
 bool Graphic::is_invisible() const {

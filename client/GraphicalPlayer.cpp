@@ -56,7 +56,7 @@ void GraphicalPlayer::set_sprite(Sprite* s) {
 	}
 }
 
-void GraphicalPlayer::set_name_sprite(Sprite* ns) {
+void GraphicalPlayer::set_name_sprite(Graphic* ns) {
 	m_name_sprite = ns;
 }
 

@@ -10,21 +10,26 @@ using namespace std;
 extern "C" int main(int argc, char* argv[]) {
 	ClientSDL sdl;
 	(void)(sdl);
-	GameWindow *window = GameWindow::get_instance(300, 60, 24, false);
+	GameWindow *window = GameWindow::get_instance(300, 75, 24, false);
 	PathManager pman(argv[0]);
 	Font font(pman.data_path("JuraMedium.ttf","fonts"),12);
-	TextManager texts(&font);
-	texts.place_string("FIRST POST",150.0,0.0,TextManager::CENTER,window);
+	TextManager texts(&font,window);
+	texts.place_string("FIRST POST",150.0,0.0,TextManager::CENTER);
 	texts.set_active_color(0x87/255.0,0x68/255.0,0x16/255.0);
-	texts.place_string("That bag is brown",0.0,15.0,TextManager::LEFT,window);
+	texts.place_string("That bag is brown",0.0,15.0,TextManager::LEFT);
 	texts.set_active_color(0x6a/255.0,0xb2/255.0,0xe6/255.0);
-	texts.place_string("The sky is blue",300.0,30.0,TextManager::RIGHT,window);
+	texts.place_string("The sky is blue",300.0,30.0,TextManager::RIGHT);
 	texts.set_active_color(1.0,1.0,1.0);
 	texts.set_active_color(0.8,0.8,0.8);
-	texts.place_string("SUPERIMPOSED",150.0,44.0,TextManager::CENTER,window);
+	texts.place_string("SUPERIMPOSED",150.0,44.0,TextManager::CENTER);
 	texts.set_active_alpha(0.8);
 	texts.set_active_color(0.0,0.0,0.0);
-	texts.place_string("SUPERIMPOSED",151.0,45.0,TextManager::CENTER,window);
+	texts.place_string("SUPERIMPOSED",151.0,45.0,TextManager::CENTER);
+	texts.set_shadow(true);
+	texts.set_active_alpha(1.0);
+	texts.set_active_color(1.0,0.0,0.0);
+	texts.set_shadow_color(0.5,1.0,0.5);
+	texts.place_string("Shadow",150.0,60.0,TextManager::CENTER);
 	bool running = true;
 	while(running) {
 		SDL_Event e;
@@ -42,7 +47,7 @@ extern "C" int main(int argc, char* argv[]) {
 		window->redraw();
 		SDL_Delay(100);
 	}
-	texts.remove_all_strings(window);
+	texts.remove_all_strings();
 	GameWindow::destroy_instance();
 	return 0;
 }

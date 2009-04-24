@@ -70,7 +70,7 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_time_to_unfreeze = 0;
 
 	m_font = new Font("data/fonts/JuraMedium.ttf", 12);
-	m_text_manager = new TextManager(m_font);
+	m_text_manager = new TextManager(m_font, m_window);
 	
 	m_sound_controller = new SoundController();
 
@@ -120,7 +120,7 @@ void GameController::run(int lockfps) {
 		if((currframe - startframe) >= delay) {
 			for (unsigned int i = 0; i < m_messages.size(); i++) {
 				if (m_messages[i].second < currframe) {
-					m_text_manager->remove_string(m_messages[i].first, m_window);
+					m_text_manager->remove_string(m_messages[i].first);
 					m_messages.erase(m_messages.begin() + i);
 				}
 			}
@@ -171,7 +171,7 @@ void GameController::process_input() {
 				if (event.key.keysym.sym == m_key_bindings.quit) {
 					if (m_input_bar != NULL) {
 						SDL_EnableUNICODE(0);
-						m_text_manager->remove_string(m_input_bar, m_window);
+						m_text_manager->remove_string(m_input_bar);
 						m_input_bar = NULL;
 						m_input_text = "> ";
 					} else {
@@ -181,25 +181,26 @@ void GameController::process_input() {
 				}
 				
 				if (m_input_bar != NULL) {
+					m_text_manager->set_active_color(1.0, 1.0, 1.0);
 					if (event.key.keysym.sym == m_key_bindings.send_chat) {
 						send_message(m_input_text.substr(2));
 					
 						SDL_EnableUNICODE(0);
-						m_text_manager->remove_string(m_input_bar, m_window);
+						m_text_manager->remove_string(m_input_bar);
 						m_input_bar = NULL;
 						m_input_text = "> ";
 					} else if (event.key.keysym.sym == SDLK_BACKSPACE) {
 						m_input_text.erase(m_input_text.length() - 1);
-						m_text_manager->remove_string(m_input_bar, m_window);
-						m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD, m_window);
+						m_text_manager->remove_string(m_input_bar);
+						m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
 					} else {
 						if ( (event.key.keysym.unicode & 0xFF80) == 0 && event.key.keysym.unicode != 0) {
 							m_input_text.push_back(event.key.keysym.unicode & 0x7F);
 						} else {
 							// INTERNATIONAL CHARACTER... DO SOMETHING.
 						}
-						m_text_manager->remove_string(m_input_bar, m_window);
-						m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD, m_window);
+						m_text_manager->remove_string(m_input_bar);
+						m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
 					}
 				} else {
 					//Check which key using: event.key.keysym.sym == SDLK_<SOMETHING>
@@ -209,9 +210,9 @@ void GameController::process_input() {
 						// TODO: Show the overlay.
 					} else if (event.key.keysym.sym == m_key_bindings.open_chat) {
 						SDL_EnableUNICODE(1);
-						m_text_manager->set_active_color(1, 1, 1);
+						m_text_manager->set_active_color(1.0, 1.0, 1.0);
 						if (m_input_bar == NULL) {
-							m_input_bar = m_text_manager->place_string("> ", 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD, m_window);
+							m_input_bar = m_text_manager->place_string("> ", 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
 						}
 					} else if (event.key.keysym.sym == m_key_bindings.show_menu) {
 						// TODO: Show the menu.
@@ -518,7 +519,7 @@ void GameController::welcome(PacketReader& reader) {
 	}
 	
 	m_players[m_player_id].set_radius(30);
-	m_players[m_player_id].set_name_sprite(m_text_manager->place_string(m_players[m_player_id].get_name(), m_screen_width/2, (m_screen_height/2)-m_players[m_player_id].get_height()/2, TextManager::CENTER, TextManager::LAYER_MAIN, m_window));
+	m_players[m_player_id].set_name_sprite(m_text_manager->place_string(m_players[m_player_id].get_name(), m_screen_width/2, (m_screen_height/2)-m_players[m_player_id].get_height()/2, TextManager::CENTER, TextManager::LAYER_MAIN));
 	
 	// REMOVE THESE WHEN THE SERVER SENDS GAME START, ETC.
 	m_players[m_player_id].set_is_invisible(false);
@@ -546,7 +547,7 @@ void GameController::announce(PacketReader& reader) {
 	}
 	// TEMPORARY SPRITE CODE
 	m_window->register_graphic(m_players[playerid].get_sprite());
-	m_players[playerid].set_name_sprite(m_text_manager->place_string(m_players[playerid].get_name(), m_players[playerid].get_x(), m_players[playerid].get_y()-m_players[playerid].get_height()/2, TextManager::CENTER, TextManager::LAYER_MAIN, m_window));
+	m_players[playerid].set_name_sprite(m_text_manager->place_string(m_players[playerid].get_name(), m_players[playerid].get_x(), m_players[playerid].get_y()-m_players[playerid].get_height()/2, TextManager::CENTER, TextManager::LAYER_MAIN));
 	m_players[playerid].set_radius(50);
 }
 
@@ -618,7 +619,7 @@ void GameController::leave(PacketReader& reader) {
 	unsigned int playerid;
 	reader >> playerid;
 	
-	m_text_manager->remove_string(m_players[playerid].get_name_sprite(), m_window);
+	m_text_manager->remove_string(m_players[playerid].get_name_sprite());
 	m_window->unregister_graphic(m_players[playerid].get_sprite());
 	delete m_players[playerid].get_sprite();
 	m_players.erase(playerid);
@@ -703,8 +704,8 @@ void GameController::send_gate_hold(bool holding) {
 void GameController::display_message(string message, double red, double green, double blue) {
 	m_text_manager->set_active_color(red, green, blue);
 	int y = 20 + (m_font->ascent() + m_font->descent() + 5) * m_messages.size();
-	Sprite* message_sprite = m_text_manager->place_string(message, 20, y, TextManager::LEFT, TextManager::LAYER_HUD, m_window);
-	m_messages.push_back(pair<Sprite*, int>(message_sprite, SDL_GetTicks() + MESSAGE_DISPLAY_TIME));
+	Graphic* message_sprite = m_text_manager->place_string(message, 20, y, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_messages.push_back(pair<Graphic*, int>(message_sprite, SDL_GetTicks() + MESSAGE_DISPLAY_TIME));
 }
 
 GraphicalPlayer* GameController::get_player_by_id(unsigned int player_id) {
