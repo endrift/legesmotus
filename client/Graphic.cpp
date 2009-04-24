@@ -145,3 +145,11 @@ void Graphic::set_scale_y(double scale_y) {
 void Graphic::set_rotation(double rotation) {
 	m_rotation = rotation;
 }
+
+bool Graphic::is_invisible() const {
+	return m_invisible;
+}
+
+void Graphic::set_invisible(bool invisible) {
+	m_invisible = invisible;
+}

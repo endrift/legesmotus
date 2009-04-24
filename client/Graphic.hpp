@@ -27,6 +27,7 @@ private:
 	double		m_rotation;
 
 	int		m_priority;
+	bool		m_invisible;
 
 	void		init(SDL_Surface* image);
 
@@ -69,6 +70,8 @@ public:
 	void		set_scale_y(double scale_y);
 	void		set_rotation(double rotation);
 
+	bool		is_invisible() const;
+	void		set_invisible(bool invisible);
 
 	virtual void	draw(const GameWindow* window) const = 0;
 };

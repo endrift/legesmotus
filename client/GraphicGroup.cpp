@@ -31,7 +31,9 @@ void GraphicGroup::draw(const GameWindow* window) const {
 	glPushMatrix();
 	transform_gl();
 	for (std::list<Graphic*>::const_iterator iter = m_graphics.begin(); iter != m_graphics.end(); ++iter) {
-		(*iter)->draw(window);
+		if (!(*iter)->is_invisible()) {
+			(*iter)->draw(window);
+		}
 	}
 	glPopMatrix();
 }
