@@ -8,6 +8,8 @@
 #include "TextManager.hpp"
 #include "GameWindow.hpp"
 #include "GraphicGroup.hpp"
+#include "common/LMException.hpp"
+#include <iostream>
 
 using namespace std;
 
@@ -31,48 +33,34 @@ TextManager::~TextManager() {
 	remove_all_strings();
 }
 
-Graphic* TextManager::place_string(const std::string& text, double x, double y, Align align, Layer layer) {
-	Sprite* rendered = m_font->render_string(text);
-	Sprite* shadow = NULL;
-	if (!rendered) {
+Text* TextManager::place_string(const std::string& text, double x, double y, Align align, Layer layer) {
+	Text *rendered;
+	try {
+		rendered = new Text(text, m_font);
+	} catch(LMException e) {
+		cerr << "Error placing string: " << e.what() << endl;
 		return NULL;
 	}
-	GraphicGroup* graphic = new GraphicGroup;
-	graphic->add_graphic(rendered);
-	pair<Sprite*,Sprite*> self(rendered,NULL);
-	rendered->set_center_x(0);
-	rendered->set_center_y(0);
-	if (m_shadow) {
-		shadow = new Sprite(*rendered);
-		shadow->set_priority(1);
-		shadow->set_red_intensity(m_shadow_red);
-		shadow->set_green_intensity(m_shadow_green);
-		shadow->set_blue_intensity(m_shadow_blue);
-		shadow->set_alpha(m_shadow_alpha);
-		shadow->set_x(m_shadow_x);
-		shadow->set_y(m_shadow_y);
-		self.second = shadow;
-		graphic->add_graphic(shadow);
-	}
-	m_owned[graphic] = self;
-	m_texts.push_back(graphic);
-	rendered->set_priority(0);
-	rendered->set_red_intensity(m_active_red);
-	rendered->set_green_intensity(m_active_green);
-	rendered->set_blue_intensity(m_active_blue);
+	rendered->set_color(m_active_red, m_active_green, m_active_blue);
 	rendered->set_alpha(m_active_alpha);
-	reposition_string(graphic, x, y, align);
+	if (m_shadow) {
+		rendered->set_shadow(true);
+		rendered->set_shadow_color(m_shadow_red, m_shadow_green, m_shadow_blue);
+		rendered->set_shadow_alpha(m_shadow_alpha);
+		rendered->set_shadow_offset(m_shadow_x, m_shadow_y);
+	}
+	reposition_string(rendered, x, y, align);
 	if (m_window != NULL) {
 		switch(layer) {
 		case LAYER_HUD:
-			m_window->register_hud_graphic(graphic);
+			m_window->register_hud_graphic(rendered);
 			break;
 		case LAYER_MAIN:
-			m_window->register_graphic(graphic);
+			m_window->register_graphic(rendered);
 			break;
 		}
 	}
-	return graphic;
+	return rendered;
 }
 
 void TextManager::reposition_string(Graphic* text, double x, double y, Align align) {
@@ -81,10 +69,10 @@ void TextManager::reposition_string(Graphic* text, double x, double y, Align ali
 		text->set_center_x(0);
 		break;
 	case CENTER:
-		text->set_center_x(m_owned[text].first->get_image_width()/2.0);
+		text->set_center_x(text->get_image_width()/2.0);
 		break;
 	case RIGHT:
-		text->set_center_x(m_owned[text].first->get_image_width());
+		text->set_center_x(text->get_image_width());
 		break;
 	}
 	text->set_center_y(0);
@@ -93,12 +81,9 @@ void TextManager::reposition_string(Graphic* text, double x, double y, Align ali
 }
 
 void TextManager::remove_string(Graphic *text) {
-	for (vector<Graphic*>::iterator iter = m_texts.begin(); iter != m_texts.end(); ++iter) {
+	for (vector<Text*>::iterator iter = m_texts.begin(); iter != m_texts.end(); ++iter) {
 		if (*iter == text) {
 			m_texts.erase(iter);
-			delete m_owned[text].first;
-			delete m_owned[text].second;
-			m_owned.erase(text);
 			break;
 		}
 	}
@@ -110,13 +95,11 @@ void TextManager::remove_string(Graphic *text) {
 }
 	
 void TextManager::remove_all_strings() {
-	for (vector<Graphic*>::iterator iter = m_texts.begin(); iter != m_texts.end(); ++iter) {
+	for (vector<Text*>::iterator iter = m_texts.begin(); iter != m_texts.end(); ++iter) {
 		if(m_window != NULL) {
 			m_window->unregister_graphic(*iter);
 			m_window->unregister_hud_graphic(*iter);
 		}
-		delete m_owned[*iter].first;
-		delete m_owned[*iter].second;
 		delete *iter;
 	}
 	m_texts.clear();
