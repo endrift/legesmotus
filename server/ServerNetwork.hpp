@@ -10,6 +10,7 @@
 
 #include "SDL_net.h"
 #include <set>
+#include <list>
 #include <stdint.h>
 
 class Server;
@@ -21,7 +22,7 @@ private:
 	UDPsocket		m_socket;
 	SDLNet_SocketSet	m_socket_set;
 	std::set<int>		m_bound_channels;
-	int			m_next_unbound_channel;
+	std::list<int>		m_unbound_channels;
 
 	// Process the individual packet which has been received
 	void		process_packet (Server& controller, const RawPacket& packet);

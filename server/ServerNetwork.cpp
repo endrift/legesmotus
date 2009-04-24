@@ -43,7 +43,10 @@ bool	ServerNetwork::start(unsigned int portno) {
 
 	SDLNet_UDP_AddSocket(m_socket_set, m_socket);
 
-	m_next_unbound_channel = 1;
+	m_unbound_channels.clear();
+	for (int i = 0; i < SDLNET_MAX_UDPCHANNELS; ++i) {
+		m_unbound_channels.push_back(i);
+	}
 
 	return true;
 }
@@ -103,8 +106,14 @@ void	ServerNetwork::process_packet(Server& server, const RawPacket& raw_packet) 
 	int		channel = raw_packet->channel;
 
 	if (channel == -1 && reader.packet_type() == JOIN_PACKET) {
+		if (m_unbound_channels.empty()) {
+			// Oops, no channels left for this poor soul. TODO: send message back to client, prune the players list for timeouts, or something
+			return;
+		}
+
 		// Bind this address and give it a channel
-		channel = SDLNet_UDP_Bind(m_socket, m_next_unbound_channel++, const_cast<IPaddress*>(&raw_packet->address));
+		channel = SDLNet_UDP_Bind(m_socket, m_unbound_channels.front(), const_cast<IPaddress*>(&raw_packet->address));
+		m_unbound_channels.pop_front();
 		m_bound_channels.insert(channel);
 	} else if (channel == -1) {
 		// Ignore this wild packet
@@ -153,5 +162,6 @@ void	ServerNetwork::process_packet(Server& server, const RawPacket& raw_packet) 
 void	ServerNetwork::unbind(int channel) {
 	SDLNet_UDP_Unbind(m_socket, channel);
 	m_bound_channels.erase(channel);
+	m_unbound_channels.push_front(channel);
 }
 
