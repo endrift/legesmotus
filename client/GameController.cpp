@@ -685,7 +685,6 @@ void GameController::gate_lowering(PacketReader& reader) {
 		m_sound_controller->play_sound("gatelower");
 	}
 	
-	cerr << "Progress: " << progress << endl;
 	m_map->set_gate_progress(team, progress);
 
 	// TODO: use the player id to display a HUD message or something...
@@ -694,10 +693,8 @@ void GameController::gate_lowering(PacketReader& reader) {
 void GameController::send_gate_hold(bool holding) {
 	PacketWriter gate_hold(GATE_LOWERING_PACKET);
 	if (holding) {
-		cerr << "Sending: hold" << endl;
 		gate_hold << m_player_id << m_players[m_player_id].get_team() << 1;
 	} else {
-		cerr << "Sending: release" << endl;
 		gate_hold << m_player_id << m_players[m_player_id].get_team() << 0;
 	}
 	m_network.send_packet(gate_hold);
