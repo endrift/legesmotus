@@ -13,6 +13,7 @@
 #include "ClientNetwork.hpp"
 #include "TextManager.hpp"
 #include "SoundController.hpp"
+#include "common/PathManager.hpp"
 #include "common/PacketReader.hpp"
 #include "GraphicalPlayer.hpp"
 #include "Font.hpp"
@@ -75,9 +76,20 @@ private:
 	// Do we want to keep it this way?
 	unsigned long	m_time_to_unfreeze;
 	
+	PathManager* 	m_path_manager;
+	
 	// TEMPORARY SPRITE CODE
-	Sprite*		new_sprite;
-	Sprite*		new_sprite_b;
+	Sprite*		gun_normal;
+	GraphicGroup 	blue_player;
+	GraphicGroup	blue_arm_gun;
+	Sprite*		blue_sprite;
+	Sprite*		blue_front_arm;
+	Sprite*		blue_back_arm;
+	GraphicGroup 	red_player;
+	GraphicGroup	red_arm_gun;
+	Sprite*		red_sprite;
+	Sprite*		red_front_arm;
+	Sprite*		red_back_arm;
 	Sprite*		m_crosshairs;
 	Graphic*	m_input_bar;
 

@@ -33,8 +33,12 @@ GameController::GameController(int width, int height) {
 
 GameController::~GameController() {
 	// TEMPORARY SPRITE CODE
-	delete new_sprite;
-	delete new_sprite_b;
+	delete blue_sprite;
+	delete blue_front_arm;
+	delete blue_back_arm;
+	delete red_sprite;
+	delete red_front_arm;
+	delete red_back_arm;
 	delete m_crosshairs;
 
 	// TEMPORARY MAP CODE BY ANDREW
@@ -43,6 +47,7 @@ GameController::~GameController() {
 	delete m_text_manager;
 	delete m_sound_controller;
 	delete m_font;
+	delete m_path_manager;
 
 	// The GameWindow instance should always be destroyed last, since other stuff may depend on it.
 	m_window->destroy_instance();
@@ -69,6 +74,8 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_quit_game = false;
 	m_window = GameWindow::get_instance(m_screen_width, m_screen_height, m_pixel_depth, m_fullscreen);
 
+	m_path_manager = new PathManager(""); // TODO: Pass it a path.
+
 	m_time_to_unfreeze = 0;
 
 	m_font = new Font("data/fonts/JuraMedium.ttf", 14);
@@ -85,8 +92,60 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_map_height = m_map->get_height();
 
 	// TEMPORARY SPRITE CODE
-	new_sprite = new Sprite("data/sprites/blue_full.png");
-	new_sprite_b = new Sprite("data/sprites/red_full.png");
+	gun_normal = new Sprite(m_path_manager->data_path("gun_noshot.png", "sprites"));
+	gun_normal->set_x(3);
+	gun_normal->set_y(19);
+	gun_normal->set_rotation(-15);
+	gun_normal->set_priority(-1);
+	
+	blue_sprite = new Sprite(m_path_manager->data_path("blue_armless.png","sprites"));
+	blue_back_arm = new Sprite(m_path_manager->data_path("blue_backarm.png","sprites"));
+	blue_front_arm = new Sprite(m_path_manager->data_path("blue_frontarm.png","sprites"));
+	blue_back_arm->set_center_x(27);
+	blue_back_arm->set_center_y(29);
+	blue_back_arm->set_x(-5);
+	blue_back_arm->set_y(-20);
+	blue_front_arm->set_center_x(46);
+	blue_front_arm->set_center_y(30);
+	blue_front_arm->set_x(13);
+	blue_front_arm->set_y(-18);
+	blue_front_arm->set_priority(-2);
+	blue_back_arm->set_priority(1);
+	
+	blue_player.add_graphic(blue_sprite);
+	blue_player.add_graphic(blue_back_arm);
+	blue_arm_gun.add_graphic(gun_normal);
+	blue_arm_gun.add_graphic(blue_front_arm);
+	blue_arm_gun.set_center_x(13);
+	blue_arm_gun.set_center_y(-18);
+	blue_arm_gun.set_x(13);
+	blue_arm_gun.set_y(-18);
+	blue_player.add_graphic(&blue_arm_gun);
+	
+	red_sprite = new Sprite(m_path_manager->data_path("red_armless.png","sprites"));
+	red_back_arm = new Sprite(m_path_manager->data_path("red_backarm.png","sprites"));
+	red_front_arm = new Sprite(m_path_manager->data_path("red_frontarm.png","sprites"));
+	red_front_arm->set_center_x(46);
+	red_front_arm->set_center_y(30);
+	red_front_arm->set_x(13);
+	red_front_arm->set_y(-18);
+	red_back_arm->set_center_x(27);
+	red_back_arm->set_center_y(29);
+	red_back_arm->set_x(-5);
+	red_back_arm->set_y(-20);
+	red_front_arm->set_priority(-2);
+	red_back_arm->set_priority(1);
+	
+	red_player.add_graphic(red_sprite);
+	red_player.add_graphic(red_back_arm);
+	red_arm_gun.add_graphic(gun_normal);
+	red_arm_gun.add_graphic(red_front_arm);
+	red_arm_gun.set_center_x(13);
+	red_arm_gun.set_center_y(-18);
+	red_arm_gun.set_x(13);
+	red_arm_gun.set_y(-18);
+	red_player.add_graphic(&red_arm_gun);
+	
 	m_crosshairs = new Sprite("data/sprites/crosshairs.png");
 	m_crosshairs->set_priority(-1);
 	m_window->register_hud_graphic(m_crosshairs);
@@ -156,8 +215,9 @@ void GameController::run(int lockfps) {
 			
 			lastmoveframe = SDL_GetTicks();
 			
+			// TODO: Uncomment if framerate is needed.
 			// the framerate:
-			int framerate = (1000/(currframe - startframe));
+			//int framerate = (1000/(currframe - startframe));
 			
 			if (!m_players.empty()) {
 				send_my_player_update();
@@ -208,7 +268,9 @@ void GameController::set_screen_dimensions(int width, int height) {
 
 void GameController::process_input() {
 	SDL_Event event;
-	
+	double x_dist;
+	double y_dist;
+	double angle;
 	while(SDL_PollEvent(&event) != 0) {
 		switch(event.type) {
 			case SDL_KEYDOWN:
@@ -278,6 +340,21 @@ void GameController::process_input() {
 				m_mouse_y = event.motion.y;
 				m_crosshairs->set_x(m_mouse_x);
 				m_crosshairs->set_y(m_mouse_y);
+				x_dist = (m_crosshairs->get_x() + m_offset_x) - m_players[m_player_id].get_x();
+				y_dist = (m_crosshairs->get_y() + m_offset_y) - m_players[m_player_id].get_y();
+				angle = atan2(y_dist, x_dist) * RADIANS_TO_DEGREES;
+				if (angle < 90 && angle > -90) {
+					blue_player.set_scale_x(-1);
+					red_player.set_scale_x(-1);
+					angle *= -1;
+					angle += 55;
+				} else {
+					blue_player.set_scale_x(1);
+					red_player.set_scale_x(1);
+					angle -= 110;
+				}
+				blue_arm_gun.set_rotation(angle);
+				red_arm_gun.set_rotation(angle);
 				break;
 				
 			case SDL_MOUSEBUTTONDOWN:
@@ -431,7 +508,7 @@ void GameController::move_objects(float timescale) {
 			currplayer.get_name_sprite()->set_invisible(true);
 		} else {
 			currplayer.get_name_sprite()->set_invisible(false);
-			m_text_manager->reposition_string(currplayer.get_name_sprite(), currplayer.get_x(), currplayer.get_y() - currplayer.get_height()/2, TextManager::CENTER);
+			m_text_manager->reposition_string(currplayer.get_name_sprite(), currplayer.get_x(), currplayer.get_y() - (currplayer.get_radius()+30), TextManager::CENTER);
 		}
 	}
 }
@@ -605,17 +682,17 @@ void GameController::welcome(PacketReader& reader) {
 	m_players.clear();
 	
 	if (team == 'A') {
-		m_players.insert(pair<int, GraphicalPlayer>(m_player_id,GraphicalPlayer(m_name.c_str(), m_player_id, team, new_sprite, new_sprite->get_width()/2, new_sprite->get_height()/2)));
+		m_players.insert(pair<int, GraphicalPlayer>(m_player_id,GraphicalPlayer(m_name.c_str(), m_player_id, team, &blue_player, blue_sprite->get_width()/2, blue_sprite->get_height()/2)));
 		m_text_manager->set_active_color(0.2, 0.2, 1.0);
-		m_window->register_graphic(new_sprite);
+		m_window->register_graphic(&blue_player);
 	} else {
-		m_players.insert(pair<int, GraphicalPlayer>(m_player_id,GraphicalPlayer(m_name.c_str(), m_player_id, team, new_sprite_b, new_sprite_b->get_width()/2, new_sprite_b->get_height()/2)));
+		m_players.insert(pair<int, GraphicalPlayer>(m_player_id,GraphicalPlayer(m_name.c_str(), m_player_id, team, &red_player, red_sprite->get_width()/2, red_sprite->get_height()/2)));
 		m_text_manager->set_active_color(1.0, 0.2, 0.2);
-		m_window->register_graphic(new_sprite_b);
+		m_window->register_graphic(&red_player);
 	}
 	
 	m_players[m_player_id].set_radius(30);
-	m_players[m_player_id].set_name_sprite(m_text_manager->place_string(m_players[m_player_id].get_name(), m_screen_width/2, (m_screen_height/2)-m_players[m_player_id].get_height()/2, TextManager::CENTER, TextManager::LAYER_MAIN));
+	m_players[m_player_id].set_name_sprite(m_text_manager->place_string(m_players[m_player_id].get_name(), m_screen_width/2, (m_screen_height/2)-(m_players[m_player_id].get_radius()+30), TextManager::CENTER, TextManager::LAYER_MAIN));
 	
 	// REMOVE THESE WHEN THE SERVER SENDS GAME START, ETC.
 	m_players[m_player_id].set_is_invisible(false);
@@ -635,15 +712,15 @@ void GameController::announce(PacketReader& reader) {
 	}
 	
 	if (team == 'A') {
-		m_players.insert(pair<int, GraphicalPlayer>(playerid,GraphicalPlayer((const char*)playername.c_str(), playerid, team, new Sprite(*new_sprite))));
+		m_players.insert(pair<int, GraphicalPlayer>(playerid,GraphicalPlayer((const char*)playername.c_str(), playerid, team, new Sprite(*blue_sprite))));
 		m_text_manager->set_active_color(0.2, 0.2, 1.0);
 	} else {
-		m_players.insert(pair<int, GraphicalPlayer>(playerid,GraphicalPlayer((const char*)playername.c_str(), playerid, team, new Sprite(*new_sprite_b))));
+		m_players.insert(pair<int, GraphicalPlayer>(playerid,GraphicalPlayer((const char*)playername.c_str(), playerid, team, new Sprite(*red_sprite))));
 		m_text_manager->set_active_color(1.0, 0.2, 0.2);
 	}
 	// TEMPORARY SPRITE CODE
 	m_window->register_graphic(m_players[playerid].get_sprite());
-	m_players[playerid].set_name_sprite(m_text_manager->place_string(m_players[playerid].get_name(), m_players[playerid].get_x(), m_players[playerid].get_y()-m_players[playerid].get_height()/2, TextManager::CENTER, TextManager::LAYER_MAIN));
+	m_players[playerid].set_name_sprite(m_text_manager->place_string(m_players[playerid].get_name(), m_players[playerid].get_x(), m_players[playerid].get_y()-(m_players[playerid].get_radius()+30), TextManager::CENTER, TextManager::LAYER_MAIN));
 	m_players[playerid].set_radius(50);
 }
 
@@ -672,7 +749,7 @@ void GameController::player_update(PacketReader& reader) {
 	
 	if (flags.find_first_of('I') == string::npos) {
 		currplayer->set_is_invisible(false);
-		m_text_manager->reposition_string(m_players[player_id].get_name_sprite(), x, y - m_players[player_id].get_height()/2, TextManager::CENTER);
+		m_text_manager->reposition_string(m_players[player_id].get_name_sprite(), x, y - (m_players[player_id].get_radius()+30), TextManager::CENTER);
 		m_players[player_id].get_name_sprite()->set_invisible(false);
 	} else {
 		currplayer->set_is_invisible(true);
@@ -771,9 +848,9 @@ void GameController::message(PacketReader& reader) {
 	
 	char team = m_players[sender_id].get_team();
 	if (team == 'A') {
-		display_message(message, 0.0, 0.0, 1);
+		display_message(message, 0.4, 0.4, 1);
 	} else {
-		display_message(message, 1, 0.0, 0.0);
+		display_message(message, 1, 0.4, 0.4);
 	}
 }
 

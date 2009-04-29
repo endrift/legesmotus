@@ -17,7 +17,7 @@ GraphicalPlayer::GraphicalPlayer() : Player::Player() {
 	m_sprite = NULL;
 }
 
-GraphicalPlayer::GraphicalPlayer(const char* name, uint32_t id, char team, Sprite* sprite, double x, double y, double xvel, double yvel, double rotation)
+GraphicalPlayer::GraphicalPlayer(const char* name, uint32_t id, char team, Graphic* sprite, double x, double y, double xvel, double yvel, double rotation)
 : Player::Player(name, id, team, x, y, xvel, yvel, rotation) {
 	m_sprite = sprite;
 	if (m_sprite != NULL) {
@@ -31,7 +31,7 @@ GraphicalPlayer::~GraphicalPlayer() {
 	
 }
 
-double GraphicalPlayer::get_width() {
+/*double GraphicalPlayer::get_width() {
 	if (m_sprite != NULL) {
 		return m_sprite->get_width();
 	} else {
@@ -45,9 +45,9 @@ double GraphicalPlayer::get_height() {
 	} else {
 		return 0;
 	}
-}
+}*/
 
-void GraphicalPlayer::set_sprite(Sprite* s) {
+void GraphicalPlayer::set_sprite(Graphic* s) {
 	m_sprite = s;
 	if (m_sprite != NULL) {
 		m_sprite->set_x(m_x);
@@ -72,9 +72,9 @@ void GraphicalPlayer::set_is_invisible(bool is_invisible) {
 	m_is_invisible = is_invisible;
 	if (m_sprite != NULL) {
 		if (is_invisible) {
-			m_sprite->set_alpha(0);
+			m_sprite->set_invisible(true);
 		} else {
-			m_sprite->set_alpha(255);
+			m_sprite->set_invisible(false);
 		}
 	}
 }
@@ -110,7 +110,8 @@ void GraphicalPlayer::set_rotation_radians(double rotation) {
 void GraphicalPlayer::set_is_frozen(bool is_frozen) {
 	m_is_frozen = is_frozen;
 	
-	if (m_is_frozen == true) {
+	// TODO: Commented out because Graphic doesn't yet have these. Put back in when this is fixed.
+	/*if (m_is_frozen == true) {
 		m_sprite->set_red_intensity(0.7);
 		m_sprite->set_green_intensity(0.7);
 		m_sprite->set_blue_intensity(0.7);
@@ -118,5 +119,5 @@ void GraphicalPlayer::set_is_frozen(bool is_frozen) {
 		m_sprite->set_red_intensity(1);
 		m_sprite->set_green_intensity(1);
 		m_sprite->set_blue_intensity(1);
-	}
+	}*/
 }
