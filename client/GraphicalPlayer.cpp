@@ -17,7 +17,7 @@ GraphicalPlayer::GraphicalPlayer() : Player::Player() {
 	m_sprite = NULL;
 }
 
-GraphicalPlayer::GraphicalPlayer(const char* name, uint32_t id, char team, Graphic* sprite, double x, double y, double xvel, double yvel, double rotation)
+GraphicalPlayer::GraphicalPlayer(const char* name, uint32_t id, char team, GraphicGroup* sprite, double x, double y, double xvel, double yvel, double rotation)
 : Player::Player(name, id, team, x, y, xvel, yvel, rotation) {
 	m_sprite = sprite;
 	if (m_sprite != NULL) {
@@ -47,7 +47,7 @@ double GraphicalPlayer::get_height() {
 	}
 }*/
 
-void GraphicalPlayer::set_sprite(Graphic* s) {
+void GraphicalPlayer::set_sprite(GraphicGroup* s) {
 	m_sprite = s;
 	if (m_sprite != NULL) {
 		m_sprite->set_x(m_x);

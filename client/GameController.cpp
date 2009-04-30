@@ -112,15 +112,15 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	blue_front_arm->set_priority(-2);
 	blue_back_arm->set_priority(1);
 	
-	blue_player.add_graphic(blue_sprite);
-	blue_player.add_graphic(blue_back_arm);
-	blue_arm_gun.add_graphic(gun_normal);
-	blue_arm_gun.add_graphic(blue_front_arm);
+	blue_player.add_graphic(blue_sprite, "torso");
+	blue_player.add_graphic(blue_back_arm, "backarm");
+	blue_arm_gun.add_graphic(gun_normal, "gun");
+	blue_arm_gun.add_graphic(blue_front_arm, "arm");
 	blue_arm_gun.set_center_x(13);
 	blue_arm_gun.set_center_y(-18);
 	blue_arm_gun.set_x(13);
 	blue_arm_gun.set_y(-18);
-	blue_player.add_graphic(&blue_arm_gun);
+	blue_player.add_graphic(&blue_arm_gun, "frontarm");
 	
 	red_sprite = new Sprite(m_path_manager->data_path("red_armless.png","sprites"));
 	red_back_arm = new Sprite(m_path_manager->data_path("red_backarm.png","sprites"));
@@ -136,15 +136,15 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	red_front_arm->set_priority(-2);
 	red_back_arm->set_priority(1);
 	
-	red_player.add_graphic(red_sprite);
-	red_player.add_graphic(red_back_arm);
-	red_arm_gun.add_graphic(gun_normal);
-	red_arm_gun.add_graphic(red_front_arm);
+	red_player.add_graphic(red_sprite, "torso");
+	red_player.add_graphic(red_back_arm, "backarm");
+	red_arm_gun.add_graphic(gun_normal, "gun");
+	red_arm_gun.add_graphic(red_front_arm, "arm");
 	red_arm_gun.set_center_x(13);
 	red_arm_gun.set_center_y(-18);
 	red_arm_gun.set_x(13);
 	red_arm_gun.set_y(-18);
-	red_player.add_graphic(&red_arm_gun);
+	red_player.add_graphic(&red_arm_gun, "frontarm");
 	
 	m_crosshairs = new Sprite("data/sprites/crosshairs.png");
 	m_crosshairs->set_priority(-1);
@@ -340,6 +340,9 @@ void GameController::process_input() {
 				m_mouse_y = event.motion.y;
 				m_crosshairs->set_x(m_mouse_x);
 				m_crosshairs->set_y(m_mouse_y);
+				if (m_players.empty()) {
+					break;
+				}
 				x_dist = (m_crosshairs->get_x() + m_offset_x) - m_players[m_player_id].get_x();
 				y_dist = (m_crosshairs->get_y() + m_offset_y) - m_players[m_player_id].get_y();
 				angle = atan2(y_dist, x_dist) * RADIANS_TO_DEGREES;
@@ -353,8 +356,8 @@ void GameController::process_input() {
 					red_player.set_scale_x(1);
 					angle -= 120;
 				}
-				blue_arm_gun.set_rotation(angle);
-				red_arm_gun.set_rotation(angle);
+				m_players[m_player_id].get_sprite()->get_graphic("frontarm")->set_rotation(angle);
+				//red_arm_gun.set_rotation(angle);
 				break;
 				
 			case SDL_MOUSEBUTTONDOWN:
@@ -422,6 +425,7 @@ void GameController::process_mouse_click(SDL_Event event) {
 			double x_dist = (event.button.x + m_offset_x) - m_players[m_player_id].get_x();
 			double y_dist = (event.button.y + m_offset_y) - m_players[m_player_id].get_y();
 			double direction = atan2(y_dist, x_dist) * RADIANS_TO_DEGREES;
+			m_players[m_player_id].set_velocity(m_players[m_player_id].get_x_vel() - 1.5 * cos((direction) * DEGREES_TO_RADIANS), m_players[m_player_id].get_y_vel() - 1.5 * sin((direction) * DEGREES_TO_RADIANS));
 			m_last_fired = SDL_GetTicks();
 			player_fired(m_player_id, m_players[m_player_id].get_x(), m_players[m_player_id].get_y(), direction);
 			m_sound_controller->play_sound("fire");
