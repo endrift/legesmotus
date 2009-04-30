@@ -13,7 +13,7 @@ GraphicGroup::GraphicGroup() : Graphic() {
 	// Nothing to do
 }
 
-GraphicGroup::GraphicGroup(const GraphicGroup& other) {
+GraphicGroup::GraphicGroup(const GraphicGroup& other) : Graphic(other) {
 	std::map<Graphic*, Graphic*> old_ptr_map;
 	for (list<Graphic*>::const_iterator iter = other.m_graphics.begin(); iter != other.m_graphics.end(); ++iter) {
 		Graphic* g = (*iter)->clone();

@@ -23,7 +23,7 @@ Text::Text(const string& text, Font* font) : Graphic() {
 	m_shadow_enabled = false;
 }
 
-Text::Text(const Text& other) {
+Text::Text(const Text& other) : Graphic(other) {
 	m_fg = other.m_fg->clone();
 	if (other.m_shadow != NULL) {
 		m_shadow = other.m_shadow->clone();
