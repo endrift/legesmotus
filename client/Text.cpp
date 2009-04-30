@@ -69,6 +69,18 @@ void Text::set_shadow(bool enable) {
 	}
 }
 
+void Text::set_red_intensity(double r) {
+	m_fg->set_red_intensity(r);
+}
+
+void Text::set_green_intensity(double g) {
+	m_fg->set_green_intensity(g);
+}
+
+void Text::set_blue_intensity(double b) {
+	m_fg->set_blue_intensity(b);
+}
+
 void Text::draw(const GameWindow* window) const {
 	glPushMatrix();
 	transform_gl();

@@ -25,11 +25,15 @@ public:
 	virtual ~Text();
 
 	void		set_color(double r, double g, double b);
-	void		set_alpha(double a);
+	virtual void	set_alpha(double a);
 	void		set_shadow_color(double r, double g, double b);
 	void		set_shadow_alpha(double a);
 	void		set_shadow_offset(double x, double y);
 	void		set_shadow(bool enable);
+
+	virtual void	set_red_intensity(double r);
+	virtual void	set_green_intensity(double g);
+	virtual void	set_blue_intensity(double b);
 
 	virtual void	draw(const GameWindow* window) const;
 };

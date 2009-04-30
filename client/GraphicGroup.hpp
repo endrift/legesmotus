@@ -19,7 +19,12 @@ public:
 
 	void		add_graphic(Graphic *graphic);
 	void		remove_graphic(Graphic *graphic);
-	
+
+	virtual void	set_alpha(double alpha);
+	virtual void	set_red_intensity(double r);
+	virtual void	set_green_intensity(double g);
+	virtual void	set_blue_intensity(double b);
+
 	void		draw(const GameWindow* window) const;
 };
 

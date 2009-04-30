@@ -35,8 +35,10 @@ void Sprite::init() {
 	m_height = toPow2(get_image_height());
 	set_center_x(get_image_width()/2.0);
 	set_center_y(get_image_height()/2.0);
+	set_antialiasing(true);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
 }
 
 int Sprite::get_width() const {
@@ -77,6 +79,11 @@ void Sprite::set_green_intensity(double green) {
 
 void Sprite::set_blue_intensity(double blue) {
 	m_blue = blue;
+}
+
+void Sprite::set_antialiasing(bool enable) {
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, enable?GL_LINEAR:GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, enable?GL_LINEAR:GL_NEAREST);
 }
 
 void Sprite::draw(const GameWindow* window) const {

@@ -131,6 +131,7 @@ void	GraphicalMap::add_object(PacketReader& object_data) {
 			Sprite*	sprite = new Sprite(sprite_path.c_str());
 			sprite->set_priority(Graphic::BACKGROUND);
 			sprite->set_scale_y(double(GATE_HEIGHT));
+			sprite->set_antialiasing(false);
 			map_object.set_sprite(sprite);
 
 			map_object.get_bounding_polygon().make_rectangle(sprite->get_image_width() + GATE_EXTENT * 2, GATE_HEIGHT, upper_left - Point(GATE_EXTENT, 0));

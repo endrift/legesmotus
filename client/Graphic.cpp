@@ -91,10 +91,13 @@ GLuint Graphic::get_texture_id() const {
 }
 
 void Graphic::transform_gl() const {
+	glBegin(GL_POINTS);
+	glEnd();
 	glTranslated(round(m_x), round(m_y), 0.0); //TODO find alternative method
 	glRotated(m_rotation, 0.0, 0.0, 1.0);
 	glScaled(m_scale_x, m_scale_y, 1.0);
 	glTranslated(-round(m_center_x), -round(m_center_y), 0.0);
+	glVertex3i(0,0,-200);
 }
 
 int Graphic::get_image_width() const {

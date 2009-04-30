@@ -35,10 +35,12 @@ public:
 	double	get_green_intensity() const;
 	double	get_blue_intensity() const;
 
-	void	set_alpha(double alpha);
-	void	set_red_intensity(double r);
-	void	set_green_intensity(double g);
-	void	set_blue_intensity(double b);
+	virtual void	set_alpha(double alpha);
+	virtual void	set_red_intensity(double r);
+	virtual void	set_green_intensity(double g);
+	virtual void	set_blue_intensity(double b);
+
+	void	set_antialiasing(bool enable);
 
 	void	draw(const GameWindow* window) const;
 };

@@ -105,10 +105,10 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	blue_back_arm->set_center_y(29);
 	blue_back_arm->set_x(-5);
 	blue_back_arm->set_y(-20);
-	blue_front_arm->set_center_x(46);
-	blue_front_arm->set_center_y(30);
-	blue_front_arm->set_x(13);
-	blue_front_arm->set_y(-18);
+	blue_front_arm->set_center_x(49);
+	blue_front_arm->set_center_y(33);
+	blue_front_arm->set_x(17);
+	blue_front_arm->set_y(-16);
 	blue_front_arm->set_priority(-2);
 	blue_back_arm->set_priority(1);
 	
@@ -125,10 +125,10 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	red_sprite = new Sprite(m_path_manager->data_path("red_armless.png","sprites"));
 	red_back_arm = new Sprite(m_path_manager->data_path("red_backarm.png","sprites"));
 	red_front_arm = new Sprite(m_path_manager->data_path("red_frontarm.png","sprites"));
-	red_front_arm->set_center_x(46);
-	red_front_arm->set_center_y(30);
-	red_front_arm->set_x(13);
-	red_front_arm->set_y(-18);
+	red_front_arm->set_center_x(49);
+	red_front_arm->set_center_y(33);
+	red_front_arm->set_x(17);
+	red_front_arm->set_y(-16);
 	red_back_arm->set_center_x(27);
 	red_back_arm->set_center_y(29);
 	red_back_arm->set_x(-5);

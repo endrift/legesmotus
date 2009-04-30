@@ -20,6 +20,10 @@ TiledGraphic::TiledGraphic(const char* filename) : Graphic(filename) {
 TiledGraphic::TiledGraphic(const TiledGraphic& other) : Graphic(other) {
 	m_start_x = other.m_start_x;
 	m_start_y = other.m_start_y;
+	m_red = other.m_red;
+	m_green = other.m_green;
+	m_blue = other.m_blue;
+	m_alpha = other.m_alpha;
 	m_width = other.m_width;
 	m_height = other.m_height;
 	m_tile_width = other.m_tile_width;
@@ -29,6 +33,10 @@ TiledGraphic::TiledGraphic(const TiledGraphic& other) : Graphic(other) {
 void TiledGraphic::init() {
 	m_start_x = 0;
 	m_start_y = 0;
+	m_red = 1.0;
+	m_green = 1.0;
+	m_blue = 1.0;
+	m_alpha = 1.0;
 	m_tile_width = toPow2(get_image_width());
 	m_tile_height = toPow2(get_image_height());
 	m_width = m_tile_width;
@@ -83,8 +91,40 @@ void TiledGraphic::set_tile_height(double tile_height) {
 	m_tile_height = tile_height;
 }
 
+double TiledGraphic::get_alpha() const {
+	return m_alpha;
+}
+
+double TiledGraphic::get_red_intensity() const {
+	return m_red;
+}
+
+double TiledGraphic::get_green_intensity() const {
+	return m_green;
+}
+
+double TiledGraphic::get_blue_intensity() const {
+	return m_blue;
+}
+
+void TiledGraphic::set_alpha(double alpha) {
+	m_alpha = alpha;
+}
+
+void TiledGraphic::set_red_intensity(double red) {
+	m_red = red;
+}
+
+void TiledGraphic::set_green_intensity(double green) {
+	m_green = green;
+}
+
+void TiledGraphic::set_blue_intensity(double blue) {
+	m_blue = blue;
+}
+
 void TiledGraphic::draw(const GameWindow* window) const {
-	glColor4d(1.0, 1.0, 1.0, 1.0);
+	glColor4d(m_red, m_green, m_blue, m_alpha);
 	glBindTexture(GL_TEXTURE_2D,get_texture_id());
 	glPushMatrix();
 	transform_gl();

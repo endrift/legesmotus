@@ -110,8 +110,7 @@ void GraphicalPlayer::set_rotation_radians(double rotation) {
 void GraphicalPlayer::set_is_frozen(bool is_frozen) {
 	m_is_frozen = is_frozen;
 	
-	// TODO: Commented out because Graphic doesn't yet have these. Put back in when this is fixed.
-	/*if (m_is_frozen == true) {
+	if (m_is_frozen == true) {
 		m_sprite->set_red_intensity(0.7);
 		m_sprite->set_green_intensity(0.7);
 		m_sprite->set_blue_intensity(0.7);
@@ -119,5 +118,5 @@ void GraphicalPlayer::set_is_frozen(bool is_frozen) {
 		m_sprite->set_red_intensity(1);
 		m_sprite->set_green_intensity(1);
 		m_sprite->set_blue_intensity(1);
-	}*/
+	}
 }

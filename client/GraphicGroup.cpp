@@ -27,6 +27,30 @@ void GraphicGroup::remove_graphic(Graphic* graphic) {
 	m_graphics.remove(graphic);
 }
 
+void GraphicGroup::set_alpha(double alpha) {
+	for (list<Graphic*>::iterator iter = m_graphics.begin(); iter != m_graphics.end(); ++iter) {
+		(*iter)->set_alpha(alpha);
+	}
+}
+
+void GraphicGroup::set_red_intensity(double r) {
+	for (list<Graphic*>::iterator iter = m_graphics.begin(); iter != m_graphics.end(); ++iter) {
+		(*iter)->set_red_intensity(r);
+	}
+}
+
+void GraphicGroup::set_green_intensity(double g) {
+	for (list<Graphic*>::iterator iter = m_graphics.begin(); iter != m_graphics.end(); ++iter) {
+		(*iter)->set_green_intensity(g);
+	}
+}
+
+void GraphicGroup::set_blue_intensity(double b) {
+	for (list<Graphic*>::iterator iter = m_graphics.begin(); iter != m_graphics.end(); ++iter) {
+		(*iter)->set_blue_intensity(b);
+	}
+}
+
 void GraphicGroup::draw(const GameWindow* window) const {
 	glPushMatrix();
 	transform_gl();

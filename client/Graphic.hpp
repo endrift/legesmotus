@@ -82,6 +82,11 @@ public:
 	bool		is_invisible() const;
 	void		set_invisible(bool invisible);
 
+	virtual void	set_alpha(double alpha) = 0;
+	virtual void	set_red_intensity(double r) = 0;
+	virtual void	set_green_intensity(double g) = 0;
+	virtual void	set_blue_intensity(double b) = 0;
+
 	virtual void	draw(const GameWindow* window) const = 0;
 };
 
