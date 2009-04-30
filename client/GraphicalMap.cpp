@@ -119,10 +119,10 @@ void	GraphicalMap::add_object(PacketReader& object_data) {
 			map_object.set_team(team);
 
 			string	sprite_path("data/sprites/"); // TODO: don't hard code, really
-			if (team == 'A') {
+			if (team == 'B') {
 				sprite_path += "red_gate.png";
 				m_gates[0] = &map_object;
-			} else if (team == 'B') {
+			} else if (team == 'A') {
 				sprite_path += "blue_gate.png";
 				m_gates[1] = &map_object;
 			}

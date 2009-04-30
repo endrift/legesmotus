@@ -133,6 +133,8 @@ public:
 	void		player_shot(PacketReader& reader);
 	void		message(PacketReader& reader);
 	void		gate_lowering(PacketReader& reader);
+	void		game_start(PacketReader& reader);
+	void		game_stop(PacketReader& reader);
 };
 
 #endif

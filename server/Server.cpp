@@ -182,9 +182,9 @@ void	Server::run(int portno)
 		if (m_players_have_spawned) {
 			// See if a gate has fallen
 			if (get_gate('A').has_fallen()) {
-				game_over('B');
-			} else if (get_gate('B').has_fallen()) {
 				game_over('A');
+			} else if (get_gate('B').has_fallen()) {
+				game_over('B');
 			}
 			
 			// If a gate is being lowered, broadcast a status report on it

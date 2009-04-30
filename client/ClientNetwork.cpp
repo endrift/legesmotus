@@ -110,12 +110,12 @@ void	ClientNetwork::process_packet(GameController& controller, const RawPacket& 
 
 	case GAME_START_PACKET:
 		send_ack(reader.packet_id());
-		//controller.game_start(reader);
+		controller.game_start(reader);
 		break;
 
 	case GAME_STOP_PACKET:
 		send_ack(reader.packet_id());
-		//controller.game_stop(reader);
+		controller.game_stop(reader);
 		break;
 
 	case SCORE_UPDATE_PACKET:

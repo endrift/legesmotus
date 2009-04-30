@@ -351,7 +351,7 @@ void GameController::process_input() {
 				} else {
 					blue_player.set_scale_x(1);
 					red_player.set_scale_x(1);
-					angle -= 110;
+					angle -= 120;
 				}
 				blue_arm_gun.set_rotation(angle);
 				red_arm_gun.set_rotation(angle);
@@ -479,7 +479,7 @@ void GameController::move_objects(float timescale) {
 					new_y = m_players[m_player_id].get_y();
 				}
 			}
-			if (thisobj->get_type() == Map::GATE && !m_players[m_player_id].is_frozen()) {
+			if (thisobj->get_type() == Map::GATE && thisobj->get_team() != m_players[m_player_id].get_team() && !m_players[m_player_id].is_frozen()) {
 				if (!m_holding_gate) {
 					send_gate_hold(true);
 				}
@@ -867,6 +867,37 @@ void GameController::gate_lowering(PacketReader& reader) {
 	m_map->set_gate_progress(team, progress);
 
 	// TODO: use the player id to display a HUD message or something...
+}
+
+void GameController::game_start(PacketReader& reader) {
+	string 		mapname;
+	int		gametimeleft;
+	
+	reader >> mapname >> gametimeleft;
+	
+	m_map->load_file(m_path_manager->data_path(mapname.c_str(), "maps"));
+	m_map_width = m_map->get_width();
+	m_map_height = m_map->get_height();
+	
+	char timeleftmsg[100];
+	sprintf(timeleftmsg, "Game started! Time remaining: %d", gametimeleft);
+	m_sound_controller->play_sound("begin");
+	display_message(timeleftmsg, 1.0, 1.0, 1.0);
+}
+
+void GameController::game_stop(PacketReader& reader) {
+	char		winningteam;
+	int 		teamascore;
+	int		teambscore;
+	
+	reader >> winningteam >> teamascore >> teambscore;
+	
+	if (winningteam == m_players[m_player_id].get_team()) {
+		display_message("VICTORY!", 1.0, 1.0, 1.0);
+		m_sound_controller->play_sound("victory");
+	} else {
+		display_message("DEFEAT!", 1.0, 1.0, 1.0);
+	}
 }
 
 void GameController::send_gate_hold(bool holding) {

@@ -36,7 +36,7 @@ SoundController::SoundController() {
 		printf("Mix_LoadWAV: %s\n", Mix_GetError());
 	}
 
-	m_victory_sound = Mix_LoadWAV("data/sounds/LMGateSiren.ogg");
+	m_victory_sound = Mix_LoadWAV("data/sounds/victory_fanfare.ogg");
 	if(!m_victory_sound) {
 		printf("Mix_LoadWAV: %s\n", Mix_GetError());
 	}
@@ -72,8 +72,7 @@ void SoundController::play_sound (string sound) {
 		if(Mix_PlayChannel(-1, m_victory_sound, 0) == -1) {
 			printf("Mix_PlayChannel: %s\n", Mix_GetError());
 		}
-	}
-	else if(sound == "begin") {
+	} else if(sound == "begin") {
 		if(Mix_PlayChannel(-1, m_begin_sound, 0) == -1) {
 			printf("Mix_PlayChannel: %s\n", Mix_GetError());
 		}
