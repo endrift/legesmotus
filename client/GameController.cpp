@@ -473,6 +473,18 @@ void GameController::move_objects(float timescale) {
 		const Polygon& poly(thisobj->get_bounding_polygon());
 		double newdist = poly.intersects_circle(currpos, radius);
 		double olddist = poly.intersects_circle(oldpos, radius);
+		
+		// REPEL FROZEN PLAYERS AWAY FROM GATES.
+		if (thisobj->get_type() == Map::GATE && m_players[m_player_id].is_frozen()) {
+			double newdist_repulsion = poly.dist_from_circle(currpos, radius);
+			if (newdist_repulsion < 400) {
+				double gate_x = thisobj->get_upper_left().x + thisobj->get_sprite()->get_image_width()/2;
+				double gate_y = thisobj->get_upper_left().y + thisobj->get_sprite()->get_image_height()/2;
+				double angle = atan2(gate_y - new_y, gate_x - new_x);
+				m_players[m_player_id].set_velocity(m_players[m_player_id].get_x_vel() - .02 * cos(angle), m_players[m_player_id].get_y_vel() - .02 * sin(angle));
+			}
+		}
+		
 		if (newdist != -1) {
 			if (newdist < olddist) {
 				//cerr << "New dist: " << newdist << " Old dist: " << olddist << endl;

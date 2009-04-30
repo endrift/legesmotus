@@ -28,6 +28,8 @@ public:
 
 	// Return the distance if this bounding polygon intersects with the circle. Otherwise returns -1.
 	double			intersects_circle(Point point, double radius) const;
+	
+	double			dist_from_circle(Point point, double radius) const;
 
 	// Are there any lines in this polygon?
 	// An empty polygon would be used (for example) in a non-intersectable map object (i.e. a decoration or background)
