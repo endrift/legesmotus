@@ -8,6 +8,7 @@
 #include "common/LMException.hpp"
 #include "GameWindow.hpp"
 #include "compat_gl.h"
+#include <cmath>
 
 using namespace std;
 
@@ -136,34 +137,55 @@ bool GameWindow::is_fullscreen() const {
 
 void GameWindow::set_offset_x(double offset) {
 	m_offset_x = offset;
-	m_graphics.set_x(-offset);
 }
 
 void GameWindow::set_offset_y(double offset) {
 	m_offset_y = offset;
-	m_graphics.set_y(-offset);
 }
 
 void GameWindow::register_graphic(Graphic* graphic) {
-	m_graphics.add_graphic(graphic);
+	for (list<Graphic*>::iterator iter = m_graphics.begin(); iter != m_graphics.end(); ++iter) {
+		if ((*iter)->get_priority() < graphic->get_priority()) {
+			m_graphics.insert(iter,graphic);
+			return;
+		}
+	}
+	m_graphics.push_back(graphic);
 }
 
 void GameWindow::unregister_graphic(Graphic* graphic) {
-	m_graphics.remove_graphic(graphic);
+	m_graphics.remove(graphic);
 }
 
 
 void GameWindow::register_hud_graphic(Graphic* graphic) {
-	m_hud_graphics.add_graphic(graphic);
+	for (list<Graphic*>::iterator iter = m_hud_graphics.begin(); iter != m_hud_graphics.end(); ++iter) {
+		if ((*iter)->get_priority() < graphic->get_priority()) {
+			m_hud_graphics.insert(iter,graphic);
+			return;
+		}
+	}
+	m_hud_graphics.push_back(graphic);
 }
 
 void GameWindow::unregister_hud_graphic(Graphic* graphic) {
-	m_hud_graphics.remove_graphic(graphic);
+	m_hud_graphics.remove(graphic);
 }
 
 void GameWindow::redraw() const {
 	glClear(GL_COLOR_BUFFER_BIT);
-	m_graphics.draw(this);
-	m_hud_graphics.draw(this);
+	glPushMatrix();
+	glTranslated(-round(m_offset_x),-round(m_offset_y),0.0);
+	for (list<Graphic*>::const_iterator iter = m_graphics.begin(); iter != m_graphics.end(); ++iter) {
+		if (!(*iter)->is_invisible()) {
+			(*iter)->draw(this);
+		}
+	}
+	glPopMatrix();
+	for (list<Graphic*>::const_iterator iter = m_hud_graphics.begin(); iter != m_hud_graphics.end(); ++iter) {
+		if (!(*iter)->is_invisible()) {
+			(*iter)->draw(this);
+		}
+	}
 	SDL_GL_SwapBuffers();
 }

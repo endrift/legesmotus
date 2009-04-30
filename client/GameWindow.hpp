@@ -20,8 +20,8 @@ private:
 	int			m_depth;
 	bool			m_fullscreen;
 	
-	GraphicGroup		m_graphics;
-	GraphicGroup		m_hud_graphics;
+	std::list<Graphic*>		m_graphics;
+	std::list<Graphic*>		m_hud_graphics;
 
 	int			m_offset_x;
 	int			m_offset_y;

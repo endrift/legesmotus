@@ -30,6 +30,7 @@ public:
 	TiledGraphic(SDL_Surface* image);
 	TiledGraphic(const char* filename);
 	TiledGraphic(const TiledGraphic& other);
+	virtual TiledGraphic* clone() const;
 
 	double	get_width() const;
 	double	get_height() const;

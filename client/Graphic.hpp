@@ -54,6 +54,7 @@ public:
 	};
 
 	virtual		~Graphic();
+	virtual	Graphic* clone() const = 0;
 	
 	int		get_image_width() const;
 	int		get_image_height() const;

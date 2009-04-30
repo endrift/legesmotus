@@ -26,6 +26,10 @@ Sprite::Sprite(const Sprite& other) : Graphic(other) {
 	m_height = other.m_height;
 }
 
+Sprite* Sprite::clone() const {
+	return new Sprite(*this);
+}
+
 void Sprite::init() {
 	m_alpha = 1.0;
 	m_red = 1.0;

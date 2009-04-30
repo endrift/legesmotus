@@ -22,7 +22,9 @@ private:
 	void	touch_shadow();
 public:
 	Text(const std::string& text, Font* font);
+	Text(const Text& other);
 	virtual ~Text();
+	virtual Text* clone() const;
 
 	void		set_color(double r, double g, double b);
 	virtual void	set_alpha(double a);

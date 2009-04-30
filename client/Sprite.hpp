@@ -26,6 +26,7 @@ public:
 	Sprite(SDL_Surface* image);
 	Sprite(const char* filename);
 	Sprite(const Sprite& other);
+	virtual Sprite* clone() const;
 
 	int	get_width() const;
 	int	get_height() const;

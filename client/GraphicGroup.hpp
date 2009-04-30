@@ -10,15 +10,23 @@
 
 #include "Graphic.hpp"
 #include <list>
+#include <string>
+#include <map>
 
 class GraphicGroup : public Graphic {
 private:
 	std::list<Graphic*>	m_graphics;
+	std::map<std::string, Graphic*> m_names;
 public:
 	GraphicGroup();
+	GraphicGroup(const GraphicGroup& other);
+	virtual ~GraphicGroup();
+	virtual GraphicGroup* clone() const;
 
-	void		add_graphic(Graphic *graphic);
-	void		remove_graphic(Graphic *graphic);
+	void		add_graphic(Graphic* graphic);
+	void		add_graphic(Graphic* graphic, const std::string& name);
+	Graphic*	get_graphic(const std::string& name);
+	void		remove_graphic(const std::string& name);
 
 	virtual void	set_alpha(double alpha);
 	virtual void	set_red_intensity(double r);

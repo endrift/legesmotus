@@ -13,18 +13,57 @@ GraphicGroup::GraphicGroup() : Graphic() {
 	// Nothing to do
 }
 
+GraphicGroup::GraphicGroup(const GraphicGroup& other) {
+	std::map<Graphic*, Graphic*> old_ptr_map;
+	for (list<Graphic*>::const_iterator iter = other.m_graphics.begin(); iter != other.m_graphics.end(); ++iter) {
+		Graphic* g = (*iter)->clone();
+		old_ptr_map[*iter] = g;
+		m_graphics.push_back(g);
+	}
+	for (map<string, Graphic*>::const_iterator iter = other.m_names.begin(); iter != other.m_names.end(); ++iter) {
+		m_names[iter->first] = old_ptr_map[iter->second];
+	}
+}
+
+GraphicGroup::~GraphicGroup() {
+	for (list<Graphic*>::iterator iter = m_graphics.begin(); iter != m_graphics.end(); ++iter) {
+		delete *iter;
+	}
+}
+
+GraphicGroup* GraphicGroup::clone() const {
+	return new GraphicGroup(*this);
+}
+
 void GraphicGroup::add_graphic(Graphic* graphic) {
 	for (list<Graphic*>::iterator iter = m_graphics.begin(); iter != m_graphics.end(); ++iter) {
 		if ((*iter)->get_priority() < graphic->get_priority()) {
-			m_graphics.insert(iter,graphic);
+			m_graphics.insert(iter,graphic->clone());
 			return;
 		}
 	}
-	m_graphics.push_back(graphic);
+	m_graphics.push_back(graphic->clone());
 }
 
-void GraphicGroup::remove_graphic(Graphic* graphic) {
-	m_graphics.remove(graphic);
+void GraphicGroup::add_graphic(Graphic* graphic, const string& name) {
+	Graphic* g = graphic->clone();
+	for (list<Graphic*>::iterator iter = m_graphics.begin(); iter != m_graphics.end(); ++iter) {
+		if ((*iter)->get_priority() < graphic->get_priority()) {
+			m_graphics.insert(iter,g);
+			m_names[name] = g;
+			return;
+		}
+	}
+	m_graphics.push_back(g);
+	m_names[name] = g;
+}
+
+Graphic* GraphicGroup::get_graphic(const string& name) {
+	return m_names[name];
+}
+
+void GraphicGroup::remove_graphic(const string& name) {
+	m_graphics.remove(get_graphic(name));
 }
 
 void GraphicGroup::set_alpha(double alpha) {
@@ -54,7 +93,7 @@ void GraphicGroup::set_blue_intensity(double b) {
 void GraphicGroup::draw(const GameWindow* window) const {
 	glPushMatrix();
 	transform_gl();
-	for (std::list<Graphic*>::const_iterator iter = m_graphics.begin(); iter != m_graphics.end(); ++iter) {
+	for (list<Graphic*>::const_iterator iter = m_graphics.begin(); iter != m_graphics.end(); ++iter) {
 		if (!(*iter)->is_invisible()) {
 			(*iter)->draw(window);
 		}

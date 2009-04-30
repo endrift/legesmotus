@@ -23,9 +23,23 @@ Text::Text(const string& text, Font* font) : Graphic() {
 	m_shadow_enabled = false;
 }
 
+Text::Text(const Text& other) {
+	m_fg = other.m_fg->clone();
+	if (other.m_shadow != NULL) {
+		m_shadow = other.m_shadow->clone();
+	}
+	m_image_width = m_fg->get_image_width();
+	m_image_height = m_fg->get_image_height();
+	m_shadow_enabled = other.m_shadow_enabled;
+}
+
 Text::~Text() {
 	delete m_fg;
 	delete m_shadow;
+}
+
+Text* Text::clone() const {
+	return new Text(*this);
 }
 
 void Text::touch_shadow() {

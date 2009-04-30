@@ -30,6 +30,10 @@ TiledGraphic::TiledGraphic(const TiledGraphic& other) : Graphic(other) {
 	m_tile_height = other.m_tile_height;
 }
 
+TiledGraphic* TiledGraphic::clone() const {
+	return new TiledGraphic(*this);
+}
+
 void TiledGraphic::init() {
 	m_start_x = 0;
 	m_start_y = 0;
