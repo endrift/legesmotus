@@ -341,7 +341,7 @@ void GameController::process_input() {
 				m_mouse_y = event.motion.y;
 				m_crosshairs->set_x(m_mouse_x);
 				m_crosshairs->set_y(m_mouse_y);
-				if (m_players.empty()) {
+				if (m_players.empty() || m_players[m_player_id].is_frozen()) {
 					break;
 				}
 				x_dist = (m_crosshairs->get_x() + m_offset_x) - m_players[m_player_id].get_x();
