@@ -77,6 +77,7 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_path_manager = new PathManager(""); // TODO: Pass it a path.
 
 	m_time_to_unfreeze = 0;
+	m_last_fired = 0;
 
 	m_font = new Font("data/fonts/JuraMedium.ttf", 14);
 	m_text_manager = new TextManager(m_font, m_window);
