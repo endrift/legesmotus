@@ -897,6 +897,7 @@ void GameController::game_stop(PacketReader& reader) {
 		m_sound_controller->play_sound("victory");
 	} else {
 		display_message("DEFEAT!", 1.0, 1.0, 1.0);
+		m_sound_controller->play_sound("defeat");
 	}
 }
 

@@ -41,6 +41,11 @@ SoundController::SoundController() {
 		printf("Mix_LoadWAV: %s\n", Mix_GetError());
 	}
 
+	m_defeat_sound = Mix_LoadWAV("data/sounds/defeatsound.ogg");
+	if(!m_victory_sound) {
+		printf("Mix_LoadWAV: %s\n", Mix_GetError());
+	}
+
 	m_begin_sound = Mix_LoadWAV("data/sounds/clockchime1.ogg");
 	if(!m_begin_sound) {
 		printf("Mix_LoadWAV: %s\n", Mix_GetError());
@@ -74,6 +79,10 @@ void SoundController::play_sound (string sound) {
 		}
 	} else if(sound == "begin") {
 		if(Mix_PlayChannel(-1, m_begin_sound, 0) == -1) {
+			printf("Mix_PlayChannel: %s\n", Mix_GetError());
+		}
+	} else if(sound == "defeat") {
+		if(Mix_PlayChannel(-1, m_defeat_sound, 0) == -1) {
 			printf("Mix_PlayChannel: %s\n", Mix_GetError());
 		}
 	}

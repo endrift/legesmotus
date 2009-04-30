@@ -19,6 +19,7 @@ private:
 	Mix_Chunk* 	m_gate_siren_sound;
 	Mix_Chunk* 	m_victory_sound;
 	Mix_Chunk* 	m_begin_sound;
+	Mix_Chunk*	m_defeat_sound;
 
 public:
 	SoundController();
