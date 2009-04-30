@@ -42,6 +42,7 @@ private:
 	};
 
 	const static int MESSAGE_DISPLAY_TIME = 10000;
+	const static int FIRING_DELAY = 700;
 	
 	GameWindow* 	m_window;
 	ClientNetwork	m_network;
@@ -72,6 +73,7 @@ private:
 	std::map<int, GraphicalPlayer> m_players;
 	unsigned int	m_player_id;
 	bool		m_holding_gate;
+	long int	m_last_fired;
 	
 	// Do we want to keep it this way?
 	unsigned long	m_time_to_unfreeze;

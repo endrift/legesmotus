@@ -413,12 +413,16 @@ void GameController::process_mouse_click(SDL_Event event) {
 		}
 	} else if (m_game_state == GAME_IN_PROGRESS) {
 		if (event.button.button == 1) {
+			if (m_last_fired != 0 && m_last_fired > SDL_GetTicks() - FIRING_DELAY) {
+				return;
+			}
 			if (m_players.empty() || m_players[m_player_id].is_frozen()) {
 				return;
 			}
 			double x_dist = (event.button.x + m_offset_x) - m_players[m_player_id].get_x();
 			double y_dist = (event.button.y + m_offset_y) - m_players[m_player_id].get_y();
 			double direction = atan2(y_dist, x_dist) * RADIANS_TO_DEGREES;
+			m_last_fired = SDL_GetTicks();
 			player_fired(m_player_id, m_players[m_player_id].get_x(), m_players[m_player_id].get_y(), direction);
 			m_sound_controller->play_sound("fire");
 		}
@@ -712,10 +716,10 @@ void GameController::announce(PacketReader& reader) {
 	}
 	
 	if (team == 'A') {
-		m_players.insert(pair<int, GraphicalPlayer>(playerid,GraphicalPlayer((const char*)playername.c_str(), playerid, team, new Sprite(*blue_sprite))));
+		m_players.insert(pair<int, GraphicalPlayer>(playerid,GraphicalPlayer((const char*)playername.c_str(), playerid, team, new GraphicGroup(blue_player))));
 		m_text_manager->set_active_color(0.2, 0.2, 1.0);
 	} else {
-		m_players.insert(pair<int, GraphicalPlayer>(playerid,GraphicalPlayer((const char*)playername.c_str(), playerid, team, new Sprite(*red_sprite))));
+		m_players.insert(pair<int, GraphicalPlayer>(playerid,GraphicalPlayer((const char*)playername.c_str(), playerid, team, new GraphicGroup(red_player))));
 		m_text_manager->set_active_color(1.0, 0.2, 0.2);
 	}
 	// TEMPORARY SPRITE CODE
