@@ -15,6 +15,7 @@
 #include "common/PacketWriter.hpp"
 #include "common/network.hpp"
 #include "common/math.hpp"
+#include "common/team.hpp"
 
 #include <vector>
 #include <stdio.h>
@@ -925,9 +926,9 @@ void GameController::game_stop(PacketReader& reader) {
 void GameController::send_gate_hold(bool holding) {
 	PacketWriter gate_hold(GATE_LOWERING_PACKET);
 	if (holding) {
-		gate_hold << m_player_id << m_players[m_player_id].get_team() << 1;
+		gate_hold << m_player_id << get_other_team(m_players[m_player_id].get_team()) << 1;
 	} else {
-		gate_hold << m_player_id << m_players[m_player_id].get_team() << 0;
+		gate_hold << m_player_id << get_other_team(m_players[m_player_id].get_team()) << 0;
 	}
 	m_network.send_packet(gate_hold);
 }

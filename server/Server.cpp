@@ -11,6 +11,7 @@
 #include "common/PacketWriter.hpp"
 #include "common/PacketReader.hpp"
 #include "common/network.hpp"
+#include "common/team.hpp"
 #include <string>
 #include <iostream>
 #include <limits>
@@ -55,7 +56,7 @@ void	Server::message(int channel, PacketReader& packet)
 	} else if (recipient == "A" || recipient == "B") {
 		// Specific Team
 		char				recipient_team = recipient[0];
-		player_map::const_iterator	it(m_players.begin());
+		PlayerMap::const_iterator	it(m_players.begin());
 		while (it != m_players.end()) {
 			if (it->second.get_team() == recipient_team) {
 				m_network.send_packet(it->second.get_channel(), outbound_packet);
@@ -132,7 +133,7 @@ void	Server::join(int channel, PacketReader& packet)
 	m_network.broadcast_packet(announce_packet, channel);
 
 	// Send the new player an announce packet for every player currently in the game
-	player_map::const_iterator	it(m_players.begin());
+	PlayerMap::const_iterator	it(m_players.begin());
 	while (it != m_players.end()) {
 		const ServerPlayer&	player((it++)->second);
 
@@ -182,9 +183,11 @@ void	Server::run(int portno)
 		if (m_players_have_spawned) {
 			// See if a gate has fallen
 			if (get_gate('A').has_fallen()) {
-				game_over('A');
-			} else if (get_gate('B').has_fallen()) {
 				game_over('B');
+				new_game();
+			} else if (get_gate('B').has_fallen()) {
+				game_over('A');
+				new_game();
 			}
 			
 			// If a gate is being lowered, broadcast a status report on it
@@ -251,7 +254,7 @@ void	Server::spawn_players() {
 	m_players_have_spawned = true;
 	/* TEMPORARILY DISABLE SERVER SPAWNING because it's ANNOYING
 	m_current_map.reset();
-	for (player_map::iterator it(m_players.begin()); it != m_players.end(); ++it) {
+	for (PlayerMap::iterator it(m_players.begin()); it != m_players.end(); ++it) {
 		ServerPlayer&		player(it->second);
 		if (const Point* point = m_current_map.next_spawnpoint(player.get_team())) {
 			PacketWriter	update_packet(PLAYER_UPDATE_PACKET);
@@ -392,7 +395,8 @@ bool	Server::GateStatus::set(bool new_is_lowering, uint32_t new_player_id) {
 }
 
 bool	Server::waiting_to_spawn() const {
-	return !m_players.empty() && !m_players_have_spawned;
+	return !m_players_have_spawned && !m_players.empty() ||
+		m_players_have_spawned && m_waiting_players.empty();
 }
 uint32_t Server::time_until_spawn() const {
 	if (waiting_to_spawn()) {
@@ -405,12 +409,12 @@ uint32_t Server::time_until_spawn() const {
 }
 
 ServerPlayer*		Server::get_player(uint32_t player_id) {
-	player_map::iterator it(m_players.find(player_id));
+	PlayerMap::iterator it(m_players.find(player_id));
 	return it != m_players.end() ? &it->second : NULL;
 }
 
 const ServerPlayer*	Server::get_player(uint32_t player_id) const {
-	player_map::const_iterator it(m_players.find(player_id));
+	PlayerMap::const_iterator it(m_players.find(player_id));
 	return it != m_players.end() ? &it->second : NULL;
 }
 

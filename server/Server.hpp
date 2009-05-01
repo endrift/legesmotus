@@ -13,13 +13,16 @@
 #include "ServerMap.hpp"
 #include <stdint.h>
 #include <map>
+#include <list>
+#include <utility>
 
 class PacketReader;
 
 class Server {
 private:
 	static const int	SERVER_PROTOCOL_VERSION;	// Defined in Server.cpp
-	typedef std::map<uint32_t, ServerPlayer> player_map;	// A std::map from player_id to the player object
+	typedef std::map<uint32_t, ServerPlayer> PlayerMap;	// A std::map from player_id to the player object
+	typedef std::list<std::pair<uint32_t, ServerPlayer*> > PlayerQueue; // The first element of the pair is the time at which the player joined
 
 	// in milliseconds
 	enum {
@@ -31,7 +34,13 @@ private:
 	enum {
 		FREEZE_TIME = 10000,			// Players stay frozen for 10 seconds
 		GATE_LOWER_TIME = 15000,		// Gate must be lowered for 15 seconds to fall
-		GRACE_PERIOD = 1000			// Allow 5 seconds for players to join before the round starts (TODO: increase to 15 during production)
+
+		// Allow 2 seconds for all players to join at beginning of round before spawning them.
+		// TODO: increase to 15 seconds during production
+		// If players join after this time period, they will be subject to JOIN_DELAY below
+		START_DELAY = 2000,
+		JOIN_DELAY = 2000,			// Spawn player 2 seconds after he joins mid-round (TODO: increase to 15 during production)
+		GRACE_PERIOD = 2000
 	};
 
 	// Keeps track of the info for a gate:
@@ -70,11 +79,12 @@ private:
 	bool			m_is_running;
 	ServerNetwork		m_network;
 	uint32_t		m_next_player_id;	// Used to allocate next player ID
-	player_map		m_players;
+	PlayerMap		m_players;
 	ServerMap		m_current_map;
 	GateStatus		m_gates[2];		// [0] = Team A's gate  [1] = Team B's gate
 	uint32_t		m_game_start_time;	// Time at which the game started
 	bool			m_players_have_spawned;	// True if players have spawned
+	PlayerQueue		m_waiting_players;	// Players who have joined after start of round and are waiting to be spawned
 
 
 	//
@@ -95,10 +105,6 @@ private:
 
 	// Relay the received packet to all clients, except the client on specified channel (if not -1)
 	void			rebroadcast_packet(PacketReader& packet, int exclude_channel =-1);
-
-	// Use to sanitize input:
-	static inline bool	is_valid_team(char c) { return c == 'A' || c == 'B'; }
-
 
 	//
 	// Game State Helpers

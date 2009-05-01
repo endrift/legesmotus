@@ -11,6 +11,7 @@
 #include "Sprite.hpp"
 #include "TiledGraphic.hpp"
 #include "common/PacketReader.hpp"
+#include "common/team.hpp"
 #include <memory>
 #include <limits>
 
@@ -121,10 +122,10 @@ void	GraphicalMap::add_object(PacketReader& object_data) {
 			string	sprite_path("data/sprites/"); // TODO: don't hard code, really
 			if (team == 'B') {
 				sprite_path += "red_gate.png";
-				m_gates[0] = &map_object;
+				m_gates[1] = &map_object;
 			} else if (team == 'A') {
 				sprite_path += "blue_gate.png";
-				m_gates[1] = &map_object;
+				m_gates[0] = &map_object;
 			}
 
 			// XXX: This assumes the height of the sprite is 1 pixel.
@@ -165,7 +166,7 @@ void	GraphicalMap::set_visible(bool visible) {
 }
 
 MapObject* 	GraphicalMap::get_gate_object(char team) {
-	if (team == 'A' || team == 'B') {
+	if (is_valid_team(team)) {
 		return m_gates[team - 'A'];
 	} else {
 		return NULL;
