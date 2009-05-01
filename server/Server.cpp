@@ -33,10 +33,21 @@ Server::Server ()
 	m_team_score[0] = m_team_score[1] = 0;
 }
 
-void	Server::player_update(int channel, PacketReader& packet)
+void	Server::player_update(int channel, PacketReader& inbound_packet)
 {
-	// Just broadcast this packet to all other players
-	rebroadcast_packet(packet, channel);
+	uint32_t		player_id;
+	inbound_packet >> player_id;
+
+	if (is_authorized(channel, player_id)) {
+		// Mark the player as seen
+		get_player(player_id)->seen(m_timeout_queue);
+
+		// Re-broadcast the packet to all _other_ players
+		PacketWriter	outbound_packet(PLAYER_UPDATE_PACKET);
+		outbound_packet << player_id << inbound_packet;
+		m_network.broadcast_packet(outbound_packet, channel);
+
+	}
 }
 
 void	Server::player_animation(int channel, PacketReader& packet)
@@ -126,7 +137,7 @@ void	Server::join(int channel, PacketReader& packet)
 	bool			is_first_player = m_players.empty();
 
 	uint32_t		player_id = m_next_player_id++;
-	m_players[player_id].init(player_id, channel, client_version, name.c_str(), team);
+	m_players[player_id].init(player_id, channel, client_version, name.c_str(), team, m_timeout_queue);
 
 	// Send the welcome packet back to this client.
 	PacketWriter		welcome_packet(WELCOME_PACKET);
@@ -145,7 +156,7 @@ void	Server::join(int channel, PacketReader& packet)
 	} else {
 		// Joining a game that has already started
 		// Add the player to the join queue
-		m_waiting_players.push_back(WaitingPlayer(m_players[player_id]));
+		m_waiting_players.push_back(&m_players[player_id]);
 		// Tell the player what map is currently in use, and how much time until he spawns
 		PacketWriter		game_start_packet(GAME_START_PACKET);
 		game_start_packet << m_current_map.get_name() << uint32_t(JOIN_DELAY);
@@ -173,29 +184,35 @@ void	Server::leave(int channel, PacketReader& packet)
 	uint32_t	player_id;
 	packet >> player_id;
 
-	m_network.unbind(channel);
-
 	if (is_authorized(channel, player_id)) {
-		ServerPlayer*	player = get_player(player_id);
-
-		--m_team_count[player->get_team() - 'A'];
-
-		m_players.erase(player_id);
-
-		// Broadcast to the game that this player has left
-		PacketWriter	leave_packet(LEAVE_PACKET);
-		leave_packet << player_id;
-		m_network.broadcast_packet(leave_packet);
-
-		// If this player was holding down a gate, make sure the gate status is cleared:
-		if (get_gate('A').reset_player(player_id)) {
-			report_gate_status('A');
-		}
-		if (get_gate('B').reset_player(player_id)) {
-			report_gate_status('B');
-		}
-
+		remove_player(*get_player(player_id));
 	}
+}
+
+void	Server::remove_player(const ServerPlayer& player) {
+	const uint32_t	player_id = player.get_id();
+
+	m_waiting_players.remove(const_cast<ServerPlayer*>(&player)); // const_cast OK: only being used for comparison inside erase function
+	m_timeout_queue.erase(player.get_timeout_queue_position());
+
+	--m_team_count[player.get_team() - 'A'];
+
+	// Broadcast to the game that this player has left
+	PacketWriter	leave_packet(LEAVE_PACKET);
+	leave_packet << player_id;
+	m_network.broadcast_packet(leave_packet);
+
+	// If this player was holding down a gate, make sure the gate status is cleared:
+	if (get_gate('A').reset_player(player_id)) {
+		report_gate_status('A');
+	}
+	if (get_gate('B').reset_player(player_id)) {
+		report_gate_status('B');
+	}
+
+	m_network.unbind(player.get_channel());
+
+	m_players.erase(player_id);
 }
 
 void	Server::run(int portno)
@@ -209,6 +226,8 @@ void	Server::run(int portno)
 
 	m_is_running = true;
 	while (m_is_running) {
+		timeout_players();
+
 		if (m_players_have_spawned) {
 			// See if a gate has fallen
 			if (get_gate('A').has_fallen()) {
@@ -273,8 +292,12 @@ void	Server::new_game() {
 }
 
 void	Server::game_over(char winning_team) {
+	if (is_valid_team(winning_team)) {
+		++m_team_score[winning_team - 'A'];
+	}
+
 	PacketWriter		packet(GAME_STOP_PACKET);
-	packet << winning_team << 0 << 0; // TODO: send scores
+	packet << winning_team << m_team_score[0] << m_team_score[1];
 	m_network.broadcast_packet(packet);
 	m_gates[0].reset();
 	m_gates[1].reset();
@@ -299,8 +322,8 @@ void	Server::start_game() {
 }
 
 void	Server::spawn_waiting_players() {
-	while (!m_waiting_players.empty() && m_waiting_players.front().is_ready_to_spawn()) {
-		spawn_player(m_waiting_players.front().get_player());
+	while (!m_waiting_players.empty() && m_waiting_players.front()->is_ready_to_spawn()) {
+		spawn_player(*m_waiting_players.front());
 		m_waiting_players.pop_front();
 	}
 }
@@ -316,6 +339,12 @@ bool	Server::spawn_player(ServerPlayer& player) {
 		return false;
 	}
 	// TODO: require ACK for spawn player packet (XXX: player update packets usually don't require ACKs)
+}
+
+void	Server::timeout_players() {
+	while (!m_timeout_queue.empty() && m_timeout_queue.front()->has_timed_out()) {
+		remove_player(*m_timeout_queue.front());
+	}
 }
 
 
@@ -463,7 +492,7 @@ uint32_t Server::time_until_spawn() const {
 	} else if (m_players_have_spawned && !m_waiting_players.empty()) {
 		// Game has started, and there are players queued up to join.
 		// When does the first one spawn?
-		return m_waiting_players.front().time_until_spawn();
+		return m_waiting_players.front()->time_until_spawn();
 	}
 	return std::numeric_limits<uint32_t>::max();
 }
@@ -476,14 +505,5 @@ ServerPlayer*		Server::get_player(uint32_t player_id) {
 const ServerPlayer*	Server::get_player(uint32_t player_id) const {
 	PlayerMap::const_iterator it(m_players.find(player_id));
 	return it != m_players.end() ? &it->second : NULL;
-}
-
-Server::WaitingPlayer::WaitingPlayer(ServerPlayer& player) : m_player(player) {
-	m_join_time = SDL_GetTicks();
-}
-
-uint32_t Server::WaitingPlayer::time_until_spawn() const {
-	uint32_t time_since_join = SDL_GetTicks() - m_join_time;
-	return time_since_join >= JOIN_DELAY ? 0 : JOIN_DELAY - time_since_join;
 }
 

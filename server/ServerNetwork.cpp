@@ -160,8 +160,10 @@ void	ServerNetwork::process_packet(Server& server, const RawPacket& raw_packet) 
 }
 
 void	ServerNetwork::unbind(int channel) {
-	SDLNet_UDP_Unbind(m_socket, channel);
-	m_bound_channels.erase(channel);
-	m_unbound_channels.push_front(channel);
+	if (m_bound_channels.count(channel)) {
+		SDLNet_UDP_Unbind(m_socket, channel);
+		m_bound_channels.erase(channel);
+		m_unbound_channels.push_front(channel);
+	}
 }
 

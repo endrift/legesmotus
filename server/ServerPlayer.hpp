@@ -9,19 +9,43 @@
 #define LM_SERVER_SERVERPLAYER_HPP
 
 #include "common/Player.hpp"
+#include <stdint.h>
+#include <list>
 
 class ServerPlayer : public Player {
+public:
+	typedef std::list<ServerPlayer*> Queue;
+
 private:
 	int		m_channel;		// The SDL channel that this player is bound to.
 	int		m_client_version;	// The version of the client that this player is using.
 
+	uint32_t	m_join_time;		// SDL tick at which the player joined the game
+	uint32_t	m_last_seen_time;	// The SDL tick at which this player was last seen (i.e. last had a packet from)
+
+	// Iterator into a list which keeps track of when players were last seen:
+	Queue::iterator	m_timeout_queue_position;
+
 public:
 	ServerPlayer();
 
+	// Standard getters
 	int		get_channel() const { return m_channel; }
 	int		get_client_version() const { return m_client_version; }
 
-	void		init(uint32_t player_id, int channel, int client_version, const char* name, char team);
+	// For spawning
+	void		reset_join_time();
+	uint32_t	time_until_spawn() const;	// How many milliseconds until this player can spawn?
+	bool		is_ready_to_spawn() const { return time_until_spawn() == 0; }
+
+	// For time out handling
+	void		seen(Queue& timeout_queue);	// Update last seen time
+	bool		has_timed_out() const;		// True if this player has timed out
+	Queue::iterator	get_timeout_queue_position() const { return m_timeout_queue_position; }
+
+	// Initialize the player
+	void		init(uint32_t player_id, int channel, int client_version, const char* name, char team, Queue& timeout_queue);
+
 };
 
 #endif

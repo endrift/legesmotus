@@ -23,16 +23,19 @@ private:
 	static const int	SERVER_PROTOCOL_VERSION;	// Defined in Server.cpp
 	typedef std::map<uint32_t, ServerPlayer> PlayerMap;	// A std::map from player_id to the player object
 
+	// Internal time constants - should not be set by user
 	// in milliseconds
 	enum {
-		INPUT_POLL_FREQUENCY = 3000,		// Poll for input from SDL at least every 3 seconds
 		GATE_UPDATE_FREQUENCY = 100		// When a gate is down, update players at least every 100 ms
 	};
 
+public:
+	// Configurable game time constants - in the future could be set by user
 	// in milliseconds
 	enum {
 		FREEZE_TIME = 10000,			// Players stay frozen for 10 seconds
 		GATE_LOWER_TIME = 15000,		// Gate must be lowered for 15 seconds to fall
+		PLAYER_TIMEOUT = 10000,			// Kick players who have not updated for 10 seconds
 
 		// Allow 2 seconds for all players to join at beginning of round before spawning them.
 		// TODO: increase to 15 seconds during production
@@ -41,20 +44,7 @@ private:
 		JOIN_DELAY = 2000			// Spawn player 2 seconds after he joins mid-round (TODO: increase to 15 during production)
 	};
 
-	// Represents a player who is waiting to spawn
-	// Players who join after the round has started have to wait to spawn
-	class WaitingPlayer {
-		uint32_t	m_join_time;
-		ServerPlayer&	m_player;
-	public:
-		explicit WaitingPlayer(ServerPlayer& player);
-
-		ServerPlayer&	get_player() const { return m_player; }
-		uint32_t	time_until_spawn() const;	// How many milliseconds until player can spawn
-		bool		is_ready_to_spawn() const { return time_until_spawn() == 0; }
-	};
-	typedef std::list<WaitingPlayer> PlayerQueue;
-
+private:
 	// Keeps track of the info for a gate:
 	class GateStatus {
 	private:
@@ -96,7 +86,8 @@ private:
 	GateStatus		m_gates[2];		// [0] = Team A's gate  [1] = Team B's gate
 	uint32_t		m_game_start_time;	// Time at which the game started
 	bool			m_players_have_spawned;	// True if any players have spawned
-	PlayerQueue		m_waiting_players;	// Players who have joined after start of round and are waiting to be spawned
+	ServerPlayer::Queue	m_waiting_players;	// Players who have joined after start of round and are waiting to be spawned
+	ServerPlayer::Queue	m_timeout_queue;	// A list of players in the order in which they will timeout
 	int			m_team_count[2];	// [0] = # of players on team A  [1] == # of players on team B
 	int			m_team_score[2];	// [0] = team A's score  [1] = team B's score
 
@@ -148,9 +139,15 @@ private:
 	bool			waiting_to_spawn() const; // Return true if we're waiting to spawn players
 	uint32_t		time_until_spawn() const; // Time in ms until players should spawn
 
+	// Timeout all old players
+	void			timeout_players();
+
 	// Returns the player with given player_id, NULL if not found
 	ServerPlayer*		get_player(uint32_t player_id);
 	const ServerPlayer*	get_player(uint32_t player_id) const;
+
+	// Remove the given player from the game
+	void			remove_player(const ServerPlayer& player);
 
 	//
 	// Main Loop Helpers
