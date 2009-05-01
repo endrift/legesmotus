@@ -437,7 +437,9 @@ void GameController::process_mouse_click(SDL_Event event) {
 			double x_dist = (event.button.x + m_offset_x) - m_players[m_player_id].get_x();
 			double y_dist = (event.button.y + m_offset_y) - m_players[m_player_id].get_y();
 			double direction = atan2(y_dist, x_dist) * RADIANS_TO_DEGREES;
-			m_players[m_player_id].set_velocity(m_players[m_player_id].get_x_vel() - 1.5 * cos((direction) * DEGREES_TO_RADIANS), m_players[m_player_id].get_y_vel() - 1.5 * sin((direction) * DEGREES_TO_RADIANS));
+			if (m_players[m_player_id].get_x_vel() != 0 || m_players[m_player_id].get_y_vel() != 0) {
+				m_players[m_player_id].set_velocity(m_players[m_player_id].get_x_vel() - 1.5 * cos((direction) * DEGREES_TO_RADIANS), m_players[m_player_id].get_y_vel() - 1.5 * sin((direction) * DEGREES_TO_RADIANS));
+			}
 			m_last_fired = SDL_GetTicks();
 			player_fired(m_player_id, m_players[m_player_id].get_x(), m_players[m_player_id].get_y(), direction);
 			m_sound_controller->play_sound("fire");
