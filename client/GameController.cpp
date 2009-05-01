@@ -233,10 +233,14 @@ void GameController::run(int lockfps) {
 			}
 			
 			for (unsigned int i = 0; i < m_shots.size(); i++) {
-				m_shots[i].first->set_scale_x((double)(SHOT_DISPLAY_TIME-(m_shots[i].second - currframe))/SHOT_DISPLAY_TIME);
-				m_shots[i].first->set_scale_y((double)(SHOT_DISPLAY_TIME-(m_shots[i].second - currframe))/SHOT_DISPLAY_TIME);
+				double shot_time = (double)(SHOT_DISPLAY_TIME-(m_shots[i].second - currframe))/SHOT_DISPLAY_TIME;
+				double shot_curve = -4.5*shot_time*(shot_time-1.0)/(shot_time+0.5); //fancy curve
+				m_shots[i].first->set_scale_x(shot_curve);
+				m_shots[i].first->set_scale_y(shot_curve);
+				m_shots[i].first->set_rotation(shot_time*90.0);
 				if (m_shots[i].second < currframe) {
 					m_window->unregister_graphic(m_shots[i].first);
+					delete m_shots[i].first;
 					m_shots.erase(m_shots.begin() + i);
 				}
 			}

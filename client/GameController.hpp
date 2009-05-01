@@ -43,7 +43,7 @@ private:
 
 	const static int MESSAGE_DISPLAY_TIME = 10000;
 	const static int FIRING_DELAY = 700;
-	const static int SHOT_DISPLAY_TIME = 200;
+	const static int SHOT_DISPLAY_TIME = 180;
 	
 	GameWindow* 	m_window;
 	ClientNetwork	m_network;
