@@ -1,0 +1,96 @@
+#!/bin/ksh
+
+USAGE="$0 mapname width height [style]"
+
+GATEHEIGHT=128
+
+if (( $# != 3 )) && (( $# != 4 ))
+then
+	print -u2 "Usage: $USAGE"
+	print -u2 "style is for example 'metal' (this is the default)"
+	exit 2
+fi
+
+if [[ ! -d data ]]
+then
+	print -u2 "Run from top level directory."
+	#exit 1
+fi
+
+mapname=$1
+integer width=$2
+integer height=$3
+style=${4:-metal}
+
+if [[ "$mapname" = @(*).map ]]
+then
+	print -u2 "Please leave off .map extension."
+	exit
+fi
+
+mapfile=data/maps/${mapname}.map
+
+if [[ -f $mapfile ]]
+then
+	print -u2 "$mapname: map already exists"
+	exit 1
+fi
+
+exec >$mapfile || exit $?
+
+# The Y coordinate of the top of the gate (center it along the vertical extent of the map)
+(( gate_start_y = height / 2 - GATEHEIGHT / 2 ))
+# The Y coordinate of the bottom of the gate
+(( gate_end_y = gate_start_y + GATEHEIGHT ))
+
+# Map header
+print "$mapname"
+print "$width $height"
+
+# Background
+cat <<-EOF
+# Background
+5~1~0,0~${style}_bgtile~${width}~${height}~0,0
+5~1~-64,${gate_start_y}~${style}_bgtile~64~${GATEHEIGHT}~0,0
+5~1~${width},${gate_start_y}~${style}_bgtile~64~${GATEHEIGHT}~0,0
+EOF
+
+# Walls
+cat <<-EOF
+# Walls
+5~1~0,${height}~${style}_wall_s32~${width}~32~0,0
+5~1~0,-32~${style}_wall_n32~${width}~32~0,0
+5~1~${width},0~${style}_wall_e32~32~${gate_start_y}~0,0
+4~1~${width},${gate_start_y}~${style}_gate_e
+5~1~${width},${gate_end_y}~${style}_wall_e32~32~${gate_start_y}~0,0
+5~1~-32,0~${style}_wall_w32~32~${gate_start_y}~0,0
+4~1~-64,${gate_start_y}~${style}_gate_w
+5~1~-32,${gate_end_y}~${style}_wall_w32~32~${gate_start_y}~0,0
+# Wall Corners
+4~1~${width},-32~${style}_wall_ne32
+4~1~-32,-32~${style}_wall_nw32
+4~1~-32,${height}~${style}_wall_sw32
+4~1~${width},${height}~${style}_wall_se32
+EOF
+
+# Gates
+cat <<-EOF
+# Gates
+2~1~-15,$((gate_start_y + 8))~A
+2~1~$((width + 7)),$((gate_start_y + 8))~B
+EOF
+
+# Sample Spawnpoints
+cat <<-EOF
+# SAMPLE Spawnpoints (make your own, each team should have 8)
+#3~1~0,50~A
+#3~1~${width},50~B
+EOF
+
+exec >&-
+
+svn add $mapfile >/dev/null
+
+print -u2 "Done writing map file to ${mapfile}"
+print -u2 "The background, wall, and gate sprites have been laid out."
+print -u2 "You need to add spawnpoints and obstacles where appropriate."

@@ -238,10 +238,15 @@ void	Server::remove_player(const ServerPlayer& player) {
 	m_players.erase(player_id);
 }
 
-void	Server::run(int portno)
+void	Server::run(int portno, const char* map_name)
 {
-	if (!m_current_map.load_file("data/maps/test.map")) { // TODO: Make configurable!
-		throw LMException("Failed to load test map.");
+	// TODO: use path manager
+	string		map_filename("data/maps/");
+	map_filename += map_name;
+	map_filename += ".map";
+
+	if (!m_current_map.load_file(map_filename.c_str())) {
+		throw LMException("Failed to load map.");
 	}
 	if (!m_network.start(portno)) {
 		throw LMException("Failed to start server network on port.");

@@ -9,6 +9,7 @@
 #include "ClientSDL.hpp"
 #include "common/LMException.hpp"
 #include "common/misc.hpp"
+#include "common/network.hpp"
 #include <iostream>
 
 using namespace std;
@@ -19,6 +20,7 @@ static void display_usage(const char* progname) {
 	cout << "  -n NAME	set your player name" << endl;
 	cout << "  -t A|B	set your team" << endl;
 	cout << "  -s SERVER	set the hostname of the server" << endl;
+	cout << "  -p PORTNO	set the port number of the server" << endl;
 	cout << "  -w WIDTH	set the screen width, in pixels" << endl;
 	cout << "  -h HEIGHT	set the screen height, in pixels" << endl;
 	cout << "  -?, --help	display this help, and exit" << endl;
@@ -38,6 +40,7 @@ extern "C" int main(int argc, char* argv[]) try {
 	int			height = 0;
 	char			team = 0;
 	string			server = "legesmotus.beanwood.com";
+	unsigned int		portno = DEFAULT_PORTNO;
 	string			name = "";
 	
 	for (int i = 1; i < argc; i++) {
@@ -49,6 +52,9 @@ extern "C" int main(int argc, char* argv[]) try {
 			++i;
 		} else if (strcmp(argv[i], "-s") == 0 && argc > i+1) {
 			server = argv[i+1];
+			++i;
+		} else if (strcmp(argv[i], "-p") == 0 && argc > i+1) {
+			portno = atoi(argv[i+1]);
 			++i;
 		} else if (strcmp(argv[i], "-n") == 0 && argc > i+1) {
 			name = argv[i+1];
@@ -77,7 +83,7 @@ extern "C" int main(int argc, char* argv[]) try {
 
 	cout << "Welcome to Leges Motus." << endl;
 	
-	game_controller->connect_to_server(server.c_str(), 9009, !name.empty() ? name : get_username(), team);
+	game_controller->connect_to_server(server.c_str(), portno, !name.empty() ? name : get_username(), team);
 	game_controller->run();
 	
 	cout << "Leges Motus is now exiting." << endl;

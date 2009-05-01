@@ -92,9 +92,11 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 
 	// TEMPORARY MAP CODE BY ANDREW
 	m_map = new GraphicalMap(m_window);
-	m_map->load_file("data/maps/test.map");
-	m_map_width = m_map->get_width();
-	m_map_height = m_map->get_height();
+	//m_map->load_file("data/maps/test.map");
+	//m_map_width = m_map->get_width();
+	//m_map_height = m_map->get_height();
+	m_map_width = 0;
+	m_map_height = 0;
 
 	// TEMPORARY SPRITE CODE
 	gun_normal = new Sprite(m_path_manager->data_path("gun_noshot.png", "sprites"));
@@ -943,7 +945,9 @@ void GameController::game_start(PacketReader& reader) {
 	int		gametimeleft;
 	
 	reader >> mapname >> gametimeleft;
-	
+
+	mapname += ".map";
+
 	m_map->load_file(m_path_manager->data_path(mapname.c_str(), "maps"));
 	m_map_width = m_map->get_width();
 	m_map_height = m_map->get_height();

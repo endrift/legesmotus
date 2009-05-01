@@ -33,6 +33,8 @@ void	GraphicalMap::clear() {
 		}
 		delete it->get_sprite();
 	}
+	m_objects.clear();
+	m_gates[0] = m_gates[1] = NULL;
 	Map::clear();
 }
 

@@ -174,7 +174,7 @@ public:
 	void		player_animation(int channel, PacketReader& packet);
 
 	// For testing only (interface likely to change):
-	void		run(int portno);
+	void		run(int portno, const char* map_name); // map_name is NAME of map (excluding .map)
 };
 
 #endif

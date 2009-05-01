@@ -15,6 +15,9 @@ const char PACKET_FIELD_SEPARATOR = '~';	// Formfeed
 // Maximum length of packets:
 enum { MAX_PACKET_LENGTH = 1024 };
 
+// The default port number of the server
+enum { DEFAULT_PORTNO = 9009 };
+
 // Packet types:
 enum {
 	ACK_PACKET = 0,
