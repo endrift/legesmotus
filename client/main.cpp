@@ -43,14 +43,19 @@ extern "C" int main(int argc, char* argv[]) try {
 	for (int i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "-w") == 0 && argc > i+1) {
 			width = atoi(argv[i+1]);
+			++i;
 		} else if (strcmp(argv[i], "-h") == 0 && argc > i+1) {
 			height = atoi(argv[i+1]);
+			++i;
 		} else if (strcmp(argv[i], "-s") == 0 && argc > i+1) {
 			server = argv[i+1];
+			++i;
 		} else if (strcmp(argv[i], "-n") == 0 && argc > i+1) {
 			name = argv[i+1];
+			++i;
 		} else if (strcmp(argv[i], "-t") == 0 && argc > i+1) {
 			team = argv[i+1][0];
+			++i;
 		} else if (strcmp(argv[i], "--version") == 0) {
 			display_version();
 			return 0;
