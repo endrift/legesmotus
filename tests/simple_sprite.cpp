@@ -35,8 +35,8 @@ extern "C" int main(int argc, char* argv[]) {
 	aback.set_priority(1);
 	tg.set_priority(1);
 	g.add_graphic(&s);
-	g.add_graphic(&aback);
-	g.add_graphic(&afront);
+	g.add_graphic(&aback,"f");
+	g.add_graphic(&afront,"b");
 	window->register_graphic(&g);
 	window->register_graphic(&tg);
 	bool running = true;
@@ -56,8 +56,8 @@ extern "C" int main(int argc, char* argv[]) {
 		}
 
 		g.set_rotation(-frame / 400.0 * 360);
-		afront.set_rotation(frame / 80.0 * 360);
-		aback.set_rotation(-frame / 80.0 * 360);
+		g.get_graphic("f")->set_rotation(frame / 80.0 * 360);
+		g.get_graphic("b")->set_rotation(-frame / 80.0 * 360);
 		g.set_x(cos(frame / 400.0 * 2*M_PI)*100+250);
 		g.set_y(sin(frame / 400.0 * 2*M_PI)*100+250);
 		g.set_scale_x((sin(frame / 200.0 * 2*M_PI)+1)/2.0);

@@ -23,13 +23,15 @@ PathManager::PathManager(const char* argv0) {
 	if (loc == NULL) {
 		strcpy(m_data_directory,"data");
 	} else {
-		strcpy(m_data_directory,loc);
+		strncpy(m_data_directory,loc,sizeof(m_data_directory));
+		m_data_directory[sizeof(m_data_directory)-1] = '\0';
 	}
 	loc = getenv("LM_EXEC_DIR");
 	if (loc == NULL) {
 		strcpy(m_base_directory,".");
 	} else {
-		strcpy(m_base_directory,loc);
+		strncpy(m_base_directory,loc,sizeof(m_base_directory));
+		m_base_directory[sizeof(m_base_directory)-1] = '\0';
 	}
 }
 
@@ -46,12 +48,14 @@ PathManager::PathManager(const PathManager& other) {
 }
 
 const char* PathManager::data_path(const char* filename, const char* type) {
-	sprintf(m_buffer,"%s%c%s%c%s",m_data_directory,m_path_separator,type,m_path_separator,filename);
+	snprintf(m_buffer,sizeof(m_buffer),"%s%c%s%c%s",m_data_directory,m_path_separator,type,m_path_separator,filename);
+	m_buffer[sizeof(m_buffer)-1] = '\0';
 	return m_buffer;
 }
 
 const char* PathManager::exec_path(const char* filename) {
-	sprintf(m_buffer,"%s%c%s",m_base_directory,m_path_separator,filename);
+	snprintf(m_buffer,sizeof(m_buffer),"%s%c%s",m_base_directory,m_path_separator,filename);
+	m_buffer[sizeof(m_buffer)-1] = '\0';
 	return m_buffer;
 }
 
