@@ -152,6 +152,7 @@ public:
 	void		message(int channel, PacketReader& packet);
 	void		gun_fired(int channel, PacketReader& packet);
 	void		gate_lowering(int channel, PacketReader& packet);
+	void		player_animation(int channel, PacketReader& packet);
 
 	// For testing only (interface likely to change):
 	void		run(int portno);

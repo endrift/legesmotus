@@ -35,6 +35,12 @@ void	Server::player_update(int channel, PacketReader& packet)
 	rebroadcast_packet(packet, channel);
 }
 
+void	Server::player_animation(int channel, PacketReader& packet)
+{
+	// Just broadcast this packet to all other players
+	rebroadcast_packet(packet, channel);
+}
+
 void	Server::message(int channel, PacketReader& packet)
 {
 	uint32_t		sender_id = 0;

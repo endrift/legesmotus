@@ -149,12 +149,12 @@ void	ServerNetwork::process_packet(Server& server, const RawPacket& raw_packet) 
 		server.join(channel, reader);
 		break;
 
-	case SCORE_REQUEST_PACKET:
-		//server.score_request(channel, reader);
-		break;
-
 	case LEAVE_PACKET:
 		server.leave(channel, reader);
+		break;
+
+	case PLAYER_ANIMATION_PACKET:
+		server.player_animation(channel, reader);
 		break;
 	}
 }
