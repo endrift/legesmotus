@@ -111,6 +111,12 @@ private:
 	// Relay the received packet to all clients, except the client on specified channel (if not -1)
 	void			rebroadcast_packet(PacketReader& packet, int exclude_channel =-1);
 
+	// Reset the scores for all players, broadcasting score updates for each one (call at beginning of new game)
+	void			reset_player_scores();
+
+	// Broadcast to all players a score update for the give player
+	void			broadcast_score_update(const ServerPlayer&);
+
 	//
 	// Game State Helpers
 	//

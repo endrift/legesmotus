@@ -140,6 +140,7 @@ public:
 	void		gate_lowering(PacketReader& reader);
 	void		game_start(PacketReader& reader);
 	void		game_stop(PacketReader& reader);
+	void		score_update(PacketReader& reader);
 	void		animation_packet(PacketReader& reader);
 };
 

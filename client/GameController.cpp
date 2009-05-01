@@ -984,6 +984,16 @@ void GameController::game_stop(PacketReader& reader) {
 	m_players[m_player_id].set_is_frozen(true);
 }
 
+void GameController::score_update(PacketReader& reader) {
+	uint32_t	player_id;
+	int		score;
+	reader >> player_id >> score;
+
+	if (GraphicalPlayer* player = get_player_by_id(player_id)) {
+		player->set_score(score);
+	}
+}
+
 void GameController::animation_packet(PacketReader& reader) {
 	uint32_t	player_id;
 	string		sprite;

@@ -69,6 +69,8 @@ public:
 	virtual void set_is_invisible(bool is_invisible);
 	virtual void set_is_frozen(bool is_frozen);
 
+	void reset_score() { set_score(0); }
+
 };
 
 #endif

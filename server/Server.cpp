@@ -111,12 +111,7 @@ void	Server::player_shot(int channel, PacketReader& inbound_packet)
 		shooter->add_score(1);
 
 		// And inform all players of the score update
-		PacketWriter	score_packet(SCORE_UPDATE_PACKET);
-		score_packet << shooter->get_id() << shooter->get_score();
-		m_network.broadcast_packet(score_packet);
-		// TODO for scoring:
-		//  - Score updates for every player have to be sent when new players join
-		//  - Reset all scores to 0 at end of round (hence requring another blanket score update)
+		broadcast_score_update(*shooter);
 	}
 }
 
@@ -184,7 +179,7 @@ void	Server::join(int channel, PacketReader& packet)
 	announce_packet << player_id << name << team;
 	m_network.broadcast_packet(announce_packet, channel);
 
-	// Send the new player an announce packet for every player currently in the game
+	// Send the new player an announce packet and score update packet for every player currently in the game
 	PlayerMap::const_iterator	it(m_players.begin());
 	while (it != m_players.end()) {
 		const ServerPlayer&	player((it++)->second);
@@ -192,11 +187,31 @@ void	Server::join(int channel, PacketReader& packet)
 		PacketWriter	announce_packet(ANNOUNCE_PACKET);
 		announce_packet << player.get_id() << player.get_name() << player.get_team();
 		m_network.send_packet(channel, announce_packet);
+
+		PacketWriter	score_packet(SCORE_UPDATE_PACKET);
+		score_packet << player.get_id() << player.get_score();
+		m_network.send_packet(channel, score_packet);
 	}
 }
 
-void	Server::leave(int channel, PacketReader& packet)
-{
+// Reset the scores for all players, broadcasting score updates for each one
+void	Server::reset_player_scores() {
+	PlayerMap::iterator	it(m_players.begin());
+	while (it != m_players.end()) {
+		ServerPlayer&	player((it++)->second);
+		player.reset_score();
+		broadcast_score_update(player);
+	}
+}
+
+// Broadcast to all players a score update for the give player
+void	Server::broadcast_score_update(const ServerPlayer& player) {
+	PacketWriter	score_packet(SCORE_UPDATE_PACKET);
+	score_packet << player.get_id() << player.get_score();
+	m_network.broadcast_packet(score_packet);
+}
+
+void	Server::leave(int channel, PacketReader& packet) {
 	uint32_t	player_id;
 	packet >> player_id;
 
@@ -335,12 +350,14 @@ void	Server::game_over(char winning_team) {
 }
 
 void	Server::start_game() {
+	// Only reset player scores when players spawn, so players have an opportunity between rounds to check the leader board for the prior round
+	reset_player_scores();
+
 	m_players_have_spawned = true;
 	m_current_map.reset();
 
 	for (PlayerMap::iterator it(m_players.begin()); it != m_players.end(); ++it) {
 		spawn_player(it->second);
-
 	}
 
 	// Send the game start packet (TODO: require ACK)

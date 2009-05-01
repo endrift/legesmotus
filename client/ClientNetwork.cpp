@@ -119,7 +119,7 @@ void	ClientNetwork::process_packet(GameController& controller, const RawPacket& 
 		break;
 
 	case SCORE_UPDATE_PACKET:
-		//controller.score_update(reader);
+		controller.score_update(reader);
 		break;
 
 	case WELCOME_PACKET:
