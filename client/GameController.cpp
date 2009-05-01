@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <limits>
 #include <sstream>
 
 using namespace std;
@@ -50,6 +51,7 @@ GameController::~GameController() {
 	delete m_sound_controller;
 	delete m_font;
 	delete m_path_manager;
+	delete m_shot;
 
 	// The GameWindow instance should always be destroyed last, since other stuff may depend on it.
 	m_window->destroy_instance();
@@ -152,6 +154,10 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_crosshairs = new Sprite("data/sprites/crosshairs.png");
 	m_crosshairs->set_priority(-1);
 	m_window->register_hud_graphic(m_crosshairs);
+	
+	m_shot = new Sprite("data/sprites/shot.png");
+	m_shot->set_invisible(true);
+	m_window->register_graphic(m_shot); // TODO: Remove later when multiple shot graphics are shown.
 	
 	m_logo = new Sprite("data/sprites/legesmotuslogo.png");
 	m_logo->set_x(m_screen_width/2);
@@ -592,7 +598,37 @@ void GameController::attempt_jump() {
 }
 
 void GameController::player_fired(unsigned int player_id, double start_x, double start_y, double direction) {
+	const list<MapObject>& map_objects(m_map->get_objects());
+	list<MapObject>::const_iterator thisobj;
+	Point startpos = Point(start_x, start_y);
+	
+	double shortestdist = numeric_limits<double>::max();
+	Point wallhitpoint = Point(0, 0);
+	for (thisobj = map_objects.begin(); thisobj != map_objects.end(); thisobj++) {
+		if (thisobj->get_sprite() == NULL) {
+			continue;
+		}
+		const Polygon& poly(thisobj->get_bounding_polygon());
+		double dist_to_obstacle = dist_between_points(start_x, start_y, thisobj->get_sprite()->get_x() + thisobj->get_sprite()->get_image_width()/2, thisobj->get_sprite()->get_y() + thisobj->get_sprite()->get_image_height()/2) + 100;
+		Point endpos = Point(start_x + dist_to_obstacle * cos(direction * DEGREES_TO_RADIANS), start_y + dist_to_obstacle * sin(direction * DEGREES_TO_RADIANS));
+		
+		Point newpoint = poly.intersects_line(startpos, endpos);
+		
+		if (newpoint.x == -1 && newpoint.y == -1) {
+			continue;
+		}
+		
+		double newdist = dist_between_points(start_x, start_y, newpoint.x, newpoint.y);
+		
+		if (newdist != -1 && newdist < shortestdist) {
+			shortestdist = newdist;
+			wallhitpoint = newpoint;
+		}
+	}
+	
 	if (player_id == m_player_id) {
+		double player_hit = -1;
+		
 		map<int, GraphicalPlayer>::iterator it;
 		for ( it=m_players.begin() ; it != m_players.end(); it++ ) {
 			GraphicalPlayer currplayer = (*it).second;
@@ -600,6 +636,11 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 				continue;
 			}
 			double playerdist = dist_between_points(start_x, start_y, currplayer.get_x(), currplayer.get_y());
+			
+			if (playerdist > shortestdist) {
+				continue;
+			}
+			
 			int end_x = start_x + playerdist * cos(direction * DEGREES_TO_RADIANS);
 			int end_y = start_y + playerdist * sin(direction * DEGREES_TO_RADIANS);
 			vector<double> closestpoint = closest_point_on_line(start_x, start_y, end_x, end_y, currplayer.get_x(), currplayer.get_y());
@@ -617,7 +658,9 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 			
 			// If the shot hit the player:
 			if (dist < currplayer.get_radius()) {
-				send_player_shot(player_id, currplayer.get_id());
+				shortestdist = playerdist;
+				wallhitpoint = Point(0, 0);
+				player_hit = currplayer.get_id();
 			}
 		}
 	
@@ -628,6 +671,10 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 		gun_fired << direction;
 		
 		m_network.send_packet(gun_fired);
+		
+		if (player_hit != -1) {
+			send_player_shot(player_id, player_hit);
+		}
 	}
 }
 

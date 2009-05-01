@@ -59,6 +59,37 @@ double	Polygon::intersects_circle(Point p, double radius) const {
 	return -1;
 }
 
+Point Polygon::intersects_line(Point start, Point end) const {
+	double mindist = numeric_limits<double>::max();
+	
+	Point p = start;
+	Point r = end - start;
+	list<pair<Point, Point> >::const_iterator it;
+	for ( it=m_lines.begin() ; it != m_lines.end(); it++ ) {
+		Point q = it->first;
+		Point s = it->second - it->first;
+		Point zeroedstart = q - p;
+		double t = cross_product(zeroedstart, s) / cross_product(r, s);
+		double u = cross_product(zeroedstart, r) / cross_product(r, s);
+		
+		if (t >= 0 && t <= 1 && u >= 0 && u <= 1) {
+			if (t < mindist) {
+				mindist = t;
+			}
+		}
+	}
+	
+	if (mindist != numeric_limits<double>::max()) {
+		Point scale = Point(mindist * r.x, mindist * r.y);
+		return start + scale;
+	}
+	return Point(-1, -1);
+}
+
+double Polygon::cross_product(Point start, Point end) const {
+	return start.x * end.y - start.y * end.x;
+}
+
 double	Polygon::dist_from_circle(Point p, double radius) const {
 	list<pair<Point, Point> >::const_iterator it;
 	double min_dist = numeric_limits<double>::max();

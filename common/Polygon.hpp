@@ -29,6 +29,11 @@ public:
 	// Return the distance if this bounding polygon intersects with the circle. Otherwise returns -1.
 	double			intersects_circle(Point point, double radius) const;
 	
+	// Return the point of intersection if the bounding polygon intersects with the line. Otherwise return -1.
+	Point			intersects_line(Point start, Point end) const;
+	
+	double			cross_product(Point start, Point end) const;
+	
 	double			dist_from_circle(Point point, double radius) const;
 
 	// Are there any lines in this polygon?

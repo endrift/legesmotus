@@ -94,6 +94,8 @@ private:
 	Sprite*		red_back_arm;
 	Sprite*		m_crosshairs;
 	Graphic*	m_input_bar;
+	
+	Sprite*		m_shot;
 
 	Sprite*		m_logo;
 	std::map<std::string, Graphic*> m_main_menu_items;
