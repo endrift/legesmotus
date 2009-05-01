@@ -125,11 +125,19 @@ void	Server::join(int channel, PacketReader& packet)
 	if (is_first_player) {
 		// This is the first player.  Start a new game.
 		new_game();
-	} else {
-		// Joining a game with players.
+	} else if (!m_players_have_spawned) {
+		// Joining a game that hasn't started yet.
 		// Tell the player what map is currently in use, and how much time until the round starts (i.e. players spawn)
 		PacketWriter		game_start_packet(GAME_START_PACKET);
 		game_start_packet << m_current_map.get_name() << time_until_spawn();
+		m_network.send_packet(channel, game_start_packet); // TODO: REQUIRE ACK
+	} else {
+		// Joining a game that has already started
+		// Add the player to the join queue
+		m_waiting_players.push_back(WaitingPlayer(m_players[player_id]));
+		// Tell the player what map is currently in use, and how much time until he spawns
+		PacketWriter		game_start_packet(GAME_START_PACKET);
+		game_start_packet << m_current_map.get_name() << uint32_t(JOIN_DELAY);
 		m_network.send_packet(channel, game_start_packet); // TODO: REQUIRE ACK
 	}
 
@@ -196,6 +204,9 @@ void	Server::run(int portno)
 				new_game();
 			}
 			
+			// Spawn any players who joined after the game started and are now ready to join:
+			spawn_waiting_players();
+
 			// If a gate is being lowered, broadcast a status report on it
 			if (get_gate('A').is_lowering()) {
 				report_gate_status('A');
@@ -206,7 +217,7 @@ void	Server::run(int portno)
 
 		} else if (waiting_to_spawn()) {
 			if (time_until_spawn() == 0) {
-				spawn_players();
+				start_game();
 			}
 		}
 		
@@ -238,6 +249,7 @@ void	Server::new_game() {
 	m_players_have_spawned = false;
 	m_gates[0].reset();
 	m_gates[1].reset();
+	m_waiting_players.clear(); // Waiting players get cleared out and put in general queue...
 
 	PacketWriter		packet(GAME_START_PACKET);
 	packet << m_current_map.get_name() << time_until_spawn();
@@ -256,27 +268,41 @@ void	Server::game_over(char winning_team) {
 	// TODO: REQUIRE ACK
 }
 
-void	Server::spawn_players() {
+void	Server::start_game() {
 	m_players_have_spawned = true;
-	/* TEMPORARILY DISABLE SERVER SPAWNING because it's ANNOYING
 	m_current_map.reset();
-	for (PlayerMap::iterator it(m_players.begin()); it != m_players.end(); ++it) {
-		ServerPlayer&		player(it->second);
-		if (const Point* point = m_current_map.next_spawnpoint(player.get_team())) {
-			PacketWriter	update_packet(PLAYER_UPDATE_PACKET);
-			update_packet << player.get_id() << point->x << point->y << 0 << 0 << "";
-			m_network.send_packet(player.get_channel(), update_packet);
-		} else {
-			// Oh noes! No place to spawn this player. TODO: do something about it
-		}
-	}
-	*/
-	// TODO: REQUIRE ACKs for these
 
+	for (PlayerMap::iterator it(m_players.begin()); it != m_players.end(); ++it) {
+		spawn_player(it->second);
+
+	}
+
+	// Send the game start packet (TODO: require ACK)
 	PacketWriter		packet(GAME_START_PACKET);
 	packet << m_current_map.get_name() << 0;
 	m_network.broadcast_packet(packet);
 }
+
+void	Server::spawn_waiting_players() {
+	while (!m_waiting_players.empty() && m_waiting_players.front().is_ready_to_spawn()) {
+		spawn_player(m_waiting_players.front().get_player());
+		m_waiting_players.pop_front();
+	}
+}
+
+bool	Server::spawn_player(ServerPlayer& player) {
+	if (const Point* point = m_current_map.next_spawnpoint(player.get_team())) {
+		PacketWriter	update_packet(PLAYER_UPDATE_PACKET);
+		update_packet << player.get_id() << point->x << point->y << 0 << 0 << "";
+		m_network.send_packet(player.get_channel(), update_packet);
+		return true;
+	} else {
+		// Oh noes! No place to spawn this player. TODO: do something about it
+		return false;
+	}
+	// TODO: require ACK for spawn player packet (XXX: player update packets usually don't require ACKs)
+}
+
 
 void	Server::gate_lowering(int channel, PacketReader& packet) {
 	uint32_t		player_id;
@@ -298,6 +324,8 @@ uint32_t	Server::server_sleep_time() const {
 	uint32_t	sleep_time = std::numeric_limits<uint32_t>::max();
 
 	if (m_players_have_spawned) {
+		// Take into account gate changes, and gate status updates
+
 		if (get_gate('A').is_lowering() || get_gate('B').is_lowering()) {
 			sleep_time = std::min(sleep_time, uint32_t(GATE_UPDATE_FREQUENCY));
 		}
@@ -307,7 +335,9 @@ uint32_t	Server::server_sleep_time() const {
 		if (get_gate('B').is_lowering()) {
 			sleep_time = std::min(sleep_time, get_gate('B').time_remaining());
 		}
-	} else if (waiting_to_spawn()) {
+	}
+
+	if (waiting_to_spawn()) {
 		sleep_time = std::min(sleep_time, time_until_spawn());
 	}
 
@@ -401,17 +431,26 @@ bool	Server::GateStatus::set(bool new_is_lowering, uint32_t new_player_id) {
 }
 
 bool	Server::waiting_to_spawn() const {
-	return !m_players_have_spawned && !m_players.empty() ||
-		m_players_have_spawned && m_waiting_players.empty();
+	return (!m_players_have_spawned && !m_players.empty()) ||
+		(m_players_have_spawned && !m_waiting_players.empty());
 }
 uint32_t Server::time_until_spawn() const {
-	if (waiting_to_spawn()) {
+	if (!m_players_have_spawned && !m_players.empty()) {
+		// Game has not started yet, but players have joined.
+		// All players spawn START_DELAY milliseconds after the first player joined
 		uint32_t	time_elapsed = SDL_GetTicks() - m_game_start_time;
-		if (time_elapsed < GRACE_PERIOD) {
-			return GRACE_PERIOD - time_elapsed;
+		if (time_elapsed < START_DELAY) {
+			return START_DELAY - time_elapsed;
+		} else {
+			return 0;
 		}
+
+	} else if (m_players_have_spawned && !m_waiting_players.empty()) {
+		// Game has started, and there are players queued up to join.
+		// When does the first one spawn?
+		return m_waiting_players.front().time_until_spawn();
 	}
-	return 0;
+	return std::numeric_limits<uint32_t>::max();
 }
 
 ServerPlayer*		Server::get_player(uint32_t player_id) {
@@ -422,5 +461,14 @@ ServerPlayer*		Server::get_player(uint32_t player_id) {
 const ServerPlayer*	Server::get_player(uint32_t player_id) const {
 	PlayerMap::const_iterator it(m_players.find(player_id));
 	return it != m_players.end() ? &it->second : NULL;
+}
+
+Server::WaitingPlayer::WaitingPlayer(ServerPlayer& player) : m_player(player) {
+	m_join_time = SDL_GetTicks();
+}
+
+uint32_t Server::WaitingPlayer::time_until_spawn() const {
+	uint32_t time_since_join = SDL_GetTicks() - m_join_time;
+	return time_since_join >= JOIN_DELAY ? 0 : JOIN_DELAY - time_since_join;
 }
 

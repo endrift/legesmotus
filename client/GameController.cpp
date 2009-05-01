@@ -717,8 +717,8 @@ void GameController::welcome(PacketReader& reader) {
 	m_players[m_player_id].set_name_sprite(m_text_manager->place_string(m_players[m_player_id].get_name(), m_screen_width/2, (m_screen_height/2)-(m_players[m_player_id].get_radius()+30), TextManager::CENTER, TextManager::LAYER_MAIN));
 	
 	// REMOVE THESE WHEN THE SERVER SENDS GAME START, ETC.
-	m_players[m_player_id].set_is_invisible(false);
-	m_players[m_player_id].set_is_frozen(false);
+	//m_players[m_player_id].set_is_invisible(false);
+	//m_players[m_player_id].set_is_frozen(false);
 	
 	send_my_player_update();
 }

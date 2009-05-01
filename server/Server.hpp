@@ -22,7 +22,6 @@ class Server {
 private:
 	static const int	SERVER_PROTOCOL_VERSION;	// Defined in Server.cpp
 	typedef std::map<uint32_t, ServerPlayer> PlayerMap;	// A std::map from player_id to the player object
-	typedef std::list<std::pair<uint32_t, ServerPlayer*> > PlayerQueue; // The first element of the pair is the time at which the player joined
 
 	// in milliseconds
 	enum {
@@ -39,9 +38,22 @@ private:
 		// TODO: increase to 15 seconds during production
 		// If players join after this time period, they will be subject to JOIN_DELAY below
 		START_DELAY = 2000,
-		JOIN_DELAY = 2000,			// Spawn player 2 seconds after he joins mid-round (TODO: increase to 15 during production)
-		GRACE_PERIOD = 2000
+		JOIN_DELAY = 2000			// Spawn player 2 seconds after he joins mid-round (TODO: increase to 15 during production)
 	};
+
+	// Represents a player who is waiting to spawn
+	// Players who join after the round has started have to wait to spawn
+	class WaitingPlayer {
+		uint32_t	m_join_time;
+		ServerPlayer&	m_player;
+	public:
+		explicit WaitingPlayer(ServerPlayer& player);
+
+		ServerPlayer&	get_player() const { return m_player; }
+		uint32_t	time_until_spawn() const;	// How many milliseconds until player can spawn
+		bool		is_ready_to_spawn() const { return time_until_spawn() == 0; }
+	};
+	typedef std::list<WaitingPlayer> PlayerQueue;
 
 	// Keeps track of the info for a gate:
 	class GateStatus {
@@ -83,7 +95,7 @@ private:
 	ServerMap		m_current_map;
 	GateStatus		m_gates[2];		// [0] = Team A's gate  [1] = Team B's gate
 	uint32_t		m_game_start_time;	// Time at which the game started
-	bool			m_players_have_spawned;	// True if players have spawned
+	bool			m_players_have_spawned;	// True if any players have spawned
 	PlayerQueue		m_waiting_players;	// Players who have joined after start of round and are waiting to be spawned
 
 
@@ -110,15 +122,23 @@ private:
 	// Game State Helpers
 	//
 
-	// Call this to start a new game.  A new game starts:
-	//  1. After the first player joins, OR
-	//  2. After the game ends
-	// It will reset the game state, and broadcast a game start packet to all players with the map name
+	// Initialize a new game.  A new game should be initialized when:
+	//   1. After the first player joins, OR
+	//   2. After the game ends
+	//  It will reset the game state, and broadcast a game start packet to all players with the map name
 	void			new_game();
 
-	// Call this when the round actually starts (GRACE_PERIOD seconds have elapsed after the game starts)
-	// It will unfreeze all players and place them at distinct spawnpoints.
-	void			spawn_players();
+	// Start the game.  Games start START_DELAY milliseconds after new_game() is called.
+	//  It will spawn each player.
+	void			start_game();
+
+	// Spawn all the waiting players who are ready to be spawned:
+	void			spawn_waiting_players();
+
+	// Spawn the given player:
+	//  Unfreeze and place the player at the next available spawn point on the current map.
+	//  Returns true if player spawned, false if there's no space on map.
+	bool			spawn_player(ServerPlayer& player);
 
 	// Call this when a game ends: broadcasts the game over packet and resets the game state
 	void			game_over(char winning_team);
