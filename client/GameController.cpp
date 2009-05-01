@@ -666,9 +666,6 @@ void GameController::connect_to_server(const char* host, unsigned int port, stri
 	
 	PacketWriter join_request(JOIN_PACKET);
 	join_request << m_protocol_number;
-	if (name.empty()) {
-		name = "MyName";
-	}
 	m_name = name;
 	join_request << name;
 	int team = rand() % 2;

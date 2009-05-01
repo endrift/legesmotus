@@ -8,6 +8,7 @@
 #include "GameController.hpp"
 #include "ClientSDL.hpp"
 #include "common/LMException.hpp"
+#include "common/misc.hpp"
 #include <iostream>
 
 using namespace std;
@@ -41,9 +42,7 @@ extern "C" int main(int argc, char* argv[]) try {
 
 	cout << "Welcome to Leges Motus." << endl;
 	
-	game_controller->connect_to_server(server.c_str(), 9009, name);
-	//game_controller->connect_to_server("haddock", 9009);
-	//game_controller->connect_to_server("localhost", 9009);
+	game_controller->connect_to_server(server.c_str(), 9009, !name.empty() ? name : get_username());
 	game_controller->run();
 	
 	cout << "Leges Motus is now exiting." << endl;
