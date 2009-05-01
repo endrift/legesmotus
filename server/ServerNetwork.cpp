@@ -102,18 +102,18 @@ bool	ServerNetwork::receive_packets(Server& server, uint32_t timeout) {
 }
 
 void	ServerNetwork::process_packet(Server& server, const RawPacket& raw_packet) {
+	// Always timeout players BEFORE processing a packet...
+	//  That way, we're not wasting channels on dead players.
+	//  Also, when joining, new players won't see dead players and then see them timeout a split second later.
+	server.timeout_players();
+
 	PacketReader	reader(raw_packet);
 	int		channel = raw_packet->channel;
 
 	if (channel == -1 && reader.packet_type() == JOIN_PACKET) {
 		if (m_unbound_channels.empty()) {
-			// Purge the server of timed out players, just in case it frees up a channel
-			server.timeout_players();
-
-			if (m_unbound_channels.empty()) {
-				// No channels left for this poor soul. TODO: send message back to client, or something
-				return;
-			}
+			// No channels left for this poor soul. TODO: send message back to client, or something
+			return;
 		}
 
 		// Bind this address and give it a channel
