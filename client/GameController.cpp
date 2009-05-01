@@ -942,20 +942,29 @@ void GameController::gate_lowering(PacketReader& reader) {
 
 void GameController::game_start(PacketReader& reader) {
 	string 		mapname;
-	int		gametimeleft;
-	
-	reader >> mapname >> gametimeleft;
+	bool		game_started;
+	uint32_t	timeleft;
+	reader >> mapname >> game_started >> timeleft;
 
+	// Load the map
 	mapname += ".map";
-
 	m_map->load_file(m_path_manager->data_path(mapname.c_str(), "maps"));
 	m_map_width = m_map->get_width();
 	m_map_height = m_map->get_height();
+
+	// Tell the player what's going on
+	ostringstream	message;
+	if (game_started) {
+		message << "Game started!";
+		if (timeleft > 0) {
+			message << " Time until spawn: " << timeleft;
+		}
+		m_sound_controller->play_sound("begin");
+	} else {
+		message << "Game starts in " << timeleft;
+	}
 	
-	char timeleftmsg[100];
-	sprintf(timeleftmsg, "Game started! Time remaining: %d", gametimeleft);
-	m_sound_controller->play_sound("begin");
-	display_message(timeleftmsg, 1.0, 1.0, 1.0);
+	display_message(message.str().c_str(), 1.0, 1.0, 1.0);
 }
 
 void GameController::game_stop(PacketReader& reader) {

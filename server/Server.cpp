@@ -162,7 +162,7 @@ void	Server::join(int channel, PacketReader& packet)
 		// Joining a game that hasn't started yet.
 		// Tell the player what map is currently in use, and how much time until the round starts (i.e. players spawn)
 		PacketWriter		game_start_packet(GAME_START_PACKET);
-		game_start_packet << m_current_map.get_name() << time_until_spawn();
+		game_start_packet << m_current_map.get_name() << 0 << time_until_spawn();
 		m_network.send_packet(channel, game_start_packet); // TODO: REQUIRE ACK
 	} else {
 		// Joining a game that has already started
@@ -170,7 +170,7 @@ void	Server::join(int channel, PacketReader& packet)
 		m_waiting_players.push_back(&m_players[player_id]);
 		// Tell the player what map is currently in use, and how much time until he spawns
 		PacketWriter		game_start_packet(GAME_START_PACKET);
-		game_start_packet << m_current_map.get_name() << uint32_t(JOIN_DELAY);
+		game_start_packet << m_current_map.get_name() << 1 << uint32_t(JOIN_DELAY);
 		m_network.send_packet(channel, game_start_packet); // TODO: REQUIRE ACK
 	}
 
@@ -329,7 +329,7 @@ void	Server::new_game() {
 	m_waiting_players.clear(); // Waiting players get cleared out and put in general queue...
 
 	PacketWriter		packet(GAME_START_PACKET);
-	packet << m_current_map.get_name() << time_until_spawn();
+	packet << m_current_map.get_name() << 0 << time_until_spawn();
 	m_network.broadcast_packet(packet);
 	// TODO: REQUIRE ACK
 }
@@ -362,7 +362,7 @@ void	Server::start_game() {
 
 	// Send the game start packet (TODO: require ACK)
 	PacketWriter		packet(GAME_START_PACKET);
-	packet << m_current_map.get_name() << 0;
+	packet << m_current_map.get_name() << 1 << 0;
 	m_network.broadcast_packet(packet);
 }
 
