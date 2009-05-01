@@ -13,6 +13,24 @@
 
 using namespace std;
 
+static void display_usage(const char* progname) {
+	cout << "Usage: " << progname << " [OPTION]" << endl;
+	cout << "Options:" << endl;
+	cout << "  -n NAME	set your player name" << endl;
+	cout << "  -t A|B	set your team" << endl;
+	cout << "  -s SERVER	set the hostname of the server" << endl;
+	cout << "  -w WIDTH	set the screen width, in pixels" << endl;
+	cout << "  -h HEIGHT	set the screen height, in pixels" << endl;
+	cout << "  -?, --help	display this help, and exit" << endl;
+	cout << "      --version\tdisplay version information and exit" << endl;
+}
+
+static void display_version() {
+	cout << "Leges Motus" << endl;
+	cout << "A 2D team-based shooter set in zero gravity" << endl;
+	cout << "Copyright 2009 - Nathan Partlan, Andrew Ayer, Daniel Schneider, and Jeffrey Pfau" << endl;
+}
+
 extern "C" int main(int argc, char* argv[]) try {
 	ClientSDL		client_sdl;
 	GameController*		game_controller;
@@ -22,7 +40,7 @@ extern "C" int main(int argc, char* argv[]) try {
 	string			server = "legesmotus.beanwood.com";
 	string			name = "";
 	
-	for (int i = 0; i < argc; i++) {
+	for (int i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "-w") == 0 && argc > i+1) {
 			width = atoi(argv[i+1]);
 		} else if (strcmp(argv[i], "-h") == 0 && argc > i+1) {
@@ -33,10 +51,19 @@ extern "C" int main(int argc, char* argv[]) try {
 			name = argv[i+1];
 		} else if (strcmp(argv[i], "-t") == 0 && argc > i+1) {
 			team = argv[i+1][0];
+		} else if (strcmp(argv[i], "--version") == 0) {
+			display_version();
+			return 0;
+		} else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-?") == 0) {
+			display_usage(argv[0]);
+			return 0;
+		} else {
+			cerr << argv[0] << ": Unrecognized option `" << argv[i] << "'" << endl;
+			display_usage(argv[0]);
+			return 2;
 		}
-		//cerr << "Argument " << i << ": " << argv[i] << endl;
 	}
-	
+
 	if (width != 0 && height != 0) {
 		game_controller = new GameController(width, height);
 	} else {
