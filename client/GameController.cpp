@@ -233,6 +233,8 @@ void GameController::run(int lockfps) {
 			}
 			
 			for (unsigned int i = 0; i < m_shots.size(); i++) {
+				m_shots[i].first->set_scale_x((double)(SHOT_DISPLAY_TIME-(m_shots[i].second - currframe))/SHOT_DISPLAY_TIME);
+				m_shots[i].first->set_scale_y((double)(SHOT_DISPLAY_TIME-(m_shots[i].second - currframe))/SHOT_DISPLAY_TIME);
 				if (m_shots[i].second < currframe) {
 					m_window->unregister_graphic(m_shots[i].first);
 					m_shots.erase(m_shots.begin() + i);
@@ -708,6 +710,8 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 			Graphic* this_shot = new Sprite(*m_shot);
 			this_shot->set_x(end_x);
 			this_shot->set_y(end_y);
+			this_shot->set_scale_x(.1);
+			this_shot->set_scale_y(.1);
 			this_shot->set_invisible(false);
 			pair<Graphic*, unsigned int> new_shot(this_shot, SDL_GetTicks() + SHOT_DISPLAY_TIME);
 			m_shots.push_back(new_shot);
@@ -928,6 +932,8 @@ void GameController::gun_fired(PacketReader& reader) {
 	this_shot->set_x(end_x);
 	this_shot->set_y(end_y);
 	this_shot->set_invisible(false);
+	this_shot->set_scale_x(.1);
+	this_shot->set_scale_y(.1);
 	pair<Graphic*, unsigned int> new_shot(this_shot, SDL_GetTicks() + SHOT_DISPLAY_TIME);
 	m_shots.push_back(new_shot);
 	m_window->register_graphic(this_shot);
