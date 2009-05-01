@@ -396,10 +396,10 @@ void GameController::process_input() {
 
 void GameController::initialize_key_bindings() {
 	// -1 = unused
-	m_key_bindings.quit = SDLK_ESCAPE;
+	m_key_bindings.quit = -1;
 	m_key_bindings.jump = SDLK_SPACE;
 	m_key_bindings.show_overlay = -1;
-	m_key_bindings.show_menu = SDLK_m;
+	m_key_bindings.show_menu = SDLK_ESCAPE;
 	m_key_bindings.open_chat = SDLK_t;
 	m_key_bindings.send_chat = SDLK_RETURN;
 }
