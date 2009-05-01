@@ -97,6 +97,8 @@ private:
 	uint32_t		m_game_start_time;	// Time at which the game started
 	bool			m_players_have_spawned;	// True if any players have spawned
 	PlayerQueue		m_waiting_players;	// Players who have joined after start of round and are waiting to be spawned
+	int			m_team_count[2];	// [0] = # of players on team A  [1] == # of players on team B
+	int			m_team_score[2];	// [0] = team A's score  [1] = team B's score
 
 
 	//

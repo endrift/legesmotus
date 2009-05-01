@@ -659,7 +659,7 @@ void GameController::send_player_shot(unsigned int shooter_id, unsigned int hit_
 	m_network.send_packet(player_shot);
 }
 
-void GameController::connect_to_server(const char* host, unsigned int port, string name) {
+void GameController::connect_to_server(const char* host, unsigned int port, string name, char team) {
 	if (!m_network.connect(host, port)) {
 		cerr << "Error: Could not connect to server at " << host << ":" << port << endl;
 	}
@@ -668,11 +668,8 @@ void GameController::connect_to_server(const char* host, unsigned int port, stri
 	join_request << m_protocol_number;
 	m_name = name;
 	join_request << name;
-	int team = rand() % 2;
-	if (team == 0) {
-		join_request << 'A';
-	} else {
-		join_request << 'B';
+	if (is_valid_team(team)) {
+		join_request << team;
 	}
 	
 	m_network.send_packet(join_request);

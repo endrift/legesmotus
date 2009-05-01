@@ -18,6 +18,7 @@ extern "C" int main(int argc, char* argv[]) try {
 	GameController*		game_controller;
 	int			width = 0;
 	int			height = 0;
+	char			team = 0;
 	string			server = "legesmotus.beanwood.com";
 	string			name = "";
 	
@@ -30,6 +31,8 @@ extern "C" int main(int argc, char* argv[]) try {
 			server = argv[i+1];
 		} else if (strcmp(argv[i], "-n") == 0 && argc > i+1) {
 			name = argv[i+1];
+		} else if (strcmp(argv[i], "-t") == 0 && argc > i+1) {
+			team = argv[i+1][0];
 		}
 		//cerr << "Argument " << i << ": " << argv[i] << endl;
 	}
@@ -42,7 +45,7 @@ extern "C" int main(int argc, char* argv[]) try {
 
 	cout << "Welcome to Leges Motus." << endl;
 	
-	game_controller->connect_to_server(server.c_str(), 9009, !name.empty() ? name : get_username());
+	game_controller->connect_to_server(server.c_str(), 9009, !name.empty() ? name : get_username(), team);
 	game_controller->run();
 	
 	cout << "Leges Motus is now exiting." << endl;

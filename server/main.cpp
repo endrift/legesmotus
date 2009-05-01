@@ -9,11 +9,15 @@
 #include "ServerSDL.hpp"
 #include "common/LMException.hpp"
 #include <iostream>
+#include <stdlib.h>
+#include <time.h>
 
 using namespace std;
 
 extern "C" int main(int argc, char* argv[]) try {
 	ServerSDL		server_sdl;
+
+	srand(time(0));
 
 	Server			server;
 

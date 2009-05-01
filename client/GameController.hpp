@@ -116,7 +116,7 @@ public:
 	void		initialize_key_bindings();
 	void		parse_key_input();
 	void		move_objects(float timescale);
-	void		connect_to_server(const char* host, unsigned int port, std::string name);
+	void		connect_to_server(const char* host, unsigned int port, std::string name, char team);
 	void		disconnect();
 	void		player_fired(unsigned int player_id, double start_x, double start_y, double direction);
 	void		send_player_shot(unsigned int shooter_id, unsigned int hit_player_id);

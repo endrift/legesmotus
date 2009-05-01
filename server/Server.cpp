@@ -13,6 +13,7 @@
 #include "common/network.hpp"
 #include "common/team.hpp"
 #include <string>
+#include <stdlib.h>
 #include <iostream>
 #include <limits>
 
@@ -27,6 +28,9 @@ Server::Server ()
 	m_is_running = false;
 	m_game_start_time = 0;
 	m_players_have_spawned = false;
+
+	m_team_count[0] = m_team_count[1] = 0;
+	m_team_score[0] = m_team_score[1] = 0;
 }
 
 void	Server::player_update(int channel, PacketReader& packet)
@@ -107,10 +111,17 @@ void	Server::join(int channel, PacketReader& packet)
 
 	// TODO: check client version.
 
-	if (team != 'A' && team != 'B') {
-		// TODO: Assign to team equitably.
-		team = 'A';
+	if (!is_valid_team(team)) {
+		// Assign to team equitably.
+		if (m_team_count[0] < m_team_count[1]) {
+			team = 'A';
+		} else if (m_team_count[0] > m_team_count[1]) {
+			team = 'B';
+		} else {
+			team = 'A' + rand() % 2;
+		}
 	}
+	++m_team_count[team - 'A'];
 
 	bool			is_first_player = m_players.empty();
 
@@ -165,6 +176,10 @@ void	Server::leave(int channel, PacketReader& packet)
 	m_network.unbind(channel);
 
 	if (is_authorized(channel, player_id)) {
+		ServerPlayer*	player = get_player(player_id);
+
+		--m_team_count[player->get_team() - 'A'];
+
 		m_players.erase(player_id);
 
 		// Broadcast to the game that this player has left
