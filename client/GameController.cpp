@@ -44,6 +44,16 @@ GameController::~GameController() {
 	delete red_back_arm;
 	delete m_crosshairs;
 
+	for (unsigned int i = 0; i < m_shots.size(); i++) {
+		m_window->unregister_graphic(m_shots[i].first);
+		m_shots.erase(m_shots.begin() + i);
+	}
+
+	for (unsigned int i = 0; i < m_messages.size(); i++) {
+		m_text_manager->remove_string(m_messages[i].first);
+		m_messages.erase(m_messages.begin() + i);
+	}
+
 	// TEMPORARY MAP CODE BY ANDREW
 	delete m_map;
 
@@ -159,7 +169,7 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	
 	m_shot = new Sprite("data/sprites/shot.png");
 	m_shot->set_invisible(true);
-	m_window->register_graphic(m_shot); // TODO: Remove later when multiple shot graphics are shown.
+	//m_window->register_graphic(m_shot); // TODO: Remove later when multiple shot graphics are shown.
 	
 	m_logo = new Sprite("data/sprites/legesmotuslogo.png");
 	m_logo->set_x(m_screen_width/2);
@@ -220,6 +230,13 @@ void GameController::run(int lockfps) {
 			for (unsigned int i = 0; i < m_messages.size(); i++) {
 				int y = 20 + (m_font->ascent() + m_font->descent() + 5) * i;
 				m_text_manager->reposition_string(m_messages[i].first, 20, y, TextManager::LEFT);
+			}
+			
+			for (unsigned int i = 0; i < m_shots.size(); i++) {
+				if (m_shots[i].second < currframe) {
+					m_window->unregister_graphic(m_shots[i].first);
+					m_shots.erase(m_shots.begin() + i);
+				}
 			}
 			
 			move_objects((SDL_GetTicks() - lastmoveframe) / delay); // scale all position changes to keep game speed constant. 
@@ -611,6 +628,9 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 	
 	double shortestdist = numeric_limits<double>::max();
 	Point wallhitpoint = Point(0, 0);
+	double end_x = -1;
+	double end_y = -1;
+	
 	for (thisobj = map_objects.begin(); thisobj != map_objects.end(); thisobj++) {
 		if (thisobj->get_sprite() == NULL) {
 			continue;
@@ -630,6 +650,8 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 		if (newdist != -1 && newdist < shortestdist) {
 			shortestdist = newdist;
 			wallhitpoint = newpoint;
+			end_x = newpoint.x;
+			end_y = newpoint.y;
 		}
 	}
 	
@@ -668,14 +690,29 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 				shortestdist = playerdist;
 				wallhitpoint = Point(0, 0);
 				player_hit = currplayer.get_id();
+				end_x = closestpoint.at(0);
+				end_y = closestpoint.at(1);
 			}
 		}
-	
+		
+		// TODO: HANDLE COLLISIONS WITH MAP EDGES?
+		
 		PacketWriter gun_fired(GUN_FIRED_PACKET);
 		gun_fired << player_id;
 		gun_fired << start_x;
 		gun_fired << start_y;
 		gun_fired << direction;
+		if (end_x != -1 || end_y != -1) {
+			gun_fired << end_x;
+			gun_fired << end_y;
+			Graphic* this_shot = new Sprite(*m_shot);
+			this_shot->set_x(end_x);
+			this_shot->set_y(end_y);
+			this_shot->set_invisible(false);
+			pair<Graphic*, unsigned int> new_shot(this_shot, SDL_GetTicks() + SHOT_DISPLAY_TIME);
+			m_shots.push_back(new_shot);
+			m_window->register_graphic(this_shot);
+		}
 		
 		m_network.send_packet(gun_fired);
 		
@@ -879,14 +916,21 @@ void GameController::gun_fired(PacketReader& reader) {
 	double start_x;
 	double start_y;
 	double rotation;
-	reader >> playerid >> start_x >> start_y >> rotation;
-	
-	//cerr << "Received gun_fired" << endl;
+	double end_x;
+	double end_y;
+	reader >> playerid >> start_x >> start_y >> rotation >> end_x >> end_y;
 	
 	if (playerid == m_player_id) {
 		return;
 	}
 	
+	Graphic* this_shot = new Sprite(*m_shot);
+	this_shot->set_x(end_x);
+	this_shot->set_y(end_y);
+	this_shot->set_invisible(false);
+	pair<Graphic*, unsigned int> new_shot(this_shot, SDL_GetTicks() + SHOT_DISPLAY_TIME);
+	m_shots.push_back(new_shot);
+	m_window->register_graphic(this_shot);
 	m_sound_controller->play_sound("fire");
 	player_fired(playerid, start_x, start_y, rotation);
 }

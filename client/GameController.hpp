@@ -43,6 +43,7 @@ private:
 
 	const static int MESSAGE_DISPLAY_TIME = 10000;
 	const static int FIRING_DELAY = 700;
+	const static int SHOT_DISPLAY_TIME = 2000;
 	
 	GameWindow* 	m_window;
 	ClientNetwork	m_network;
@@ -55,6 +56,7 @@ private:
 	std::string 	m_client_version;
 	std::string	m_input_text;
 	std::vector<std::pair<Graphic*, unsigned int> > m_messages;
+	std::vector<std::pair<Graphic*, unsigned int> > m_shots;
 	int		m_protocol_number;
 	int 		m_screen_width;
 	int 		m_screen_height;
