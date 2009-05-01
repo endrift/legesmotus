@@ -53,6 +53,7 @@ cat <<-EOF
 5~1~0,0~${style}_bgtile~${width}~${height}~0,0
 5~1~-64,${gate_start_y}~${style}_bgtile~64~${GATEHEIGHT}~0,0
 5~1~${width},${gate_start_y}~${style}_bgtile~64~${GATEHEIGHT}~0,0
+
 EOF
 
 # Walls
@@ -66,6 +67,7 @@ cat <<-EOF
 5~1~-32,0~${style}_wall_w32~32~${gate_start_y}~0,0
 4~1~-64,${gate_start_y}~${style}_gate_w
 5~1~-32,${gate_end_y}~${style}_wall_w32~32~${gate_start_y}~0,0
+
 # Wall Corners
 4~1~${width},-32~${style}_wall_ne32
 4~1~-32,-32~${style}_wall_nw32
@@ -78,13 +80,21 @@ cat <<-EOF
 # Gates
 2~1~-15,$((gate_start_y + 8))~A
 2~1~$((width + 7)),$((gate_start_y + 8))~B
+
 EOF
 
-# Sample Spawnpoints
+# Sample Objects
 cat <<-EOF
 # SAMPLE Spawnpoints (make your own, each team should have 8)
 #3~1~0,50~A
 #3~1~${width},50~B
+
+# SAMPLE obstacles (make your own)
+# Look in data/sprites to see what sprites are available
+# This is a 64x64 obstacle:
+#1~1~64,256~${style}_obstacle64
+# This is a 128x128 obstacle:
+#1~1~128,256~${style}_obstacle128
 EOF
 
 exec >&-
