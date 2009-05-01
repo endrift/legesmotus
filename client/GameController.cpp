@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <sstream>
 
 using namespace std;
 
@@ -915,6 +916,12 @@ void GameController::game_stop(PacketReader& reader) {
 		display_message("DEFEAT!", 1.0, 1.0, 1.0);
 		m_sound_controller->play_sound("defeat");
 	}
+
+	// Temporary score display
+	ostringstream	score_msg;
+	score_msg << "Team A: " << teamascore << " / Team B: " << teambscore;
+	display_message(score_msg.str().c_str(), 1.0, 1.0, 1.0);
+	// End temporary score display
 
 	m_map->reset_gates();
 	m_players[m_player_id].set_is_invisible(true);
