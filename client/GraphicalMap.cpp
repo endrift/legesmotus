@@ -173,3 +173,8 @@ MapObject* 	GraphicalMap::get_gate_object(char team) {
 	}
 }
 
+void	GraphicalMap::reset_gates() {
+	set_gate_progress('A', 0.0);
+	set_gate_progress('B', 0.0);
+}
+

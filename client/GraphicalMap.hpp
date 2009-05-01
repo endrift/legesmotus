@@ -42,6 +42,7 @@ public:
 
 	// progress is in [0.0,1.0], where 0 == not lowered .. 1 == lowered all the way
 	void				set_gate_progress(char team, double progress);
+	void				reset_gates();
 };
 
 #endif

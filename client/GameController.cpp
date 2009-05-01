@@ -915,6 +915,10 @@ void GameController::game_stop(PacketReader& reader) {
 		display_message("DEFEAT!", 1.0, 1.0, 1.0);
 		m_sound_controller->play_sound("defeat");
 	}
+
+	m_map->reset_gates();
+	m_players[m_player_id].set_is_invisible(true);
+	m_players[m_player_id].set_is_frozen(true);
 }
 
 void GameController::send_gate_hold(bool holding) {
