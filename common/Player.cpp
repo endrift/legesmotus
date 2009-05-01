@@ -13,6 +13,7 @@
 Player::Player() {
 	m_id = 0;
 	m_team = 0;
+	m_score = 0;
 	m_x = 0;
 	m_y = 0;
 	m_x_vel = 0;
@@ -26,6 +27,7 @@ Player::Player() {
 Player::Player(const char* name, uint32_t id, char team, double x, double y, double xvel, double yvel, double rotation) : m_name(name) {
 	m_id = id;
 	m_team = team;
+	m_score = 0;
 	m_x = x;
 	m_y = y;
 	m_x_vel = xvel;
@@ -57,6 +59,14 @@ void Player::set_id(uint32_t id) {
 
 void Player::set_team(char team) {
 	m_team = team;
+}
+
+void Player::set_score(int score) {
+	m_score = score;
+}
+
+void Player::add_score(int score_increase) {
+	m_score += score_increase;
 }
 
 void Player::set_x(double x) {

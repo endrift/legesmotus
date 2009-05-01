@@ -16,18 +16,11 @@
  * Derives from Map, and adds spawnpoint tracking.
  */
 class ServerMap : public Map {
-private:
 	// Spawnpoints for each team:
-	std::list<Point>	m_Aspawnpoints;
-	std::list<Point>	m_Bspawnpoints;
+	std::list<Point>	m_spawnpoints[2];
+	std::list<const Point*>	m_available_spawnpoints[2];
 
-	// Where the next team member should spawn:
-	int					m_remaining_Aspots;
-	int					m_remaining_Bspots;
-	std::list<Point>::const_iterator	m_next_Aspawnpoint;
-	std::list<Point>::const_iterator	m_next_Bspawnpoint;
-
-	virtual void	add_object(PacketReader& object_data);
+	virtual void		add_object(PacketReader& object_data);
 
 public:
 	ServerMap();
@@ -38,18 +31,23 @@ public:
 	void		reset();	// Reset the map for a new round - call before assigning spawnpoints
 
 	// How much TOTAL space is available on the map?
-	int		total_teamA_capacity() const { return m_Aspawnpoints.size(); }
-	int		total_teamB_capacity() const { return m_Bspawnpoints.size(); }
+	int		total_teamA_capacity() const { return m_spawnpoints[0].size(); }
+	int		total_teamB_capacity() const { return m_spawnpoints[1].size(); }
 	int		total_capacity() const { return total_teamA_capacity() + total_teamB_capacity(); }
 
-	// Return the next available spawnpoint for the given team
-	// Returns NULL if no spawn points available
+	// Acquire the next available spawnpoint for the given team
+	// Returns NULL if no spawnpoint is available
 	const Point*	next_spawnpoint(char team);
 
+	// Release/return the given spawnpoint to the pool
+	void		return_spawnpoint(char team, const Point* p);
+
+	bool		has_capacity(char team) const;
+
 	// How much REAMINING space is available on the map?
-	int		remaining_teamA_capacity() const { return m_remaining_Aspots; }
-	int		remaining_teamB_capacity() const { return m_remaining_Bspots; }
-	int		remaining_capacity() const { return m_remaining_Aspots + m_remaining_Bspots; }
+	int		remaining_teamA_capacity() const { return m_available_spawnpoints[0].size(); }
+	int		remaining_teamB_capacity() const { return m_available_spawnpoints[1].size(); }
+	int		remaining_capacity() const { return remaining_teamA_capacity() + remaining_teamB_capacity(); }
 };
 
 #endif

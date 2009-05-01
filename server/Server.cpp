@@ -93,14 +93,31 @@ void	Server::message(int channel, PacketReader& packet)
 	}
 }
 
-void	Server::player_shot(int channel, PacketReader& packet)
+void	Server::player_shot(int channel, PacketReader& inbound_packet)
 {
-	// Just broadcast this packet to all other players
-	// But add the time to unfreeze to the end, as per the network spec
-	PacketWriter		resent_packet(PLAYER_SHOT_PACKET);
-	resent_packet << packet << int(FREEZE_TIME);
-	m_network.broadcast_packet(resent_packet, channel);
+	uint32_t		shooter_id;
+	uint32_t		shot_player_id;
+
+	inbound_packet >> shooter_id >> shot_player_id;
+
+	// Inform all players that this player has been shot
+	PacketWriter		outbound_packet(PLAYER_SHOT_PACKET);
+	outbound_packet << shooter_id << shot_player_id << int(FREEZE_TIME);
+	m_network.broadcast_packet(outbound_packet);
 	// TODO: REQUIRE ACK
+
+	if (ServerPlayer* shooter = get_player(shooter_id)) {
+		// Add 1 to the shooter's score
+		shooter->add_score(1);
+
+		// And inform all players of the score update
+		PacketWriter	score_packet(SCORE_UPDATE_PACKET);
+		score_packet << shooter->get_id() << shooter->get_score();
+		m_network.broadcast_packet(score_packet);
+		// TODO for scoring:
+		//  - Score updates for every player have to be sent when new players join
+		//  - Reset all scores to 0 at end of round (hence requring another blanket score update)
+	}
 }
 
 void	Server::gun_fired(int channel, PacketReader& packet)
@@ -113,7 +130,6 @@ void	Server::gun_fired(int channel, PacketReader& packet)
 
 void	Server::join(int channel, PacketReader& packet)
 {
-	// XXX: Prototype function ONLY!  Needs to change!
 	int			client_version;
 	string			name;
 	char			team;
@@ -195,8 +211,6 @@ void	Server::remove_player(const ServerPlayer& player) {
 	m_waiting_players.remove(const_cast<ServerPlayer*>(&player)); // const_cast OK: only being used for comparison inside erase function
 	m_timeout_queue.erase(player.get_timeout_queue_position());
 
-	--m_team_count[player.get_team() - 'A'];
-
 	// Broadcast to the game that this player has left
 	PacketWriter	leave_packet(LEAVE_PACKET);
 	leave_packet << player_id;
@@ -210,8 +224,17 @@ void	Server::remove_player(const ServerPlayer& player) {
 		report_gate_status('B');
 	}
 
+	// Release/Return the player's spawn point
+	if (player.has_spawnpoint()) {
+		m_current_map.return_spawnpoint(player.get_team(), player.get_spawnpoint());
+	}
+
+	--m_team_count[player.get_team() - 'A'];
+
+	// Unbind the network socket
 	m_network.unbind(player.get_channel());
 
+	// Fully remove the player
 	m_players.erase(player_id);
 }
 
@@ -330,6 +353,7 @@ void	Server::spawn_waiting_players() {
 
 bool	Server::spawn_player(ServerPlayer& player) {
 	if (const Point* point = m_current_map.next_spawnpoint(player.get_team())) {
+		player.set_spawnpoint(point);
 		PacketWriter	update_packet(PLAYER_UPDATE_PACKET);
 		update_packet << player.get_id() << point->x << point->y << 0 << 0 << "";
 		m_network.send_packet(player.get_channel(), update_packet);

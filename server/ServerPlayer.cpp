@@ -13,6 +13,7 @@ using namespace std;
 ServerPlayer::ServerPlayer() {
 	m_channel = -1;
 	m_client_version = -1;
+	m_spawnpoint = NULL;
 	m_join_time = m_last_seen_time = 0;
 }
 

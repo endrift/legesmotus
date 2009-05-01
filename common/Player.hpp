@@ -17,6 +17,7 @@ protected:
 	std::string	m_name;
 	uint32_t	m_id;
 	char		m_team;		// Should be 'A' or 'B'
+	int		m_score;
 	double		m_x;
 	double		m_y;
 	double		m_x_vel;
@@ -35,6 +36,7 @@ public:
 	const char* get_name() const { return m_name.c_str(); }
 	uint32_t get_id() const { return m_id; }
 	char get_team() const { return m_team; }
+	int get_score() const { return m_score; }
 	double get_x() const { return m_x; }
 	double get_y() const { return m_y; }
 	double get_x_vel() const { return m_x_vel; }
@@ -51,6 +53,8 @@ public:
 	void set_name(const char* name);
 	virtual void set_id(uint32_t id);
 	virtual void set_team(char team);
+	virtual void set_score(int score);
+	virtual void add_score(int score_increase);
 	virtual void set_x(double x);
 	virtual void set_y(double y);
 	virtual void set_position(double x, double y);

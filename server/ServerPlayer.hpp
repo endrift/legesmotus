@@ -9,6 +9,7 @@
 #define LM_SERVER_SERVERPLAYER_HPP
 
 #include "common/Player.hpp"
+#include "common/Point.hpp"
 #include <stdint.h>
 #include <list>
 
@@ -19,6 +20,8 @@ public:
 private:
 	int		m_channel;		// The SDL channel that this player is bound to.
 	int		m_client_version;	// The version of the client that this player is using.
+
+	const Point*	m_spawnpoint;		// Where the player was spawned, if anywhere yet
 
 	uint32_t	m_join_time;		// SDL tick at which the player joined the game
 	uint32_t	m_last_seen_time;	// The SDL tick at which this player was last seen (i.e. last had a packet from)
@@ -32,6 +35,11 @@ public:
 	// Standard getters
 	int		get_channel() const { return m_channel; }
 	int		get_client_version() const { return m_client_version; }
+
+	// Remembering spawn points
+	bool		has_spawnpoint() const { return m_spawnpoint != NULL; }
+	const Point*	get_spawnpoint() const { return m_spawnpoint; }
+	void		set_spawnpoint(const Point* p) { m_spawnpoint = p; }
 
 	// For spawning
 	void		reset_join_time();

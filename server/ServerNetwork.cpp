@@ -107,8 +107,13 @@ void	ServerNetwork::process_packet(Server& server, const RawPacket& raw_packet) 
 
 	if (channel == -1 && reader.packet_type() == JOIN_PACKET) {
 		if (m_unbound_channels.empty()) {
-			// Oops, no channels left for this poor soul. TODO: send message back to client, prune the players list for timeouts, or something
-			return;
+			// Purge the server of timed out players, just in case it frees up a channel
+			server.timeout_players();
+
+			if (m_unbound_channels.empty()) {
+				// No channels left for this poor soul. TODO: send message back to client, or something
+				return;
+			}
 		}
 
 		// Bind this address and give it a channel

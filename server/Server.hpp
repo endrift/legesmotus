@@ -139,9 +139,6 @@ private:
 	bool			waiting_to_spawn() const; // Return true if we're waiting to spawn players
 	uint32_t		time_until_spawn() const; // Time in ms until players should spawn
 
-	// Timeout all old players
-	void			timeout_players();
-
 	// Returns the player with given player_id, NULL if not found
 	ServerPlayer*		get_player(uint32_t player_id);
 	const ServerPlayer*	get_player(uint32_t player_id) const;
@@ -162,6 +159,9 @@ private:
 
 public:
 	Server ();
+
+	// Timeout all old players
+	void			timeout_players();
 
 	// Called upon receipt of network packets:
 	void		player_update(int channel, PacketReader& packet);
