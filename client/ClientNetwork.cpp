@@ -144,7 +144,7 @@ void	ClientNetwork::process_packet(GameController& controller, const RawPacket& 
 		break;
 
 	case PLAYER_ANIMATION_PACKET:
-		//controller.animation_packet(reader);
+		controller.animation_packet(reader);
 		break;
 	}
 }

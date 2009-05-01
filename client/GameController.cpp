@@ -358,14 +358,17 @@ void GameController::process_input() {
 				if (angle < 90 && angle > -90) {
 					blue_player.set_scale_x(-1);
 					red_player.set_scale_x(-1);
+					send_animation_packet("all", "scale_x", -1);
 					angle *= -1;
 					angle += 55;
 				} else {
 					blue_player.set_scale_x(1);
 					red_player.set_scale_x(1);
+					send_animation_packet("all", "scale_x", 1);
 					angle -= 120;
 				}
 				m_players[m_player_id].get_sprite()->get_graphic("frontarm")->set_rotation(angle);
+				send_animation_packet("frontarm", "rotation", angle);
 				//red_arm_gun.set_rotation(angle);
 				break;
 				
@@ -973,6 +976,49 @@ void GameController::game_stop(PacketReader& reader) {
 	m_map->reset_gates();
 	m_players[m_player_id].set_is_invisible(true);
 	m_players[m_player_id].set_is_frozen(true);
+}
+
+void GameController::animation_packet(PacketReader& reader) {
+	uint32_t	player_id;
+	string		sprite;
+	string		field;
+	int		value;
+	
+	reader >> player_id >> sprite >> field >> value;
+	
+	Graphic* the_sprite;
+	if (sprite == "all") {
+		the_sprite = m_players[player_id].get_sprite();
+	} else {
+		the_sprite = m_players[player_id].get_sprite()->get_graphic(sprite);
+	}
+	
+	if (the_sprite == NULL) {
+		return;
+	}
+	
+	if (field == "rotation") {
+		the_sprite->set_rotation(value);
+	} else if (field == "scale_x") {
+		the_sprite->set_scale_x(value);
+	} else if (field == "scale_y") {
+		the_sprite->set_scale_y(value);
+	} else if (field == "x") {
+		the_sprite->set_x(value);
+	} else if (field == "y") {
+		the_sprite->set_y(value);
+	} else if (field == "center_x") {
+		the_sprite->set_center_x(value);
+	} else if (field == "center_y") {
+		the_sprite->set_center_y(value);
+	}
+}
+
+void GameController::send_animation_packet(string sprite, string field, int value) {
+	PacketWriter animation_packet(PLAYER_ANIMATION_PACKET);
+	animation_packet << m_player_id << sprite << field << value;
+	
+	m_network.send_packet(animation_packet);
 }
 
 void GameController::send_gate_hold(bool holding) {
