@@ -37,7 +37,7 @@ extern "C" int main(int argc, char* argv[]) try {
 	srand(time(0));
 
 	string			password;
-	string			map_name("test");
+	string			map_name("alpha1"); // XXX: what should the default map be?  should there be a default map?
 	unsigned int		portno = DEFAULT_PORTNO;
 
 	for (int i = 1; i < argc; i++) {

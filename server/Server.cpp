@@ -67,7 +67,7 @@ void	Server::message(int channel, PacketReader& packet)
 	if (!is_authorized(channel, sender_id)) {
 		return;
 	}
-	if (message.substr(0, 8) == "!server ") {
+	if (message.substr(0, 8) == "/server ") {
 		command_server(sender_id, message.c_str() + 8);
 		return;
 	}
@@ -110,14 +110,14 @@ void	Server::command_server(uint32_t player_id, const char* command) {
 	}
 
 	if (strcmp(command, "help") == 0) {
-		send_system_message(*player, "!server auth <password> - Authenticate with given password");
+		send_system_message(*player, "/server auth <password> - Authenticate with given password");
 		if (player->is_op()) {
-			send_system_message(*player, "!server reset - Reset the team scores [op]");
-			send_system_message(*player, "!server newgame - Start new game [op]");
-			send_system_message(*player, "!server kick <player-id> - Kick a player [op]");
-			send_system_message(*player, "!server shutdown - Shutdown the server [op]");
+			send_system_message(*player, "/server reset - Reset the team scores [op]");
+			send_system_message(*player, "/server newgame - Start new game [op]");
+			send_system_message(*player, "/server kick <player-id> - Kick a player [op]");
+			send_system_message(*player, "/server shutdown - Shutdown the server [op]");
 		}
-		send_system_message(*player, "!server help - Display this help");
+		send_system_message(*player, "/server help - Display this help");
 
 	} else if (strncmp(command, "auth ", 5) == 0) {
 		if (m_password.empty()) {
@@ -151,7 +151,7 @@ void	Server::command_server(uint32_t player_id, const char* command) {
 		m_is_running = false;
 
 	} else {
-		send_system_message(*player, "Unknown command or insufficient privileges.  Try '!server help'.");
+		send_system_message(*player, "Unknown command or insufficient privileges.  Try '/server help'.");
 	}
 }
 
