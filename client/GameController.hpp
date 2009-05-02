@@ -44,7 +44,7 @@ private:
 	const static int MESSAGE_DISPLAY_TIME = 10000;
 	const static int FIRING_DELAY = 700;
 	const static int SHOT_DISPLAY_TIME = 180;
-	const static int MUZZLE_FLASH_LENGTH = 50;
+	const static int MUZZLE_FLASH_LENGTH = 80;
 	
 	GameWindow* 	m_window;
 	ClientNetwork	m_network;
@@ -63,6 +63,7 @@ private:
 	int 		m_screen_height;
 	int		m_map_width;
 	int		m_map_height;
+	Polygon		m_map_polygon;
 	int 		m_pixel_depth;
 	int		m_game_state;
 	bool 		m_fullscreen;

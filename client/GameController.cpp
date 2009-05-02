@@ -256,14 +256,6 @@ void GameController::run(int lockfps) {
 				}
 			}
 			
-			GraphicGroup* frontarm = (GraphicGroup*)m_players[m_player_id].get_sprite()->get_graphic("frontarm");
-			if (m_last_fired < SDL_GetTicks() - MUZZLE_FLASH_LENGTH && frontarm->get_graphic("gun")->is_invisible()) {
-				frontarm->get_graphic("gun")->set_invisible(false);
-				send_animation_packet("frontarm/gun", "invisible", false);
-				frontarm->get_graphic("gun_fired")->set_invisible(true);
-				send_animation_packet("frontarm/gun_fired", "invisible", true);
-			}
-			
 			move_objects((SDL_GetTicks() - lastmoveframe) / delay); // scale all position changes to keep game speed constant. 
 			
 			lastmoveframe = SDL_GetTicks();
@@ -273,6 +265,14 @@ void GameController::run(int lockfps) {
 			//int framerate = (1000/(currframe - startframe));
 			
 			if (!m_players.empty()) {
+				Graphic* frontarm = m_players[m_player_id].get_sprite()->get_graphic("frontarm");
+				if (m_last_fired < SDL_GetTicks() - MUZZLE_FLASH_LENGTH && frontarm->get_graphic("gun")->is_invisible()) {
+					frontarm->get_graphic("gun")->set_invisible(false);
+					send_animation_packet("frontarm/gun", "invisible", false);
+					frontarm->get_graphic("gun_fired")->set_invisible(true);
+					send_animation_packet("frontarm/gun_fired", "invisible", true);
+				}
+			
 				send_my_player_update();
 				
 				m_offset_x = m_players[m_player_id].get_x() - (m_screen_width/2.0);
@@ -1076,6 +1076,7 @@ void GameController::game_start(PacketReader& reader) {
 	m_map->load_file(m_path_manager->data_path(mapname.c_str(), "maps"));
 	m_map_width = m_map->get_width();
 	m_map_height = m_map->get_height();
+	m_map_polygon.make_rectangle(m_map_width, m_map_height);
 
 	// Tell the player what's going on
 	ostringstream	message;
@@ -1137,6 +1138,10 @@ void GameController::animation_packet(PacketReader& reader) {
 	reader >> player_id >> spritelist >> field >> value;
 	
 	StringTokenizer tokenizer(spritelist, '/');
+	
+	if (m_players.count(player_id) == 0) {
+		return;
+	}
 	
 	Graphic* the_sprite = NULL;
 	while (tokenizer.has_more()) {
