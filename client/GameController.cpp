@@ -504,7 +504,7 @@ void GameController::move_objects(float timescale) {
 	
 	bool holdinggate = false;
 	
-	if (m_players[m_player_id].get_x_vel() != 0 || m_players[m_player_id].get_y_vel() != 0) {
+	//if (m_players[m_player_id].get_x_vel() != 0 || m_players[m_player_id].get_y_vel() != 0) {
 		const list<MapObject>& map_objects(m_map->get_objects());
 		list<MapObject>::const_iterator thisobj;
 		int radius = m_players[m_player_id].get_radius();
@@ -550,7 +550,7 @@ void GameController::move_objects(float timescale) {
 			}
 		}
 		//cerr << "End: " << SDL_GetTicks() << endl;
-	}
+	//}
 	
 	if (!holdinggate) {
 		if (m_holding_gate) {
