@@ -78,6 +78,7 @@ private:
 	//
 	// Game State
 	//
+	std::string		m_password;		// Password for admin access
 	bool			m_is_running;
 	ServerNetwork		m_network;
 	uint32_t		m_next_player_id;	// Used to allocate next player ID
@@ -116,6 +117,10 @@ private:
 
 	// Broadcast to all players a score update for the give player
 	void			broadcast_score_update(const ServerPlayer&);
+
+	// Send a message
+	void			send_system_message(const ServerPlayer& recipient, const char* message);
+	void			command_server(uint32_t player_id, const char* command);
 
 	//
 	// Game State Helpers
@@ -179,8 +184,9 @@ public:
 	void		gate_lowering(int channel, PacketReader& packet);
 	void		player_animation(int channel, PacketReader& packet);
 
-	// For testing only (interface likely to change):
 	void		run(int portno, const char* map_name); // map_name is NAME of map (excluding .map)
+
+	void		set_password(const char* pw);
 };
 
 #endif

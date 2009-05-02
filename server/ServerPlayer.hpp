@@ -21,6 +21,8 @@ private:
 	int		m_channel;		// The SDL channel that this player is bound to.
 	int		m_client_version;	// The version of the client that this player is using.
 
+	bool		m_is_op;		// This player has been authenticated with op status
+
 	const Point*	m_spawnpoint;		// Where the player was spawned, if anywhere yet
 
 	uint32_t	m_join_time;		// SDL tick at which the player joined the game
@@ -35,6 +37,9 @@ public:
 	// Standard getters
 	int		get_channel() const { return m_channel; }
 	int		get_client_version() const { return m_client_version; }
+
+	bool		is_op() const { return m_is_op; }
+	void		set_is_op(bool isop) { m_is_op = isop; }
 
 	// Remembering spawn points
 	bool		has_spawnpoint() const { return m_spawnpoint != NULL; }

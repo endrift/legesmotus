@@ -961,21 +961,29 @@ void GameController::player_shot(PacketReader& reader) {
 }
 
 void GameController::message(PacketReader& reader) {
-	unsigned int sender_id;
+	uint32_t sender_id;
 	string recipient;
 	string message_text;
 	
 	reader >> sender_id >> recipient >> message_text;
-	
-	string message = m_players[sender_id].get_name();
-	message.append(": ");
-	message.append(message_text);
-	
-	char team = m_players[sender_id].get_team();
-	if (team == 'A') {
-		display_message(message, 0.4, 0.4, 1);
-	} else {
-		display_message(message, 1, 0.4, 0.4);
+
+	if (sender_id == 0) {
+		// sender_id = 0 ==> From the server
+		string message("[Server]: ");
+		message.append(message_text);
+
+		display_message(message, 1.0, 1.0, 1.0);
+
+	} else if (const GraphicalPlayer* sender = get_player_by_id(sender_id)) {
+		string message(sender->get_name());
+		message.append(": ");
+		message.append(message_text);
+		
+		if (sender->get_team() == 'A') {
+			display_message(message, 0.4, 0.4, 1);
+		} else {
+			display_message(message, 1, 0.4, 0.4);
+		}
 	}
 }
 

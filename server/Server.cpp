@@ -67,6 +67,10 @@ void	Server::message(int channel, PacketReader& packet)
 	if (!is_authorized(channel, sender_id)) {
 		return;
 	}
+	if (message.substr(0, 8) == "!server ") {
+		command_server(sender_id, message.c_str() + 8);
+		return;
+	}
 
 	PacketWriter		outbound_packet(MESSAGE_PACKET);
 	outbound_packet << sender_id << recipient << message;
@@ -74,7 +78,7 @@ void	Server::message(int channel, PacketReader& packet)
 	if (recipient.empty()) {
 		// To everyone
 		m_network.broadcast_packet(outbound_packet);
-	} else if (recipient == "A" || recipient == "B") {
+	} else if (is_valid_team(recipient[0])) {
 		// Specific Team
 		char				recipient_team = recipient[0];
 		PlayerMap::const_iterator	it(m_players.begin());
@@ -90,6 +94,44 @@ void	Server::message(int channel, PacketReader& packet)
 		if (const ServerPlayer* recipient_player = get_player(recipient_id)) {
 			m_network.send_packet(recipient_player->get_channel(), outbound_packet);
 		}
+	}
+}
+
+void	Server::send_system_message(const ServerPlayer& recipient_player, const char* message) {
+	PacketWriter	outbound_packet(MESSAGE_PACKET);
+	outbound_packet << 0L << recipient_player.get_id() << message;
+	m_network.send_packet(recipient_player.get_channel(), outbound_packet);
+}
+
+void	Server::command_server(uint32_t player_id, const char* command) {
+	ServerPlayer*		player = get_player(player_id);
+	if (player == NULL) {
+		return;
+	}
+
+	if (strcmp(command, "help") == 0) {
+		send_system_message(*player, "!server auth <password> - Authenticate with given password.");
+		send_system_message(*player, "!server help - Display this help.");
+		if (player->is_op()) {
+			send_system_message(*player, "!server newgame - Start new game [op].");
+		}
+
+	} else if (strncmp(command, "auth ", 5) == 0) {
+		if (m_password.empty()) {
+			send_system_message(*player, "No operator password set.");
+		} else if (m_password == command + 5) {
+			player->set_is_op(true);
+			send_system_message(*player, "You are now operator.");
+		} else {
+			send_system_message(*player, "Password incorrect.");
+		}
+
+	} else if (strcmp(command, "newgame") == 0 && player->is_op()) {
+		game_over(0);
+		new_game();
+
+	} else {
+		send_system_message(*player, "Unknown command or insufficient privileges.  Try '!server help'.");
 	}
 }
 
@@ -553,3 +595,6 @@ const ServerPlayer*	Server::get_player(uint32_t player_id) const {
 	return it != m_players.end() ? &it->second : NULL;
 }
 
+void	Server::set_password(const char* pw) {
+	m_password = pw;
+}

@@ -42,6 +42,9 @@ public:
 	int		get_height() const { return m_height; }
 	
 	bool		load(std::istream& in);
+
+	// load_file will preserve the current map if it can't open the new map
+	// (and return false to indicate error)
 	bool		load_file(const char* path);
 
 	virtual void	clear();

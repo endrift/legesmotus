@@ -19,6 +19,7 @@ static void display_usage(const char* progname) {
 	cout << "Usage: " << progname << " [OPTION]" << endl;
 	cout << "Options:" << endl;
 	cout << "  -p PORTNO	set the port number to listen on" << endl;
+	cout << "  -P PASSWORD	set the admin password" << endl;
 	cout << "  -m MAPNAME	set the map name" << endl;
 	cout << "  -?, --help	display this help, and exit" << endl;
 	cout << "      --version\tdisplay version information and exit" << endl;
@@ -35,12 +36,16 @@ extern "C" int main(int argc, char* argv[]) try {
 
 	srand(time(0));
 
+	string			password;
 	string			map_name("test");
 	unsigned int		portno = DEFAULT_PORTNO;
 
 	for (int i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "-p") == 0 && argc > i+1) {
 			portno = atoi(argv[i+1]);
+			++i;
+		} else if (strcmp(argv[i], "-P") == 0 && argc > i+1) {
+			password = argv[i+1];
 			++i;
 		} else if (strcmp(argv[i], "-m") == 0 && argc > i+1) {
 			map_name = argv[i+1];
@@ -60,6 +65,7 @@ extern "C" int main(int argc, char* argv[]) try {
 
 	Server			server;
 
+	server.set_password(password.c_str());
 	server.run(portno, map_name.c_str());
 
 	return 0;
