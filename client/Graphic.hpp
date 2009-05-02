@@ -10,6 +10,7 @@
 
 #include "compat_gl.h"
 #include "common/compat_sdl.h"
+#include <string>
 
 class GameWindow;
 class Graphic {
