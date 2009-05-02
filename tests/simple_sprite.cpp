@@ -3,6 +3,7 @@
 #include "client/Sprite.hpp"
 #include "client/TiledGraphic.hpp"
 #include "common/PathManager.hpp"
+#include "client/Mask.hpp"
 #include <cmath>
 
 using namespace std;
@@ -17,6 +18,7 @@ extern "C" int main(int argc, char* argv[]) {
 	Sprite afront(pman.data_path("blue_frontarm.png","sprites"));
 	TiledGraphic tg(pman.data_path("metal_bgtile.png","sprites"));
 	GraphicGroup g;
+	Sprite mask(pman.data_path("mini_circle.png","sprites"));
 	s.set_center_x(32);
 	s.set_center_y(48);
 	afront.set_center_x(46);
@@ -27,18 +29,21 @@ extern "C" int main(int argc, char* argv[]) {
 	aback.set_center_y(29);
 	aback.set_x(-2);
 	aback.set_y(-18);
-	tg.set_start_x(250-64);
-	tg.set_start_y(250-64);
-	tg.set_width(128);
-	tg.set_height(128);
+	tg.set_center_x(128);
+	tg.set_center_y(128);
+	tg.set_width(256);
+	tg.set_height(256);
 	afront.set_priority(-1);
 	aback.set_priority(1);
-	tg.set_priority(1);
+	Mask m(&mask,&tg);
+	m.set_priority(1);
+	m.set_x(250);
+	m.set_y(250);
 	g.add_graphic(&s);
 	g.add_graphic(&aback,"f");
 	g.add_graphic(&afront,"b");
 	window->register_graphic(&g);
-	window->register_graphic(&tg);
+	window->register_graphic(&m);
 	bool running = true;
 	int frame = 0;
 	while(running) {

@@ -1,7 +1,8 @@
 BASEDIR = ..
 include ../Makefile.in
 OBJS = ClientNetwork.o ClientSDL.o GameController.o GameWindow.o MapObject.o Sprite.o GraphicalPlayer.o \
-	Graphic.o TiledGraphic.o GraphicGroup.o GraphicalMap.o Font.o TextManager.o SoundController.o Text.o#put .o filenames here (DO NOT PUT .cpp!)
+	Graphic.o TiledGraphic.o GraphicGroup.o GraphicalMap.o Font.o TextManager.o SoundController.o Text.o \
+	Mask.o #put .o filenames here (DO NOT PUT .cpp!)
 
 all: legesmotus
 

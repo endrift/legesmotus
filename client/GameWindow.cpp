@@ -9,6 +9,7 @@
 #include "GameWindow.hpp"
 #include "compat_gl.h"
 #include <cmath>
+#include <iostream>
 
 using namespace std;
 
@@ -42,6 +43,7 @@ GameWindow::GameWindow(int width, int height, int depth, bool fullscreen) {
 		return;
 	}
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1);
 #if SDL_MAJOR_VERSION == 1 && SDL_MINOR_VERSION == 2 && SDL_PATCHLEVEL >= 10
 	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1); // Deprecated in SDL 1.3
 #endif
