@@ -27,6 +27,8 @@ private:
 
 public:
 	// Construct a packet reader from the given raw packet data
+	StringTokenizer(const std::string& str, char delimiter) { m_buffer = NULL; init(str.c_str(), delimiter); }
+	StringTokenizer(const std::string& str, char delimiter, size_t max_tokens) { m_buffer = NULL; init(str.c_str(), delimiter, max_tokens); }
 	StringTokenizer(const char* str, char delimiter) { m_buffer = NULL; init(str, delimiter); }
 	StringTokenizer(const char* str, char delimiter, size_t max_tokens) { m_buffer = NULL; init(str, delimiter, max_tokens); }
 	~StringTokenizer();
