@@ -12,6 +12,7 @@
 using namespace std;
 
 SoundController::SoundController() {
+	// TODO don't hard code paths
 	if(Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 1024) == -1) {
 		cout << "Error calling Mix_OpenAudio" << endl;
 	}
@@ -22,12 +23,12 @@ SoundController::SoundController() {
 	}
 
 	m_unfreeze_sound = Mix_LoadWAV("data/sounds/enchant.ogg");
-	if(!m_freeze_sound) {
+	if(!m_unfreeze_sound) {
 		printf("Mix_LoadWAV: %s\n", Mix_GetError());
 	}
 
 	m_freeze_sound = Mix_LoadWAV("data/sounds/disenchant.ogg");
-	if(!m_unfreeze_sound) {
+	if(!m_freeze_sound) {
 		printf("Mix_LoadWAV: %s\n", Mix_GetError());
 	}
 
@@ -53,7 +54,13 @@ SoundController::SoundController() {
 }
 
 SoundController::~SoundController() {
-	delete m_gunshot_sound;
+	Mix_FreeChunk(m_gunshot_sound);
+	Mix_FreeChunk(m_freeze_sound);
+	Mix_FreeChunk(m_unfreeze_sound);
+	Mix_FreeChunk(m_gate_siren_sound);
+	Mix_FreeChunk(m_victory_sound);
+	Mix_FreeChunk(m_defeat_sound);
+	Mix_FreeChunk(m_begin_sound);
 }
 
 void SoundController::play_sound (string sound) {

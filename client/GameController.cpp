@@ -93,12 +93,13 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_time_to_unfreeze = 0;
 	m_last_fired = 0;
 
-	m_font = new Font("data/fonts/JuraMedium.ttf", 14);
+	m_font = new Font("data/fonts/JuraMedium.ttf", 14); // TODO don't hard code
 	m_text_manager = new TextManager(m_font, m_window);
 	
-	m_menu_font = new Font("data/fonts/JuraDemiBold.ttf", 34);
+	m_menu_font = new Font("data/fonts/JuraDemiBold.ttf", 34); // TODO don't hard code
 	
 	m_sound_controller = new SoundController();
+	m_holding_gate = false; // FIX BY JEFFREY -- NEEDS CHECKING
 
 	// TEMPORARY MAP CODE BY ANDREW
 	m_map = new GraphicalMap(m_window);
