@@ -329,6 +329,9 @@ void GameController::process_input() {
 						m_input_bar = NULL;
 						m_input_text = "> ";
 					} else if (event.key.keysym.sym == SDLK_BACKSPACE) {
+						if (m_input_text.length() <= 2) {
+							break;
+						}
 						m_input_text.erase(m_input_text.length() - 1);
 						m_text_manager->remove_string(m_input_bar);
 						m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
