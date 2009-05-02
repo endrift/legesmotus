@@ -113,6 +113,7 @@ void	ServerNetwork::process_packet(Server& server, const RawPacket& raw_packet) 
 	if (channel == -1 && reader.packet_type() == JOIN_PACKET) {
 		if (m_unbound_channels.empty()) {
 			// No channels left for this poor soul. TODO: send message back to client, or something
+			cerr << "No channels available!" << endl;
 			return;
 		}
 

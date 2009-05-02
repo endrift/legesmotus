@@ -912,8 +912,21 @@ void GameController::send_my_player_update() {
 }
 
 void GameController::send_message(string message) {
-	PacketWriter message_writer(MESSAGE_PACKET);
-	// TODO: Add recipient before message.
+
+	string::size_type		colon_pos = message.find_first_of(':');
+	if (colon_pos != string::npos) {
+		// Message to individual player
+		string			recipient_name = message.substr(0, colon_pos);
+		if (const GraphicalPlayer* player = get_player_by_name(recipient_name.c_str())) {
+			PacketWriter	message_writer(MESSAGE_PACKET);
+			message_writer << m_player_id << player->get_id() << message.substr(colon_pos + 1);
+			m_network.send_packet(message_writer);
+			return;
+		}
+	}
+
+	// Broadcast message to all players
+	PacketWriter	message_writer(MESSAGE_PACKET);
 	message_writer << m_player_id << "" << message;
 	m_network.send_packet(message_writer);
 }
@@ -1145,5 +1158,14 @@ void GameController::display_message(string message, double red, double green, d
 GraphicalPlayer* GameController::get_player_by_id(unsigned int player_id) {
 	map<int, GraphicalPlayer>::iterator it(m_players.find(player_id));
 	return it == m_players.end() ? NULL : &it->second;
+}
+
+GraphicalPlayer* GameController::get_player_by_name(const char* name) {
+	for (map<int, GraphicalPlayer>::iterator it(m_players.begin()); it != m_players.end(); ++it) {
+		if (strcmp(it->second.get_name(), name) == 0) {
+			return &it->second;
+		}
+	}
+	return NULL;
 }
 

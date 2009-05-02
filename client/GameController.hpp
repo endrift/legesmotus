@@ -108,6 +108,7 @@ private:
 	void		init(int width, int height, int depth, bool fullscreen);
 	void		process_input();
 	GraphicalPlayer* get_player_by_id(unsigned int player_id);
+	GraphicalPlayer* get_player_by_name(const char* name);
 	void		send_my_player_update();
 	void		attempt_jump();
 public:
