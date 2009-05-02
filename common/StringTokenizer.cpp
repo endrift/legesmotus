@@ -19,6 +19,13 @@ const char*	StringTokenizer::get_next() {
 		return NULL;
 	}
 
+	/*
+	if (--m_tokens_left == 0) {
+		// Last token
+		return get_rest();
+	}
+	*/
+
 	// Remember where we started.
 	char*		start = m_next_token;
 

@@ -19,13 +19,22 @@ private:
 	char		m_delimiter;
 	char*		m_buffer;
 	char*		m_next_token;
+	//size_t		m_tokens_left;
 
 	const char*	get_next ();	// Advance to the next token and return the old one.
 
+	// disallow copy and assignment
+	StringTokenizer(const StringTokenizer&) { }
+	StringTokenizer& operator=(const StringTokenizer&) { return *this; }
+
 public:
 	// Construct a packet reader from the given raw packet data
-	explicit StringTokenizer(const char* str, char delimiter);
+	StringTokenizer(const char* str, char delimiter);
+	//StringTokenizer(const char* str, char delimiter, size_t max_tokens);
 	~StringTokenizer();
+
+	// Initialize
+	//void		init(
 
 	// Discard (i.e. ignore) the next field
 	void		discard_next() { get_next(); }
@@ -55,6 +64,7 @@ public:
 	StringTokenizer&	operator>> (std::string&);
 
 	bool		has_more() const { return m_next_token != NULL; }
+	bool		has_next() const { return m_next_token != NULL; }
 
 	// To test whether there are any fields left for processing
 	bool		operator! () const { return !has_more(); }
