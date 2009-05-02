@@ -10,6 +10,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <ostream>
+#include <limits>
 
 using namespace std;
 
@@ -55,7 +56,7 @@ void	StringTokenizer::init(const char* str, char delimiter) {
 	// Start at the beginning
 	m_next_token = m_buffer;
 
-	m_tokens_left = std::numeric_limits<size_t>::max();
+	m_tokens_left = numeric_limits<size_t>::max();
 }
 
 void	StringTokenizer::init(const char* str, char delimiter, size_t max_tokens) {
@@ -161,7 +162,7 @@ StringTokenizer&	StringTokenizer::operator>> (double& i)
 }
 
 
-StringTokenizer&	StringTokenizer::operator>> (std::string& s)
+StringTokenizer&	StringTokenizer::operator>> (string& s)
 {
 	if (const char* p = get_next())
 		s = p;
