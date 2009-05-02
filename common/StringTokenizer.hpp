@@ -19,7 +19,7 @@ private:
 	char		m_delimiter;
 	char*		m_buffer;
 	char*		m_next_token;
-	//size_t		m_tokens_left;
+	size_t		m_tokens_left;
 
 	// disallow copy and assignment
 	StringTokenizer(const StringTokenizer&) { }
@@ -27,12 +27,16 @@ private:
 
 public:
 	// Construct a packet reader from the given raw packet data
-	StringTokenizer(const char* str, char delimiter);
-	//StringTokenizer(const char* str, char delimiter, size_t max_tokens);
+	StringTokenizer(const char* str, char delimiter) { m_buffer = NULL; init(str, delimiter); }
+	StringTokenizer(const char* str, char delimiter, size_t max_tokens) { m_buffer = NULL; init(str, delimiter, max_tokens); }
 	~StringTokenizer();
 
 	// Initialize
-	//void		init(
+	void		init(const char* str, char delimiter);
+	void		init(const char* str, char delimiter, size_t max_tokens);
+
+	// Get the next token
+	const char*	get_next ();
 
 	// Discard (i.e. ignore) the next field
 	void		discard_next() { get_next(); }

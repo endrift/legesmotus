@@ -19,12 +19,10 @@ const char*	StringTokenizer::get_next() {
 		return NULL;
 	}
 
-	/*
 	if (--m_tokens_left == 0) {
 		// Last token
 		return get_rest();
 	}
-	*/
 
 	// Remember where we started.
 	char*		start = m_next_token;
@@ -45,7 +43,10 @@ const char*	StringTokenizer::get_next() {
 
 
 
-StringTokenizer::StringTokenizer(const char* str, char delimiter) {
+void	StringTokenizer::init(const char* str, char delimiter) {
+	delete[] m_buffer;
+	m_buffer = NULL;
+
 	m_delimiter = delimiter;
 
 	// Copy in the packet data
@@ -53,6 +54,13 @@ StringTokenizer::StringTokenizer(const char* str, char delimiter) {
 	strcpy(m_buffer, str);
 	// Start at the beginning
 	m_next_token = m_buffer;
+
+	m_tokens_left = std::numeric_limits<size_t>::max();
+}
+
+void	StringTokenizer::init(const char* str, char delimiter, size_t max_tokens) {
+	init(str, delimiter);
+	m_tokens_left = max_tokens;
 }
 
 StringTokenizer::~StringTokenizer() {
