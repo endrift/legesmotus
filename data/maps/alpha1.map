@@ -26,7 +26,22 @@ alpha1
 
 # SAMPLE Spawnpoints (make your own, each team should have 8)
 3~1~0,50~A
+3~1~0,178~A
+3~1~0,306~A
+3~1~0,434~A
+3~1~0,562~A
+3~1~0,690~A
+3~1~0,818~A
+3~1~0,946~A
+
 3~1~2048,50~B
+3~1~2048,178~B
+3~1~2048,306~B
+3~1~2048,434~B
+3~1~2048,562~B
+3~1~2048,690~B
+3~1~2048,818~B
+3~1~2048,946~B
 
 # SAMPLE obstacles (make your own)
 # Look in data/sprites to see what sprites are available

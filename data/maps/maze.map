@@ -30,10 +30,43 @@ maze
 
 # SAMPLE obstacles (make your own)
 # Look in data/sprites to see what sprites are available
-# This is a 64x64 obstacle:
-1~1~0,256~metal_obstacle64
-1~1~64,256~metal_obstacle64
-1~1~128,256~metal_obstacle64
-1~1~192,256~metal_obstacle64
-1~1~256,256~metal_obstacle64
 
+#This is the wall that starts right above the blue gate
+1~1~0,288~metal_obstacle64
+1~1~64,288~metal_obstacle64
+1~1~128,288~metal_obstacle64
+1~1~192,288~metal_obstacle64
+1~1~256,288~metal_obstacle64
+1~1~320,288~metal_obstacle64
+1~1~320,352~metal_obstacle64
+1~1~320,416~metal_obstacle64
+1~1~320,480~metal_obstacle64
+
+
+#wall in the lower left hand corner of the arena
+1~1~128,544~metal_obstacle64
+1~1~128,608~metal_obstacle64
+1~1~128,672~metal_obstacle64
+1~1~128,736~metal_obstacle64
+1~1~128,800~metal_obstacle64
+#part that goes right
+1~1~192,672~metal_obstacle64
+1~1~256,672~metal_obstacle64
+1~1~320,672~metal_obstacle64
+1~1~384,672~metal_obstacle64
+1~1~448,672~metal_obstacle64
+#jut out of south wall
+1~1~384,896~metal_obstacle64
+1~1~384,960~metal_obstacle64
+#parallel to south wall
+1~1~576,832~metal_obstacle64
+1~1~640,832~metal_obstacle64
+
+#wall in the upper left hand corner of the arena
+1~1~128,128~metal_obstacle64
+1~1~192,128~metal_obstacle64
+1~1~256,128~metal_obstacle64
+1~1~320,128~metal_obstacle64
+1~1~384,128~metal_obstacle64
+1~1~448,128~metal_obstacle64
+1~1~512,128~metal_obstacle64
