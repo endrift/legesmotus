@@ -504,51 +504,53 @@ void GameController::move_objects(float timescale) {
 	
 	bool holdinggate = false;
 	
-	const list<MapObject>& map_objects(m_map->get_objects());
-	list<MapObject>::const_iterator thisobj;
-	int radius = m_players[m_player_id].get_radius();
-	Point currpos = Point(new_x, new_y);
-	Point oldpos = Point(m_players[m_player_id].get_x(), m_players[m_player_id].get_y());
-	//cerr << "Start: " << SDL_GetTicks() << endl;
-	for (thisobj = map_objects.begin(); thisobj != map_objects.end(); thisobj++) {
-		if (thisobj->get_sprite() == NULL) {
-			continue;
-		}
-		const Polygon& poly(thisobj->get_bounding_polygon());
-		double newdist = poly.intersects_circle(currpos, radius);
-		double olddist = poly.intersects_circle(oldpos, radius);
-		
-		// REPEL FROZEN PLAYERS AWAY FROM GATES.
-		if (thisobj->get_type() == Map::GATE && m_players[m_player_id].is_frozen()) {
-			double newdist_repulsion = poly.dist_from_circle(currpos, radius);
-			if (newdist_repulsion < 400) {
-				double gate_x = thisobj->get_upper_left().x + thisobj->get_sprite()->get_image_width()/2;
-				double gate_y = thisobj->get_upper_left().y + thisobj->get_sprite()->get_image_height()/2;
-				double angle = atan2(gate_y - new_y, gate_x - new_x);
-				m_players[m_player_id].set_velocity(m_players[m_player_id].get_x_vel() - .02 * cos(angle), m_players[m_player_id].get_y_vel() - .02 * sin(angle));
+	if (m_players[m_player_id].get_x_vel() != 0 || m_players[m_player_id].get_y_vel() != 0) {
+		const list<MapObject>& map_objects(m_map->get_objects());
+		list<MapObject>::const_iterator thisobj;
+		int radius = m_players[m_player_id].get_radius();
+		Point currpos = Point(new_x, new_y);
+		Point oldpos = Point(m_players[m_player_id].get_x(), m_players[m_player_id].get_y());
+		//cerr << "Start: " << SDL_GetTicks() << endl;
+		for (thisobj = map_objects.begin(); thisobj != map_objects.end(); thisobj++) {
+			if (thisobj->get_sprite() == NULL) {
+				continue;
 			}
-		}
+			const Polygon& poly(thisobj->get_bounding_polygon());
+			double newdist = poly.intersects_circle(currpos, radius);
+			double olddist = poly.intersects_circle(oldpos, radius);
 		
-		if (newdist != -1) {
-			if (newdist < olddist) {
-				//cerr << "New dist: " << newdist << " Old dist: " << olddist << endl;
-				//cerr << "Hitting object" << endl;
-				if (thisobj->get_type() == Map::OBSTACLE) {
-					m_players[m_player_id].set_velocity(0, 0);
-					new_x = m_players[m_player_id].get_x();
-					new_y = m_players[m_player_id].get_y();
+			// REPEL FROZEN PLAYERS AWAY FROM GATES.
+			if (thisobj->get_type() == Map::GATE && m_players[m_player_id].is_frozen()) {
+				double newdist_repulsion = poly.dist_from_circle(currpos, radius);
+				if (newdist_repulsion < 400) {
+					double gate_x = thisobj->get_upper_left().x + thisobj->get_sprite()->get_image_width()/2;
+					double gate_y = thisobj->get_upper_left().y + thisobj->get_sprite()->get_image_height()/2;
+					double angle = atan2(gate_y - new_y, gate_x - new_x);
+					m_players[m_player_id].set_velocity(m_players[m_player_id].get_x_vel() - .02 * cos(angle), m_players[m_player_id].get_y_vel() - .02 * sin(angle));
 				}
 			}
-			if (thisobj->get_type() == Map::GATE && thisobj->get_team() != m_players[m_player_id].get_team() && !m_players[m_player_id].is_frozen()) {
-				if (!m_holding_gate) {
-					send_gate_hold(true);
+		
+			if (newdist != -1) {
+				if (newdist < olddist) {
+					//cerr << "New dist: " << newdist << " Old dist: " << olddist << endl;
+					//cerr << "Hitting object" << endl;
+					if (thisobj->get_type() == Map::OBSTACLE) {
+						m_players[m_player_id].set_velocity(0, 0);
+						new_x = m_players[m_player_id].get_x();
+						new_y = m_players[m_player_id].get_y();
+					}
 				}
-				m_holding_gate = true;
-				holdinggate = true;
+				if (thisobj->get_type() == Map::GATE && thisobj->get_team() != m_players[m_player_id].get_team() && !m_players[m_player_id].is_frozen()) {
+					if (!m_holding_gate) {
+						send_gate_hold(true);
+					}
+					m_holding_gate = true;
+					holdinggate = true;
+				}
 			}
 		}
+		//cerr << "End: " << SDL_GetTicks() << endl;
 	}
-	//cerr << "End: " << SDL_GetTicks() << endl;
 	
 	if (!holdinggate) {
 		if (m_holding_gate) {
@@ -939,6 +941,10 @@ void GameController::leave(PacketReader& reader) {
 	if (playerid == m_player_id) {
 		cerr << "You were kicked!  Reason: " << leave_message << endl;
 		m_quit_game = true;
+		return;
+	}
+	
+	if (m_players.empty()) {
 		return;
 	}
 	
