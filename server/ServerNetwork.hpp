@@ -45,10 +45,15 @@ public:
 	bool		receive_packets(Server& server, uint32_t timeout);
 	// Send the given packet to a specific channel
 	void		send_packet(int channel, const PacketWriter& packet);
+	// Send the given packet to a specific address
+	void		send_packet(const IPaddress& address, const PacketWriter& packet);
 	// Send the given packet to all clients
 	// Optionally, you can specify a channel to EXCLUDE from the broadcast
 	void		broadcast_packet(const PacketWriter& packet, int exclude_channel =-1);
 
+	// Bind the next available channel to given address
+	// Returns -1 if no channels are available
+	int		bind(const IPaddress& address);
 	// Unbind the specified channel - should be called when clients leave
 	void		unbind(int channel);
 };

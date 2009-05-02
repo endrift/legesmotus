@@ -62,11 +62,15 @@ void	ServerNetwork::stop() {
 
 void	ServerNetwork::send_packet(int channel, const PacketWriter& packet) {
 	RawPacket	raw_packet(MAX_PACKET_LENGTH);
-
 	raw_packet.fill(packet);
-
-	//std::cerr << "Sending ___" << packet.packet_data() << "___ to " << channel << '\n';
 	SDLNet_UDP_Send(m_socket, channel, raw_packet);
+}
+
+void	ServerNetwork::send_packet(const IPaddress& addr, const PacketWriter& packet) {
+	RawPacket	raw_packet(MAX_PACKET_LENGTH);
+	raw_packet.set_address(addr);
+	raw_packet.fill(packet);
+	SDLNet_UDP_Send(m_socket, -1, raw_packet);
 }
 
 void	ServerNetwork::broadcast_packet(const PacketWriter& packet, int exclude_channel) {
@@ -102,27 +106,15 @@ bool	ServerNetwork::receive_packets(Server& server, uint32_t timeout) {
 }
 
 void	ServerNetwork::process_packet(Server& server, const RawPacket& raw_packet) {
-	// Always timeout players BEFORE processing a packet...
-	//  That way, we're not wasting channels on dead players.
-	//  Also, when joining, new players won't see dead players and then see them timeout a split second later.
-	server.timeout_players();
-
 	PacketReader	reader(raw_packet);
 	int		channel = raw_packet->channel;
 
-	if (channel == -1 && reader.packet_type() == JOIN_PACKET) {
-		if (m_unbound_channels.empty()) {
-			// No channels left for this poor soul. TODO: send message back to client, or something
-			cerr << "No channels available!" << endl;
-			return;
+	if (channel == -1) {
+		// Unbound packet
+		if (reader.packet_type() == JOIN_PACKET) {
+			// Only makes sense for joins
+			server.join(raw_packet->address, reader);
 		}
-
-		// Bind this address and give it a channel
-		channel = SDLNet_UDP_Bind(m_socket, m_unbound_channels.front(), const_cast<IPaddress*>(&raw_packet->address));
-		m_unbound_channels.pop_front();
-		m_bound_channels.insert(channel);
-	} else if (channel == -1) {
-		// Ignore this wild packet
 		return;
 	}
 
@@ -151,10 +143,6 @@ void	ServerNetwork::process_packet(Server& server, const RawPacket& raw_packet) 
 		server.gate_update(channel, reader);
 		break;
 
-	case JOIN_PACKET:
-		server.join(channel, reader);
-		break;
-
 	case LEAVE_PACKET:
 		server.leave(channel, reader);
 		break;
@@ -163,6 +151,21 @@ void	ServerNetwork::process_packet(Server& server, const RawPacket& raw_packet) 
 		server.player_animation(channel, reader);
 		break;
 	}
+}
+
+int	ServerNetwork::bind(const IPaddress& address) {
+	if (m_unbound_channels.empty()) {
+		// No channels available
+		return -1;
+	}
+
+	int channel = SDLNet_UDP_Bind(m_socket, m_unbound_channels.front(), const_cast<IPaddress*>(&address));
+	if (channel != -1) {
+		m_unbound_channels.pop_front();
+		m_bound_channels.insert(channel);
+	}
+
+	return channel;
 }
 
 void	ServerNetwork::unbind(int channel) {

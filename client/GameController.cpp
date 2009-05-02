@@ -1178,6 +1178,14 @@ void GameController::animation_packet(PacketReader& reader) {
 	}
 }
 
+void GameController::join_denied(PacketReader& reader) {
+	string		reason;
+	reader >> reason;
+
+	cerr << "Join denied!  Reason: " << reason << endl;
+	m_quit_game = true;
+}
+
 void GameController::send_animation_packet(string sprite, string field, int value) {
 	PacketWriter animation_packet(PLAYER_ANIMATION_PACKET);
 	animation_packet << m_player_id << sprite << field << value;

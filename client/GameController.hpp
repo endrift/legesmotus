@@ -147,6 +147,7 @@ public:
 	void		game_stop(PacketReader& reader);
 	void		score_update(PacketReader& reader);
 	void		animation_packet(PacketReader& reader);
+	void		join_denied(PacketReader& reader);
 };
 
 #endif

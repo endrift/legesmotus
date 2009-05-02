@@ -185,8 +185,12 @@ void	Server::gun_fired(int channel, PacketReader& packet)
 }
 
 
-void	Server::join(int channel, PacketReader& packet)
+void	Server::join(const IPaddress& address, PacketReader& packet)
 {
+	// Free up channels by kicking dead players
+	timeout_players();
+
+	// Parse the join packet
 	int			client_version;
 	string			name;
 	char			team;
@@ -205,6 +209,22 @@ void	Server::join(int channel, PacketReader& packet)
 			team = 'A' + rand() % 2;
 		}
 	}
+
+	/* Put back when maps have player limits
+	// Check to make sure there is space on the current map
+	if (!m_current_map.has_capacity(team)) {
+		reject_join(address, "No space on map.");
+		return;
+	}
+	*/
+
+	// Try to bind player's address
+	int			channel = m_network.bind(address);
+	if (channel == -1) {
+		reject_join(address, "No space on server.");
+		return;
+	}
+
 	++m_team_count[team - 'A'];
 
 	bool			is_first_player = m_players.empty();
@@ -627,4 +647,10 @@ const ServerPlayer*	Server::get_player(uint32_t player_id) const {
 
 void	Server::set_password(const char* pw) {
 	m_password = pw;
+}
+
+void	Server::reject_join(const IPaddress& addr, const char* why) {
+	PacketWriter	packet(JOIN_DENIED_PACKET);
+	packet << why;
+	m_network.send_packet(addr, packet);
 }

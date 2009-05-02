@@ -139,6 +139,11 @@ private:
 	void			send_system_message(const ServerPlayer& recipient, const char* message);
 	void			command_server(uint32_t player_id, const char* command);
 
+	// Timeout all old players
+	void			timeout_players();
+
+	void			reject_join(const IPaddress& addr, const char* why);
+
 	//
 	// Game State Helpers
 	//
@@ -188,12 +193,9 @@ private:
 public:
 	Server ();
 
-	// Timeout all old players
-	void			timeout_players();
-
 	// Called upon receipt of network packets:
 	void		player_update(int channel, PacketReader& packet);
-	void		join(int channel, PacketReader& packet);
+	void		join(const IPaddress& address, PacketReader& packet);
 	void		leave(int channel, PacketReader& packet);
 	void		player_shot(int channel, PacketReader& packet);
 	void		message(int channel, PacketReader& packet);
