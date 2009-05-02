@@ -729,7 +729,22 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 			}
 		}
 		
-		// TODO: HANDLE COLLISIONS WITH MAP EDGES?
+		if (end_x == -1 && end_y == -1) {
+			double dist_to_obstacle = m_map_width + m_map_height;
+			Point endpos = Point(start_x + dist_to_obstacle * cos(direction * DEGREES_TO_RADIANS), start_y + dist_to_obstacle * sin(direction * DEGREES_TO_RADIANS));
+			Point newpoint = m_map_polygon.intersects_line(startpos, endpos);
+		
+			if (newpoint.x != -1 || newpoint.y != -1) {		
+				double newdist = dist_between_points(start_x, start_y, newpoint.x, newpoint.y);
+		
+				if (newdist != -1 && newdist < shortestdist) {
+					shortestdist = newdist;
+					wallhitpoint = newpoint;
+					end_x = newpoint.x;
+					end_y = newpoint.y;
+				}
+			}
+		}
 		
 		PacketWriter gun_fired(GUN_FIRED_PACKET);
 		gun_fired << player_id;
