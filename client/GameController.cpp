@@ -912,6 +912,12 @@ void GameController::send_message(string message) {
 void GameController::leave(PacketReader& reader) {
 	unsigned int playerid;
 	reader >> playerid;
+
+	if (playerid == m_player_id) {
+		cerr << "You were kicked!" << endl;
+		m_quit_game = true;
+		return;
+	}
 	
 	m_text_manager->remove_string(m_players[playerid].get_name_sprite());
 	m_window->unregister_graphic(m_players[playerid].get_sprite());

@@ -110,11 +110,14 @@ void	Server::command_server(uint32_t player_id, const char* command) {
 	}
 
 	if (strcmp(command, "help") == 0) {
-		send_system_message(*player, "!server auth <password> - Authenticate with given password.");
-		send_system_message(*player, "!server help - Display this help.");
+		send_system_message(*player, "!server auth <password> - Authenticate with given password");
 		if (player->is_op()) {
-			send_system_message(*player, "!server newgame - Start new game [op].");
+			send_system_message(*player, "!server reset - Reset the team scores [op]");
+			send_system_message(*player, "!server newgame - Start new game [op]");
+			send_system_message(*player, "!server kick <player-id> - Kick a player [op]");
+			send_system_message(*player, "!server shutdown - Shutdown the server [op]");
 		}
+		send_system_message(*player, "!server help - Display this help");
 
 	} else if (strncmp(command, "auth ", 5) == 0) {
 		if (m_password.empty()) {
@@ -126,9 +129,26 @@ void	Server::command_server(uint32_t player_id, const char* command) {
 			send_system_message(*player, "Password incorrect.");
 		}
 
+	} else if (strcmp(command, "reset") == 0 && player->is_op()) {
+		m_team_score[0] = m_team_score[1] = 0;
+		send_system_message(*player, "Team scores reset.");
+
 	} else if (strcmp(command, "newgame") == 0 && player->is_op()) {
 		game_over(0);
 		new_game();
+
+	} else if (strncmp(command, "kick ", 5) == 0 && player->is_op()) {
+		if (ServerPlayer* victim = get_player(atol(command + 5))) {
+			remove_player(*victim);
+			send_system_message(*player, "Player kicked.");
+		} else {
+			send_system_message(*player, "Invalid player ID.");
+		}
+
+	} else if (strcmp(command, "shutdown") == 0 && player->is_op()) {
+		// TODO: do nicely by sending a shutdown packet, etc.
+		send_system_message(*player, "Server going down after this message.");
+		m_is_running = false;
 
 	} else {
 		send_system_message(*player, "Unknown command or insufficient privileges.  Try '!server help'.");
