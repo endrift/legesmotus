@@ -88,6 +88,8 @@ public:
 	virtual void	set_green_intensity(double g) = 0;
 	virtual void	set_blue_intensity(double b) = 0;
 
+	virtual Graphic*	get_graphic(const std::string&) { return NULL; }
+
 	virtual void	draw(const GameWindow* window) const = 0;
 };
 
