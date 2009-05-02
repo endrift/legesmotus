@@ -309,20 +309,18 @@ void GameController::process_input() {
 		switch(event.type) {
 			case SDL_KEYDOWN:
 				if (event.key.keysym.sym == m_key_bindings.quit) {
-					if (m_input_bar != NULL) {
-						SDL_EnableUNICODE(0);
-						m_text_manager->remove_string(m_input_bar);
-						m_input_bar = NULL;
-						m_input_text = "> ";
-					} else {
-						cerr << "Quit key pressed - quitting." << endl;
-						m_quit_game = true;
-					}
+					cerr << "Quit key pressed - quitting." << endl;
+					m_quit_game = true;
 				}
 				
 				if (m_input_bar != NULL) {
 					m_text_manager->set_active_color(1.0, 1.0, 1.0);
-					if (event.key.keysym.sym == m_key_bindings.send_chat) {
+					if (event.key.keysym.sym == m_key_bindings.show_menu) {
+						SDL_EnableUNICODE(0);
+						m_text_manager->remove_string(m_input_bar);
+						m_input_bar = NULL;
+						m_input_text = "> ";
+					} else if (event.key.keysym.sym == m_key_bindings.send_chat) {
 						send_message(m_input_text.substr(2));
 					
 						SDL_EnableUNICODE(0);
