@@ -21,8 +21,6 @@ private:
 	char*		m_next_token;
 	//size_t		m_tokens_left;
 
-	const char*	get_next ();	// Advance to the next token and return the old one.
-
 	// disallow copy and assignment
 	StringTokenizer(const StringTokenizer&) { }
 	StringTokenizer& operator=(const StringTokenizer&) { return *this; }
