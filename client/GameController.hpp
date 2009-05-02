@@ -44,6 +44,7 @@ private:
 	const static int MESSAGE_DISPLAY_TIME = 10000;
 	const static int FIRING_DELAY = 700;
 	const static int SHOT_DISPLAY_TIME = 180;
+	const static int MUZZLE_FLASH_LENGTH = 50;
 	
 	GameWindow* 	m_window;
 	ClientNetwork	m_network;
@@ -75,7 +76,7 @@ private:
 	std::map<int, GraphicalPlayer> m_players;
 	unsigned int	m_player_id;
 	bool		m_holding_gate;
-	long int	m_last_fired;
+	unsigned int	m_last_fired;
 	
 	// Do we want to keep it this way?
 	unsigned long	m_time_to_unfreeze;
@@ -84,6 +85,7 @@ private:
 	
 	// TEMPORARY SPRITE CODE
 	Sprite*		gun_normal;
+	Sprite*		m_gun_fired;
 	GraphicGroup 	blue_player;
 	GraphicGroup	blue_arm_gun;
 	Sprite*		blue_sprite;

@@ -16,6 +16,7 @@
 #include "common/network.hpp"
 #include "common/math.hpp"
 #include "common/team.hpp"
+#include "common/StringTokenizer.hpp"
 
 #include <vector>
 #include <stdio.h>
@@ -116,6 +117,13 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	gun_normal->set_rotation(-15);
 	gun_normal->set_priority(-1);
 	
+	m_gun_fired = new Sprite(m_path_manager->data_path("gun_shot.png", "sprites"));
+	m_gun_fired->set_x(3);
+	m_gun_fired->set_y(19);
+	m_gun_fired->set_rotation(-15);
+	m_gun_fired->set_priority(-1);
+	m_gun_fired->set_invisible(true);
+	
 	blue_sprite = new Sprite(m_path_manager->data_path("blue_armless.png","sprites"));
 	blue_back_arm = new Sprite(m_path_manager->data_path("blue_backarm.png","sprites"));
 	blue_front_arm = new Sprite(m_path_manager->data_path("blue_frontarm.png","sprites"));
@@ -133,6 +141,7 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	blue_player.add_graphic(blue_sprite, "torso");
 	blue_player.add_graphic(blue_back_arm, "backarm");
 	blue_arm_gun.add_graphic(gun_normal, "gun");
+	blue_arm_gun.add_graphic(m_gun_fired, "gun_fired");
 	blue_arm_gun.add_graphic(blue_front_arm, "arm");
 	blue_arm_gun.set_center_x(13);
 	blue_arm_gun.set_center_y(-18);
@@ -157,6 +166,7 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	red_player.add_graphic(red_sprite, "torso");
 	red_player.add_graphic(red_back_arm, "backarm");
 	red_arm_gun.add_graphic(gun_normal, "gun");
+	red_arm_gun.add_graphic(m_gun_fired, "gun_fired");
 	red_arm_gun.add_graphic(red_front_arm, "arm");
 	red_arm_gun.set_center_x(13);
 	red_arm_gun.set_center_y(-18);
@@ -244,6 +254,14 @@ void GameController::run(int lockfps) {
 					delete m_shots[i].first;
 					m_shots.erase(m_shots.begin() + i);
 				}
+			}
+			
+			GraphicGroup* frontarm = (GraphicGroup*)m_players[m_player_id].get_sprite()->get_graphic("frontarm");
+			if (m_last_fired < SDL_GetTicks() - MUZZLE_FLASH_LENGTH && frontarm->get_graphic("gun")->is_invisible()) {
+				frontarm->get_graphic("gun")->set_invisible(false);
+				send_animation_packet("frontarm/gun", "invisible", false);
+				frontarm->get_graphic("gun_fired")->set_invisible(true);
+				send_animation_packet("frontarm/gun_fired", "invisible", true);
 			}
 			
 			move_objects((SDL_GetTicks() - lastmoveframe) / delay); // scale all position changes to keep game speed constant. 
@@ -732,6 +750,12 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 			m_window->register_graphic(this_shot);
 		}
 		
+		GraphicGroup* frontarm = (GraphicGroup*)m_players[m_player_id].get_sprite()->get_graphic("frontarm");
+		frontarm->get_graphic("gun")->set_invisible(true);
+		send_animation_packet("frontarm/gun", "invisible", true);
+		frontarm->get_graphic("gun_fired")->set_invisible(false);
+		send_animation_packet("frontarm/gun_fired", "invisible", false);
+		
 		m_network.send_packet(gun_fired);
 		
 		if (player_hit != -1) {
@@ -1106,21 +1130,33 @@ void GameController::score_update(PacketReader& reader) {
 
 void GameController::animation_packet(PacketReader& reader) {
 	uint32_t	player_id;
-	string		sprite;
+	string		spritelist;
 	string		field;
 	int		value;
 	
-	reader >> player_id >> sprite >> field >> value;
+	reader >> player_id >> spritelist >> field >> value;
 	
-	Graphic* the_sprite;
-	if (sprite == "all") {
-		the_sprite = m_players[player_id].get_sprite();
-	} else {
-		the_sprite = m_players[player_id].get_sprite()->get_graphic(sprite);
-	}
+	StringTokenizer tokenizer(spritelist, '/');
 	
-	if (the_sprite == NULL) {
-		return;
+	Graphic* the_sprite = NULL;
+	while (tokenizer.has_more()) {
+		string spritename = tokenizer.get_next();
+	
+		if (spritename == "all") {
+			if (the_sprite == NULL) {
+				the_sprite = m_players[player_id].get_sprite();
+			}
+		} else {
+			if (the_sprite == NULL) {
+				the_sprite = m_players[player_id].get_sprite()->get_graphic(spritename);
+			} else {
+				the_sprite = the_sprite->get_graphic(spritename);
+			}
+		}
+	
+		if (the_sprite == NULL) {
+			return;
+		}
 	}
 	
 	if (field == "rotation") {
@@ -1137,6 +1173,8 @@ void GameController::animation_packet(PacketReader& reader) {
 		the_sprite->set_center_x(value);
 	} else if (field == "center_y") {
 		the_sprite->set_center_y(value);
+	} else if (field == "invisible") {
+		the_sprite->set_invisible(value);
 	}
 }
 
