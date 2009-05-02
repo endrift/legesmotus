@@ -25,8 +25,22 @@ maze
 2~1~2055,456~B
 
 # SAMPLE Spawnpoints (make your own, each team should have 8)
-3~1~0,50~A
-3~1~2048,50~B
+3~1~0,512~A
+3~1~0,513~A
+3~1~0,514~A
+3~1~0,515~A
+3~1~0,516~A
+3~1~0,517~A
+3~1~0,518~A
+3~1~0,519~A
+3~1~2048,512~B
+3~1~2048,513~B
+3~1~2048,514~B
+3~1~2048,515~B
+3~1~2048,516~B
+3~1~2048,517~B
+3~1~2048,518~B
+3~1~2048,519~B
 
 # SAMPLE obstacles (make your own)
 # Look in data/sprites to see what sprites are available
@@ -38,6 +52,7 @@ maze
 1~1~192,288~metal_obstacle64
 1~1~256,288~metal_obstacle64
 1~1~320,288~metal_obstacle64
+#then down
 1~1~320,352~metal_obstacle64
 1~1~320,416~metal_obstacle64
 1~1~320,480~metal_obstacle64
@@ -55,12 +70,115 @@ maze
 1~1~320,672~metal_obstacle64
 1~1~384,672~metal_obstacle64
 1~1~448,672~metal_obstacle64
+1~1~512,672~metal_obstacle64
+#then up
+1~1~512,608~metal_obstacle64
+1~1~512,544~metal_obstacle64
+#then right
+1~1~576,544~metal_obstacle64
+1~1~640,544~metal_obstacle64
+1~1~704,544~metal_obstacle64
+
+
+#bit just above where we were
+1~1~704,384~metal_obstacle64
+1~1~768,384~metal_obstacle64
+1~1~832,384~metal_obstacle64
+1~1~896,384~metal_obstacle64
+#then down
+1~1~896,448~metal_obstacle64
+1~1~896,512~metal_obstacle64
+#then right
+1~1~960,512~metal_obstacle64
+1~1~1024,512~metal_obstacle64
+#down again
+1~1~1024,576~metal_obstacle64
+#right 5 (stairs yay)
+1~1~1088,576~metal_obstacle64
+1~1~1152,576~metal_obstacle64
+1~1~1216,576~metal_obstacle64
+1~1~1280,576~metal_obstacle64
+1~1~1344,576~metal_obstacle64
+#down 3 to connect with s/thing else
+1~1~1344,640~metal_obstacle64
+1~1~1344,704~metal_obstacle64
+1~1~1344,768~metal_obstacle64
+
+
+
+#parallel to north wall
+1~1~704,160~metal_obstacle64
+1~1~768,160~metal_obstacle64
+1~1~832,160~metal_obstacle64
+1~1~896,160~metal_obstacle64
+
+#jut out of north wall
+1~1~1152,0~metal_obstacle64
+1~1~1152,64~metal_obstacle64
+1~1~1152,128~metal_obstacle64
+
+#jump right and go all the way over
+1~1~1344,128~metal_obstacle64
+1~1~1408,128~metal_obstacle64
+1~1~1472,128~metal_obstacle64
+1~1~1536,128~metal_obstacle64
+1~1~1600,128~metal_obstacle64
+1~1~1664,128~metal_obstacle64
+1~1~1728,128~metal_obstacle64
+1~1~1792,128~metal_obstacle64
+1~1~1856,128~metal_obstacle64
+#and one down
+1~1~1856,192~metal_obstacle64
+
+
+#jump down and right
+1~1~1152,320~metal_obstacle64
+1~1~1216,320~metal_obstacle64
+1~1~1280,320~metal_obstacle64
+1~1~1344,320~metal_obstacle64
+1~1~1408,320~metal_obstacle64
+1~1~1472,320~metal_obstacle64
+
+
+
 #jut out of south wall
 1~1~384,896~metal_obstacle64
 1~1~384,960~metal_obstacle64
+
+
 #parallel to south wall
 1~1~576,832~metal_obstacle64
 1~1~640,832~metal_obstacle64
+1~1~704,832~metal_obstacle64
+1~1~768,832~metal_obstacle64
+1~1~832,832~metal_obstacle64
+#up bit
+1~1~832,768~metal_obstacle64
+1~1~832,704~metal_obstacle64
+#jump right
+1~1~1024,832~metal_obstacle64
+1~1~1088,832~metal_obstacle64
+1~1~1152,832~metal_obstacle64
+#then down to dead end
+1~1~1152,896~metal_obstacle64
+1~1~1152,960~metal_obstacle64
+#jump right then edge
+1~1~1344,832~metal_obstacle64
+
+
+1~1~1536,832~metal_obstacle64
+1~1~1600,832~metal_obstacle64
+1~1~1664,832~metal_obstacle64
+1~1~1728,832~metal_obstacle64
+1~1~1792,832~metal_obstacle64
+1~1~1856,832~metal_obstacle64
+#long up
+1~1~1536,768~metal_obstacle64
+1~1~1536,704~metal_obstacle64
+1~1~1536,640~metal_obstacle64
+1~1~1536,576~metal_obstacle64
+1~1~1536,512~metal_obstacle64
+
 
 #wall in the upper left hand corner of the arena
 1~1~128,128~metal_obstacle64
@@ -70,3 +188,23 @@ maze
 1~1~384,128~metal_obstacle64
 1~1~448,128~metal_obstacle64
 1~1~512,128~metal_obstacle64
+#then down
+1~1~512,192~metal_obstacle64
+1~1~512,256~metal_obstacle64
+1~1~512,320~metal_obstacle64
+1~1~512,384~metal_obstacle64
+
+
+
+#bit by red gate
+1~1~1984,576~metal_obstacle64
+1~1~1920,576~metal_obstacle64
+1~1~1856,576~metal_obstacle64
+1~1~1792,576~metal_obstacle64
+1~1~1728,576~metal_obstacle64
+#go up
+1~1~1728,512~metal_obstacle64
+1~1~1728,448~metal_obstacle64
+1~1~1728,384~metal_obstacle64
+#or down
+1~1~1728,640~metal_obstacle64
