@@ -34,7 +34,8 @@ public:
 	// in milliseconds
 	enum {
 		FREEZE_TIME = 10000,			// Players stay frozen for 10 seconds
-		GATE_LOWER_TIME = 15000,		// Gate must be lowered for 15 seconds to fall
+		GATE_OPEN_TIME = 15000,			// Gate takes 15 seconds to go from fully closed to fully open
+		GATE_CLOSE_TIME = 5000,			// Gate takes 10 seconds to go from fully open to fully closed
 		PLAYER_TIMEOUT = 10000,			// Kick players who have not updated for 10 seconds
 
 		// Allow 2 seconds for all players to join at beginning of round before spawning them.
@@ -47,31 +48,45 @@ public:
 private:
 	// Keeps track of the info for a gate:
 	class GateStatus {
+	public:
+		enum {
+			CLOSED = 0,
+			OPENING = 1,
+			OPEN = 2,
+			CLOSING = 3
+		};
 	private:
-		bool		m_is_lowering;		// True if the gate is being lowered
-		uint32_t	m_player_id;		// The player who is lowering the gate
-		uint32_t	m_start_time;		// The time (in SDL ticks) at which the gate started to be lowered
+		int		m_status;		// CLOSED, OPENING, or CLOSING
+		uint32_t	m_player_id;		// The player who is opening the gate
+		uint32_t	m_start_time;		// The time (in SDL ticks) at which the gate started to be moved
 
 	public:
 		GateStatus();
 
-		bool		is_lowering() const { return m_is_lowering; }
+		// Get basic information about the gate:
+		bool		is_moving() const { return m_status == OPENING || m_status == CLOSING; }
+		bool		is_engaged() const { return m_status == OPENING || m_status == OPEN; }
+		int		get_status() const { return m_status; }
 		uint32_t	get_player_id() const { return m_player_id; }
 
-		uint32_t	time_elapsed() const;	// How many milliseconds have passed since gate started lowering?
-		uint32_t	time_remaining() const;	// How many milliseconds until the gate FALLS?
-		bool		has_fallen() const;	// Returns true if the gate has fallen.
-		double		get_progress() const;	// Number in range [0,1] to indicate progress of gate (i.e. 0%-100%)
+		uint32_t	time_elapsed() const;	// If moving, how many milliseconds since the gate started moving?
+		uint32_t	time_remaining() const;	// If moving, how many milliseconds until the gate finishes moving?
 
-		void		reset();		// Call at beginning of new games to completely reset
+		// Return a number in range [0,1] to indicate progress of gate:
+		//  (0.0 == fully closed, 1.0 == fully open)
+		double		get_progress() const;
 
-		// Reset this gate if the given player is lowering it:
-		// Returns true if the gate state changed, false otherwise
-		bool		reset_player(uint32_t player_id);
+		// Update the status of the gate based on how much time has elapsed:
+		//  Call every GATE_UPDATE_FREQUENCY milliseconds when gate is moving
+		void		update();
 
-		// Set the gate to a new state
-		// Returns true if the gate state changed, false otherwise
-		bool		set(bool is_lowering, uint32_t player_id);
+		// Reset the gate to fully closed:
+		//  Call at beginning of new games to fully reset the gate
+		void		reset();
+
+		// Engage or disengage the gate for the given player:
+		//  Returns true if the gate state changed, false otherwise
+		bool		set_engagement(bool is_engaged, uint32_t player_id);
 	};
 
 
@@ -99,7 +114,9 @@ private:
 	GateStatus&		get_gate(char team) { return m_gates[team - 'A']; }
 	const GateStatus&	get_gate(char team) const { return m_gates[team - 'A']; }
 
-	void			report_gate_status(char team);
+	// Broadcast a gate update packet to all players
+	//  change_in_status: { -1 = now closing, 0 = no change, 1 = now opening }
+	void			report_gate_status(char team, int change_in_status);
 
 
 	//
@@ -181,7 +198,7 @@ public:
 	void		player_shot(int channel, PacketReader& packet);
 	void		message(int channel, PacketReader& packet);
 	void		gun_fired(int channel, PacketReader& packet);
-	void		gate_lowering(int channel, PacketReader& packet);
+	void		gate_update(int channel, PacketReader& packet);
 	void		player_animation(int channel, PacketReader& packet);
 
 	void		run(int portno, const char* map_name); // map_name is NAME of map (excluding .map)

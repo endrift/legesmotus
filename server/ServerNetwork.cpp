@@ -146,8 +146,8 @@ void	ServerNetwork::process_packet(Server& server, const RawPacket& raw_packet) 
 		server.message(channel, reader);
 		break;
 
-	case GATE_LOWERING_PACKET:
-		server.gate_lowering(channel, reader);
+	case GATE_UPDATE_PACKET:
+		server.gate_update(channel, reader);
 		break;
 
 	case JOIN_PACKET:

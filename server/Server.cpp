@@ -274,11 +274,11 @@ void	Server::remove_player(const ServerPlayer& player) {
 	m_network.broadcast_packet(leave_packet);
 
 	// If this player was holding down a gate, make sure the gate status is cleared:
-	if (get_gate('A').reset_player(player_id)) {
-		report_gate_status('A');
+	if (get_gate('A').set_engagement(false, player_id)) {
+		report_gate_status('A', -1);
 	}
-	if (get_gate('B').reset_player(player_id)) {
-		report_gate_status('B');
+	if (get_gate('B').set_engagement(false, player_id)) {
+		report_gate_status('B', -1);
 	}
 
 	// Release/Return the player's spawn point
@@ -314,11 +314,16 @@ void	Server::run(int portno, const char* map_name)
 		timeout_players();
 
 		if (m_players_have_spawned) {
-			// See if a gate has fallen
-			if (get_gate('A').has_fallen()) {
+			// Update the status of the gates
+			get_gate('A').update();
+			get_gate('B').update();
+
+			if (get_gate('A').get_status() == GateStatus::OPEN) {
+				// A's gate is open => B wins
 				game_over('B');
 				new_game();
-			} else if (get_gate('B').has_fallen()) {
+			} else if (get_gate('B').get_status() == GateStatus::OPEN) {
+				// B's gate is open => A wins
 				game_over('A');
 				new_game();
 			}
@@ -326,12 +331,12 @@ void	Server::run(int portno, const char* map_name)
 			// Spawn any players who joined after the game started and are now ready to join:
 			spawn_waiting_players();
 
-			// If a gate is being lowered, broadcast a status report on it
-			if (get_gate('A').is_lowering()) {
-				report_gate_status('A');
+			// If a gate is moving, broadcast a status report on it
+			if (get_gate('A').is_moving()) {
+				report_gate_status('A', 0);
 			}
-			if (get_gate('B').is_lowering()) {
-				report_gate_status('B');
+			if (get_gate('B').is_moving()) {
+				report_gate_status('B', 0);
 			}
 
 		} else if (waiting_to_spawn()) {
@@ -436,19 +441,19 @@ void	Server::timeout_players() {
 }
 
 
-void	Server::gate_lowering(int channel, PacketReader& packet) {
+void	Server::gate_update(int channel, PacketReader& packet) {
 	uint32_t		player_id;
 	char			team;
-	bool			is_lowering;
-	packet >> player_id >> team >> is_lowering;
+	bool			is_engaged;
+	packet >> player_id >> team >> is_engaged;
 
 	if (!is_authorized(channel, player_id) || !is_valid_team(team)) {
 		// Invalid packet
 		return;
 	}
 
-	if (get_gate(team).set(is_lowering, player_id)) {
-		report_gate_status(team);
+	if (get_gate(team).set_engagement(is_engaged, player_id)) {
+		report_gate_status(team, is_engaged ? 1 : -1);
 	}
 }
 
@@ -458,15 +463,11 @@ uint32_t	Server::server_sleep_time() const {
 	if (m_players_have_spawned) {
 		// Take into account gate changes, and gate status updates
 
-		if (get_gate('A').is_lowering() || get_gate('B').is_lowering()) {
+		if (get_gate('A').is_moving() || get_gate('B').is_moving()) {
 			sleep_time = std::min(sleep_time, uint32_t(GATE_UPDATE_FREQUENCY));
 		}
-		if (get_gate('A').is_lowering()) {
-			sleep_time = std::min(sleep_time, get_gate('A').time_remaining());
-		}
-		if (get_gate('B').is_lowering()) {
-			sleep_time = std::min(sleep_time, get_gate('B').time_remaining());
-		}
+		sleep_time = std::min(sleep_time, get_gate('A').time_remaining());
+		sleep_time = std::min(sleep_time, get_gate('B').time_remaining());
 	}
 
 	if (waiting_to_spawn()) {
@@ -485,10 +486,10 @@ void Server::process_input() {
 	}
 }
 
-void	Server::report_gate_status(char team) {
+void	Server::report_gate_status(char team, int change_in_status) {
 	const GateStatus&	gate(get_gate(team));
-	PacketWriter		packet(GATE_LOWERING_PACKET);
-	packet << gate.get_player_id() << team << gate.get_progress();
+	PacketWriter		packet(GATE_UPDATE_PACKET);
+	packet << gate.get_player_id() << team << gate.get_progress() << change_in_status;
 	m_network.broadcast_packet(packet);
 }
 
@@ -497,65 +498,73 @@ Server::GateStatus::GateStatus() {
 }
 
 uint32_t Server::GateStatus::time_elapsed() const {
-	return m_is_lowering ? SDL_GetTicks() - m_start_time : 0;
+	return is_moving() ? SDL_GetTicks() - m_start_time : 0;
 }
 
 uint32_t Server::GateStatus::time_remaining() const {
-	if (m_is_lowering) {
+	if (is_moving()) {
 		uint32_t	elapsed_time = time_elapsed();
-		if (elapsed_time < GATE_LOWER_TIME) {
-			return GATE_LOWER_TIME - elapsed_time;
-		} else {
-			// Gate should have already fallen.
-			return 0;
+		if (m_status == OPENING && elapsed_time < GATE_OPEN_TIME) {
+			return GATE_OPEN_TIME - elapsed_time;
+		} else if (m_status == CLOSING && elapsed_time < GATE_CLOSE_TIME) {
+			return GATE_CLOSE_TIME - elapsed_time;
 		}
+
+		// Gate has finished moving.
+		return 0;
 	} else {
-		// Gate is not being lowered.
+		// Gate is not moving.
 		return numeric_limits<uint32_t>::max();
 	}
 }
 
-bool Server::GateStatus::has_fallen() const {
-	return m_is_lowering && time_elapsed() >= GATE_LOWER_TIME;
+void Server::GateStatus::update() {
+	if (m_status == OPENING && time_elapsed() >= GATE_OPEN_TIME) {
+		m_status = OPEN;
+		m_start_time = 0;
+	} else if (m_status == CLOSING && time_elapsed() >= GATE_CLOSE_TIME) {
+		m_status = CLOSED;
+		m_start_time = 0;
+	}
 }
 
 double	Server::GateStatus::get_progress() const {
-	return m_is_lowering ? time_elapsed() / double(GATE_LOWER_TIME) : 0.0;
+	switch (m_status) {
+	case CLOSED:
+		return 0.0;
+	case OPEN:
+		return 1.0;
+	case OPENING:
+		return time_elapsed() / double(GATE_OPEN_TIME);
+	case CLOSING:
+		return 1.0 - time_elapsed() / double(GATE_CLOSE_TIME);
+	}
+	return 0.0;
 }
 
 void	Server::GateStatus::reset() {
-	m_is_lowering = false;
+	m_status = CLOSED;
 	m_player_id = 0;
 	m_start_time = 0;
 }
 
-bool	Server::GateStatus::reset_player(uint32_t player_id) {
-	if (m_is_lowering && m_player_id == player_id) {
-		reset();
+bool	Server::GateStatus::set_engagement(bool is_now_engaged, uint32_t new_player_id) {
+	if (is_now_engaged && !is_engaged()) {
+		// Gate has been engaged.
+		// Start opening it...
+		m_start_time = SDL_GetTicks() - uint32_t(get_progress() * GATE_OPEN_TIME);
+		m_player_id = new_player_id;
+		m_status = OPENING;
+
 		return true;
-	}
-	return false;
-}
+	} else if (!is_now_engaged && is_engaged() && m_player_id == new_player_id) {
+		// Gate has been disengaged by the player who was previously engaging it.
+		// Start closing it...
+		m_start_time = SDL_GetTicks() - uint32_t((1.0 - get_progress()) * GATE_CLOSE_TIME);
+		m_player_id = 0;
+		m_status = CLOSING;
 
-bool	Server::GateStatus::set(bool new_is_lowering, uint32_t new_player_id) {
-	if (m_is_lowering != new_is_lowering) {
-		// Only continue if the state of the gate is actually changing...
-
-		if (new_is_lowering) {
-			// Gate is being lowered!
-			m_is_lowering = true;
-			m_player_id = new_player_id;
-			m_start_time = SDL_GetTicks();
-
-			return true;
-		} else if (m_player_id == new_player_id) {
-			// Only the same player is allowed to stop lowering the gate.
-			m_is_lowering = false;
-			m_player_id = 0;
-			m_start_time = 0;
-
-			return true;
-		}
+		return true;
 	}
 
 	// Nothing changed about the gate

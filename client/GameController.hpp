@@ -139,7 +139,7 @@ public:
 	void		gun_fired(PacketReader& reader);
 	void		player_shot(PacketReader& reader);
 	void		message(PacketReader& reader);
-	void		gate_lowering(PacketReader& reader);
+	void		gate_update(PacketReader& reader);
 	void		game_start(PacketReader& reader);
 	void		game_stop(PacketReader& reader);
 	void		score_update(PacketReader& reader);

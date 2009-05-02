@@ -987,13 +987,14 @@ void GameController::message(PacketReader& reader) {
 	}
 }
 
-void GameController::gate_lowering(PacketReader& reader) {
+void GameController::gate_update(PacketReader& reader) {
 	uint32_t	lowering_player_id; 	// Who's lowering the gate?
 	char		team;			// Which team's gate is being lowered
 	double		progress;		// How much has the gate gone down? 0 == not at all .. 1 == all the way
-	reader >> lowering_player_id >> team >> progress;
+	int		change_in_status;	// -1 == now closing, 0 == no change, 1 == now opening
+	reader >> lowering_player_id >> team >> progress >> change_in_status;
 	
-	if (progress == 0) {
+	if (change_in_status > 0) {
 		m_sound_controller->play_sound("gatelower");
 	}
 	
@@ -1109,7 +1110,7 @@ void GameController::send_animation_packet(string sprite, string field, int valu
 }
 
 void GameController::send_gate_hold(bool holding) {
-	PacketWriter gate_hold(GATE_LOWERING_PACKET);
+	PacketWriter gate_hold(GATE_UPDATE_PACKET);
 	if (holding) {
 		gate_hold << m_player_id << get_other_team(m_players[m_player_id].get_team()) << 1;
 	} else {

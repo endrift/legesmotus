@@ -131,8 +131,8 @@ void	ClientNetwork::process_packet(GameController& controller, const RawPacket& 
 		controller.announce(reader);
 		break;
 
-	case GATE_LOWERING_PACKET:
-		controller.gate_lowering(reader);
+	case GATE_UPDATE_PACKET:
+		controller.gate_update(reader);
 		break;
 
 	case SHUTDOWN_PACKET:
