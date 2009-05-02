@@ -1,0 +1,39 @@
+maze
+2048 1024
+# Background
+5~1~0,0~metal_bgtile~2048~1024~0,0
+5~1~-64,448~metal_bgtile~64~128~0,0
+5~1~2048,448~metal_bgtile~64~128~0,0
+
+# Walls
+5~1~0,1024~metal_wall_s32~2048~32~0,0
+5~1~0,-32~metal_wall_n32~2048~32~0,0
+5~1~2048,0~metal_wall_e32~32~448~0,0
+4~1~2048,448~metal_gate_e
+5~1~2048,576~metal_wall_e32~32~448~0,0
+5~1~-32,0~metal_wall_w32~32~448~0,0
+4~1~-64,448~metal_gate_w
+5~1~-32,576~metal_wall_w32~32~448~0,0
+
+# Wall Corners
+4~1~2048,-32~metal_wall_ne32
+4~1~-32,-32~metal_wall_nw32
+4~1~-32,1024~metal_wall_sw32
+4~1~2048,1024~metal_wall_se32
+# Gates
+2~1~-15,456~A
+2~1~2055,456~B
+
+# SAMPLE Spawnpoints (make your own, each team should have 8)
+3~1~0,50~A
+3~1~2048,50~B
+
+# SAMPLE obstacles (make your own)
+# Look in data/sprites to see what sprites are available
+# This is a 64x64 obstacle:
+1~1~0,256~metal_obstacle64
+1~1~64,256~metal_obstacle64
+1~1~128,256~metal_obstacle64
+1~1~192,256~metal_obstacle64
+1~1~256,256~metal_obstacle64
+
