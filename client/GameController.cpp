@@ -909,11 +909,12 @@ void GameController::send_message(string message) {
 }
 
 void GameController::leave(PacketReader& reader) {
-	unsigned int playerid;
-	reader >> playerid;
+	uint32_t	playerid;
+	string		leave_message;
+	reader >> playerid >> leave_message;
 
 	if (playerid == m_player_id) {
-		cerr << "You were kicked!" << endl;
+		cerr << "You were kicked!  Reason: " << leave_message << endl;
 		m_quit_game = true;
 		return;
 	}

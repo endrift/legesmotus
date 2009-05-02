@@ -172,7 +172,7 @@ private:
 	const ServerPlayer*	get_player(uint32_t player_id) const;
 
 	// Remove the given player from the game
-	void			remove_player(const ServerPlayer& player);
+	void			remove_player(const ServerPlayer& player, const char* leave_message);
 
 	//
 	// Main Loop Helpers

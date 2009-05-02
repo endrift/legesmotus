@@ -139,7 +139,7 @@ void	Server::command_server(uint32_t player_id, const char* command) {
 
 	} else if (strncmp(command, "kick ", 5) == 0 && player->is_op()) {
 		if (ServerPlayer* victim = get_player(atol(command + 5))) {
-			remove_player(*victim);
+			remove_player(*victim, "Kicked by operator");
 			send_system_message(*player, "Player kicked.");
 		} else {
 			send_system_message(*player, "Invalid player ID.");
@@ -275,14 +275,15 @@ void	Server::broadcast_score_update(const ServerPlayer& player) {
 
 void	Server::leave(int channel, PacketReader& packet) {
 	uint32_t	player_id;
-	packet >> player_id;
+	string		leave_message;
+	packet >> player_id >> leave_message;
 
 	if (is_authorized(channel, player_id)) {
-		remove_player(*get_player(player_id));
+		remove_player(*get_player(player_id), leave_message.c_str());
 	}
 }
 
-void	Server::remove_player(const ServerPlayer& player) {
+void	Server::remove_player(const ServerPlayer& player, const char* leave_message) {
 	const uint32_t	player_id = player.get_id();
 
 	m_waiting_players.remove(const_cast<ServerPlayer*>(&player)); // const_cast OK: only being used for comparison inside erase function
@@ -290,7 +291,7 @@ void	Server::remove_player(const ServerPlayer& player) {
 
 	// Broadcast to the game that this player has left
 	PacketWriter	leave_packet(LEAVE_PACKET);
-	leave_packet << player_id;
+	leave_packet << player_id << leave_message;
 	m_network.broadcast_packet(leave_packet);
 
 	// If this player was holding down a gate, make sure the gate status is cleared:
@@ -456,7 +457,7 @@ bool	Server::spawn_player(ServerPlayer& player) {
 
 void	Server::timeout_players() {
 	while (!m_timeout_queue.empty() && m_timeout_queue.front()->has_timed_out()) {
-		remove_player(*m_timeout_queue.front());
+		remove_player(*m_timeout_queue.front(), "Timeout");
 	}
 }
 
