@@ -446,7 +446,9 @@ void GameController::process_mouse_click(SDL_Event event) {
 				} else if ((*it).first == "Options") {
 					// TODO: Options menu.
 				} else if ((*it).first == "Resume Game") {
-					m_game_state = GAME_IN_PROGRESS;
+					if (!m_players.empty()) {
+						m_game_state = GAME_IN_PROGRESS;
+					}
 				}
 			}
 		}
@@ -627,6 +629,10 @@ void GameController::attempt_jump() {
 }
 
 void GameController::player_fired(unsigned int player_id, double start_x, double start_y, double direction) {
+	if (m_players.empty()) {
+		return;
+	}
+	
 	const list<MapObject>& map_objects(m_map->get_objects());
 	list<MapObject>::const_iterator thisobj;
 	Point startpos = Point(start_x, start_y);
@@ -820,6 +826,10 @@ void GameController::announce(PacketReader& reader) {
 	unsigned int playerid;
 	string playername;
 	char team;
+	
+	if (m_players.empty()) {
+		return;
+	}
 	
 	reader >> playerid >> playername >> team;
 	if (playerid == m_player_id) {

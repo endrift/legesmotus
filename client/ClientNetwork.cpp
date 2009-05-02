@@ -62,10 +62,16 @@ void	ClientNetwork::send_packet(const PacketWriter& packet) {
 }
 
 void	ClientNetwork::send_raw_packet(RawPacket& raw_packet) {
+	if (m_socket == NULL) {
+		return;
+	}
 	SDLNet_UDP_Send(m_socket, m_server_channel, raw_packet);
 }
 
 bool	ClientNetwork::receive_raw_packet(RawPacket& raw_packet) {
+	if (m_socket == NULL) {
+		return false;
+	}
 	while (SDLNet_UDP_Recv(m_socket, raw_packet) == 1) {
 		if (raw_packet->channel == m_server_channel) {
 			// Only accept packets coming from the server.
