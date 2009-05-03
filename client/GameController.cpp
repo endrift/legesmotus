@@ -626,7 +626,7 @@ void GameController::move_objects(float timescale) {
 			double olddist = poly.intersects_circle(oldpos, radius);
 		
 			// REPEL FROZEN PLAYERS AWAY FROM GATES.
-			if (thisobj->get_type() == Map::GATE && m_players[m_player_id].is_frozen()) {
+			if (thisobj->get_type() == Map::GATE && m_players[m_player_id].is_frozen() && !m_players[m_player_id].is_invisible()) {
 				double newdist_repulsion = poly.dist_from_circle(currpos, radius);
 				if (newdist_repulsion < 400) {
 					double gate_x = thisobj->get_upper_left().x + thisobj->get_sprite()->get_image_width()/2;
@@ -1203,6 +1203,9 @@ void GameController::game_start(PacketReader& reader) {
 	// Tell the player what's going on
 	ostringstream	message;
 	if (game_started) {
+		if (m_game_state == GAME_OVER) {
+			m_game_state = GAME_IN_PROGRESS;
+		}
 		message << "Game started!";
 		if (timeleft > 0) {
 			message << " Time until spawn: " << timeleft;
@@ -1221,6 +1224,8 @@ void GameController::game_stop(PacketReader& reader) {
 	int		teambscore;
 	
 	reader >> winningteam >> teamascore >> teambscore;
+	
+	m_game_state = GAME_OVER;
 	
 	if (winningteam == m_players[m_player_id].get_team()) {
 		display_message("VICTORY!", 1.0, 1.0, 1.0);
