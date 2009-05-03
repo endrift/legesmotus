@@ -100,7 +100,7 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_menu_font = new Font("data/fonts/JuraDemiBold.ttf", 34); // TODO don't hard code
 	
 	m_sound_controller = new SoundController();
-	m_holding_gate = false; // FIX BY JEFFREY -- NEEDS CHECKING
+	m_holding_gate = false;
 
 	// TEMPORARY MAP CODE BY ANDREW
 	m_map = new GraphicalMap(m_window);
@@ -189,11 +189,15 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_window->register_hud_graphic(m_logo);
 	
 	m_main_menu_items = map<string, Graphic*>();
+	m_options_menu_items = map<string, Graphic*>();
 	
 	m_text_manager->set_active_font(m_menu_font);
 	m_main_menu_items["Resume Game"] = m_text_manager->place_string("Resume Game", 50, 200, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_main_menu_items["Options"] = m_text_manager->place_string("Options", 50, 250, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_main_menu_items["Quit"] = m_text_manager->place_string("Quit", 50, 300, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_options_menu_items["Back"] = m_text_manager->place_string("Back", 50, 200, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_options_menu_items["Enter Name"] = m_text_manager->place_string("Enter Name", 50, 250, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_options_menu_items["Toggle Sound"] = m_text_manager->place_string("Toggle Sound", 50, 300, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_text_manager->set_active_font(m_font);
 	m_text_manager->set_shadow_color(0.0, 0.0, 0.0);
 	m_text_manager->set_shadow_alpha(0.7);
@@ -293,6 +297,24 @@ void GameController::run(int lockfps) {
 						Graphic* thisitem = (*it).second;
 						thisitem->set_invisible(false);
 					}
+					for ( it=m_options_menu_items.begin() ; it != m_options_menu_items.end(); it++ ) {
+						Graphic* thisitem = (*it).second;
+						thisitem->set_invisible(true);
+					}
+				} else if (m_game_state == SHOW_OPTIONS_MENU) {
+					m_map->set_visible(false);
+					set_players_visible(false);
+					
+					m_logo->set_invisible(false);
+					map<string, Graphic*>::iterator it;
+					for ( it=m_main_menu_items.begin() ; it != m_main_menu_items.end(); it++ ) {
+						Graphic* thisitem = (*it).second;
+						thisitem->set_invisible(true);
+					}
+					for ( it=m_options_menu_items.begin() ; it != m_options_menu_items.end(); it++ ) {
+						Graphic* thisitem = (*it).second;
+						thisitem->set_invisible(false);
+					}
 				} else {
 					m_map->set_visible(true);
 					set_players_visible(true);
@@ -300,6 +322,10 @@ void GameController::run(int lockfps) {
 					m_logo->set_invisible(true);
 					map<string, Graphic*>::iterator it;
 					for ( it=m_main_menu_items.begin() ; it != m_main_menu_items.end(); it++ ) {
+						Graphic* thisitem = (*it).second;
+						thisitem->set_invisible(true);
+					}
+					for ( it=m_options_menu_items.begin() ; it != m_options_menu_items.end(); it++ ) {
 						Graphic* thisitem = (*it).second;
 						thisitem->set_invisible(true);
 					}
@@ -340,7 +366,15 @@ void GameController::process_input() {
 						m_input_bar = NULL;
 						m_input_text = "> ";
 					} else if (event.key.keysym.sym == m_key_bindings.send_chat) {
-						send_message(m_input_text.substr(2));
+						string message = m_input_text.substr(2);
+						if (message.find("/name ") == 0) {
+							m_name = message.substr(6);
+							string name_message = "Name set to: ";
+							name_message.append(m_name);
+							display_message(name_message);
+						} else {
+							send_message(message);
+						}
 					
 						SDL_EnableUNICODE(0);
 						m_text_manager->remove_string(m_input_bar);
@@ -465,12 +499,37 @@ void GameController::process_mouse_click(SDL_Event event) {
 					m_quit_game = true;
 					break;
 				} else if ((*it).first == "Options") {
-					// TODO: Options menu.
+					m_game_state = SHOW_OPTIONS_MENU;
 				} else if ((*it).first == "Resume Game") {
 					if (!m_players.empty()) {
 						m_game_state = GAME_IN_PROGRESS;
 					}
 				}
+				m_sound_controller->play_sound("click");
+			}
+		}
+	} else if (m_game_state == SHOW_OPTIONS_MENU) {
+		map<string, Graphic*>::iterator it;
+		for ( it=m_options_menu_items.begin() ; it != m_options_menu_items.end(); it++ ) {
+			Graphic* thisitem = (*it).second;
+			int x = thisitem->get_x();
+			int y = thisitem->get_y();
+			if (event.button.x >= x && event.button.x <= x + thisitem->get_image_width()
+			    && event.button.y >= y && event.button.y <= y + thisitem->get_image_height()) {
+				if ((*it).first == "Back") {
+					m_game_state = SHOW_MENUS;
+				} else if ((*it).first == "Enter Name") {
+					// TODO: Allow entering name.
+				} else if ((*it).first == "Toggle Sound") {
+					if (m_sound_controller->is_sound_on()) {
+						m_sound_controller->set_sound_on(false);
+						display_message("Sound is now OFF.");
+					} else {
+						m_sound_controller->set_sound_on(true);
+						display_message("Sound is now ON.");
+					}
+				}
+				m_sound_controller->play_sound("click");
 			}
 		}
 	} else if (m_game_state == GAME_IN_PROGRESS) {
@@ -880,12 +939,17 @@ void GameController::announce(PacketReader& reader) {
 		return;
 	}
 	
+	string joinmsg = "";
+	joinmsg.append(playername);
+	joinmsg.append(" has joined the game!");
 	if (team == 'A') {
 		m_players.insert(pair<int, GraphicalPlayer>(playerid,GraphicalPlayer((const char*)playername.c_str(), playerid, team, new GraphicGroup(blue_player))));
-		m_text_manager->set_active_color(0.2, 0.2, 1.0);
+		m_text_manager->set_active_color(0.4, 0.4, 1.0);
+		display_message(joinmsg, 0.4, 0.4, 1.0);
 	} else {
 		m_players.insert(pair<int, GraphicalPlayer>(playerid,GraphicalPlayer((const char*)playername.c_str(), playerid, team, new GraphicGroup(red_player))));
-		m_text_manager->set_active_color(1.0, 0.2, 0.2);
+		m_text_manager->set_active_color(1.0, 0.4, 0.4);
+		display_message(joinmsg, 1.0, 0.4, 0.4);
 	}
 	// TEMPORARY SPRITE CODE
 	m_window->register_graphic(m_players[playerid].get_sprite());
@@ -981,6 +1045,9 @@ void GameController::leave(PacketReader& reader) {
 	reader >> playerid >> leave_message;
 
 	if (playerid == m_player_id) {
+		string leavemsg = "You were kicked!  Reason: ";
+		leavemsg.append(leave_message);
+		display_message(leavemsg, 1.0, 1.0, 1.0);
 		cerr << "You were kicked!  Reason: " << leave_message << endl;
 		m_quit_game = true;
 		return;
@@ -988,6 +1055,16 @@ void GameController::leave(PacketReader& reader) {
 	
 	if (m_players.empty()) {
 		return;
+	}
+	
+	string leavemsg = "";
+	leavemsg.append(m_players[playerid].get_name());
+	leavemsg.append(" has left the game.");
+	
+	if (m_players[playerid].get_team() == 'A') {
+		display_message(leavemsg, 0.4, 0.4, 1.0);
+	} else {
+		display_message(leavemsg, 1.0, 0.4, 0.4);
 	}
 	
 	m_text_manager->remove_string(m_players[playerid].get_name_sprite());
@@ -1031,7 +1108,7 @@ void GameController::player_shot(PacketReader& reader) {
 	
 	if (shot_id == m_player_id) {
 		m_sound_controller->play_sound("freeze");
-		cerr << "I was hit! Time to unfreeze: " << time_to_unfreeze << endl;
+		//cerr << "I was hit! Time to unfreeze: " << time_to_unfreeze << endl;
 		m_players[m_player_id].set_is_frozen(true);
 		m_time_to_unfreeze = SDL_GetTicks() + time_to_unfreeze;
 	}
@@ -1202,6 +1279,9 @@ void GameController::join_denied(PacketReader& reader) {
 	string		reason;
 	reader >> reason;
 
+	string message = "Join denied! Reason: ";
+	message.append(reason);
+	display_message(message, 1.0, 1.0, 1.0);
 	cerr << "Join denied!  Reason: " << reason << endl;
 	m_quit_game = true;
 }

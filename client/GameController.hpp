@@ -38,7 +38,8 @@ private:
 	enum {
 		SHOW_MENUS = 0,
 		GAME_IN_PROGRESS = 1,
-		GAME_OVER = 2
+		GAME_OVER = 2,
+		SHOW_OPTIONS_MENU = 3
 	};
 
 	const static int MESSAGE_DISPLAY_TIME = 10000;
@@ -104,6 +105,7 @@ private:
 
 	Sprite*		m_logo;
 	std::map<std::string, Graphic*> m_main_menu_items;
+	std::map<std::string, Graphic*> m_options_menu_items;
 
 	// TEMPORARY MAP CODE BY ANDREW
 	GraphicalMap*	m_map;

@@ -12,6 +12,8 @@
 using namespace std;
 
 SoundController::SoundController() {
+	m_sound_on = true;
+	
 	// TODO don't hard code paths
 	if(Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 1024) == -1) {
 		cout << "Error calling Mix_OpenAudio" << endl;
@@ -51,6 +53,11 @@ SoundController::SoundController() {
 	if(!m_begin_sound) {
 		printf("Mix_LoadWAV: %s\n", Mix_GetError());
 	}
+	
+	m_click_sound = Mix_LoadWAV("data/sounds/button_click.ogg");
+	if(!m_click_sound) {
+		printf("Mix_LoadWAV: %s\n", Mix_GetError());
+	}
 }
 
 SoundController::~SoundController() {
@@ -64,6 +71,10 @@ SoundController::~SoundController() {
 }
 
 void SoundController::play_sound (string sound) {
+	if (!m_sound_on) {
+		return;
+	}
+	
 	if(sound == "fire") {
 		if(Mix_PlayChannel(-1, m_gunshot_sound, 0) == -1) {
 			printf("Mix_PlayChannel: %s\n", Mix_GetError());
@@ -92,6 +103,13 @@ void SoundController::play_sound (string sound) {
 		if(Mix_PlayChannel(-1, m_defeat_sound, 0) == -1) {
 			printf("Mix_PlayChannel: %s\n", Mix_GetError());
 		}
+	} else if(sound == "click") {
+		if(Mix_PlayChannel(-1, m_click_sound, 0) == -1) {
+			printf("Mix_PlayChannel: %s\n", Mix_GetError());
+		}
 	}
 }
 
+void SoundController::set_sound_on(bool on) {
+	m_sound_on = on;
+}

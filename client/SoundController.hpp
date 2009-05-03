@@ -20,6 +20,8 @@ private:
 	Mix_Chunk* 	m_victory_sound;
 	Mix_Chunk* 	m_begin_sound;
 	Mix_Chunk*	m_defeat_sound;
+	Mix_Chunk*	m_click_sound;
+	bool		m_sound_on;
 
 public:
 	SoundController();
@@ -27,6 +29,8 @@ public:
 	
 	void		play_sound(std::string sound);
 	int		main();
+	bool		is_sound_on() const { return m_sound_on; }
+	void		set_sound_on(bool on);
 	
 };
 
