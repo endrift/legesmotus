@@ -192,17 +192,24 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_options_menu_items = map<string, Graphic*>();
 	
 	m_text_manager->set_active_font(m_menu_font);
+	m_text_manager->set_shadow_color(0.0, 0.0, 0.0);
+	m_text_manager->set_shadow_alpha(0.7);
+	m_text_manager->set_shadow_offset(1.0, 1.0);
+	m_text_manager->set_shadow(true);
+	
 	m_main_menu_items["Resume Game"] = m_text_manager->place_string("Resume Game", 50, 200, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_main_menu_items["Options"] = m_text_manager->place_string("Options", 50, 250, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_main_menu_items["Quit"] = m_text_manager->place_string("Quit", 50, 300, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_options_menu_items["Back"] = m_text_manager->place_string("Back", 50, 200, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_options_menu_items["Enter Name"] = m_text_manager->place_string("Enter Name", 50, 250, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_options_menu_items["Toggle Sound"] = m_text_manager->place_string("Toggle Sound", 50, 300, TextManager::LEFT, TextManager::LAYER_HUD);
+	
+	m_text_manager->set_active_color(1.0, 0.4, 0.4);
+	m_gate_warning = m_text_manager->place_string("Your gate is going down!", m_screen_width/2, m_screen_height - 200, TextManager::CENTER, TextManager::LAYER_HUD);
+	m_gate_warning->set_invisible(true);
+	m_gate_warning_time = 0;
+	
 	m_text_manager->set_active_font(m_font);
-	m_text_manager->set_shadow_color(0.0, 0.0, 0.0);
-	m_text_manager->set_shadow_alpha(0.7);
-	m_text_manager->set_shadow_offset(1.0, 1.0);
-	m_text_manager->set_shadow(true);
 }
 
 void GameController::run(int lockfps) {
@@ -258,6 +265,21 @@ void GameController::run(int lockfps) {
 					delete m_shots[i].first;
 					m_shots.erase(m_shots.begin() + i);
 				}
+			}
+			
+			if (m_gate_warning_time != 0 && m_gate_warning_time < currframe - GATE_WARNING_FLASH_LENGTH) {
+				m_gate_warning_time = 0;
+				m_gate_warning->set_invisible(true);
+			} else if (m_gate_warning_time != 0 && m_gate_warning_time < currframe - (5*GATE_WARNING_FLASH_LENGTH)/6) {
+				m_gate_warning->set_invisible(false);
+			} else if (m_gate_warning_time != 0 && m_gate_warning_time < currframe - (4*GATE_WARNING_FLASH_LENGTH)/6) {
+				m_gate_warning->set_invisible(true);
+			} else if (m_gate_warning_time != 0 && m_gate_warning_time < currframe - (3*GATE_WARNING_FLASH_LENGTH)/6) {
+				m_gate_warning->set_invisible(false);
+			} else if (m_gate_warning_time != 0 && m_gate_warning_time < currframe - (2*GATE_WARNING_FLASH_LENGTH)/6) {
+				m_gate_warning->set_invisible(true);
+			} else if (m_gate_warning_time != 0 && m_gate_warning_time < currframe - (1*GATE_WARNING_FLASH_LENGTH)/6) {
+				m_gate_warning->set_invisible(false);
 			}
 			
 			move_objects((SDL_GetTicks() - lastmoveframe) / delay); // scale all position changes to keep game speed constant. 
@@ -1150,6 +1172,10 @@ void GameController::gate_update(PacketReader& reader) {
 	
 	if (change_in_status > 0) {
 		m_sound_controller->play_sound("gatelower");
+		if (team == m_players[m_player_id].get_team()) {
+			m_gate_warning->set_invisible(false);
+			m_gate_warning_time = SDL_GetTicks();
+		}
 	}
 	
 	m_map->set_gate_progress(team, progress);

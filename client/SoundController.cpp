@@ -68,6 +68,7 @@ SoundController::~SoundController() {
 	Mix_FreeChunk(m_victory_sound);
 	Mix_FreeChunk(m_defeat_sound);
 	Mix_FreeChunk(m_begin_sound);
+	Mix_FreeChunk(m_click_sound);
 }
 
 void SoundController::play_sound (string sound) {

@@ -46,6 +46,7 @@ private:
 	const static int FIRING_DELAY = 700;
 	const static int SHOT_DISPLAY_TIME = 180;
 	const static int MUZZLE_FLASH_LENGTH = 80;
+	const static int GATE_WARNING_FLASH_LENGTH = 3000;
 	
 	GameWindow* 	m_window;
 	ClientNetwork	m_network;
@@ -106,6 +107,9 @@ private:
 	Sprite*		m_logo;
 	std::map<std::string, Graphic*> m_main_menu_items;
 	std::map<std::string, Graphic*> m_options_menu_items;
+	Graphic*	m_gate_warning;
+	unsigned int	m_gate_warning_time;
+	
 
 	// TEMPORARY MAP CODE BY ANDREW
 	GraphicalMap*	m_map;
