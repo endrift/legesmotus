@@ -541,7 +541,11 @@ void GameController::process_mouse_click(SDL_Event event) {
 				if ((*it).first == "Back") {
 					m_game_state = SHOW_MENUS;
 				} else if ((*it).first == "Enter Name") {
-					// TODO: Allow entering name.
+					SDL_EnableUNICODE(1);
+					m_text_manager->set_active_color(1.0, 1.0, 1.0);
+					m_input_text = "> /name ";
+					m_text_manager->remove_string(m_input_bar);
+					m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
 				} else if ((*it).first == "Toggle Sound") {
 					if (m_sound_controller->is_sound_on()) {
 						m_sound_controller->set_sound_on(false);
