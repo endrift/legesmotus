@@ -308,49 +308,55 @@ void GameController::run(int lockfps) {
 			
 				m_crosshairs->set_x(m_mouse_x);
 				m_crosshairs->set_y(m_mouse_y);
+			}
+			
+			if (m_game_state == SHOW_MENUS) {
+				if (m_map != NULL) {
+					m_map->set_visible(false);
+				}
+				set_players_visible(false);
 				
-				if (m_game_state == SHOW_MENUS) {
+				m_logo->set_invisible(false);
+				map<string, Graphic*>::iterator it;
+				for ( it=m_main_menu_items.begin() ; it != m_main_menu_items.end(); it++ ) {
+					Graphic* thisitem = (*it).second;
+					thisitem->set_invisible(false);
+				}
+				for ( it=m_options_menu_items.begin() ; it != m_options_menu_items.end(); it++ ) {
+					Graphic* thisitem = (*it).second;
+					thisitem->set_invisible(true);
+				}
+			} else if (m_game_state == SHOW_OPTIONS_MENU) {
+				if (m_map != NULL) {
 					m_map->set_visible(false);
-					set_players_visible(false);
-					
-					m_logo->set_invisible(false);
-					map<string, Graphic*>::iterator it;
-					for ( it=m_main_menu_items.begin() ; it != m_main_menu_items.end(); it++ ) {
-						Graphic* thisitem = (*it).second;
-						thisitem->set_invisible(false);
-					}
-					for ( it=m_options_menu_items.begin() ; it != m_options_menu_items.end(); it++ ) {
-						Graphic* thisitem = (*it).second;
-						thisitem->set_invisible(true);
-					}
-				} else if (m_game_state == SHOW_OPTIONS_MENU) {
-					m_map->set_visible(false);
-					set_players_visible(false);
-					
-					m_logo->set_invisible(false);
-					map<string, Graphic*>::iterator it;
-					for ( it=m_main_menu_items.begin() ; it != m_main_menu_items.end(); it++ ) {
-						Graphic* thisitem = (*it).second;
-						thisitem->set_invisible(true);
-					}
-					for ( it=m_options_menu_items.begin() ; it != m_options_menu_items.end(); it++ ) {
-						Graphic* thisitem = (*it).second;
-						thisitem->set_invisible(false);
-					}
-				} else {
+				}
+				set_players_visible(false);
+				
+				m_logo->set_invisible(false);
+				map<string, Graphic*>::iterator it;
+				for ( it=m_main_menu_items.begin() ; it != m_main_menu_items.end(); it++ ) {
+					Graphic* thisitem = (*it).second;
+					thisitem->set_invisible(true);
+				}
+				for ( it=m_options_menu_items.begin() ; it != m_options_menu_items.end(); it++ ) {
+					Graphic* thisitem = (*it).second;
+					thisitem->set_invisible(false);
+				}
+			} else {
+				if (m_map != NULL) {
 					m_map->set_visible(true);
-					set_players_visible(true);
-					
-					m_logo->set_invisible(true);
-					map<string, Graphic*>::iterator it;
-					for ( it=m_main_menu_items.begin() ; it != m_main_menu_items.end(); it++ ) {
-						Graphic* thisitem = (*it).second;
-						thisitem->set_invisible(true);
-					}
-					for ( it=m_options_menu_items.begin() ; it != m_options_menu_items.end(); it++ ) {
-						Graphic* thisitem = (*it).second;
-						thisitem->set_invisible(true);
-					}
+				}
+				set_players_visible(true);
+				
+				m_logo->set_invisible(true);
+				map<string, Graphic*>::iterator it;
+				for ( it=m_main_menu_items.begin() ; it != m_main_menu_items.end(); it++ ) {
+					Graphic* thisitem = (*it).second;
+					thisitem->set_invisible(true);
+				}
+				for ( it=m_options_menu_items.begin() ; it != m_options_menu_items.end(); it++ ) {
+					Graphic* thisitem = (*it).second;
+					thisitem->set_invisible(true);
 				}
 			}
 			
