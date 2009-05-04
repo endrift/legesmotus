@@ -113,6 +113,7 @@ void	Server::command_server(uint32_t player_id, const char* command) {
 		send_system_message(*player, "/server auth <password> - Authenticate with given password");
 		if (player->is_op()) {
 			send_system_message(*player, "/server reset - Reset the team scores [op]");
+			send_system_message(*player, "/server map <mapname> - Load the given map [op]");
 			send_system_message(*player, "/server newgame - Start new game [op]");
 			send_system_message(*player, "/server kick <player-id> - Kick a player [op]");
 			send_system_message(*player, "/server shutdown - Shutdown the server [op]");
@@ -133,16 +134,25 @@ void	Server::command_server(uint32_t player_id, const char* command) {
 		m_team_score[0] = m_team_score[1] = 0;
 		send_system_message(*player, "Team scores reset.");
 
+	} else if (strncmp(command, "map ", 4) == 0 && player->is_op()) {
+		const char*	new_map_name = command + 4;
+		if (strchr(new_map_name, '/') == NULL && load_map(new_map_name)) {
+			game_over(0);
+			new_game();
+		} else {
+			send_system_message(*player, "Unable to load requested map.");
+		}
+
 	} else if (strcmp(command, "newgame") == 0 && player->is_op()) {
 		game_over(0);
 		new_game();
 
 	} else if (strncmp(command, "kick ", 5) == 0 && player->is_op()) {
-		if (ServerPlayer* victim = get_player(atol(command + 5))) {
+		if (ServerPlayer* victim = get_player_by_name(command + 5)) {
 			remove_player(*victim, "Kicked by operator");
 			send_system_message(*player, "Player kicked.");
 		} else {
-			send_system_message(*player, "Invalid player ID.");
+			send_system_message(*player, "No player by this name.");
 		}
 
 	} else if (strcmp(command, "shutdown") == 0 && player->is_op()) {
@@ -209,6 +219,18 @@ void	Server::join(const IPaddress& address, PacketReader& packet)
 		} else {
 			team = 'A' + rand() % 2;
 		}
+	}
+
+	// Check player's name for validity
+	if (name.empty()) {
+		reject_join(address, "Invalid player name.");
+		return;
+	}
+
+	// Check player's name for uniqueness
+	if (get_player_by_name(name.c_str()) != NULL) {
+		reject_join(address, "Player name already in use.");
+		return;
 	}
 
 	/* Put back when maps have player limits
@@ -339,12 +361,7 @@ void	Server::remove_player(const ServerPlayer& player, const char* leave_message
 
 void	Server::run(int portno, const char* map_name)
 {
-	// TODO: use path manager
-	string		map_filename("data/maps/");
-	map_filename += map_name;
-	map_filename += ".map";
-
-	if (!m_current_map.load_file(map_filename.c_str())) {
+	if (!load_map(map_name)) {
 		throw LMException("Failed to load map.");
 	}
 	if (!m_network.start(portno)) {
@@ -645,13 +662,39 @@ const ServerPlayer*	Server::get_player(uint32_t player_id) const {
 	PlayerMap::const_iterator it(m_players.find(player_id));
 	return it != m_players.end() ? &it->second : NULL;
 }
+ServerPlayer*		Server::get_player_by_name(const char* name) {
+	for (PlayerMap::iterator it(m_players.begin()); it != m_players.end(); ++it) {
+		if (it->second.compare_name(name)) {
+			return &it->second;
+		}
+	}
+	return NULL;
+}
+const ServerPlayer*	Server::get_player_by_name(const char* name) const {
+	for (PlayerMap::const_iterator it(m_players.begin()); it != m_players.end(); ++it) {
+		if (it->second.compare_name(name)) {
+			return &it->second;
+		}
+	}
+	return NULL;
+}
 
 void	Server::set_password(const char* pw) {
 	m_password = pw;
 }
 
 void	Server::reject_join(const IPaddress& addr, const char* why) {
-	PacketWriter	packet(JOIN_DENIED_PACKET);
-	packet << why;
+	PacketWriter	packet(REQUEST_DENIED_PACKET);
+	packet << int(JOIN_PACKET) << why;
 	m_network.send_packet(addr, packet);
 }
+
+bool	Server::load_map(const char* map_name) {
+	// TODO: use path manager
+	string		map_filename("data/maps/");
+	map_filename += map_name;
+	map_filename += ".map";
+
+	return m_current_map.load_file(map_filename.c_str());
+}
+

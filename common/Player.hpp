@@ -10,6 +10,7 @@
 
 #include <cmath>
 #include <string>
+#include <string.h>
 #include <stdint.h>
 
 class Player {
@@ -52,6 +53,8 @@ public:
 	bool is_visible() const { return !m_is_invisible; }
 	bool is_frozen() const { return m_is_frozen; }
 	bool is_unfrozen() const { return !m_is_frozen; }
+
+	bool compare_name(const char* other_name) const { return strcasecmp(m_name.c_str(), other_name) == 0; }
 	
 	void set_name(const char* name);
 	virtual void set_id(uint32_t id);

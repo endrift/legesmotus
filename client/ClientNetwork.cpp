@@ -153,8 +153,8 @@ void	ClientNetwork::process_packet(GameController& controller, const RawPacket& 
 		controller.animation_packet(reader);
 		break;
 
-	case JOIN_DENIED_PACKET:
-		controller.join_denied(reader);
+	case REQUEST_DENIED_PACKET:
+		controller.request_denied(reader);
 		break;
 	}
 }

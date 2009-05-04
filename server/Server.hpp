@@ -147,6 +147,8 @@ private:
 	//
 	// Game State Helpers
 	//
+	
+	bool			load_map(const char* mapname);
 
 	// Initialize a new game.  A new game should be initialized when:
 	//   1. After the first player joins, OR
@@ -175,6 +177,8 @@ private:
 	// Returns the player with given player_id, NULL if not found
 	ServerPlayer*		get_player(uint32_t player_id);
 	const ServerPlayer*	get_player(uint32_t player_id) const;
+	ServerPlayer*		get_player_by_name(const char* name);
+	const ServerPlayer*	get_player_by_name(const char* name) const;
 
 	// Remove the given player from the game
 	void			remove_player(const ServerPlayer& player, const char* leave_message);

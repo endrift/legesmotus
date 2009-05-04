@@ -1219,8 +1219,14 @@ void GameController::game_start(PacketReader& reader) {
 	reader >> mapname >> game_started >> timeleft;
 
 	// Load the map
-	mapname += ".map";
-	m_map->load_file(m_path_manager->data_path(mapname.c_str(), "maps"));
+	string		mapfilename(mapname + ".map");
+
+	if (mapname.find_first_of('/') != string::npos || !m_map->load_file(m_path_manager->data_path(mapfilename.c_str(), "maps"))) {
+		string	message("You do not have the current map installed: ");
+		message += mapname;
+		display_message(message.c_str(), 1.0, 1.0, 1.0);
+	}
+
 	m_map_width = m_map->get_width();
 	m_map_height = m_map->get_height();
 	m_map_polygon.make_rectangle(m_map_width, m_map_height);
@@ -1335,15 +1341,18 @@ void GameController::animation_packet(PacketReader& reader) {
 	}
 }
 
-void GameController::join_denied(PacketReader& reader) {
+void GameController::request_denied(PacketReader& reader) {
+	int		packet_type;
 	string		reason;
-	reader >> reason;
+	reader >> packet_type >> reason;
 
-	string message = "Join denied! Reason: ";
-	message.append(reason);
-	display_message(message, 1.0, 1.0, 1.0);
-	cerr << "Join denied!  Reason: " << reason << endl;
-	m_quit_game = true;
+	if (packet_type == JOIN_PACKET) {
+		string message = "Join denied! Reason: ";
+		message.append(reason);
+		display_message(message, 1.0, 1.0, 1.0);
+		cerr << "Join denied!  Reason: " << reason << endl;
+		m_quit_game = true;
+	}
 }
 
 void GameController::send_animation_packet(string sprite, string field, int value) {
@@ -1377,7 +1386,7 @@ GraphicalPlayer* GameController::get_player_by_id(unsigned int player_id) {
 
 GraphicalPlayer* GameController::get_player_by_name(const char* name) {
 	for (map<int, GraphicalPlayer>::iterator it(m_players.begin()); it != m_players.end(); ++it) {
-		if (strcmp(it->second.get_name(), name) == 0) {
+		if (it->second.compare_name(name)) {
 			return &it->second;
 		}
 	}
