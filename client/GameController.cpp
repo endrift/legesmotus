@@ -786,7 +786,7 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 		map<int, GraphicalPlayer>::iterator it;
 		for ( it=m_players.begin() ; it != m_players.end(); it++ ) {
 			GraphicalPlayer currplayer = (*it).second;
-			if (currplayer.get_id() == player_id || currplayer.is_frozen()) {
+			if (currplayer.get_id() == player_id) {
 				continue;
 			}
 			double playerdist = dist_between_points(start_x, start_y, currplayer.get_x(), currplayer.get_y());
@@ -864,7 +864,7 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 		
 		m_network.send_packet(gun_fired);
 		
-		if (player_hit != -1) {
+		if (player_hit != -1 && !m_players[player_hit].is_frozen()) {
 			send_player_shot(player_id, player_hit);
 		}
 	}
