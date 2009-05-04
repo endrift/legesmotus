@@ -47,6 +47,7 @@ GameWindow::GameWindow(int width, int height, int depth, bool fullscreen) {
 #if SDL_MAJOR_VERSION == 1 && SDL_MINOR_VERSION == 2 && SDL_PATCHLEVEL >= 10
 	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1); // Deprecated in SDL 1.3
 #endif
+	SDL_WM_SetCaption("Leges Motus","Leges Motus");
 	SDL_ShowCursor(SDL_DISABLE);
 	int flags = SDL_HWSURFACE|SDL_OPENGL;
 	if (fullscreen) {
