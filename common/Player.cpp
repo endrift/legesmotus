@@ -109,6 +109,9 @@ void Player::set_velocity(double xvel, double yvel) {
 
 void Player::set_rotation_degrees(double rotation) {
 	m_rotation = rotation;
+	while (m_rotation < 0) {
+		m_rotation += 360;
+	}
 	while (m_rotation > 360) {
 		m_rotation -= 360;
 	}
@@ -116,6 +119,9 @@ void Player::set_rotation_degrees(double rotation) {
 
 void Player::set_rotation_radians(double rotation) {
 	m_rotation = rotation * RADIANS_TO_DEGREES;
+	while (m_rotation < 0) {
+		m_rotation += 360;
+	}
 	while (m_rotation > 360) {
 		m_rotation -= 360;
 	}
@@ -131,6 +137,9 @@ void Player::set_rotational_vel_radians(double rotation) {
 
 void Player::set_gun_rotation_degrees(double gun_rotation) {
 	m_gun_rotation = gun_rotation;
+	while (m_rotation < 0) {
+		m_rotation += 360;
+	}
 	while (m_gun_rotation > 360) {
 		m_gun_rotation -= 360;
 	}
@@ -138,6 +147,9 @@ void Player::set_gun_rotation_degrees(double gun_rotation) {
 
 void Player::set_gun_rotation_radians(double gun_rotation) {
 	m_gun_rotation = gun_rotation * RADIANS_TO_DEGREES;
+	while (m_rotation < 0) {
+		m_rotation += 360;
+	}
 	while (m_gun_rotation > 360) {
 		m_gun_rotation -= 360;
 	}

@@ -313,6 +313,9 @@ void GameController::run(int lockfps) {
 					while (angle < 0) {
 						angle += 360;
 					}
+					while (angle > 360) {
+						angle -= 360;
+					}
 					if (angle < 90 || angle > 270) {
 						blue_player.set_scale_x(-1);
 						red_player.set_scale_x(-1);
