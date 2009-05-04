@@ -47,6 +47,7 @@ private:
 	const static int SHOT_DISPLAY_TIME = 180;
 	const static int MUZZLE_FLASH_LENGTH = 80;
 	const static int GATE_WARNING_FLASH_LENGTH = 3000;
+	const static int FIRING_RECOIL = 1.5;
 	
 	GameWindow* 	m_window;
 	ClientNetwork	m_network;
@@ -133,7 +134,7 @@ public:
 	void		connect_to_server(const char* host, unsigned int port, std::string name, char team);
 	void		disconnect();
 	void		player_fired(unsigned int player_id, double start_x, double start_y, double direction);
-	void		send_player_shot(unsigned int shooter_id, unsigned int hit_player_id);
+	void		send_player_shot(unsigned int shooter_id, unsigned int hit_player_id, double angle);
 	void		send_message(std::string message);
 	void		display_message(std::string message, double red=1, double green=1, double blue=1);
 	void		send_gate_hold(bool holding);

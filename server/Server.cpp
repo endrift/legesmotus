@@ -159,12 +159,13 @@ void	Server::player_shot(int channel, PacketReader& inbound_packet)
 {
 	uint32_t		shooter_id;
 	uint32_t		shot_player_id;
+	double			angle;
 
-	inbound_packet >> shooter_id >> shot_player_id;
+	inbound_packet >> shooter_id >> shot_player_id >> angle;
 
 	// Inform all players that this player has been shot
 	PacketWriter		outbound_packet(PLAYER_SHOT_PACKET);
-	outbound_packet << shooter_id << shot_player_id << int(FREEZE_TIME);
+	outbound_packet << shooter_id << shot_player_id << int(FREEZE_TIME) << angle;
 	m_network.broadcast_packet(outbound_packet);
 	// TODO: REQUIRE ACK
 

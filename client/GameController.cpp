@@ -576,7 +576,7 @@ void GameController::process_mouse_click(SDL_Event event) {
 			double y_dist = (event.button.y + m_offset_y) - m_players[m_player_id].get_y();
 			double direction = atan2(y_dist, x_dist) * RADIANS_TO_DEGREES;
 			if (m_players[m_player_id].get_x_vel() != 0 || m_players[m_player_id].get_y_vel() != 0) {
-				m_players[m_player_id].set_velocity(m_players[m_player_id].get_x_vel() - 1.5 * cos((direction) * DEGREES_TO_RADIANS), m_players[m_player_id].get_y_vel() - 1.5 * sin((direction) * DEGREES_TO_RADIANS));
+				m_players[m_player_id].set_velocity(m_players[m_player_id].get_x_vel() - FIRING_RECOIL * cos((direction) * DEGREES_TO_RADIANS), m_players[m_player_id].get_y_vel() - FIRING_RECOIL * sin((direction) * DEGREES_TO_RADIANS));
 			}
 			m_last_fired = SDL_GetTicks();
 			player_fired(m_player_id, m_players[m_player_id].get_x(), m_players[m_player_id].get_y(), direction);
@@ -865,7 +865,7 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 		m_network.send_packet(gun_fired);
 		
 		if (player_hit != -1 && !m_players[player_hit].is_frozen()) {
-			send_player_shot(player_id, player_hit);
+			send_player_shot(player_id, player_hit, direction-180);
 		}
 	}
 }
@@ -891,10 +891,11 @@ void GameController::set_players_visible(bool visible) {
 	}
 }
 
-void GameController::send_player_shot(unsigned int shooter_id, unsigned int hit_player_id) {
+void GameController::send_player_shot(unsigned int shooter_id, unsigned int hit_player_id, double angle) {
 	PacketWriter player_shot(PLAYER_SHOT_PACKET);
 	player_shot << shooter_id;
 	player_shot << hit_player_id;
+	player_shot << angle;
 	
 	m_network.send_packet(player_shot);
 }
@@ -949,10 +950,6 @@ void GameController::welcome(PacketReader& reader) {
 	
 	m_players[m_player_id].set_radius(30);
 	m_players[m_player_id].set_name_sprite(m_text_manager->place_string(m_players[m_player_id].get_name(), m_screen_width/2, (m_screen_height/2)-(m_players[m_player_id].get_radius()+30), TextManager::CENTER, TextManager::LAYER_MAIN));
-	
-	// REMOVE THESE WHEN THE SERVER SENDS GAME START, ETC.
-	//m_players[m_player_id].set_is_invisible(false);
-	//m_players[m_player_id].set_is_frozen(false);
 	
 	send_my_player_update();
 }
@@ -1135,14 +1132,18 @@ void GameController::player_shot(PacketReader& reader) {
 	unsigned int shooter_id;
 	unsigned int shot_id;
 	unsigned long time_to_unfreeze;
+	double shot_angle;
 	
-	reader >> shooter_id >> shot_id >> time_to_unfreeze;
+	reader >> shooter_id >> shot_id >> time_to_unfreeze >> shot_angle;
 	
 	if (shot_id == m_player_id) {
 		m_sound_controller->play_sound("freeze");
 		//cerr << "I was hit! Time to unfreeze: " << time_to_unfreeze << endl;
 		m_players[m_player_id].set_is_frozen(true);
 		m_time_to_unfreeze = SDL_GetTicks() + time_to_unfreeze;
+		if (shot_angle != 0) {
+			m_players[m_player_id].set_velocity(m_players[m_player_id].get_x_vel() - FIRING_RECOIL * cos((shot_angle) * DEGREES_TO_RADIANS), m_players[m_player_id].get_y_vel() - FIRING_RECOIL * sin((shot_angle) * DEGREES_TO_RADIANS));
+		}
 	}
 }
 
