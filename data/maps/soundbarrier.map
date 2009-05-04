@@ -25,8 +25,23 @@ soundbarrier
 2~1~16391,200~B
 
 # SAMPLE Spawnpoints (make your own, each team should have 8)
-3~1~0,50~A
-3~1~131072,50~B
+3~1~0,512~A
+3~1~0,513~A
+3~1~0,514~A
+3~1~0,515~A
+3~1~0,516~A
+3~1~0,517~A
+3~1~0,518~A
+3~1~0,519~A
+
+3~1~131072,512~B
+3~1~131072,513~B
+3~1~131072,514~B
+3~1~131072,515~B
+3~1~131072,516~B
+3~1~131072,517~B
+3~1~131072,518~B
+3~1~131072,519~B
 
 # SAMPLE obstacles (make your own)
 # Look in data/sprites to see what sprites are available

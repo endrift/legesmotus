@@ -26,7 +26,21 @@ beta2
 
 # SAMPLE Spawnpoints (make your own, each team should have 8)
 3~1~0,1024~A
+3~1~0,1025~A
+3~1~0,1026~A
+3~1~0,1027~A
+3~1~0,1028~A
+3~1~0,1029~A
+3~1~0,1030~A
+3~1~0,1031~A
 3~1~2048,1024~B
+3~1~2048,1025~B
+3~1~2048,1026~B
+3~1~2048,1027~B
+3~1~2048,1028~B
+3~1~2048,1029~B
+3~1~2048,1030~B
+3~1~2048,1031~B
 
 # SAMPLE obstacles (make your own)
 # Look in data/sprites to see what sprites are available
@@ -203,19 +217,20 @@ beta2
 1~1~192,1792~metal_obstacle64
 1~1~128,1792~metal_obstacle64
 
-#1~1~832,1600~metal_obstacle64 
-#1~1~768,1600~metal_obstacle64 
-#1~1~704,1600~metal_obstacle64 
-#1~1~640,1600~metal_obstacle64 
-#1~1~576,1600~metal_obstacle64 
-#1~1~512,1600~metal_obstacle64
+#These boxes, or some of these boxes, are invisible somehow. WTF?
+1~1~832,1600~metal_obstacle64
+1~1~768,1600~metal_obstacle64
+1~1~704,1600~metal_obstacle64
+1~1~640,1600~metal_obstacle64
+1~1~576,1600~metal_obstacle64
+1~1~512,1600~metal_obstacle64
 
-#1~1~320,1600~metal_obstacle64 
-#1~1~256,1600~metal_obstacle64 
-#1~1~192,1600~metal_obstacle64 
-#1~1~128,1600~metal_obstacle64 
-#1~1~64,1600~metal_obstacle64 
-#1~1~0,1600~metal_obstacle64 
+1~1~320,1600~metal_obstacle64
+1~1~256,1600~metal_obstacle64
+1~1~192,1600~metal_obstacle64
+1~1~128,1600~metal_obstacle64
+1~1~64,1600~metal_obstacle64
+1~1~0,1600~metal_obstacle64
 
 #######
 #quad 1
@@ -242,17 +257,17 @@ beta2
 
 
 #These boxes, or some of these boxes, are invisible somehow. WTF?
-#1~1~1216,384~metal_obstacle64 
-#1~1~1280,384~metal_obstacle64 
-#1~1~1344,384~metal_obstacle64 
-#1~1~1408,384~metal_obstacle64 
-#1~1~1472,384~metal_obstacle64 
+1~1~1216,384~metal_obstacle64
+1~1~1280,384~metal_obstacle64
+1~1~1344,384~metal_obstacle64
+1~1~1408,384~metal_obstacle64
+1~1~1472,384~metal_obstacle64
 
-#1~1~1664,384~metal_obstacle64 
-#1~1~1728,384~metal_obstacle64 
-#1~1~1792,384~metal_obstacle64 
-#1~1~1856,384~metal_obstacle64 
-#1~1~1920,384~metal_obstacle64 
-#1~1~1984,384~metal_obstacle64 
+1~1~1664,384~metal_obstacle64
+1~1~1728,384~metal_obstacle64
+1~1~1792,384~metal_obstacle64
+1~1~1856,384~metal_obstacle64
+1~1~1920,384~metal_obstacle64
+1~1~1984,384~metal_obstacle64
 
 

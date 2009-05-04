@@ -1,0 +1,112 @@
+gamma3
+2048 1024
+# Background
+5~1~0,0~metal_bgtile~2048~1024~0,0
+5~1~-64,448~metal_bgtile~64~128~0,0
+5~1~2048,448~metal_bgtile~64~128~0,0
+
+# Walls
+5~1~0,1024~metal_wall_s32~2048~32~0,0
+5~1~0,-32~metal_wall_n32~2048~32~0,0
+5~1~2048,0~metal_wall_e32~32~448~0,0
+4~1~2048,448~metal_gate_e
+5~1~2048,576~metal_wall_e32~32~448~0,0
+5~1~-32,0~metal_wall_w32~32~448~0,0
+4~1~-64,448~metal_gate_w
+5~1~-32,576~metal_wall_w32~32~448~0,0
+
+# Wall Corners
+4~1~2048,-32~metal_wall_ne32
+4~1~-32,-32~metal_wall_nw32
+4~1~-32,1024~metal_wall_sw32
+4~1~2048,1024~metal_wall_se32
+# Gates
+2~1~-15,456~A
+2~1~2055,456~B
+
+# SAMPLE Spawnpoints (make your own, each team should have 8)
+3~1~0,512~A
+3~1~0,513~A
+3~1~0,514~A
+3~1~0,515~A
+3~1~0,516~A
+3~1~0,517~A
+3~1~0,518~A
+3~1~0,519~A
+
+3~1~2048,512~B
+3~1~2048,513~B
+3~1~2048,514~B
+3~1~2048,515~B
+3~1~2048,516~B
+3~1~2048,517~B
+3~1~2048,518~B
+3~1~2048,519~B
+
+# SAMPLE obstacles (make your own)
+
+#main bluegate wall
+1~1~192,128~metal_obstacle64
+1~1~192,192~metal_obstacle64
+1~1~192,256~metal_obstacle64
+1~1~192,320~metal_obstacle64
+1~1~192,384~metal_obstacle64
+1~1~192,448~metal_obstacle64
+1~1~192,512~metal_obstacle64
+1~1~192,576~metal_obstacle64
+1~1~192,640~metal_obstacle64
+1~1~192,704~metal_obstacle64
+1~1~192,768~metal_obstacle64
+1~1~192,832~metal_obstacle64
+1~1~192,896~metal_obstacle64
+#main redgate wall
+1~1~1792,128~metal_obstacle64
+1~1~1792,192~metal_obstacle64
+1~1~1792,256~metal_obstacle64
+1~1~1792,320~metal_obstacle64
+1~1~1792,384~metal_obstacle64
+1~1~1792,448~metal_obstacle64
+1~1~1792,512~metal_obstacle64
+1~1~1792,576~metal_obstacle64
+1~1~1792,640~metal_obstacle64
+1~1~1792,704~metal_obstacle64
+1~1~1792,768~metal_obstacle64
+1~1~1792,832~metal_obstacle64
+
+#obstacles in front of walls
+1~1~384,0~metal_obstacle64
+1~1~448,0~metal_obstacle128
+1~1~384,960~metal_obstacle64
+1~1~448,896~metal_obstacle128
+
+1~1~1600,0~metal_obstacle64
+1~1~1472,0~metal_obstacle128
+1~1~1600,960~metal_obstacle64
+1~1~1472,896~metal_obstacle128
+
+#random obstacles
+
+1~1~576,384~metal_obstacle128
+1~1~576,512~metal_obstacle128
+
+1~1~1344,384~metal_obstacle128
+1~1~1344,512~metal_obstacle128
+
+1~1~992,0~metal_obstacle64
+1~1~992,64~metal_obstacle64
+1~1~992,128~metal_obstacle64
+1~1~992,192~metal_obstacle64
+
+1~1~992,960~metal_obstacle64
+1~1~992,896~metal_obstacle64
+1~1~992,832~metal_obstacle64
+1~1~992,768~metal_obstacle64
+
+1~1~1152,256~metal_obstacle64
+1~1~832,256~metal_obstacle64
+
+1~1~1152,704~metal_obstacle64
+1~1~832,704~metal_obstacle64
+
+1~1~896,448~metal_obstacle128
+1~1~1024,448~metal_obstacle128
