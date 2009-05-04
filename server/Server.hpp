@@ -36,7 +36,7 @@ public:
 		FREEZE_TIME = 10000,			// Players stay frozen for 10 seconds
 		GATE_OPEN_TIME = 15000,			// Gate takes 15 seconds to go from fully closed to fully open
 		GATE_CLOSE_TIME = 5000,			// Gate takes 10 seconds to go from fully open to fully closed
-		PLAYER_TIMEOUT = 10000000,			// Kick players who have not updated for 10 seconds
+		PLAYER_TIMEOUT = 10000,			// Kick players who have not updated for 10 seconds
 
 		// Allow 2 seconds for all players to join at beginning of round before spawning them.
 		// TODO: increase to 15 seconds during production
