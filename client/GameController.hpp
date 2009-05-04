@@ -16,6 +16,7 @@
 #include "common/PathManager.hpp"
 #include "common/PacketReader.hpp"
 #include "GraphicalPlayer.hpp"
+#include "Minimap.hpp"
 #include "Font.hpp"
 
 #include <string>
@@ -49,6 +50,7 @@ private:
 	const static int GATE_WARNING_FLASH_LENGTH;
 	const static double FIRING_RECOIL;
 	const static double RANDOM_ROTATION_SCALE;
+	const static double MINIMAP_SCALE;
 	
 	GameWindow* 	m_window;
 	ClientNetwork	m_network;
@@ -112,6 +114,8 @@ private:
 	Graphic*	m_gate_warning;
 	unsigned int	m_gate_warning_time;
 	
+	// MINIMAP CODE BY JEFFREY
+	Minimap*		m_minimap;
 
 	// TEMPORARY MAP CODE BY ANDREW
 	GraphicalMap*	m_map;

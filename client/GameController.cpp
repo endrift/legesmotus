@@ -34,6 +34,7 @@ const int GameController::MUZZLE_FLASH_LENGTH = 80;
 const int GameController::GATE_WARNING_FLASH_LENGTH = 3000;
 const double GameController::FIRING_RECOIL = 1.5;
 const double GameController::RANDOM_ROTATION_SCALE = 1.0;
+const double GameController::MINIMAP_SCALE = 0.125;
 
 GameController::GameController() {
 	init(1024, 768, 24, false);
@@ -71,6 +72,9 @@ GameController::~GameController() {
 	delete m_font;
 	delete m_path_manager;
 	delete m_shot;
+
+	m_minimap->unregister_with_window(m_window);
+	delete m_minimap;
 
 	// The GameWindow instance should always be destroyed last, since other stuff may depend on it.
 	m_window->destroy_instance();
@@ -218,6 +222,11 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_gate_warning_time = 0;
 	
 	m_text_manager->set_active_font(m_font);
+	
+	m_minimap = new Minimap(MINIMAP_SCALE);
+	m_minimap->set_x(m_screen_width - 120);
+	m_minimap->set_y(120);
+	m_minimap->register_with_window(m_window);
 }
 
 void GameController::run(int lockfps) {
@@ -353,6 +362,8 @@ void GameController::run(int lockfps) {
 				}
 				set_players_visible(false);
 				
+				m_minimap->set_invisible(true);
+				
 				m_logo->set_invisible(false);
 				map<string, Graphic*>::iterator it;
 				for ( it=m_main_menu_items.begin() ; it != m_main_menu_items.end(); it++ ) {
@@ -369,6 +380,8 @@ void GameController::run(int lockfps) {
 				}
 				set_players_visible(false);
 				
+				m_minimap->set_invisible(true);
+				
 				m_logo->set_invisible(false);
 				map<string, Graphic*>::iterator it;
 				for ( it=m_main_menu_items.begin() ; it != m_main_menu_items.end(); it++ ) {
@@ -384,6 +397,8 @@ void GameController::run(int lockfps) {
 					m_map->set_visible(true);
 				}
 				set_players_visible(true);
+				
+				m_minimap->set_invisible(false);
 				
 				m_logo->set_invisible(true);
 				map<string, Graphic*>::iterator it;
@@ -694,6 +709,8 @@ void GameController::move_objects(float timescale) {
 	//m_text_manager->reposition_string(m_players[m_player_id].get_name_sprite(), new_x, new_y, TextManager::CENTER);
 	m_players[m_player_id].set_x(new_x);
 	m_players[m_player_id].set_y(new_y);
+	m_minimap->move_blip(m_player_id, new_x, new_y);
+	m_minimap->recenter(new_x, new_y);
 	m_players[m_player_id].set_rotation_degrees(m_players[m_player_id].get_rotation_degrees() + m_players[m_player_id].get_rotational_vel() * timescale);
 	
 	map<int, GraphicalPlayer>::iterator it;
@@ -975,6 +992,7 @@ void GameController::welcome(PacketReader& reader) {
 		m_text_manager->set_active_color(1.0, 0.2, 0.2);
 		m_window->register_graphic(&red_player);
 	}
+	m_minimap->add_blip(m_player_id, team, 0, 0);
 	
 	m_players[m_player_id].set_radius(30);
 	m_players[m_player_id].set_name_sprite(m_text_manager->place_string(m_players[m_player_id].get_name(), m_screen_width/2, (m_screen_height/2)-(m_players[m_player_id].get_radius()+30), TextManager::CENTER, TextManager::LAYER_MAIN));
@@ -1008,6 +1026,7 @@ void GameController::announce(PacketReader& reader) {
 		m_text_manager->set_active_color(1.0, 0.4, 0.4);
 		display_message(joinmsg, 1.0, 0.4, 0.4);
 	}
+	m_minimap->add_blip(playerid,team,0,0);
 	// TEMPORARY SPRITE CODE
 	m_window->register_graphic(m_players[playerid].get_sprite());
 	m_players[playerid].set_name_sprite(m_text_manager->place_string(m_players[playerid].get_name(), m_players[playerid].get_x(), m_players[playerid].get_y()-(m_players[playerid].get_radius()+30), TextManager::CENTER, TextManager::LAYER_MAIN));
@@ -1035,6 +1054,7 @@ void GameController::player_update(PacketReader& reader) {
 	}
 	
 	currplayer->set_position(x, y);
+	m_minimap->move_blip(player_id, x, y);
 	currplayer->set_velocity(velocity_x, velocity_y);
 	currplayer->set_rotation_degrees(rotation);
 	
@@ -1127,6 +1147,7 @@ void GameController::leave(PacketReader& reader) {
 	
 	m_text_manager->remove_string(m_players[playerid].get_name_sprite());
 	m_window->unregister_graphic(m_players[playerid].get_sprite());
+	m_minimap->remove_blip(playerid);
 	delete m_players[playerid].get_sprite();
 	m_players.erase(playerid);
 }
