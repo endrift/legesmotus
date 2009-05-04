@@ -27,6 +27,14 @@
 
 using namespace std;
 
+const int GameController::MESSAGE_DISPLAY_TIME = 10000;
+const int GameController::FIRING_DELAY = 700;
+const int GameController::SHOT_DISPLAY_TIME = 180;
+const int GameController::MUZZLE_FLASH_LENGTH = 80;
+const int GameController::GATE_WARNING_FLASH_LENGTH = 3000;
+const double GameController::FIRING_RECOIL = 1.5;
+const double GameController::RANDOM_ROTATION_SCALE = 1.0;
+
 GameController::GameController() {
 	init(1024, 768, 24, false);
 }

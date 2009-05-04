@@ -42,13 +42,13 @@ private:
 		SHOW_OPTIONS_MENU = 3
 	};
 
-	const static int MESSAGE_DISPLAY_TIME = 10000;
-	const static int FIRING_DELAY = 700;
-	const static int SHOT_DISPLAY_TIME = 180;
-	const static int MUZZLE_FLASH_LENGTH = 80;
-	const static int GATE_WARNING_FLASH_LENGTH = 3000;
-	const static int FIRING_RECOIL = 1.5;
-	const static double RANDOM_ROTATION_SCALE = 1.0;
+	const static int MESSAGE_DISPLAY_TIME;
+	const static int FIRING_DELAY;
+	const static int SHOT_DISPLAY_TIME;
+	const static int MUZZLE_FLASH_LENGTH;
+	const static int GATE_WARNING_FLASH_LENGTH;
+	const static double FIRING_RECOIL;
+	const static double RANDOM_ROTATION_SCALE;
 	
 	GameWindow* 	m_window;
 	ClientNetwork	m_network;
