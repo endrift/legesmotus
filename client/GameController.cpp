@@ -298,16 +298,42 @@ void GameController::run(int lockfps) {
 					frontarm->get_graphic("gun_fired")->set_invisible(true);
 					send_animation_packet("frontarm/gun_fired", "invisible", true);
 				}
-			
+							
+				m_crosshairs->set_x(m_mouse_x);
+				m_crosshairs->set_y(m_mouse_y);
+				
+				// Turn arm of player to face crosshairs.
+				if (!m_players[m_player_id].is_frozen()) {
+					double x_dist;
+					double y_dist;
+					double angle;
+					x_dist = (m_crosshairs->get_x() + m_offset_x) - m_players[m_player_id].get_x();
+					y_dist = (m_crosshairs->get_y() + m_offset_y) - m_players[m_player_id].get_y();
+					angle = atan2(y_dist, x_dist) * RADIANS_TO_DEGREES - m_players[m_player_id].get_rotation_degrees();
+					while (angle < 0) {
+						angle += 360;
+					}
+					if (angle < 90 || angle > 270) {
+						blue_player.set_scale_x(-1);
+						red_player.set_scale_x(-1);
+						send_animation_packet("all", "scale_x", -1);
+						angle *= -1;
+						angle += 55;
+					} else {
+						blue_player.set_scale_x(1);
+						red_player.set_scale_x(1);
+						send_animation_packet("all", "scale_x", 1);
+						angle -= 120;
+					}
+					m_players[m_player_id].get_sprite()->get_graphic("frontarm")->set_rotation(angle);
+					send_animation_packet("frontarm", "rotation", angle);
+				}
 				send_my_player_update();
 				
 				m_offset_x = m_players[m_player_id].get_x() - (m_screen_width/2.0);
 				m_offset_y = m_players[m_player_id].get_y() - (m_screen_height/2.0);
 				m_window->set_offset_x(m_offset_x);
 				m_window->set_offset_y(m_offset_y);
-			
-				m_crosshairs->set_x(m_mouse_x);
-				m_crosshairs->set_y(m_mouse_y);
 			}
 			
 			if (m_game_state == SHOW_MENUS) {
@@ -375,9 +401,6 @@ void GameController::set_screen_dimensions(int width, int height) {
 
 void GameController::process_input() {
 	SDL_Event event;
-	double x_dist;
-	double y_dist;
-	double angle;
 	while(SDL_PollEvent(&event) != 0) {
 		switch(event.type) {
 			case SDL_KEYDOWN:
@@ -456,26 +479,7 @@ void GameController::process_input() {
 				m_mouse_y = event.motion.y;
 				m_crosshairs->set_x(m_mouse_x);
 				m_crosshairs->set_y(m_mouse_y);
-				if (m_players.empty() || m_players[m_player_id].is_frozen()) {
-					break;
-				}
-				x_dist = (m_crosshairs->get_x() + m_offset_x) - m_players[m_player_id].get_x();
-				y_dist = (m_crosshairs->get_y() + m_offset_y) - m_players[m_player_id].get_y();
-				angle = atan2(y_dist, x_dist) * RADIANS_TO_DEGREES;
-				if (angle < 90 && angle > -90) {
-					blue_player.set_scale_x(-1);
-					red_player.set_scale_x(-1);
-					send_animation_packet("all", "scale_x", -1);
-					angle *= -1;
-					angle += 55;
-				} else {
-					blue_player.set_scale_x(1);
-					red_player.set_scale_x(1);
-					send_animation_packet("all", "scale_x", 1);
-					angle -= 120;
-				}
-				m_players[m_player_id].get_sprite()->get_graphic("frontarm")->set_rotation(angle);
-				send_animation_packet("frontarm", "rotation", angle);
+				
 				//red_arm_gun.set_rotation(angle);
 				break;
 				
@@ -601,17 +605,21 @@ void GameController::move_objects(float timescale) {
 	if (new_x - half_width < 0) {
 		new_x = half_width;
 		m_players[m_player_id].set_velocity(0, 0);
+		m_players[m_player_id].set_rotational_vel(0);
 	} else if (new_x + half_width > m_map_width) {
 		new_x = m_map_width - half_width;
 		m_players[m_player_id].set_velocity(0, 0);
+		m_players[m_player_id].set_rotational_vel(0);
 	}
 	
 	if (new_y - half_height < 0) {
 		new_y = half_height;
 		m_players[m_player_id].set_velocity(0, 0);
+		m_players[m_player_id].set_rotational_vel(0);
 	} else if (new_y + half_height > m_map_height) {
 		new_y = m_map_height - half_height;
 		m_players[m_player_id].set_velocity(0, 0);
+		m_players[m_player_id].set_rotational_vel(0);
 	}
 	
 	bool holdinggate = false;
@@ -648,6 +656,7 @@ void GameController::move_objects(float timescale) {
 					//cerr << "Hitting object" << endl;
 					if (thisobj->get_type() == Map::OBSTACLE) {
 						m_players[m_player_id].set_velocity(0, 0);
+						m_players[m_player_id].set_rotational_vel(0);
 						new_x = m_players[m_player_id].get_x();
 						new_y = m_players[m_player_id].get_y();
 					}
@@ -674,6 +683,7 @@ void GameController::move_objects(float timescale) {
 	//m_text_manager->reposition_string(m_players[m_player_id].get_name_sprite(), new_x, new_y, TextManager::CENTER);
 	m_players[m_player_id].set_x(new_x);
 	m_players[m_player_id].set_y(new_y);
+	m_players[m_player_id].set_rotation_degrees(m_players[m_player_id].get_rotation_degrees() + m_players[m_player_id].get_rotational_vel() * timescale);
 	
 	map<int, GraphicalPlayer>::iterator it;
 	for ( it=m_players.begin() ; it != m_players.end(); it++ ) {
@@ -698,6 +708,8 @@ void GameController::attempt_jump() {
 	
 	GraphicalPlayer* player = &m_players[m_player_id];
 	
+	double new_rotation = (((double)rand() / ((double)(RAND_MAX)+1)) - 0.5) * RANDOM_ROTATION_SCALE;
+	
 	double half_width = m_players[m_player_id].get_radius();
 	double half_height = m_players[m_player_id].get_radius();
 	
@@ -709,17 +721,21 @@ void GameController::attempt_jump() {
 	if (player->get_x() - (half_width) <= 5) {
 		player->set_x_vel(x_vel);
 		player->set_y_vel(y_vel);
+		m_players[m_player_id].set_rotational_vel(new_rotation);
 	} else if (player->get_x() + (half_width) >= m_map_width - 5) {
 		player->set_x_vel(x_vel);
 		player->set_y_vel(y_vel);
+		m_players[m_player_id].set_rotational_vel(new_rotation);
 	}
 	
 	if (player->get_y() - (half_height) <= 5) {
 		player->set_x_vel(x_vel);
 		player->set_y_vel(y_vel);
+		m_players[m_player_id].set_rotational_vel(1);
 	} else if (player->get_y() + (half_height) >= m_map_height - 5) {
 		player->set_x_vel(x_vel);
 		player->set_y_vel(y_vel);
+		m_players[m_player_id].set_rotational_vel(new_rotation);
 	}
 
 	list<MapObject>::const_iterator thisobj;
@@ -737,7 +753,8 @@ void GameController::attempt_jump() {
 		double newdist = poly.intersects_circle(currpos, player->get_radius()+5);
 		if (newdist != -1) {
 			player->set_x_vel(x_vel);
-			player->set_y_vel(y_vel);
+			player->set_y_vel(y_vel);	
+			m_players[m_player_id].set_rotational_vel(new_rotation);
 		}
 	}
 }
@@ -996,8 +1013,9 @@ void GameController::player_update(PacketReader& reader) {
 	long y;
 	long velocity_x;
 	long velocity_y;
+	double rotation;
 	string flags;
-	reader >> player_id >> x >> y >> velocity_x >> velocity_y >> flags;
+	reader >> player_id >> x >> y >> velocity_x >> velocity_y >> rotation >> flags;
 	
 	GraphicalPlayer* currplayer = get_player_by_id(player_id);
 	if (currplayer == NULL) {
@@ -1007,7 +1025,7 @@ void GameController::player_update(PacketReader& reader) {
 	
 	currplayer->set_position(x, y);
 	currplayer->set_velocity(velocity_x, velocity_y);
-	
+	currplayer->set_rotation_degrees(rotation);
 	
 	if (flags.find_first_of('I') == string::npos) {
 		currplayer->set_is_invisible(false);
@@ -1043,7 +1061,7 @@ void GameController::send_my_player_update() {
 	}
 	
 	player_update << m_player_id << my_player->get_x() << my_player->get_y() << my_player->get_x_vel() 
-		<< my_player->get_y_vel() << flags;
+		<< my_player->get_y_vel() << my_player->get_rotation_degrees() << flags;
 		
 	m_network.send_packet(player_update);
 }

@@ -19,6 +19,7 @@ Player::Player() {
 	m_x_vel = 0;
 	m_y_vel = 0;
 	m_rotation = 0;
+	m_rotational_vel = 0;
 	m_gun_rotation = 0;
 	m_is_invisible = true;
 	m_is_frozen = true;
@@ -33,6 +34,7 @@ Player::Player(const char* name, uint32_t id, char team, double x, double y, dou
 	m_x_vel = xvel;
 	m_y_vel = yvel;
 	m_rotation = rotation;
+	m_rotational_vel = 0;
 	m_gun_rotation = 0;
 	m_is_invisible = true;
 	m_is_frozen = true;
@@ -43,6 +45,10 @@ Player::~Player() {
 
 double Player::get_rotation_radians() const {
 	return m_rotation * DEGREES_TO_RADIANS;
+}
+
+double Player::get_rotational_vel_radians() const {
+	return m_rotational_vel * DEGREES_TO_RADIANS;
 }
 
 double Player::get_gun_rotation_radians() const {
@@ -85,6 +91,7 @@ void Player::set_position(double x, double y) {
 void Player::update_position(unsigned long timediff) {
 	set_x(m_x + m_x_vel * timediff);
 	set_y(m_y + m_y_vel * timediff);
+	set_rotation_degrees(m_rotation + m_rotational_vel * timediff);
 }
 
 void Player::set_x_vel(double xvel) {
@@ -102,18 +109,38 @@ void Player::set_velocity(double xvel, double yvel) {
 
 void Player::set_rotation_degrees(double rotation) {
 	m_rotation = rotation;
+	while (m_rotation > 360) {
+		m_rotation -= 360;
+	}
 }
 
 void Player::set_rotation_radians(double rotation) {
 	m_rotation = rotation * RADIANS_TO_DEGREES;
+	while (m_rotation > 360) {
+		m_rotation -= 360;
+	}
+}
+
+void Player::set_rotational_vel(double rotation) {
+	m_rotational_vel = rotation;
+}
+
+void Player::set_rotational_vel_radians(double rotation) {
+	m_rotational_vel = rotation * RADIANS_TO_DEGREES;
 }
 
 void Player::set_gun_rotation_degrees(double gun_rotation) {
 	m_gun_rotation = gun_rotation;
+	while (m_gun_rotation > 360) {
+		m_gun_rotation -= 360;
+	}
 }
 
 void Player::set_gun_rotation_radians(double gun_rotation) {
 	m_gun_rotation = gun_rotation * RADIANS_TO_DEGREES;
+	while (m_gun_rotation > 360) {
+		m_gun_rotation -= 360;
+	}
 }
 
 void Player::set_is_invisible(bool is_invisible) {

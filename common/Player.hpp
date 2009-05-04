@@ -24,6 +24,7 @@ protected:
 	double		m_y_vel;
 	double		m_rotation;	// Always in degrees
 	double		m_gun_rotation;	// Always in degrees
+	double		m_rotational_vel; // Always in degrees
 	bool		m_is_invisible;
 	bool		m_is_frozen;
 
@@ -41,6 +42,8 @@ public:
 	double get_y() const { return m_y; }
 	double get_x_vel() const { return m_x_vel; }
 	double get_y_vel() const { return m_y_vel; }
+	double get_rotational_vel() const { return m_rotational_vel; }
+	double get_rotational_vel_radians() const;
 	double get_rotation_degrees() const { return m_rotation; }
 	double get_rotation_radians() const;
 	double get_gun_rotation_degrees() const { return m_gun_rotation; }
@@ -64,6 +67,8 @@ public:
 	virtual void set_velocity(double xvel, double yvel);
 	virtual void set_rotation_degrees(double rotation);
 	virtual void set_rotation_radians(double rotation);
+	virtual void set_rotational_vel(double rotation);
+	virtual void set_rotational_vel_radians(double rotation);
 	virtual void set_gun_rotation_degrees(double gun_rotation);
 	virtual void set_gun_rotation_radians(double gun_rotation);
 	virtual void set_is_invisible(bool is_invisible);

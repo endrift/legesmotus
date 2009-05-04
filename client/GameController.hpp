@@ -48,6 +48,7 @@ private:
 	const static int MUZZLE_FLASH_LENGTH = 80;
 	const static int GATE_WARNING_FLASH_LENGTH = 3000;
 	const static int FIRING_RECOIL = 1.5;
+	const static double RANDOM_ROTATION_SCALE = 1.0;
 	
 	GameWindow* 	m_window;
 	ClientNetwork	m_network;
