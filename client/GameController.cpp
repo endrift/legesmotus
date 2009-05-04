@@ -1258,7 +1258,9 @@ void GameController::game_stop(PacketReader& reader) {
 	
 	m_game_state = GAME_OVER;
 	
-	if (winningteam == m_players[m_player_id].get_team()) {
+	if (winningteam == 0) {
+		display_message("DRAW", 1.0, 1.0, 1.0);
+	} else if (winningteam == m_players[m_player_id].get_team()) {
 		display_message("VICTORY!", 1.0, 1.0, 1.0);
 		m_sound_controller->play_sound("victory");
 	} else {
@@ -1268,7 +1270,7 @@ void GameController::game_stop(PacketReader& reader) {
 
 	// Temporary score display
 	ostringstream	score_msg;
-	score_msg << "Team A: " << teamascore << " / Team B: " << teambscore;
+	score_msg << "Blue: " << teamascore << " / Red: " << teambscore;
 	display_message(score_msg.str().c_str(), 1.0, 1.0, 1.0);
 	// End temporary score display
 
