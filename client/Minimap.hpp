@@ -31,7 +31,7 @@ public:
 
 	void add_blip(uint32_t id, char team, double x, double y);
 	void move_blip(uint32_t id, double x, double y);
-	// TODO set_blip_invisible
+	void set_blip_invisible(uint32_t id, bool invisible);
 	void remove_blip(uint32_t id);
 
 	void recenter(double x, double y);

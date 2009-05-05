@@ -34,7 +34,7 @@ const int GameController::MUZZLE_FLASH_LENGTH = 80;
 const int GameController::GATE_WARNING_FLASH_LENGTH = 3000;
 const double GameController::FIRING_RECOIL = 1.5;
 const double GameController::RANDOM_ROTATION_SCALE = 1.0;
-const double GameController::MINIMAP_SCALE = 0.125;
+const double GameController::MINIMAP_SCALE = 0.1;
 
 GameController::GameController() {
 	init(1024, 768, 24, false);
@@ -929,9 +929,11 @@ void GameController::set_players_visible(bool visible) {
 		if (visible) {
 			currplayer.get_sprite()->set_invisible(currplayer.is_invisible());
 			currplayer.get_name_sprite()->set_invisible(currplayer.is_invisible());
+			m_minimap->set_blip_invisible(it->first,currplayer.is_invisible());
 		} else {
 			currplayer.get_sprite()->set_invisible(true);
 			currplayer.get_name_sprite()->set_invisible(true);
+			m_minimap->set_blip_invisible(it->first,true);
 		}
 	}
 }
@@ -1062,9 +1064,11 @@ void GameController::player_update(PacketReader& reader) {
 		currplayer->set_is_invisible(false);
 		m_text_manager->reposition_string(m_players[player_id].get_name_sprite(), x, y - (m_players[player_id].get_radius()+30), TextManager::CENTER);
 		m_players[player_id].get_name_sprite()->set_invisible(false);
+		m_minimap->set_blip_invisible(player_id,false);
 	} else {
 		currplayer->set_is_invisible(true);
 		m_players[player_id].get_name_sprite()->set_invisible(true);
+		m_minimap->set_blip_invisible(player_id,true);
 	}
 	
 	if (flags.find_first_of('F') == string::npos) {
@@ -1308,6 +1312,7 @@ void GameController::game_stop(PacketReader& reader) {
 
 	m_map->reset_gates();
 	m_players[m_player_id].set_is_invisible(true);
+	m_minimap->set_blip_invisible(m_player_id,true);
 	m_players[m_player_id].set_is_frozen(true);
 }
 

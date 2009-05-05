@@ -78,6 +78,16 @@ void Minimap::move_blip(uint32_t id, double x, double y) {
 	}
 }
 
+void Minimap::set_blip_invisible(uint32_t id, bool invisible) {
+	Graphic *blip;
+	stringstream s;
+	s << id;
+	blip = m_minigroup->get_graphic(s.str());
+	if (blip != NULL) {
+		blip->set_invisible(invisible);
+	}
+}
+
 void Minimap::remove_blip(uint32_t id) {
 	Graphic *blip;
 	stringstream s;
