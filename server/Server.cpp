@@ -300,6 +300,19 @@ void	Server::join(const IPaddress& address, PacketReader& packet)
 		return;
 	}
 
+	/* Put back when maps have player limits
+	// Check to make sure there is space on the current map
+	if (!m_current_map.has_capacity(team)) {
+		reject_join(address, "No space on map.");
+		return;
+	}
+	*/
+	// Check to make sure there is space on the current map
+	if (m_team_count[team - 'A'] >= m_current_map.total_capacity(team)) {
+		reject_join(address, "No space on map.");
+		return;
+	}
+
 	// Check player's name for uniqueness
 	string			name(requested_name);
 	int			next_suffix = 1;
@@ -308,14 +321,6 @@ void	Server::join(const IPaddress& address, PacketReader& packet)
 		name_to_try << requested_name << '-' << next_suffix++;
 		name = name_to_try.str();
 	}
-
-	/* Put back when maps have player limits
-	// Check to make sure there is space on the current map
-	if (!m_current_map.has_capacity(team)) {
-		reject_join(address, "No space on map.");
-		return;
-	}
-	*/
 
 	// Try to bind player's address
 	int			channel = m_network.bind(address);
