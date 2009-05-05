@@ -112,7 +112,7 @@ void	Server::team_change(int channel, PacketReader& packet)
 	if (m_players_have_spawned) {
 		// Hide and freeze the player (TODO: abstract the sending of this packet)
 		PacketWriter	freeze_packet(PLAYER_UPDATE_PACKET);
-		freeze_packet << player->get_id() << 0 << 0 << 0 << 0 << "IF";
+		freeze_packet << player->get_id() << 0 << 0 << 0 << 0 << 0 << "IF";
 		m_network.broadcast_packet(freeze_packet);
 
 		// Add them to the waiting to spawn list
@@ -571,7 +571,7 @@ bool	Server::spawn_player(ServerPlayer& player) {
 	if (const Point* point = m_current_map.next_spawnpoint(player.get_team())) {
 		player.set_spawnpoint(point);
 		PacketWriter	update_packet(PLAYER_UPDATE_PACKET);
-		update_packet << player.get_id() << point->x << point->y << 0 << 0 << "";
+		update_packet << player.get_id() << point->x << point->y << 0 << 0 << 0 << "";
 		m_network.send_packet(player.get_channel(), update_packet);
 		return true;
 	} else {
