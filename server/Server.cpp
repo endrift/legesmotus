@@ -56,6 +56,76 @@ void	Server::player_animation(int channel, PacketReader& packet)
 	rebroadcast_packet(packet, channel);
 }
 
+void	Server::name_change(int channel, PacketReader& packet)
+{
+	uint32_t		sender_id = 0;
+	string			requested_name;
+
+	packet >> sender_id >> requested_name;
+
+	if (!is_authorized(channel, sender_id) || requested_name.empty()) {
+		return;
+	}
+
+	ServerPlayer*		player = get_player(sender_id);
+
+	if (player->compare_name(requested_name.c_str())) {
+		// Just a capitalization change
+		player->set_name(requested_name.c_str());
+	} else {
+		// A more major change - check for conflicts
+		string		name(requested_name);
+		int		next_suffix = 1;
+		while (get_player_by_name(name.c_str()) != NULL) {
+			ostringstream	name_to_try;
+			name_to_try << requested_name << '-' << next_suffix++;
+			name = name_to_try.str();
+		}
+
+		player->set_name(name.c_str());
+	}
+
+	PacketWriter		outbound_packet(NAME_CHANGE_PACKET);
+	outbound_packet << player->get_id() << player->get_name();
+	m_network.broadcast_packet(outbound_packet);
+}
+
+void	Server::team_change(int channel, PacketReader& packet)
+{
+	uint32_t		sender_id = 0;
+	char			new_team = 0;
+
+	packet >> sender_id >> new_team;
+
+	if (!is_authorized(channel, sender_id) || !is_valid_team(new_team)) {
+		return;
+	}
+
+	ServerPlayer*		player = get_player(sender_id);
+
+	if (player->get_team() == new_team) {
+		return;
+	}
+
+	player->set_team(new_team);
+
+	if (m_players_have_spawned) {
+		// Hide and freeze the player (TODO: abstract the sending of this packet)
+		PacketWriter	freeze_packet(PLAYER_UPDATE_PACKET);
+		freeze_packet << player->get_id() << 0 << 0 << 0 << 0 << "";
+		m_network.broadcast_packet(freeze_packet);
+
+		// Add them to the waiting to spawn list
+		player->reset_join_time();
+		m_waiting_players.push_back(player);
+	}
+
+	PacketWriter		outbound_packet(TEAM_CHANGE_PACKET);
+	outbound_packet << player->get_id() << player->get_team();
+	m_network.broadcast_packet(outbound_packet);
+
+}
+
 void	Server::message(int channel, PacketReader& packet)
 {
 	uint32_t		sender_id = 0;
@@ -198,15 +268,18 @@ void	Server::gun_fired(int channel, PacketReader& packet)
 
 void	Server::join(const IPaddress& address, PacketReader& packet)
 {
+	cerr << "join entered...\n";
 	// Free up channels by kicking dead players
 	timeout_players();
+	cerr << "done timing out players...\n";
 
 	// Parse the join packet
 	int			client_version;
-	string			name;
+	string			requested_name;
 	char			team;
 
-	packet >> client_version >> name >> team;
+	packet >> client_version >> requested_name >> team;
+	cerr << "got " << client_version << "/" << requested_name << "/" << team << '\n';
 
 	// TODO: check client version.
 
@@ -222,15 +295,18 @@ void	Server::join(const IPaddress& address, PacketReader& packet)
 	}
 
 	// Check player's name for validity
-	if (name.empty()) {
+	if (requested_name.empty()) {
 		reject_join(address, "Invalid player name.");
 		return;
 	}
 
 	// Check player's name for uniqueness
-	if (get_player_by_name(name.c_str()) != NULL) {
-		reject_join(address, "Player name already in use.");
-		return;
+	string			name(requested_name);
+	int			next_suffix = 1;
+	while (get_player_by_name(name.c_str()) != NULL) {
+		ostringstream	name_to_try;
+		name_to_try << requested_name << '-' << next_suffix++;
+		name = name_to_try.str();
 	}
 
 	/* Put back when maps have player limits
@@ -248,6 +324,8 @@ void	Server::join(const IPaddress& address, PacketReader& packet)
 		return;
 	}
 
+	cerr << "bound to channel " << channel << '\n';
+
 	++m_team_count[team - 'A'];
 
 	bool			is_first_player = m_players.empty();
@@ -255,10 +333,13 @@ void	Server::join(const IPaddress& address, PacketReader& packet)
 	uint32_t		player_id = m_next_player_id++;
 	m_players[player_id].init(player_id, channel, client_version, name.c_str(), team, m_timeout_queue);
 
+	cerr << "sending welcome packet...\n";
 	// Send the welcome packet back to this client.
 	PacketWriter		welcome_packet(WELCOME_PACKET);
-	welcome_packet << SERVER_PROTOCOL_VERSION << player_id << team;
+	welcome_packet << SERVER_PROTOCOL_VERSION << player_id << name << team;
 	m_network.send_packet(channel, welcome_packet);
+
+	cerr << "done sending welcome packet...\n";
 
 	if (is_first_player) {
 		// This is the first player.  Start a new game.
@@ -443,6 +524,8 @@ void	Server::new_game() {
 void	Server::game_over(char winning_team) {
 	if (is_valid_team(winning_team)) {
 		++m_team_score[winning_team - 'A'];
+	} else {
+		winning_team = '-';
 	}
 
 	PacketWriter		packet(GAME_STOP_PACKET);

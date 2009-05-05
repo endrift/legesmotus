@@ -206,6 +206,8 @@ public:
 	void		gun_fired(int channel, PacketReader& packet);
 	void		gate_update(int channel, PacketReader& packet);
 	void		player_animation(int channel, PacketReader& packet);
+	void		name_change(int channel, PacketReader& packet);
+	void		team_change(int channel, PacketReader& packet);
 
 	void		run(int portno, const char* map_name); // map_name is NAME of map (excluding .map)
 

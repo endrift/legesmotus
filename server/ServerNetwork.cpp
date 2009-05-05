@@ -150,6 +150,14 @@ void	ServerNetwork::process_packet(Server& server, const RawPacket& raw_packet) 
 	case PLAYER_ANIMATION_PACKET:
 		server.player_animation(channel, reader);
 		break;
+
+	case NAME_CHANGE_PACKET:
+		server.name_change(channel, reader);
+		break;
+
+	case TEAM_CHANGE_PACKET:
+		server.team_change(channel, reader);
+		break;
 	}
 }
 
