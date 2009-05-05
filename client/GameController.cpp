@@ -160,6 +160,7 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	blue_arm_gun.set_x(13);
 	blue_arm_gun.set_y(-18);
 	blue_player.add_graphic(&blue_arm_gun, "frontarm");
+	blue_player.set_invisible(true);
 	
 	red_sprite = new Sprite(m_path_manager->data_path("red_armless.png","sprites"));
 	red_back_arm = new Sprite(m_path_manager->data_path("red_backarm.png","sprites"));
@@ -185,6 +186,7 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	red_arm_gun.set_x(13);
 	red_arm_gun.set_y(-18);
 	red_player.add_graphic(&red_arm_gun, "frontarm");
+	red_player.set_invisible(true);
 	
 	m_crosshairs = new Sprite("data/sprites/crosshairs.png");
 	m_crosshairs->set_priority(-1);
@@ -338,14 +340,12 @@ void GameController::run(int lockfps) {
 						angle -= 360;
 					}
 					if (angle < 90 || angle > 270) {
-						blue_player.set_scale_x(-1);
-						red_player.set_scale_x(-1);
+						m_players[m_player_id].get_sprite()->set_scale_x(-1);
 						send_animation_packet("all", "scale_x", -1);
 						angle *= -1;
 						angle += 55;
 					} else {
-						blue_player.set_scale_x(1);
-						red_player.set_scale_x(1);
+						m_players[m_player_id].get_sprite()->set_scale_x(1);
 						send_animation_packet("all", "scale_x", 1);
 						angle -= 120;
 					}
@@ -993,14 +993,15 @@ void GameController::welcome(PacketReader& reader) {
 	m_players.clear();
 	
 	if (team == 'A') {
-		m_players.insert(pair<int, GraphicalPlayer>(m_player_id,GraphicalPlayer(m_name.c_str(), m_player_id, team, &blue_player, blue_sprite->get_width()/2, blue_sprite->get_height()/2)));
+		m_players.insert(pair<int, GraphicalPlayer>(m_player_id,GraphicalPlayer(m_name.c_str(), m_player_id, team, new GraphicGroup(blue_player), blue_sprite->get_width()/2, blue_sprite->get_height()/2)));
 		m_text_manager->set_active_color(0.2, 0.2, 1.0);
 		m_window->register_graphic(&blue_player);
 	} else {
-		m_players.insert(pair<int, GraphicalPlayer>(m_player_id,GraphicalPlayer(m_name.c_str(), m_player_id, team, &red_player, red_sprite->get_width()/2, red_sprite->get_height()/2)));
+		m_players.insert(pair<int, GraphicalPlayer>(m_player_id,GraphicalPlayer(m_name.c_str(), m_player_id, team, new GraphicGroup(red_player), red_sprite->get_width()/2, red_sprite->get_height()/2)));
 		m_text_manager->set_active_color(1.0, 0.2, 0.2);
 		m_window->register_graphic(&red_player);
 	}
+	m_window->register_graphic(m_players[m_player_id].get_sprite());
 	m_minimap->add_blip(m_player_id, team, 0, 0);
 	
 	m_players[m_player_id].set_radius(30);
@@ -1428,21 +1429,35 @@ void GameController::name_change(PacketReader& reader) {
 }
 
 void GameController::team_change(PacketReader& reader) {
-	uint32_t	player_id;
-	char		new_team;
-	reader >> player_id >> new_team;
+	uint32_t	playerid;
+	char		team;
+	reader >> playerid >> team;
 
-	if (GraphicalPlayer* player = get_player_by_id(player_id)) {
-		player->set_team(new_team);
+	if (GraphicalPlayer* player = get_player_by_id(playerid)) {
+		player->set_team(team);
 
 		ostringstream	msg;
 		msg << player->get_name() << " has switched teams";
 
-		if (player->get_team() == 'A') {
+		m_text_manager->remove_string(m_players[playerid].get_name_sprite());
+		m_window->unregister_graphic(m_players[playerid].get_sprite());
+		m_minimap->remove_blip(playerid);
+		delete m_players[playerid].get_sprite();
+
+
+		if (team == 'A') {
+			player->set_sprite(new GraphicGroup(blue_player));
+			m_text_manager->set_active_color(0.4, 0.4, 1.0);
 			display_message(msg.str().c_str(), 0.4, 0.4, 1);
 		} else {
+			player->set_sprite(new GraphicGroup(red_player));
+			m_text_manager->set_active_color(1.0, 0.4, 0.4);
 			display_message(msg.str().c_str(), 1, 0.4, 0.4);
 		}
+		m_minimap->add_blip(playerid,team,0,0);
+		// TEMPORARY SPRITE CODE
+		m_window->register_graphic(m_players[playerid].get_sprite());
+		m_players[playerid].set_name_sprite(m_text_manager->place_string(m_players[playerid].get_name(), m_players[playerid].get_x(), m_players[playerid].get_y()-(m_players[playerid].get_radius()+30), TextManager::CENTER, TextManager::LAYER_MAIN));
 	}
 }
 
