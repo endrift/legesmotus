@@ -1042,7 +1042,7 @@ void GameController::announce(PacketReader& reader) {
 	// TEMPORARY SPRITE CODE
 	m_window->register_graphic(m_players[playerid].get_sprite());
 	m_players[playerid].set_name_sprite(m_text_manager->place_string(m_players[playerid].get_name(), m_players[playerid].get_x(), m_players[playerid].get_y()-(m_players[playerid].get_radius()+30), TextManager::CENTER, TextManager::LAYER_MAIN));
-	m_players[playerid].set_radius(50);
+	m_players[playerid].set_radius(40);
 }
 
 void GameController::player_update(PacketReader& reader) {
@@ -1420,9 +1420,13 @@ void GameController::name_change(PacketReader& reader) {
 
 		if (player->get_team() == 'A') {
 			display_message(msg.str().c_str(), 0.4, 0.4, 1);
+			m_text_manager->set_active_color(0.4, 0.4, 1);
 		} else {
 			display_message(msg.str().c_str(), 1, 0.4, 0.4);
+			m_text_manager->set_active_color(1, 0.4, 0.4);
 		}
+		m_text_manager->remove_string(player->get_name_sprite());
+		player->set_name_sprite(m_text_manager->place_string(player->get_name(), player->get_x(), player->get_y()-(player->get_radius()+30), TextManager::CENTER, TextManager::LAYER_MAIN));
 	}
 }
 
