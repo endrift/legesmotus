@@ -975,13 +975,15 @@ void GameController::disconnect() {
 void GameController::welcome(PacketReader& reader) {
 	string serverversion;
 	int playerid;
+	string playername;
 	char team;
 	
-	reader >> serverversion >> playerid >> team;
+	reader >> serverversion >> playerid >> playername >> team;
 	
 	m_player_id = playerid;
+	m_name = playername;
 
-	cerr << "Received welcome packet. Version: " << serverversion << ", Player ID: " << playerid << ", Team: " << team << endl;
+	cerr << "Received welcome packet. Version: " << serverversion << ", Player ID: " << playerid << ", Name: " << playername << ", Team: " << team << endl;
 	
 	m_players.clear();
 	
@@ -1294,7 +1296,7 @@ void GameController::game_stop(PacketReader& reader) {
 	
 	m_game_state = GAME_OVER;
 	
-	if (winningteam == 0) {
+	if (winningteam == '-') {
 		display_message("DRAW", 1.0, 1.0, 1.0);
 	} else if (winningteam == m_players[m_player_id].get_team()) {
 		display_message("VICTORY!", 1.0, 1.0, 1.0);
