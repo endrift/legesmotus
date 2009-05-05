@@ -451,12 +451,9 @@ void GameController::process_input() {
 						if (message.find("/name ") == 0) {
 							string new_name(message.substr(6));
 							send_name_change_packet(new_name.c_str());
-							/*
-							m_name = message.substr(6);
-							string name_message = "Name set to: ";
-							name_message.append(m_name);
-							display_message(name_message);
-							*/
+						} else if (message.find("/team ") == 0) {
+							string new_team(message.substr(6));
+							send_team_change_packet(new_team[0]);
 						} else {
 							send_message(message);
 						}
@@ -1469,6 +1466,12 @@ void GameController::send_gate_hold(bool holding) {
 void	GameController::send_name_change_packet(const char* new_name) {
 	PacketWriter packet(NAME_CHANGE_PACKET);
 	packet << m_player_id << new_name;
+	m_network.send_packet(packet);
+}
+
+void	GameController::send_team_change_packet(char new_team) {
+	PacketWriter packet(TEAM_CHANGE_PACKET);
+	packet << m_player_id << new_team;
 	m_network.send_packet(packet);
 }
 

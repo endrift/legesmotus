@@ -147,6 +147,7 @@ public:
 	void		process_mouse_click(SDL_Event event);
 	void		send_animation_packet(std::string sprite, std::string field, int value);
 	void		send_name_change_packet(const char* new_name);
+	void		send_team_change_packet(char new_team);
 	
 	// Network callbacks:
 	void		welcome(PacketReader& reader);
