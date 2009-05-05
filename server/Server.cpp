@@ -112,7 +112,7 @@ void	Server::team_change(int channel, PacketReader& packet)
 	if (m_players_have_spawned) {
 		// Hide and freeze the player (TODO: abstract the sending of this packet)
 		PacketWriter	freeze_packet(PLAYER_UPDATE_PACKET);
-		freeze_packet << player->get_id() << 0 << 0 << 0 << 0 << "";
+		freeze_packet << player->get_id() << 0 << 0 << 0 << 0 << "IF";
 		m_network.broadcast_packet(freeze_packet);
 
 		// Add them to the waiting to spawn list
