@@ -24,14 +24,18 @@ GameWindow::GameWindow(int width, int height, int depth, bool fullscreen) {
 	m_offset_y = 0;
 	switch (depth) {
 	case 24:
-		SDL_InitSubSystem(SDL_INIT_VIDEO);
+		if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
+			throw LMException(SDL_GetError());
+		}
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 		break;
 	case 32:
-		SDL_InitSubSystem(SDL_INIT_VIDEO);
+		if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
+			throw LMException(SDL_GetError());
+		}
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
@@ -42,7 +46,6 @@ GameWindow::GameWindow(int width, int height, int depth, bool fullscreen) {
 		throw LMException("Bad depth");
 		return;
 	}
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1);
 #if SDL_MAJOR_VERSION == 1 && SDL_MINOR_VERSION == 2 && SDL_PATCHLEVEL >= 10
 	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1); // Deprecated in SDL 1.3

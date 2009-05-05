@@ -94,5 +94,7 @@ extern "C" int main(int argc, char* argv[]) try {
 
 } catch (const LMException& e) {
 	cerr << "Error: " << e.what() << endl;
+	cerr << "1. If on X11, check that your $DISPLAY environment variable is set properly." << endl;
+	cerr << "2. Make sure that the game resources are installed." << endl;
 	return 1;
 }
