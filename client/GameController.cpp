@@ -445,10 +445,14 @@ void GameController::process_input() {
 					} else if (event.key.keysym.sym == m_key_bindings.send_chat) {
 						string message = m_input_text.substr(2);
 						if (message.find("/name ") == 0) {
+							string new_name(message.substr(6));
+							send_name_change_packet(new_name.c_str());
+							/*
 							m_name = message.substr(6);
 							string name_message = "Name set to: ";
 							name_message.append(m_name);
 							display_message(name_message);
+							*/
 						} else {
 							send_message(message);
 						}
@@ -1396,6 +1400,47 @@ void GameController::request_denied(PacketReader& reader) {
 	}
 }
 
+void GameController::name_change(PacketReader& reader) {
+	uint32_t	player_id;
+	string		new_name;
+	reader >> player_id >> new_name;
+
+	if (GraphicalPlayer* player = get_player_by_id(player_id)) {
+		ostringstream	msg;
+		msg << player->get_name() << " is now known as " << new_name;
+
+		player->set_name(new_name.c_str());
+		if (player_id == m_player_id) {
+			m_name = new_name;
+		}
+
+		if (player->get_team() == 'A') {
+			display_message(msg.str().c_str(), 0.4, 0.4, 1);
+		} else {
+			display_message(msg.str().c_str(), 1, 0.4, 0.4);
+		}
+	}
+}
+
+void GameController::team_change(PacketReader& reader) {
+	uint32_t	player_id;
+	char		new_team;
+	reader >> player_id >> new_team;
+
+	if (GraphicalPlayer* player = get_player_by_id(player_id)) {
+		player->set_team(new_team);
+
+		ostringstream	msg;
+		msg << player->get_name() << " has switched teams";
+
+		if (player->get_team() == 'A') {
+			display_message(msg.str().c_str(), 0.4, 0.4, 1);
+		} else {
+			display_message(msg.str().c_str(), 1, 0.4, 0.4);
+		}
+	}
+}
+
 void GameController::send_animation_packet(string sprite, string field, int value) {
 	PacketWriter animation_packet(PLAYER_ANIMATION_PACKET);
 	animation_packet << m_player_id << sprite << field << value;
@@ -1411,6 +1456,12 @@ void GameController::send_gate_hold(bool holding) {
 		gate_hold << m_player_id << get_other_team(m_players[m_player_id].get_team()) << 0;
 	}
 	m_network.send_packet(gate_hold);
+}
+
+void	GameController::send_name_change_packet(const char* new_name) {
+	PacketWriter packet(NAME_CHANGE_PACKET);
+	packet << m_player_id << new_name;
+	m_network.send_packet(packet);
 }
 
 void GameController::display_message(string message, double red, double green, double blue) {

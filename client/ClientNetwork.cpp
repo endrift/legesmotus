@@ -156,6 +156,14 @@ void	ClientNetwork::process_packet(GameController& controller, const RawPacket& 
 	case REQUEST_DENIED_PACKET:
 		controller.request_denied(reader);
 		break;
+
+	case NAME_CHANGE_PACKET:
+		controller.name_change(reader);
+		break;
+
+	case TEAM_CHANGE_PACKET:
+		controller.team_change(reader);
+		break;
 	}
 }
 

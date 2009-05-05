@@ -146,6 +146,7 @@ public:
 	void		set_players_visible(bool visible);
 	void		process_mouse_click(SDL_Event event);
 	void		send_animation_packet(std::string sprite, std::string field, int value);
+	void		send_name_change_packet(const char* new_name);
 	
 	// Network callbacks:
 	void		welcome(PacketReader& reader);
@@ -161,6 +162,8 @@ public:
 	void		score_update(PacketReader& reader);
 	void		animation_packet(PacketReader& reader);
 	void		request_denied(PacketReader& reader);
+	void		name_change(PacketReader& reader);
+	void		team_change(PacketReader& reader);
 };
 
 #endif
