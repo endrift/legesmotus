@@ -9,8 +9,16 @@
 
 #ifdef __WIN32
 
+#include <Windows.h>
+
 std::string	get_username() {
-	return "Bill";
+	char username[64];
+	size_t unlen = sizeof(username);
+	if (GetUserName(username,&unlen)) {
+		return std::string(username);
+	} else {
+		return "Bill";
+	}
 }
 
 #else
