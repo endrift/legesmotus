@@ -767,7 +767,7 @@ void GameController::move_objects(float timescale) {
 	m_minimap->recenter(new_x, new_y);
 	m_players[m_player_id].set_rotation_degrees(m_players[m_player_id].get_rotation_degrees() + m_players[m_player_id].get_rotational_vel() * timescale);
 	
-	// Set name sprites visible/invisible.
+	// Set name sprites visible/invisible. and move players.
 	map<int, GraphicalPlayer>::iterator it;
 	for ( it=m_players.begin() ; it != m_players.end(); it++ ) {
 		GraphicalPlayer currplayer = (*it).second;
@@ -777,6 +777,16 @@ void GameController::move_objects(float timescale) {
 			currplayer.get_name_sprite()->set_invisible(false);
 			m_text_manager->reposition_string(currplayer.get_name_sprite(), currplayer.get_x(), currplayer.get_y() - (currplayer.get_radius()+30), TextManager::CENTER);
 		}
+		
+		if (currplayer.get_id() == m_player_id) {
+			continue;
+		}
+		
+		cerr << "Currplayer: " << currplayer.get_id() << " pos: " << currplayer.get_x() << ", " << currplayer.get_y() << " vel: " << currplayer.get_x_vel() << ", " << currplayer.get_y_vel() << endl;
+		m_players[currplayer.get_id()].set_x(currplayer.get_x() + currplayer.get_x_vel() * timescale);
+		m_players[currplayer.get_id()].set_y(currplayer.get_y() + currplayer.get_y_vel() * timescale);
+		cerr << "Currplayer: " << currplayer.get_id() << " pos: " << currplayer.get_x() << ", " << currplayer.get_y() << endl;
+		m_minimap->move_blip(currplayer.get_id(), m_players[currplayer.get_id()].get_x(), m_players[currplayer.get_id()].get_y());
 	}
 }
 
@@ -1140,8 +1150,8 @@ void GameController::player_update(PacketReader& reader) {
 	unsigned int player_id;
 	long x;
 	long y;
-	long velocity_x;
-	long velocity_y;
+	double velocity_x;
+	double velocity_y;
 	double rotation;
 	string flags;
 	reader >> player_id >> x >> y >> velocity_x >> velocity_y >> rotation >> flags;
@@ -1152,6 +1162,7 @@ void GameController::player_update(PacketReader& reader) {
 		return;
 	}
 	
+	cerr << "Received player update for: " << player_id << endl;
 	currplayer->set_position(x, y);
 	m_minimap->move_blip(player_id, x, y);
 	currplayer->set_velocity(velocity_x, velocity_y);
