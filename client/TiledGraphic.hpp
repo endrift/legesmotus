@@ -41,8 +41,8 @@ public:
 
 	void	set_width(double width);
 	void	set_height(double height);
-	void	set_start_x(double start_x);
-	void	set_start_y(double start_y);
+	void	set_start_x(double start_x); // XXX Deprecated
+	void	set_start_y(double start_y); // XXX Deprecated
 	void	set_tile_width(double tile_width);
 	void	set_tile_height(double tile_height);
 

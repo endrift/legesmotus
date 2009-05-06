@@ -61,7 +61,7 @@ void Minimap::add_blip(uint32_t id, char team, double x, double y) {
 	}
 	clone->set_x(x*m_scale);
 	clone->set_y(y*m_scale);
-	stringstream s;
+	stringstream s; // TODO move this to a private method?
 	s << id; // Why is STL so bad?
 	m_minigroup->add_graphic(clone,s.str());
 	delete clone;

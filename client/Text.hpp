@@ -19,15 +19,15 @@ private:
 	Sprite* m_shadow;
 	bool	m_shadow_enabled;
 
-	void	touch_shadow();
+	void	touch_shadow(); // Makes sure the shadow exists
 public:
 	Text(const std::string& text, Font* font);
 	Text(const Text& other);
 	virtual ~Text();
 	virtual Text* clone() const;
 
-	void		set_color(double r, double g, double b);
-	virtual void	set_alpha(double a);
+	void		set_color(double r, double g, double b); // Only sets FG color
+	virtual void	set_alpha(double a); // Only sets FG alpha
 	void		set_shadow_color(double r, double g, double b);
 	void		set_shadow_alpha(double a);
 	void		set_shadow_offset(double x, double y);

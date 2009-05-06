@@ -29,9 +29,11 @@ public:
 	void set_y(double y);
 	void set_invisible(bool enable);
 
+	// Blips cannot be accessed directly
 	void add_blip(uint32_t id, char team, double x, double y);
 	void move_blip(uint32_t id, double x, double y);
 	void set_blip_invisible(uint32_t id, bool invisible);
+	// TODO set_blip_alpha?
 	void remove_blip(uint32_t id);
 
 	void recenter(double x, double y);

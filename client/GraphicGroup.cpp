@@ -18,10 +18,10 @@ GraphicGroup::GraphicGroup(const GraphicGroup& other) : Graphic(other) {
 	for (list<Graphic*>::const_iterator iter = other.m_graphics.begin(); iter != other.m_graphics.end(); ++iter) {
 		Graphic* g = (*iter)->clone();
 		old_ptr_map[*iter] = g;
-		m_graphics.push_back(g);
+		m_graphics.push_back(g); // Keep track of the mapping between the old pointer and the new pointer
 	}
 	for (map<string, Graphic*>::const_iterator iter = other.m_names.begin(); iter != other.m_names.end(); ++iter) {
-		m_names[iter->first] = old_ptr_map[iter->second];
+		m_names[iter->first] = old_ptr_map[iter->second]; // Update the names to point to the new graphic
 	}
 }
 
