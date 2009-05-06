@@ -782,10 +782,8 @@ void GameController::move_objects(float timescale) {
 			continue;
 		}
 		
-		cerr << "Currplayer: " << currplayer.get_id() << " pos: " << currplayer.get_x() << ", " << currplayer.get_y() << " vel: " << currplayer.get_x_vel() << ", " << currplayer.get_y_vel() << endl;
 		m_players[currplayer.get_id()].set_x(currplayer.get_x() + currplayer.get_x_vel() * timescale);
 		m_players[currplayer.get_id()].set_y(currplayer.get_y() + currplayer.get_y_vel() * timescale);
-		cerr << "Currplayer: " << currplayer.get_id() << " pos: " << currplayer.get_x() << ", " << currplayer.get_y() << endl;
 		m_minimap->move_blip(currplayer.get_id(), m_players[currplayer.get_id()].get_x(), m_players[currplayer.get_id()].get_y());
 	}
 }
@@ -1162,7 +1160,6 @@ void GameController::player_update(PacketReader& reader) {
 		return;
 	}
 	
-	cerr << "Received player update for: " << player_id << endl;
 	currplayer->set_position(x, y);
 	m_minimap->move_blip(player_id, x, y);
 	currplayer->set_velocity(velocity_x, velocity_y);
