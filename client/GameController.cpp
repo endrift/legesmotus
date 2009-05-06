@@ -44,6 +44,9 @@ GameController::GameController(int width, int height) {
 	init(width, height, 24, true);
 }
 
+/*
+ * Delete all of the sprites and subsystems.
+ */
 GameController::~GameController() {
 	// TEMPORARY SPRITE CODE
 	delete blue_sprite;
@@ -80,11 +83,15 @@ GameController::~GameController() {
 	m_window->destroy_instance();
 }
 
+/*
+ * Initialize all of the subsystems, sprites, etc.
+ */
 void GameController::init(int width, int height, int depth, bool fullscreen) {
 	srand ( time(NULL) );
 	
 	initialize_key_bindings();
 	
+	// Initial game state will be showing the main menu.
 	m_game_state = SHOW_MENUS;
 	
 	m_screen_width = width;
@@ -93,7 +100,7 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_input_text = "> ";
 	m_input_bar = NULL;
 	
-	m_client_version = "0.0.2";
+	m_client_version = "0.0.3";
 	m_protocol_number = 1;
 	
 	m_pixel_depth = depth;
@@ -106,23 +113,19 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_time_to_unfreeze = 0;
 	m_last_fired = 0;
 
-	m_font = new Font("data/fonts/JuraMedium.ttf", 14); // TODO don't hard code
+	m_font = new Font(m_path_manager->data_path("JuraMedium.ttf", "fonts"), 14);
 	m_text_manager = new TextManager(m_font, m_window);
 	
-	m_menu_font = new Font("data/fonts/JuraDemiBold.ttf", 34); // TODO don't hard code
+	m_menu_font = new Font(m_path_manager->data_path("JuraDemiBold.ttf", "fonts"), 34);
 	
 	m_sound_controller = new SoundController();
 	m_holding_gate = false;
 
-	// TEMPORARY MAP CODE BY ANDREW
 	m_map = new GraphicalMap(m_window);
-	//m_map->load_file("data/maps/test.map");
-	//m_map_width = m_map->get_width();
-	//m_map_height = m_map->get_height();
 	m_map_width = 0;
 	m_map_height = 0;
 
-	// TEMPORARY SPRITE CODE
+	// Initialize the gun sprites.
 	gun_normal = new Sprite(m_path_manager->data_path("gun_noshot.png", "sprites"));
 	gun_normal->set_x(3);
 	gun_normal->set_y(19);
@@ -136,6 +139,7 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_gun_fired->set_priority(-1);
 	m_gun_fired->set_invisible(true);
 	
+	// Initialize all of the components of the player sprites.
 	blue_sprite = new Sprite(m_path_manager->data_path("blue_armless.png","sprites"));
 	blue_back_arm = new Sprite(m_path_manager->data_path("blue_backarm.png","sprites"));
 	blue_front_arm = new Sprite(m_path_manager->data_path("blue_frontarm.png","sprites"));
@@ -194,7 +198,6 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	
 	m_shot = new Sprite("data/sprites/shot.png");
 	m_shot->set_invisible(true);
-	//m_window->register_graphic(m_shot); // TODO: Remove later when multiple shot graphics are shown.
 	
 	m_logo = new Sprite("data/sprites/legesmotuslogo.png");
 	m_logo->set_x(m_screen_width/2);
@@ -205,12 +208,14 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_main_menu_items = map<string, Graphic*>();
 	m_options_menu_items = map<string, Graphic*>();
 	
+	// Set the text manager to draw a shadow behind everything.
 	m_text_manager->set_active_font(m_menu_font);
 	m_text_manager->set_shadow_color(0.0, 0.0, 0.0);
 	m_text_manager->set_shadow_alpha(0.7);
 	m_text_manager->set_shadow_offset(1.0, 1.0);
 	m_text_manager->set_shadow(true);
 	
+	// Initialize all of the menu items.
 	m_main_menu_items["Resume Game"] = m_text_manager->place_string("Resume Game", 50, 200, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_main_menu_items["Options"] = m_text_manager->place_string("Options", 50, 250, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_main_menu_items["Quit"] = m_text_manager->place_string("Quit", 50, 300, TextManager::LEFT, TextManager::LAYER_HUD);
@@ -230,12 +235,16 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	
 	m_text_manager->set_active_font(m_font);
 	
+	// Set up the minimap.
 	m_minimap = new Minimap(MINIMAP_SCALE);
 	m_minimap->set_x(m_screen_width - 120);
 	m_minimap->set_y(120);
 	m_minimap->register_with_window(m_window);
 }
 
+/*
+ * The main game loop.
+ */
 void GameController::run(int lockfps) {
 	cerr << "SDL window is: " << m_window->get_width() << " pixels wide and " 
 		<< m_window->get_height() << " pixels tall." << endl;
@@ -257,15 +266,17 @@ void GameController::run(int lockfps) {
 			break;
 		}
 		
+		// Check if my player is set to unfreeze.
 		if (!m_players.empty() && m_time_to_unfreeze < SDL_GetTicks() && m_time_to_unfreeze != 0) {
 			m_sound_controller->play_sound("unfreeze");
 			m_players[m_player_id].set_is_frozen(false);
 			m_time_to_unfreeze = 0;
 		}
 		
-		// Update graphics if frame rate is correct
+		// Update movement and graphics if frame rate is correct.
 		unsigned long currframe = SDL_GetTicks();
 		if((currframe - startframe) >= delay) {
+			// Erase messages that are too old.
 			for (unsigned int i = 0; i < m_messages.size(); i++) {
 				if (m_messages[i].second < currframe) {
 					m_text_manager->remove_string(m_messages[i].first);
@@ -273,11 +284,13 @@ void GameController::run(int lockfps) {
 				}
 			}
 			
+			// Reposition messages that remain after removing.
 			for (unsigned int i = 0; i < m_messages.size(); i++) {
 				int y = 20 + (m_font->ascent() + m_font->descent() + 5) * i;
 				m_text_manager->reposition_string(m_messages[i].first, 20, y, TextManager::LEFT);
 			}
 			
+			// Change shot displays based on time.
 			for (unsigned int i = 0; i < m_shots.size(); i++) {
 				double shot_time = (double)(SHOT_DISPLAY_TIME-(m_shots[i].second - currframe))/SHOT_DISPLAY_TIME;
 				double shot_curve = -4.5*shot_time*(shot_time-1.0)/(shot_time+0.5); //fancy curve
@@ -291,6 +304,7 @@ void GameController::run(int lockfps) {
 				}
 			}
 			
+			// Change the display of the gate warning message based on time.
 			if (m_gate_warning_time != 0 && m_gate_warning_time < currframe - GATE_WARNING_FLASH_LENGTH) {
 				m_gate_warning_time = 0;
 				m_gate_warning->set_invisible(true);
@@ -305,7 +319,7 @@ void GameController::run(int lockfps) {
 			} else if (m_gate_warning_time != 0 && m_gate_warning_time < currframe - (1*GATE_WARNING_FLASH_LENGTH)/6) {
 				m_gate_warning->set_invisible(false);
 			}
-			
+						
 			move_objects((SDL_GetTicks() - lastmoveframe) / delay); // scale all position changes to keep game speed constant. 
 			
 			lastmoveframe = SDL_GetTicks();
@@ -315,6 +329,7 @@ void GameController::run(int lockfps) {
 			//int framerate = (1000/(currframe - startframe));
 			
 			if (!m_players.empty()) {
+				// Change gun sprite if muzzle flash is done.
 				Graphic* frontarm = m_players[m_player_id].get_sprite()->get_graphic("frontarm");
 				if (m_last_fired < SDL_GetTicks() - MUZZLE_FLASH_LENGTH && frontarm->get_graphic("gun")->is_invisible()) {
 					frontarm->get_graphic("gun")->set_invisible(false);
@@ -355,12 +370,14 @@ void GameController::run(int lockfps) {
 				}
 				send_my_player_update();
 				
+				// Set the new offset of the window so that the player is centered.
 				m_offset_x = m_players[m_player_id].get_x() - (m_screen_width/2.0);
 				m_offset_y = m_players[m_player_id].get_y() - (m_screen_height/2.0);
 				m_window->set_offset_x(m_offset_x);
 				m_window->set_offset_y(m_offset_y);
 			}
 			
+			// Show and hide elements depending on game state (started, menus, etc.)
 			if (m_game_state == SHOW_MENUS) {
 				if (m_map != NULL) {
 					m_map->set_visible(false);
@@ -425,11 +442,17 @@ void GameController::run(int lockfps) {
 	disconnect();
 }
 
+/*
+ * Set the dimensions of the screen.
+ */
 void GameController::set_screen_dimensions(int width, int height) {
 	m_screen_width = width;
 	m_screen_height = height;
 }
 
+/*
+ * Process the current SDL input state.
+ */
 void GameController::process_input() {
 	SDL_Event event;
 	while(SDL_PollEvent(&event) != 0) {
@@ -440,15 +463,20 @@ void GameController::process_input() {
 					m_quit_game = true;
 				}
 				
+				// If we're typing into the input bar...
 				if (m_input_bar != NULL) {
 					m_text_manager->set_active_color(1.0, 1.0, 1.0);
+					// If we're going back to the menu, remove the input bar.
 					if (event.key.keysym.sym == m_key_bindings.show_menu) {
 						SDL_EnableUNICODE(0);
 						m_text_manager->remove_string(m_input_bar);
 						m_input_bar = NULL;
 						m_input_text = "> ";
 					} else if (event.key.keysym.sym == m_key_bindings.send_chat) {
+						// Remove the "> " from the front.
 						string message = m_input_text.substr(2);
+						
+						// Check message for commands.
 						if (message.find("/name ") == 0) {
 							string new_name(message.substr(6));
 							send_name_change_packet(new_name.c_str());
@@ -459,11 +487,13 @@ void GameController::process_input() {
 							send_message(message);
 						}
 					
+						// Remove the input bar.
 						SDL_EnableUNICODE(0);
 						m_text_manager->remove_string(m_input_bar);
 						m_input_bar = NULL;
 						m_input_text = "> ";
 					} else if (event.key.keysym.sym == SDLK_BACKSPACE) {
+						// Delete text.
 						if (m_input_text.length() <= 2) {
 							break;
 						}
@@ -471,11 +501,13 @@ void GameController::process_input() {
 						m_text_manager->remove_string(m_input_bar);
 						m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
 					} else {
+						// Otherwise, it's a regular character. Type it in.
 						if ( (event.key.keysym.unicode & 0xFF80) == 0 && event.key.keysym.unicode != 0) {
 							m_input_text.push_back(event.key.keysym.unicode & 0x7F);
 						} else {
 							// INTERNATIONAL CHARACTER... DO SOMETHING.
 						}
+						// Replace the text display with the new one.
 						m_text_manager->remove_string(m_input_bar);
 						m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
 					}
@@ -505,14 +537,12 @@ void GameController::process_input() {
 				break;
 				
 			case SDL_MOUSEMOTION:
-				// Send motion to the GameWindow, telling it where the mouse is.
 				// Use: event.motion.xrel, event.motion.yrel (changes in position), event.motion.x, event.motion.y
 				m_mouse_x = event.motion.x;
 				m_mouse_y = event.motion.y;
 				m_crosshairs->set_x(m_mouse_x);
 				m_crosshairs->set_y(m_mouse_y);
 				
-				//red_arm_gun.set_rotation(angle);
 				break;
 				
 			case SDL_MOUSEBUTTONDOWN:
@@ -534,7 +564,9 @@ void GameController::process_input() {
 	
 	parse_key_input();
 }
-
+/*
+ * Set which keys are used for which functions.
+ */
 void GameController::initialize_key_bindings() {
 	// -1 = unused
 	m_key_bindings.quit = -1;
@@ -545,13 +577,21 @@ void GameController::initialize_key_bindings() {
 	m_key_bindings.send_chat = SDLK_RETURN;
 }
 
+/*
+ * Used to process any keys that are to be held down rather than pressed once.
+ */
 void GameController::parse_key_input() {
 	// For keys that can be held down:
    	m_keys = SDL_GetKeyState(NULL);
 }
 
+
+/*
+ * Process a mouse click, depending on the game state.
+ */
 void GameController::process_mouse_click(SDL_Event event) {
 	if (m_game_state == SHOW_MENUS) {
+		// Check each item in the menu to see if the mouse is clicking on it.
 		map<string, Graphic*>::iterator it;
 		for ( it=m_main_menu_items.begin() ; it != m_main_menu_items.end(); it++ ) {
 			Graphic* thisitem = (*it).second;
@@ -573,6 +613,7 @@ void GameController::process_mouse_click(SDL_Event event) {
 			}
 		}
 	} else if (m_game_state == SHOW_OPTIONS_MENU) {
+		// Check each item in the options menu.
 		map<string, Graphic*>::iterator it;
 		for ( it=m_options_menu_items.begin() ; it != m_options_menu_items.end(); it++ ) {
 			Graphic* thisitem = (*it).second;
@@ -583,6 +624,8 @@ void GameController::process_mouse_click(SDL_Event event) {
 				if ((*it).first == "Back") {
 					m_game_state = SHOW_MENUS;
 				} else if ((*it).first == "Enter Name") {
+					// Open the input bar and allow the name to be entered.
+					// Should replace later, to use a separate text entry location.
 					SDL_EnableUNICODE(1);
 					m_text_manager->set_active_color(1.0, 1.0, 1.0);
 					m_input_text = "> /name ";
@@ -602,6 +645,7 @@ void GameController::process_mouse_click(SDL_Event event) {
 		}
 	} else if (m_game_state == GAME_IN_PROGRESS) {
 		if (event.button.button == 1) {
+			// Fire the gun if it's ready.
 			if (m_last_fired != 0 && m_last_fired > SDL_GetTicks() - FIRING_DELAY) {
 				return;
 			}
@@ -611,6 +655,7 @@ void GameController::process_mouse_click(SDL_Event event) {
 			double x_dist = (event.button.x + m_offset_x) - m_players[m_player_id].get_x();
 			double y_dist = (event.button.y + m_offset_y) - m_players[m_player_id].get_y();
 			double direction = atan2(y_dist, x_dist) * RADIANS_TO_DEGREES;
+			// Cause recoil if the player is not hanging onto a wall.
 			if (m_players[m_player_id].get_x_vel() != 0 || m_players[m_player_id].get_y_vel() != 0) {
 				m_players[m_player_id].set_velocity(m_players[m_player_id].get_x_vel() - FIRING_RECOIL * cos((direction) * DEGREES_TO_RADIANS), m_players[m_player_id].get_y_vel() - FIRING_RECOIL * sin((direction) * DEGREES_TO_RADIANS));
 			}
@@ -621,6 +666,9 @@ void GameController::process_mouse_click(SDL_Event event) {
 	}
 }
 
+/*
+ * Do the movement of objects in a certain time scale.
+ */
 void GameController::move_objects(float timescale) {
 	if (m_players.empty()) {
 		return;
@@ -634,6 +682,7 @@ void GameController::move_objects(float timescale) {
 	double half_width = m_players[m_player_id].get_radius();
 	double half_height = m_players[m_player_id].get_radius();
 	
+	// Check if the player is hitting a map edge.
 	if (new_x - half_width < 0) {
 		new_x = half_width;
 		m_players[m_player_id].set_velocity(0, 0);
@@ -656,54 +705,53 @@ void GameController::move_objects(float timescale) {
 	
 	bool holdinggate = false;
 	
-	//if (m_players[m_player_id].get_x_vel() != 0 || m_players[m_player_id].get_y_vel() != 0) {
-		const list<MapObject>& map_objects(m_map->get_objects());
-		list<MapObject>::const_iterator thisobj;
-		int radius = m_players[m_player_id].get_radius();
-		Point currpos = Point(new_x, new_y);
-		Point oldpos = Point(m_players[m_player_id].get_x(), m_players[m_player_id].get_y());
-		//cerr << "Start: " << SDL_GetTicks() << endl;
-		for (thisobj = map_objects.begin(); thisobj != map_objects.end(); thisobj++) {
-			if (thisobj->get_sprite() == NULL) {
-				continue;
-			}
-			const Polygon& poly(thisobj->get_bounding_polygon());
-			double newdist = poly.intersects_circle(currpos, radius);
-			double olddist = poly.intersects_circle(oldpos, radius);
-		
-			// REPEL FROZEN PLAYERS AWAY FROM GATES.
-			if (thisobj->get_type() == Map::GATE && m_players[m_player_id].is_frozen() && !m_players[m_player_id].is_invisible()) {
-				double newdist_repulsion = poly.dist_from_circle(currpos, radius);
-				if (newdist_repulsion < 400) {
-					double gate_x = thisobj->get_upper_left().x + thisobj->get_sprite()->get_image_width()/2;
-					double gate_y = thisobj->get_upper_left().y + thisobj->get_sprite()->get_image_height()/2;
-					double angle = atan2(gate_y - new_y, gate_x - new_x);
-					m_players[m_player_id].set_velocity(m_players[m_player_id].get_x_vel() - .02 * cos(angle), m_players[m_player_id].get_y_vel() - .02 * sin(angle));
-				}
-			}
-		
-			if (newdist != -1) {
-				if (newdist < olddist) {
-					//cerr << "New dist: " << newdist << " Old dist: " << olddist << endl;
-					//cerr << "Hitting object" << endl;
-					if (thisobj->get_type() == Map::OBSTACLE) {
-						m_players[m_player_id].set_velocity(0, 0);
-						m_players[m_player_id].set_rotational_vel(0);
-						new_x = m_players[m_player_id].get_x();
-						new_y = m_players[m_player_id].get_y();
-					}
-				}
-				if (thisobj->get_type() == Map::GATE && thisobj->get_team() != m_players[m_player_id].get_team() && !m_players[m_player_id].is_frozen()) {
-					if (!m_holding_gate) {
-						send_gate_hold(true);
-					}
-					m_holding_gate = true;
-					holdinggate = true;
-				}
+	const list<MapObject>& map_objects(m_map->get_objects());
+	list<MapObject>::const_iterator thisobj;
+	int radius = m_players[m_player_id].get_radius();
+	Point currpos = Point(new_x, new_y);
+	Point oldpos = Point(m_players[m_player_id].get_x(), m_players[m_player_id].get_y());
+	
+	// Check each object for collisions with the player.
+	for (thisobj = map_objects.begin(); thisobj != map_objects.end(); thisobj++) {
+		if (thisobj->get_sprite() == NULL) {
+			continue;
+		}
+		const Polygon& poly(thisobj->get_bounding_polygon());
+		double newdist = poly.intersects_circle(currpos, radius);
+		double olddist = poly.intersects_circle(oldpos, radius);
+	
+		// REPEL FROZEN PLAYERS AWAY FROM GATES.
+		if (thisobj->get_type() == Map::GATE && m_players[m_player_id].is_frozen() && !m_players[m_player_id].is_invisible()) {
+			double newdist_repulsion = poly.dist_from_circle(currpos, radius);
+			if (newdist_repulsion < 400) {
+				double gate_x = thisobj->get_upper_left().x + thisobj->get_sprite()->get_image_width()/2;
+				double gate_y = thisobj->get_upper_left().y + thisobj->get_sprite()->get_image_height()/2;
+				double angle = atan2(gate_y - new_y, gate_x - new_x);
+				m_players[m_player_id].set_velocity(m_players[m_player_id].get_x_vel() - .02 * cos(angle), m_players[m_player_id].get_y_vel() - .02 * sin(angle));
 			}
 		}
-		//cerr << "End: " << SDL_GetTicks() << endl;
-	//}
+	
+		// If we're hitting the object...
+		if (newdist != -1) {
+			// If we're moving closer to the object, we need to stop.
+			if (newdist < olddist) {
+				if (thisobj->get_type() == Map::OBSTACLE) {
+					m_players[m_player_id].set_velocity(0, 0);
+					m_players[m_player_id].set_rotational_vel(0);
+					new_x = m_players[m_player_id].get_x();
+					new_y = m_players[m_player_id].get_y();
+				}
+			}
+			// If it's a gate, we're lowering it if we're unfrozen and it's owned by the enemy team.
+			if (thisobj->get_type() == Map::GATE && thisobj->get_team() != m_players[m_player_id].get_team() && !m_players[m_player_id].is_frozen()) {
+				if (!m_holding_gate) {
+					send_gate_hold(true);
+				}
+				m_holding_gate = true;
+				holdinggate = true;
+			}
+		}
+	}
 	
 	if (!holdinggate) {
 		if (m_holding_gate) {
@@ -712,13 +760,14 @@ void GameController::move_objects(float timescale) {
 		m_holding_gate = false;
 	}
 	
-	//m_text_manager->reposition_string(m_players[m_player_id].get_name_sprite(), new_x, new_y, TextManager::CENTER);
+	// Set the player position and minimap position.
 	m_players[m_player_id].set_x(new_x);
 	m_players[m_player_id].set_y(new_y);
 	m_minimap->move_blip(m_player_id, new_x, new_y);
 	m_minimap->recenter(new_x, new_y);
 	m_players[m_player_id].set_rotation_degrees(m_players[m_player_id].get_rotation_degrees() + m_players[m_player_id].get_rotational_vel() * timescale);
 	
+	// Set name sprites visible/invisible.
 	map<int, GraphicalPlayer>::iterator it;
 	for ( it=m_players.begin() ; it != m_players.end(); it++ ) {
 		GraphicalPlayer currplayer = (*it).second;
@@ -731,6 +780,9 @@ void GameController::move_objects(float timescale) {
 	}
 }
 
+/*
+ * Try to jump off of an obstacle.
+ */
 void GameController::attempt_jump() {
 	if (m_players.empty()) {
 		return;
@@ -752,6 +804,7 @@ void GameController::attempt_jump() {
 	double x_vel = 6 * cos(atan2(y_dist, x_dist));
 	double y_vel = 6 * sin(atan2(y_dist, x_dist));
 	
+	// Check if we're next to the side of the map.
 	if (player->get_x() - (half_width) <= 5) {
 		player->set_x_vel(x_vel);
 		player->set_y_vel(y_vel);
@@ -775,6 +828,8 @@ void GameController::attempt_jump() {
 	list<MapObject>::const_iterator thisobj;
 	const list<MapObject>& map_objects(m_map->get_objects());
 	Point currpos = Point(player->get_x(), player->get_y());
+	
+	// Check if we're near any obstacles.
 	for (thisobj = map_objects.begin(); thisobj != map_objects.end(); thisobj++) {
 		if (thisobj->get_sprite() == NULL) {
 			continue;
@@ -793,6 +848,9 @@ void GameController::attempt_jump() {
 	}
 }
 
+/*
+ * Called when a player (including you) fires.
+ */
 void GameController::player_fired(unsigned int player_id, double start_x, double start_y, double direction) {
 	if (m_players.empty()) {
 		return;
@@ -807,6 +865,7 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 	double end_x = -1;
 	double end_y = -1;
 	
+	// Find the closest object that the shot will hit, if any.
 	for (thisobj = map_objects.begin(); thisobj != map_objects.end(); thisobj++) {
 		if (thisobj->get_sprite() == NULL) {
 			continue;
@@ -831,6 +890,7 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 		}
 	}
 	
+	// Now check if any players are closer.
 	if (player_id == m_player_id) {
 		double player_hit = -1;
 		
@@ -871,6 +931,7 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 			}
 		}
 		
+		// If we're still not hitting anything, find the nearest map edge where the shot will hit.
 		if (end_x == -1 && end_y == -1) {
 			double dist_to_obstacle = m_map_width + m_map_height;
 			Point endpos = Point(start_x + dist_to_obstacle * cos(direction * DEGREES_TO_RADIANS), start_y + dist_to_obstacle * sin(direction * DEGREES_TO_RADIANS));
@@ -888,6 +949,7 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 			}
 		}
 		
+		// Create the gun fired packet and send it, and display the shot hit point.
 		PacketWriter gun_fired(GUN_FIRED_PACKET);
 		gun_fired << player_id;
 		gun_fired << start_x;
@@ -907,6 +969,7 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 			m_window->register_graphic(this_shot);
 		}
 		
+		// Switch to the gun with the muzzle flash.
 		GraphicGroup* frontarm = (GraphicGroup*)m_players[m_player_id].get_sprite()->get_graphic("frontarm");
 		frontarm->get_graphic("gun")->set_invisible(true);
 		send_animation_packet("frontarm/gun", "invisible", true);
@@ -921,6 +984,9 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 	}
 }
 
+/*
+ * Set the player sprites visible or invisible.
+ */
 void GameController::set_players_visible(bool visible) {
 	if (m_players.empty()) {
 		return;
@@ -944,6 +1010,9 @@ void GameController::set_players_visible(bool visible) {
 	}
 }
 
+/*
+ * Send a player shot packet.
+ */
 void GameController::send_player_shot(unsigned int shooter_id, unsigned int hit_player_id, double angle) {
 	PacketWriter player_shot(PLAYER_SHOT_PACKET);
 	player_shot << shooter_id;
@@ -953,6 +1022,9 @@ void GameController::send_player_shot(unsigned int shooter_id, unsigned int hit_
 	m_network.send_packet(player_shot);
 }
 
+/*
+ * Try to connect to a server.
+ */
 void GameController::connect_to_server(const char* host, unsigned int port, string name, char team) {
 	if (!m_network.connect(host, port)) {
 		cerr << "Error: Could not connect to server at " << host << ":" << port << endl;
@@ -969,6 +1041,9 @@ void GameController::connect_to_server(const char* host, unsigned int port, stri
 	m_network.send_packet(join_request);
 }
 
+/*
+ * Send a disconnect packet.
+ */
 void GameController::disconnect() {
 	PacketWriter leave_request(LEAVE_PACKET);
 	leave_request << m_player_id;
@@ -978,6 +1053,9 @@ void GameController::disconnect() {
 	m_network.disconnect();
 }
 
+/*
+ * When we receive a welcome packet.
+ */
 void GameController::welcome(PacketReader& reader) {
 	string serverversion;
 	int playerid;
@@ -993,13 +1071,14 @@ void GameController::welcome(PacketReader& reader) {
 	
 	m_players.clear();
 	
+	// Insert different name colors and sprites depending on team.
 	if (team == 'A') {
 		m_players.insert(pair<int, GraphicalPlayer>(m_player_id,GraphicalPlayer(m_name.c_str(), m_player_id, team, new GraphicGroup(blue_player), blue_sprite->get_width()/2, blue_sprite->get_height()/2)));
-		m_text_manager->set_active_color(0.2, 0.2, 1.0);
+		m_text_manager->set_active_color(0.4, 0.4, 1.0);
 		m_window->register_graphic(&blue_player);
 	} else {
 		m_players.insert(pair<int, GraphicalPlayer>(m_player_id,GraphicalPlayer(m_name.c_str(), m_player_id, team, new GraphicGroup(red_player), red_sprite->get_width()/2, red_sprite->get_height()/2)));
-		m_text_manager->set_active_color(1.0, 0.2, 0.2);
+		m_text_manager->set_active_color(1.0, 0.4, 0.4);
 		m_window->register_graphic(&red_player);
 	}
 	m_window->register_graphic(m_players[m_player_id].get_sprite());
@@ -1011,6 +1090,9 @@ void GameController::welcome(PacketReader& reader) {
 	send_my_player_update();
 }
 
+/*
+ * Add a player when we get an announce packet.
+ */
 void GameController::announce(PacketReader& reader) {
 	unsigned int playerid;
 	string playername;
@@ -1020,6 +1102,7 @@ void GameController::announce(PacketReader& reader) {
 		return;
 	}
 	
+	// Ignore an announce for ourselves.
 	reader >> playerid >> playername >> team;
 	if (playerid == m_player_id) {
 		return;
@@ -1028,6 +1111,8 @@ void GameController::announce(PacketReader& reader) {
 	string joinmsg = "";
 	joinmsg.append(playername);
 	joinmsg.append(" has joined the game!");
+	
+	// Add a different sprite and name color depending on team.
 	if (team == 'A') {
 		m_players.insert(pair<int, GraphicalPlayer>(playerid,GraphicalPlayer((const char*)playername.c_str(), playerid, team, new GraphicGroup(blue_player))));
 		m_text_manager->set_active_color(0.4, 0.4, 1.0);
@@ -1038,12 +1123,15 @@ void GameController::announce(PacketReader& reader) {
 		display_message(joinmsg, 1.0, 0.4, 0.4);
 	}
 	m_minimap->add_blip(playerid,team,0,0);
-	// TEMPORARY SPRITE CODE
+	
 	m_window->register_graphic(m_players[playerid].get_sprite());
 	m_players[playerid].set_name_sprite(m_text_manager->place_string(m_players[playerid].get_name(), m_players[playerid].get_x(), m_players[playerid].get_y()-(m_players[playerid].get_radius()+30), TextManager::CENTER, TextManager::LAYER_MAIN));
 	m_players[playerid].set_radius(40);
 }
 
+/*
+ * When we receive a player update.
+ */
 void GameController::player_update(PacketReader& reader) {
 	if (m_players.empty()) {
 		return;
@@ -1069,6 +1157,7 @@ void GameController::player_update(PacketReader& reader) {
 	currplayer->set_velocity(velocity_x, velocity_y);
 	currplayer->set_rotation_degrees(rotation);
 	
+	// If invisible or frozen, set these things appropriately and show/hide the sprite.
 	if (flags.find_first_of('I') == string::npos) {
 		currplayer->set_is_invisible(false);
 		m_text_manager->reposition_string(m_players[player_id].get_name_sprite(), x, y - (m_players[player_id].get_radius()+30), TextManager::CENTER);
@@ -1088,6 +1177,9 @@ void GameController::player_update(PacketReader& reader) {
 	
 }
 
+/*
+ * Send a player update packet.
+ */
 void GameController::send_my_player_update() {
 	PacketWriter player_update(PLAYER_UPDATE_PACKET);
 	if (m_players.empty()) {
@@ -1110,6 +1202,9 @@ void GameController::send_my_player_update() {
 	m_network.send_packet(player_update);
 }
 
+/*
+ * Send a message packet.
+ */
 void GameController::send_message(string message) {
 
 	string::size_type		colon_pos = message.find_first_of(':');
@@ -1130,11 +1225,15 @@ void GameController::send_message(string message) {
 	m_network.send_packet(message_writer);
 }
 
+/*
+ * Deal with receiving a leave packet.
+ */
 void GameController::leave(PacketReader& reader) {
 	uint32_t	playerid;
 	string		leave_message;
 	reader >> playerid >> leave_message;
-
+	
+	 // If it's for ourselves, we were kicked. Quit with a message.
 	if (playerid == m_player_id) {
 		string leavemsg = "You were kicked!  Reason: ";
 		leavemsg.append(leave_message);
@@ -1152,6 +1251,7 @@ void GameController::leave(PacketReader& reader) {
 	leavemsg.append(m_players[playerid].get_name());
 	leavemsg.append(" has left the game.");
 	
+	// Display a message based on their team.
 	if (m_players[playerid].get_team() == 'A') {
 		display_message(leavemsg, 0.4, 0.4, 1.0);
 	} else {
@@ -1165,6 +1265,9 @@ void GameController::leave(PacketReader& reader) {
 	m_players.erase(playerid);
 }
 
+/*
+ * Called when a gun fired packet is received.
+ */
 void GameController::gun_fired(PacketReader& reader) {
 	unsigned int playerid;
 	double start_x;
@@ -1178,6 +1281,7 @@ void GameController::gun_fired(PacketReader& reader) {
 		return;
 	}
 	
+	// Show a graphic for the shot.
 	Graphic* this_shot = new Sprite(*m_shot);
 	this_shot->set_x(end_x);
 	this_shot->set_y(end_y);
@@ -1187,10 +1291,15 @@ void GameController::gun_fired(PacketReader& reader) {
 	pair<Graphic*, unsigned int> new_shot(this_shot, SDL_GetTicks() + SHOT_DISPLAY_TIME);
 	m_shots.push_back(new_shot);
 	m_window->register_graphic(this_shot);
+	
 	m_sound_controller->play_sound("fire");
+	
 	player_fired(playerid, start_x, start_y, rotation);
 }
 
+/*
+ * Called when a player shot packet is received.
+ */
 void GameController::player_shot(PacketReader& reader) {
 	unsigned int shooter_id;
 	unsigned int shot_id;
@@ -1199,9 +1308,9 @@ void GameController::player_shot(PacketReader& reader) {
 	
 	reader >> shooter_id >> shot_id >> time_to_unfreeze >> shot_angle;
 	
+	// If we were frozen, add to our velocity based on the shot, and freeze.
 	if (shot_id == m_player_id) {
 		m_sound_controller->play_sound("freeze");
-		//cerr << "I was hit! Time to unfreeze: " << time_to_unfreeze << endl;
 		m_players[m_player_id].set_is_frozen(true);
 		m_time_to_unfreeze = SDL_GetTicks() + time_to_unfreeze;
 		if (shot_angle != 0) {
@@ -1210,6 +1319,9 @@ void GameController::player_shot(PacketReader& reader) {
 	}
 }
 
+/*
+ * Called when a message is receieved.
+ */
 void GameController::message(PacketReader& reader) {
 	uint32_t sender_id;
 	string recipient;
@@ -1229,6 +1341,7 @@ void GameController::message(PacketReader& reader) {
 		message.append(": ");
 		message.append(message_text);
 		
+		// Show the message in a color depending on the sender's team.
 		if (sender->get_team() == 'A') {
 			display_message(message, 0.4, 0.4, 1);
 		} else {
@@ -1237,6 +1350,9 @@ void GameController::message(PacketReader& reader) {
 	}
 }
 
+/*
+ * Called when a gate update packet is received.
+ */
 void GameController::gate_update(PacketReader& reader) {
 	uint32_t	lowering_player_id; 	// Who's lowering the gate?
 	char		team;			// Which team's gate is being lowered
@@ -1244,6 +1360,7 @@ void GameController::gate_update(PacketReader& reader) {
 	int		change_in_status;	// -1 == now closing, 0 == no change, 1 == now opening
 	reader >> lowering_player_id >> team >> progress >> change_in_status;
 	
+	// If it just started opening, play a sound and set the warning visible.
 	if (change_in_status > 0) {
 		m_sound_controller->play_sound("gatelower");
 		if (team == m_players[m_player_id].get_team()) {
@@ -1257,6 +1374,9 @@ void GameController::gate_update(PacketReader& reader) {
 	// TODO: use the player id to display a HUD message or something...
 }
 
+/*
+ * When a game start packet is received.
+ */
 void GameController::game_start(PacketReader& reader) {
 	string 		mapname;
 	bool		game_started;
@@ -1294,6 +1414,9 @@ void GameController::game_start(PacketReader& reader) {
 	display_message(message.str().c_str(), 1.0, 1.0, 1.0);
 }
 
+/*
+ * Called when the game stop packet is received.
+ */
 void GameController::game_stop(PacketReader& reader) {
 	char		winningteam;
 	int 		teamascore;
@@ -1319,12 +1442,16 @@ void GameController::game_stop(PacketReader& reader) {
 	display_message(score_msg.str().c_str(), 1.0, 1.0, 1.0);
 	// End temporary score display
 
+	// Reset the gates and set yourself invisible and frozen until respawn.
 	m_map->reset_gates();
 	m_players[m_player_id].set_is_invisible(true);
 	m_minimap->set_blip_invisible(m_player_id,true);
 	m_players[m_player_id].set_is_frozen(true);
 }
 
+/*
+ * Called when a score update packet is received.
+ */
 void GameController::score_update(PacketReader& reader) {
 	uint32_t	player_id;
 	int		score;
@@ -1335,6 +1462,9 @@ void GameController::score_update(PacketReader& reader) {
 	}
 }
 
+/*
+ * Called when an animation packet is received.
+ */
 void GameController::animation_packet(PacketReader& reader) {
 	uint32_t	player_id;
 	string		spritelist;
@@ -1349,6 +1479,7 @@ void GameController::animation_packet(PacketReader& reader) {
 		return;
 	}
 	
+	// Get the sprite to modify by going through the path separated by slashes.
 	Graphic* the_sprite = NULL;
 	while (tokenizer.has_more()) {
 		string spritename = tokenizer.get_next();
@@ -1389,6 +1520,9 @@ void GameController::animation_packet(PacketReader& reader) {
 	}
 }
 
+/*
+ * Called when a request denied packet is received.
+ */
 void GameController::request_denied(PacketReader& reader) {
 	int		packet_type;
 	string		reason;
@@ -1403,6 +1537,9 @@ void GameController::request_denied(PacketReader& reader) {
 	}
 }
 
+/*
+ * Called when a player name change packet is received.
+ */
 void GameController::name_change(PacketReader& reader) {
 	uint32_t	player_id;
 	string		new_name;
@@ -1417,6 +1554,7 @@ void GameController::name_change(PacketReader& reader) {
 			m_name = new_name;
 		}
 
+		// Re-create the name sprite.
 		if (player->get_team() == 'A') {
 			display_message(msg.str().c_str(), 0.4, 0.4, 1);
 			m_text_manager->set_active_color(0.4, 0.4, 1);
@@ -1429,6 +1567,9 @@ void GameController::name_change(PacketReader& reader) {
 	}
 }
 
+/*
+ * Called when a team change packet is received.
+ */
 void GameController::team_change(PacketReader& reader) {
 	uint32_t	playerid;
 	char		team;
@@ -1439,13 +1580,14 @@ void GameController::team_change(PacketReader& reader) {
 
 		ostringstream	msg;
 		msg << player->get_name() << " has switched teams";
-
+		
+		// Remove the name and sprite.
 		m_text_manager->remove_string(m_players[playerid].get_name_sprite());
 		m_window->unregister_graphic(m_players[playerid].get_sprite());
 		m_minimap->remove_blip(playerid);
 		delete m_players[playerid].get_sprite();
 
-
+		// Generate new graphics for it.
 		if (team == 'A') {
 			player->set_sprite(new GraphicGroup(blue_player));
 			m_text_manager->set_active_color(0.4, 0.4, 1.0);
@@ -1456,12 +1598,15 @@ void GameController::team_change(PacketReader& reader) {
 			display_message(msg.str().c_str(), 1, 0.4, 0.4);
 		}
 		m_minimap->add_blip(playerid,team,0,0);
-		// TEMPORARY SPRITE CODE
+		
 		m_window->register_graphic(m_players[playerid].get_sprite());
 		m_players[playerid].set_name_sprite(m_text_manager->place_string(m_players[playerid].get_name(), m_players[playerid].get_x(), m_players[playerid].get_y()-(m_players[playerid].get_radius()+30), TextManager::CENTER, TextManager::LAYER_MAIN));
 	}
 }
 
+/*
+ * Send an animation packet.
+ */
 void GameController::send_animation_packet(string sprite, string field, int value) {
 	PacketWriter animation_packet(PLAYER_ANIMATION_PACKET);
 	animation_packet << m_player_id << sprite << field << value;
@@ -1469,6 +1614,9 @@ void GameController::send_animation_packet(string sprite, string field, int valu
 	m_network.send_packet(animation_packet);
 }
 
+/*
+ * Send a gate hold packet.
+ */
 void GameController::send_gate_hold(bool holding) {
 	PacketWriter gate_hold(GATE_UPDATE_PACKET);
 	if (holding) {
@@ -1479,18 +1627,27 @@ void GameController::send_gate_hold(bool holding) {
 	m_network.send_packet(gate_hold);
 }
 
-void	GameController::send_name_change_packet(const char* new_name) {
+/*
+ * Send a name change packet.
+ */
+void GameController::send_name_change_packet(const char* new_name) {
 	PacketWriter packet(NAME_CHANGE_PACKET);
 	packet << m_player_id << new_name;
 	m_network.send_packet(packet);
 }
 
-void	GameController::send_team_change_packet(char new_team) {
+/*
+ * Send a team change packet.
+ */
+void GameController::send_team_change_packet(char new_team) {
 	PacketWriter packet(TEAM_CHANGE_PACKET);
 	packet << m_player_id << new_team;
 	m_network.send_packet(packet);
 }
 
+/*
+ * Display a message on the screen.
+ */
 void GameController::display_message(string message, double red, double green, double blue) {
 	m_text_manager->set_active_color(red, green, blue);
 	int y = 20 + (m_font->ascent() + m_font->descent() + 5) * m_messages.size();
@@ -1498,11 +1655,17 @@ void GameController::display_message(string message, double red, double green, d
 	m_messages.push_back(pair<Graphic*, int>(message_sprite, SDL_GetTicks() + MESSAGE_DISPLAY_TIME));
 }
 
+/*
+ * Get a player by their ID.
+ */
 GraphicalPlayer* GameController::get_player_by_id(unsigned int player_id) {
 	map<int, GraphicalPlayer>::iterator it(m_players.find(player_id));
 	return it == m_players.end() ? NULL : &it->second;
 }
 
+/*
+ * Get a player by name.
+ */
 GraphicalPlayer* GameController::get_player_by_name(const char* name) {
 	for (map<int, GraphicalPlayer>::iterator it(m_players.begin()); it != m_players.end(); ++it) {
 		if (it->second.compare_name(name)) {
