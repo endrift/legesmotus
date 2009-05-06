@@ -73,15 +73,8 @@ void	Server::name_change(int channel, PacketReader& packet)
 		// Just a capitalization change
 		player->set_name(requested_name.c_str());
 	} else {
-		// A more major change - check for conflicts
-		string		name(requested_name);
-		int		next_suffix = 1;
-		while (get_player_by_name(name.c_str()) != NULL) {
-			ostringstream	name_to_try;
-			name_to_try << requested_name << '-' << next_suffix++;
-			name = name_to_try.str();
-		}
-
+		// A more major change -> we have to get a unique name for it in case there are conflicts
+		string		name(get_unique_player_name(requested_name.c_str()));
 		player->set_name(name.c_str());
 	}
 
@@ -92,6 +85,7 @@ void	Server::name_change(int channel, PacketReader& packet)
 
 void	Server::team_change(int channel, PacketReader& packet)
 {
+	// Parse the packet and sanity-check
 	uint32_t		sender_id = 0;
 	char			new_team = 0;
 
@@ -107,7 +101,16 @@ void	Server::team_change(int channel, PacketReader& packet)
 		return;
 	}
 
+	// Check to make sure there is space on the current map for the new team
+	if (m_team_count[new_team - 'A'] >= m_current_map.total_capacity(new_team)) {
+		// TODO: send back a rejection packet
+		return;
+	}
+
+	// Move the player to the new team
+	release_player_resources(*player);
 	player->set_team(new_team);
+	++m_team_count[new_team - 'A'];
 
 	if (m_players_have_spawned) {
 		// Hide and freeze the player (TODO: abstract the sending of this packet)
@@ -120,10 +123,10 @@ void	Server::team_change(int channel, PacketReader& packet)
 		m_waiting_players.push_back(player);
 	}
 
+	// Notify all players that this player has switched teams:
 	PacketWriter		outbound_packet(TEAM_CHANGE_PACKET);
 	outbound_packet << player->get_id() << player->get_team();
 	m_network.broadcast_packet(outbound_packet);
-
 }
 
 void	Server::message(int channel, PacketReader& packet)
@@ -313,14 +316,8 @@ void	Server::join(const IPaddress& address, PacketReader& packet)
 		return;
 	}
 
-	// Check player's name for uniqueness
-	string			name(requested_name);
-	int			next_suffix = 1;
-	while (get_player_by_name(name.c_str()) != NULL) {
-		ostringstream	name_to_try;
-		name_to_try << requested_name << '-' << next_suffix++;
-		name = name_to_try.str();
-	}
+	// Get a unique name for the player
+	string			name(get_unique_player_name(requested_name.c_str()));
 
 	// Try to bind player's address
 	int			channel = m_network.bind(address);
@@ -423,11 +420,22 @@ void	Server::remove_player(const ServerPlayer& player, const char* leave_message
 	leave_packet << player_id << leave_message;
 	m_network.broadcast_packet(leave_packet);
 
+	// Release resources held by the player (gates, spawn points, team count, etc.)
+	release_player_resources(player);
+
+	// Unbind the network socket
+	m_network.unbind(player.get_channel());
+
+	// Fully remove the player
+	m_players.erase(player_id);
+}
+
+void	Server::release_player_resources(const ServerPlayer& player) {
 	// If this player was holding down a gate, make sure the gate status is cleared:
-	if (get_gate('A').set_engagement(false, player_id)) {
+	if (get_gate('A').set_engagement(false, player.get_id())) {
 		report_gate_status('A', -1);
 	}
-	if (get_gate('B').set_engagement(false, player_id)) {
+	if (get_gate('B').set_engagement(false, player.get_id())) {
 		report_gate_status('B', -1);
 	}
 
@@ -437,12 +445,6 @@ void	Server::remove_player(const ServerPlayer& player, const char* leave_message
 	}
 
 	--m_team_count[player.get_team() - 'A'];
-
-	// Unbind the network socket
-	m_network.unbind(player.get_channel());
-
-	// Fully remove the player
-	m_players.erase(player_id);
 }
 
 void	Server::run(int portno, const char* map_name)
@@ -784,5 +786,16 @@ bool	Server::load_map(const char* map_name) {
 	map_filename += ".map";
 
 	return m_current_map.load_file(map_filename.c_str());
+}
+
+string	Server::get_unique_player_name(const char* requested_name) const {
+	string			name(requested_name);
+	int			next_suffix = 1;
+	while (get_player_by_name(name.c_str()) != NULL) {
+		ostringstream	name_to_try;
+		name_to_try << requested_name << '-' << next_suffix++;
+		name = name_to_try.str();
+	}
+	return name;
 }
 

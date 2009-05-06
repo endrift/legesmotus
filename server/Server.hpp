@@ -180,8 +180,12 @@ private:
 	ServerPlayer*		get_player_by_name(const char* name);
 	const ServerPlayer*	get_player_by_name(const char* name) const;
 
+	std::string		get_unique_player_name(const char* requested_name) const;
+
 	// Remove the given player from the game
 	void			remove_player(const ServerPlayer& player, const char* leave_message);
+
+	void			release_player_resources(const ServerPlayer& player);
 
 	//
 	// Main Loop Helpers
