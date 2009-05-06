@@ -7,6 +7,7 @@
 
 #include "Text.hpp"
 #include "common/LMException.hpp"
+#include "compat_gl.h"
 
 using namespace std;
 
@@ -98,9 +99,18 @@ void Text::set_blue_intensity(double b) {
 void Text::draw(const GameWindow* window) const {
 	glPushMatrix();
 	transform_gl();
+	GLfloat vec[4] = { 0.0, 0.0, 0.0, 0.8 };
+	glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_COMBINE);
+	glTexEnvi(GL_TEXTURE_ENV,GL_COMBINE_ALPHA,GL_INTERPOLATE);
+	glTexEnvfv(GL_TEXTURE_ENV,GL_TEXTURE_ENV_COLOR,vec);
+	glEnable(GL_ALPHA_TEST);
 	if (m_shadow_enabled) {
+		glAlphaFunc(GL_GREATER,m_shadow->get_alpha()*0.2);
 		m_shadow->draw(window);
 	}
+	glAlphaFunc(GL_GREATER,m_fg->get_alpha()*0.2);
 	m_fg->draw(window);
+	glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+	glDisable(GL_ALPHA_TEST);
 	glPopMatrix();
 }
