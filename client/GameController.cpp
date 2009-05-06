@@ -214,7 +214,8 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_main_menu_items["Resume Game"] = m_text_manager->place_string("Resume Game", 50, 200, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_main_menu_items["Options"] = m_text_manager->place_string("Options", 50, 250, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_main_menu_items["Quit"] = m_text_manager->place_string("Quit", 50, 300, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_main_menu_items["Thanks"] = m_text_manager->place_string("Thanks for playing! Please visit", 50, 400, TextManager::LEFT, TextManager::LAYER_HUD); 	m_text_manager->set_active_color(0.4, 1.0, 0.4);
+	m_main_menu_items["Thanks"] = m_text_manager->place_string("Thanks for playing! Please visit", 50, 400, TextManager::LEFT, TextManager::LAYER_HUD);
+ 	m_text_manager->set_active_color(0.4, 1.0, 0.4);
  	m_main_menu_items["Thanks2"] = m_text_manager->place_string("blug.brown.edu/legesmotus", 50, 440, TextManager::LEFT, TextManager::LAYER_HUD);
  	m_text_manager->set_active_color(1.0, 1.0, 1.0);
  	m_main_menu_items["Thanks3"] = m_text_manager->place_string("to leave feedback for us!", 50, 480, TextManager::LEFT, TextManager::LAYER_HUD);

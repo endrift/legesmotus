@@ -23,6 +23,15 @@ GameWindow::GameWindow(int width, int height, int depth, bool fullscreen) {
 	m_offset_x = 0;
 	m_offset_y = 0;
 	switch (depth) {
+	case 16:
+		if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
+			throw LMException(SDL_GetError());
+		}
+		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
+		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
+		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
+		SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 1);
+		break;
 	case 24:
 		if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
 			throw LMException(SDL_GetError());
@@ -30,7 +39,6 @@ GameWindow::GameWindow(int width, int height, int depth, bool fullscreen) {
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 		break;
 	case 32:
 		if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
@@ -40,14 +48,14 @@ GameWindow::GameWindow(int width, int height, int depth, bool fullscreen) {
 		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 32);
 		break;
 	default:
 		throw LMException("Bad depth");
 		return;
 	}
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1);
-#if SDL_MAJOR_VERSION == 1 && SDL_MINOR_VERSION == 2 && SDL_PATCHLEVEL >= 10
+#if SDL_VERSION_ATLEAST(1, 2, 10)
 	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1); // Deprecated in SDL 1.3
 #endif
 	SDL_WM_SetCaption("Leges Motus","Leges Motus");
@@ -61,8 +69,8 @@ GameWindow::GameWindow(int width, int height, int depth, bool fullscreen) {
 		throw LMException(SDL_GetError());
 	}
 	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_TEXTURE_2D);
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 	glViewport(0,0,width,height);
 	glOrtho(0,width,height,0,1,-1);
 }

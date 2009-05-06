@@ -74,7 +74,7 @@ void Graphic::init(SDL_Surface* image) {
 	m_image_height = image->h;
 	int width = toPow2(image->w);
 	int height = toPow2(image->h);
-	m_image = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
+	m_image = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
 	SDL_SetAlpha(image, 0, SDL_ALPHA_OPAQUE);
 	SDL_BlitSurface(image, NULL, m_image, NULL);
 	m_tex_count = new int;
