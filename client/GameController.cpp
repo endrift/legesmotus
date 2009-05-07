@@ -11,6 +11,7 @@
 #include "GraphicalPlayer.hpp"
 #include "Sprite.hpp"
 #include "TiledGraphic.hpp"
+#include "TableBackground.hpp"
 #include "common/PacketReader.hpp"
 #include "common/PacketWriter.hpp"
 #include "common/network.hpp"
@@ -229,6 +230,20 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_options_menu_items["Back"] = m_text_manager->place_string("Back", 50, 200, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_options_menu_items["Enter Name"] = m_text_manager->place_string("Enter Name", 50, 250, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_options_menu_items["Toggle Sound"] = m_text_manager->place_string("Toggle Sound", 50, 300, TextManager::LEFT, TextManager::LAYER_HUD);
+	
+	// Initialize the overlay.
+	m_overlay_background = new TableBackground(2, m_screen_width - 300);
+	m_overlay_background->set_row_height(0, 80);
+	m_overlay_background->set_row_height(1, m_screen_height - 280);
+	m_overlay_background->set_priority(-2);
+	m_overlay_background->set_border_color(Color(1,1,1,0.8));
+	m_overlay_background->set_border_width(2);
+	m_overlay_background->set_cell_color(0,Color(0.2,0.2,0.2,0.5));
+	m_overlay_background->set_cell_color(1,Color(0.2,0.2,0.5,0.5));
+	m_overlay_background->set_y(100);
+	m_overlay_background->set_x(m_screen_width/2);
+	m_overlay_background->set_invisible(true);
+	m_window->register_hud_graphic(m_overlay_background);
 	
 	m_text_manager->set_active_color(1.0, 0.4, 0.4);
 	m_gate_warning = m_text_manager->place_string("Your gate is going down!", m_screen_width/2, m_screen_height - 200, TextManager::CENTER, TextManager::LAYER_HUD);
@@ -609,12 +624,23 @@ void GameController::initialize_key_bindings() {
 void GameController::parse_key_input() {
 	// For keys that can be held down:
    	m_keys = SDL_GetKeyState(NULL);
-
-	if ((m_key_bindings.jump != -1 && m_keys[m_key_bindings.jump]) || (m_alt_key_bindings.jump != -1 && m_keys[m_alt_key_bindings.jump])) {
-		attempt_jump();
+   	
+   	if (m_game_state == GAME_IN_PROGRESS) {
+		if ((m_key_bindings.jump != -1 && m_keys[m_key_bindings.jump]) || (m_alt_key_bindings.jump != -1 && m_keys[m_alt_key_bindings.jump])) {
+			attempt_jump();
+		}
+	}
+	
+	if ((m_key_bindings.show_overlay != -1 && m_keys[m_key_bindings.show_overlay]) || (m_alt_key_bindings.show_overlay != -1 && m_keys[m_alt_key_bindings.show_overlay])) {
+		if (m_game_state == GAME_IN_PROGRESS || m_game_state == GAME_OVER) {
+			toggle_score_overlay(true);
+		} else {
+			toggle_score_overlay(false);
+		}
+	} else {
+		toggle_score_overlay(false);
 	}
 }
-
 
 /*
  * Process a mouse click, depending on the game state.
@@ -716,9 +742,9 @@ void GameController::move_objects(float timescale) {
 	if (new_x - half_width < 0) {
 		new_x = half_width;
 		new_y = m_players[m_player_id].get_y();
-		if (m_players[m_player_id].is_frozen()) {
-			m_players[m_player_id].set_x_vel(-m_players[m_player_id].get_x_vel());
-			//m_players[m_player_id].set_y_vel(m_players[m_player_id].get_y_vel());
+		if (m_players[m_player_id].is_frozen() && !m_players[m_player_id].is_invisible()) {
+			m_players[m_player_id].set_x_vel(-m_players[m_player_id].get_x_vel() * .9);
+			m_players[m_player_id].set_y_vel(m_players[m_player_id].get_y_vel() * .9);
 		} else {
 			m_players[m_player_id].set_velocity(0, 0);
 			m_players[m_player_id].set_rotational_vel(0);
@@ -726,9 +752,9 @@ void GameController::move_objects(float timescale) {
 	} else if (new_x + half_width > m_map_width) {
 		new_x = m_map_width - half_width;
 		new_y = m_players[m_player_id].get_y();
-		if (m_players[m_player_id].is_frozen()) {
-			m_players[m_player_id].set_x_vel(-m_players[m_player_id].get_x_vel());
-			//m_players[m_player_id].set_y_vel(m_players[m_player_id].get_y_vel());
+		if (m_players[m_player_id].is_frozen() && !m_players[m_player_id].is_invisible()) {
+			m_players[m_player_id].set_x_vel(-m_players[m_player_id].get_x_vel() * .9);
+			m_players[m_player_id].set_y_vel(m_players[m_player_id].get_y_vel() * .9);
 		} else {
 			m_players[m_player_id].set_velocity(0, 0);
 			m_players[m_player_id].set_rotational_vel(0);
@@ -738,9 +764,9 @@ void GameController::move_objects(float timescale) {
 	if (new_y - half_height < 0) {
 		new_y = half_height;
 		new_x = m_players[m_player_id].get_x();
-		if (m_players[m_player_id].is_frozen()) {
-			m_players[m_player_id].set_x_vel(m_players[m_player_id].get_x_vel());
-			m_players[m_player_id].set_y_vel(-m_players[m_player_id].get_y_vel());
+		if (m_players[m_player_id].is_frozen() && !m_players[m_player_id].is_invisible()) {
+			m_players[m_player_id].set_x_vel(m_players[m_player_id].get_x_vel() * .9);
+			m_players[m_player_id].set_y_vel(-m_players[m_player_id].get_y_vel() * .9);
 		} else {
 			m_players[m_player_id].set_velocity(0, 0);
 			m_players[m_player_id].set_rotational_vel(0);
@@ -748,9 +774,9 @@ void GameController::move_objects(float timescale) {
 	} else if (new_y + half_height > m_map_height) {
 		new_y = m_map_height - half_height;
 		new_x = m_players[m_player_id].get_x();
-		if (m_players[m_player_id].is_frozen()) {
-			m_players[m_player_id].set_x_vel(m_players[m_player_id].get_x_vel());
-			m_players[m_player_id].set_y_vel(-m_players[m_player_id].get_y_vel());
+		if (m_players[m_player_id].is_frozen() && !m_players[m_player_id].is_invisible()) {
+			m_players[m_player_id].set_x_vel(m_players[m_player_id].get_x_vel() * .9);
+			m_players[m_player_id].set_y_vel(-m_players[m_player_id].get_y_vel() * .9);
 		} else {
 			m_players[m_player_id].set_velocity(0, 0);
 			m_players[m_player_id].set_rotational_vel(0);
@@ -793,13 +819,13 @@ void GameController::move_objects(float timescale) {
 			if (newdist < olddist) {
 				if (thisobj->get_type() == Map::OBSTACLE) {
 					// If we're frozen, bounce off the wall.
-					if (m_players[m_player_id].is_frozen()) {
+					if (m_players[m_player_id].is_frozen() && !m_players[m_player_id].is_invisible()) {
 						double xvel = m_players[m_player_id].get_x_vel();
 						double yvel = m_players[m_player_id].get_y_vel();
 						double my_angle = get_normalized_angle(atan2(yvel, xvel) * RADIANS_TO_DEGREES);
 						double new_angle = get_normalized_angle(angle_of_incidence + (angle_of_incidence - my_angle) - 180);
 						double vel_magnitude = sqrt(xvel * xvel + yvel * yvel);
-						m_players[m_player_id].set_velocity(vel_magnitude * cos(new_angle * DEGREES_TO_RADIANS), vel_magnitude * sin(new_angle * DEGREES_TO_RADIANS));
+						m_players[m_player_id].set_velocity(vel_magnitude * cos(new_angle * DEGREES_TO_RADIANS) * .9, vel_magnitude * sin(new_angle * DEGREES_TO_RADIANS) * .9);
 						new_x = m_players[m_player_id].get_x() + m_players[m_player_id].get_x_vel() * timescale;
 						new_y = m_players[m_player_id].get_y() + m_players[m_player_id].get_y_vel() * timescale;
 					} else {
@@ -1084,6 +1110,13 @@ void GameController::set_players_visible(bool visible) {
 			m_minimap->set_blip_invisible(it->first,true);
 		}
 	}
+}
+
+/*
+ * Show or hide the overlay.
+ */
+void GameController::toggle_score_overlay(bool visible) {
+	m_overlay_background->set_invisible(!visible);
 }
 
 /*
@@ -1794,9 +1827,11 @@ GraphicalPlayer* GameController::get_player_by_name(const char* name) {
 	return NULL;
 }
 
+/*
+ * Send an ack packet.
+ */
 void	GameController::send_ack(const PacketReader& packet) {
 	PacketWriter		ack_packet(ACK_PACKET);
 	ack_packet << m_player_id << packet.packet_type() << packet.packet_id();
 	m_network.send_packet(ack_packet);
 }
-

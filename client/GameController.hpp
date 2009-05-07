@@ -13,6 +13,7 @@
 #include "ClientNetwork.hpp"
 #include "TextManager.hpp"
 #include "SoundController.hpp"
+#include "TableBackground.hpp"
 #include "common/PathManager.hpp"
 #include "common/PacketReader.hpp"
 #include "common/misc.hpp"
@@ -91,6 +92,8 @@ private:
 	unsigned int	m_player_id;
 	bool		m_holding_gate;
 	unsigned int	m_last_fired;
+	bool		m_show_overlay;
+	TableBackground* m_overlay_background;
 	
 	// Do we want to keep it this way?
 	unsigned long	m_time_to_unfreeze;
@@ -159,6 +162,7 @@ public:
 	void		send_animation_packet(std::string sprite, std::string field, int value);
 	void		send_name_change_packet(const char* new_name);
 	void		send_team_change_packet(char new_team);
+	void		toggle_score_overlay(bool visible);
 	
 	// Network callbacks:
 	void		welcome(PacketReader& reader);
