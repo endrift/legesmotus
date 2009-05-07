@@ -12,6 +12,7 @@
 #include <set>
 #include <list>
 #include <stdint.h>
+#include <string>
 
 class Server;
 class PacketWriter;
