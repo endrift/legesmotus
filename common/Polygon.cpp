@@ -12,6 +12,8 @@
 #include <limits>
 #include "common/math.hpp"
 
+// See .hpp file for extensive comments.
+
 using namespace std;
 
 void	Polygon::add_line(Point a, Point b) {
@@ -117,7 +119,7 @@ Point Polygon::intersects_line(Point start, Point end) const {
 	}
 	
 	if (mindist != numeric_limits<double>::max()) {
-		Point scale = Point(mindist * r.x, mindist * r.y);
+		Point scale = Point(int(round(mindist * r.x)), int(round(mindist * r.y)));
 		return start + scale;
 	}
 	return Point(-1, -1);
@@ -138,7 +140,7 @@ Point Polygon::closest_point_on_line_to_point(Point start, Point end, Point p) c
 	if (projection < 0 || projection > 1) {
 		return Point(-1, -1);
 	} else {
-		return start + Point(v.x * projection, v.y * projection);
+		return start + Point(int(round(v.x * projection)), int(round(v.y * projection)));
 	}
 }
 

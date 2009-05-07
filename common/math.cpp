@@ -8,6 +8,8 @@
 #include "math.hpp"
 #include <iostream>
 
+// See .hpp file for extensive comments.
+
 using namespace std;
 
 const double RADIANS_TO_DEGREES = 57.29577951308232;
@@ -24,8 +26,8 @@ vector<double> closest_point_on_line(int x1, int y1, int x2, int y2, int x3, int
 	}
 	double utop = ((x3 - x1) * (x2 - x1) + (y3 - y1) * (y2 - y1));
 	double u = utop / (distp2p1 * distp2p1);
-	int xclosest = x1 + u * (x2 - x1);
-	int yclosest = y1 + u * (y2 - y1);
+	double xclosest = x1 + u * (x2 - x1);
+	double yclosest = y1 + u * (y2 - y1);
 	vector<double> closestpoint;
 	closestpoint.push_back(xclosest);
 	closestpoint.push_back(yclosest);

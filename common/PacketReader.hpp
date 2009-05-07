@@ -85,6 +85,7 @@ public:
 
 	PacketReader&	operator>> (std::string&);
 
+	// Is there another field to be read?
 	bool		has_more() const { return m_next_field != NULL; }
 
 	// To test whether there are any fields left for processing

@@ -11,6 +11,8 @@
 #include <cstdlib>
 #include <ostream>
 
+// See .hpp file for extensive comments.
+
 using namespace std;
 
 const char*	PacketReader::get_next() {

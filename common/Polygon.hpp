@@ -19,6 +19,7 @@ private:
 
 public:
 
+	// Add a line from point a to point b:
 	void			add_line(Point a, Point b);
 	void			clear() { m_lines.clear(); }
 

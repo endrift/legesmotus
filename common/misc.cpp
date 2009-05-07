@@ -7,15 +7,19 @@
 
 #include "misc.hpp"
 
+// See .hpp file for extensive comments.
+
+using namespace std;
+
 #ifdef __WIN32
 
 #include <Windows.h>
 
-std::string	get_username() {
+string	get_username() {
 	char username[64];
 	size_t unlen = sizeof(username);
 	if (GetUserName(username,&unlen)) {
-		return std::string(username);
+		return string(username);
 	} else {
 		return "Bill";
 	}
@@ -27,7 +31,7 @@ std::string	get_username() {
 #include <pwd.h>
 #include <unistd.h>
 
-std::string	get_username() {
+string	get_username() {
 	if (struct passwd* pw = getpwuid(getuid())) {
 		return pw->pw_name;
 	} else {
@@ -50,3 +54,9 @@ Color::Color(double r, double g, double b, double a) {
 	this->b = b;
 	this->a = a;
 }
+
+void	strip_trailing_spaces(string& str) {
+	string::size_type endpos = str.find_last_not_of("\n\t");
+	str = str.substr(0, endpos);
+}
+

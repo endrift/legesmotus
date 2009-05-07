@@ -17,6 +17,7 @@
 #define M_PI 3.141592653589793
 #endif
 
+// For easy conversion between radians and degrees:
 extern const double RADIANS_TO_DEGREES;
 extern const double DEGREES_TO_RADIANS;
 
@@ -35,6 +36,7 @@ static inline double dist_between_points(int x1, int y1, int x2, int y2) {
 	return sqrt(double((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)));
 }
 
+// Get a value in the range [0,360)
 double get_normalized_angle(double angle);
 
 double dot_product(Point a, Point b);

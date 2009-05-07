@@ -5,6 +5,8 @@
 
 using namespace std;
 
+// See .hpp file for extensive comments.
+
 void	Point::init_from_string(const char* str) {
 	// Look for a comma
 	if (const char* comma = strchr(str, ',')) {

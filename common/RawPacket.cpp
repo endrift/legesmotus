@@ -11,6 +11,8 @@
 #include <sstream>
 #include <cstring>
 
+// See .hpp file for extensive comments.
+
 using namespace std;
 
 RawPacket::RawPacket(size_t max_size) throw(LMException) {

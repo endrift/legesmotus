@@ -8,6 +8,8 @@
 #include "PacketWriter.hpp"
 #include <iomanip>
 
+// See .hpp file for extensive comments.
+
 using namespace std;
 
 uint32_t	PacketWriter::m_next_packet_id = 1;

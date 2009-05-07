@@ -7,6 +7,8 @@
  
 #include "LMException.hpp"
 
+// See .hpp file for comments.
+
 LMException::LMException(const char* message) : m_message(message) {
 }
 

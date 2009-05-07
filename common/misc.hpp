@@ -12,10 +12,9 @@
 
 
 // Return the username of the current user.
-// Currently only implemented in UNIX.
-// On WIN32, always returns "Bill"
 std::string		get_username();
 
+// Represent a color (with red, green, blue, and alpha components)
 struct Color {
 	Color();
 	Color(double r, double g, double b, double a = 1.0);
@@ -24,5 +23,8 @@ struct Color {
 	double b;
 	double a;
 };
+
+// remove all trailing spaces of given string
+void		strip_trailing_spaces(std::string& str);
 
 #endif

@@ -12,6 +12,8 @@
 #include <ostream>
 #include <limits>
 
+// See .hpp file for extensive comments.
+
 using namespace std;
 
 const char*	StringTokenizer::get_next() {

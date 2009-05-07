@@ -37,17 +37,21 @@ public:
 	Map();
 	virtual ~Map();
 
+	// Standard getters
 	const char*	get_name() const { return m_name.c_str(); }
 	int		get_width() const { return m_width; }
 	int		get_height() const { return m_height; }
 	
+	// Read and parse the given input stream and load into the current map
 	bool		load(std::istream& in);
 
 	// load_file will preserve the current map if it can't open the new map
 	// (and return false to indicate error)
 	bool		load_file(const char* path);
 
+	// Remove all objects from the map:
 	virtual void	clear();
+	// Parse the given packet representation of a map object and add it to the map
 	virtual void	add_object(PacketReader& data) = 0;
 };
 

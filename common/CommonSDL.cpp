@@ -10,6 +10,8 @@
 #include "compat_sdl.h"
 #include "SDL_net.h"
 
+// See .hpp file for comments.
+
 CommonSDL::CommonSDL() {
 	if (SDL_Init(0) == - 1) {
 		throw LMException("Failed to initialize SDL.");

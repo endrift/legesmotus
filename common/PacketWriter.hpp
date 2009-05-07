@@ -40,6 +40,7 @@ private:
 public:
 	explicit PacketWriter(uint32_t packet_type);
 
+	// Getters
 	uint32_t	packet_type() const { return m_packet_type; }
 	uint32_t	packet_id() const { return m_packet_id; }
 

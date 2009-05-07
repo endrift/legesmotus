@@ -10,6 +10,8 @@
 #include <cmath>
 #include "common/math.hpp"
 
+// See .hpp file for extensive comments.
+
 Player::Player() {
 	m_id = 0;
 	m_team = 0;
