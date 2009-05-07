@@ -169,6 +169,12 @@ void Graphic::set_center_y(double center_y) {
 	m_center_y = center_y;
 }
 
+void Graphic::set_color_intensity(const Color& color) {
+	set_red_intensity(color.r);
+	set_red_intensity(color.g);
+	set_red_intensity(color.b);
+}
+
 bool Graphic::is_invisible() const {
 	return m_invisible;
 }

@@ -69,6 +69,10 @@ double Sprite::get_blue_intensity() const {
 	return m_blue;
 }
 
+Color Sprite::get_color_intensity() const {
+	return Color(m_red,m_green,m_blue);
+}
+
 void Sprite::set_alpha(double alpha) {
 	m_alpha = alpha;
 }

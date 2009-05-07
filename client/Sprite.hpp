@@ -35,6 +35,7 @@ public:
 	double	get_red_intensity() const;
 	double	get_green_intensity() const;
 	double	get_blue_intensity() const;
+	Color	get_color_intensity() const;
 
 	virtual void	set_alpha(double alpha);
 	virtual void	set_red_intensity(double r);

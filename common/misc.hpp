@@ -16,5 +16,13 @@
 // On WIN32, always returns "Bill"
 std::string		get_username();
 
+struct Color {
+	Color();
+	Color(double r, double g, double b, double a = 1.0);
+	double r;
+	double g;
+	double b;
+	double a;
+};
 
 #endif

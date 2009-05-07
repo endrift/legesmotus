@@ -55,6 +55,10 @@ void Text::set_color(double r, double g, double b) {
 	m_fg->set_blue_intensity(b);
 }
 
+void Text::set_color(const Color& color) {
+	set_color(color.r, color.g, color.b);
+}
+
 void Text::set_alpha(double a) {
 	m_fg->set_alpha(a);
 }
@@ -64,6 +68,10 @@ void Text::set_shadow_color(double r, double g, double b) {
 	m_shadow->set_red_intensity(r);
 	m_shadow->set_green_intensity(g);
 	m_shadow->set_blue_intensity(b);
+}
+
+void Text::set_shadow_color(const Color& color) {
+	set_shadow_color(color.r, color.g, color.b);
 }
 
 void Text::set_shadow_alpha(double a) {

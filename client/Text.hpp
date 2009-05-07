@@ -27,8 +27,10 @@ public:
 	virtual Text* clone() const;
 
 	void		set_color(double r, double g, double b); // Only sets FG color
+	void		set_color(const Color& color);
 	virtual void	set_alpha(double a); // Only sets FG alpha
 	void		set_shadow_color(double r, double g, double b);
+	void		set_shadow_color(const Color& color);
 	void		set_shadow_alpha(double a);
 	void		set_shadow_offset(double x, double y);
 	void		set_shadow(bool enable);

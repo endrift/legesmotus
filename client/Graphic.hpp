@@ -10,6 +10,7 @@
 
 #include "compat_gl.h"
 #include "common/compat_sdl.h"
+#include "common/misc.hpp"
 #include <string>
 
 class GameWindow;
@@ -84,10 +85,11 @@ public:
 	bool		is_invisible() const;
 	void		set_invisible(bool invisible);
 
-	virtual void	set_alpha(double alpha) = 0;
+	void		set_color_intensity(const Color& color); // Does not affect alpha
 	virtual void	set_red_intensity(double r) = 0;
 	virtual void	set_green_intensity(double g) = 0;
 	virtual void	set_blue_intensity(double b) = 0;
+	virtual void	set_alpha(double alpha) = 0;
 
 	virtual Graphic*	get_graphic(const std::string&) { return NULL; }
 

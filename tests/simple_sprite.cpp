@@ -4,6 +4,7 @@
 #include "client/TiledGraphic.hpp"
 #include "common/PathManager.hpp"
 #include "client/Mask.hpp"
+#include "client/TableBackground.hpp"
 #include <cmath>
 
 using namespace std;
@@ -19,6 +20,7 @@ extern "C" int main(int argc, char* argv[]) {
 	TiledGraphic tg(pman.data_path("metal_bgtile.png","sprites"));
 	GraphicGroup g;
 	Sprite mask(pman.data_path("mini_circle.png","sprites"));
+	TableBackground tb(2,48);
 	s.set_center_x(32);
 	s.set_center_y(48);
 	afront.set_center_x(46);
@@ -35,6 +37,14 @@ extern "C" int main(int argc, char* argv[]) {
 	tg.set_height(256);
 	afront.set_priority(-1);
 	aback.set_priority(1);
+	tb.set_priority(2);
+	tb.set_border_color(Color(1,1,1,0.5));
+	tb.set_border_width(2);
+	tb.set_cell_color(0,Color(1,0,0,0.2));
+	tb.set_cell_color(1,Color(0,0,1,0.2));
+	tb.set_row_height(0,48);
+	tb.set_row_height(1,48);
+	tb.set_center_y(48);
 	Mask m(&mask,&tg);
 	m.set_priority(1);
 	m.set_x(250);
@@ -42,6 +52,7 @@ extern "C" int main(int argc, char* argv[]) {
 	g.add_graphic(&s);
 	g.add_graphic(&aback,"f");
 	g.add_graphic(&afront,"b");
+	g.add_graphic(&tb);
 	window->register_graphic(&g);
 	window->register_graphic(&m);
 	bool running = true;

@@ -36,3 +36,17 @@ std::string	get_username() {
 }
 
 #endif
+
+Color::Color() {
+	r = 0;
+	g = 0;
+	b = 0;
+	a = 1;
+}
+
+Color::Color(double r, double g, double b, double a) {
+	this->r = r;
+	this->g = g;
+	this->b = b;
+	this->a = a;
+}
