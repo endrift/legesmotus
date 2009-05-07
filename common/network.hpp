@@ -8,6 +8,9 @@
 #ifndef LM_COMMON_NETWORK_HPP
 #define LM_COMMON_NETWORK_HPP
 
+#include <string>
+#include "SDL_net.h"
+
 // What to use to separate packet fields?
 //const char PACKET_FIELD_SEPARATOR = '\f';	// Formfeed
 const char PACKET_FIELD_SEPARATOR = '~';	// Formfeed
@@ -19,7 +22,7 @@ enum { MAX_PACKET_LENGTH = 1024 };
 enum { MAX_NAME_LENGTH = 20 };
 
 // The default port number of the server
-enum { DEFAULT_PORTNO = 9009 };
+enum { DEFAULT_PORTNO = 16877 };
 
 // Packet types:
 enum {
@@ -42,5 +45,7 @@ enum {
 	NAME_CHANGE_PACKET = 17,
 	TEAM_CHANGE_PACKET = 18
 };
+
+std::string	format_ip_address(const IPaddress& addr);
 
 #endif

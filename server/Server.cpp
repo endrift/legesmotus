@@ -306,7 +306,7 @@ void	Server::join(const IPaddress& address, PacketReader& packet)
 
 	sanitize_player_name(requested_name);
 
-	cerr << "Got join request: " << client_version << "/" << requested_name << "/" << team << '\n';
+	cerr << "Join request from " << format_ip_address(address) << ": Client version=" << client_version << "; Requested name=" << requested_name << "; Requested team=" << team << endl;
 
 	// TODO: check client version.
 
@@ -323,6 +323,7 @@ void	Server::join(const IPaddress& address, PacketReader& packet)
 
 	// Check player's name for validity
 	if (requested_name.empty()) {
+		cerr << "Rejected join for empty player name." << endl;
 		reject_join(address, "Invalid player name.");
 		return;
 	}
@@ -336,6 +337,7 @@ void	Server::join(const IPaddress& address, PacketReader& packet)
 	*/
 	// Check to make sure there is space on the current map
 	if (m_team_count[team - 'A'] >= m_current_map.total_capacity(team)) {
+		cerr << "Rejected join for " << requested_name << ": No space on map" << endl;
 		reject_join(address, "No space on map.");
 		return;
 	}
@@ -346,11 +348,10 @@ void	Server::join(const IPaddress& address, PacketReader& packet)
 	// Try to bind player's address
 	int			channel = m_network.bind(address);
 	if (channel == -1) {
+		cerr << "Rejected join for " << requested_name << ": No space on server" << endl;
 		reject_join(address, "No space on server.");
 		return;
 	}
-
-	cerr << "Bound player to channel " << channel << '\n';
 
 	++m_team_count[team - 'A'];
 
@@ -359,14 +360,13 @@ void	Server::join(const IPaddress& address, PacketReader& packet)
 	uint32_t		player_id = m_next_player_id++;
 	m_players[player_id].init(player_id, channel, client_version, name.c_str(), team, m_timeout_queue);
 
-	cerr << "Sending welcome packet... ";
+	cerr << requested_name << ": Joined on team " << team << ", bound to channel " << channel << ", with ID " << player_id << endl;
+
 	// Send the welcome packet back to this client.
 	PacketWriter		welcome_packet(WELCOME_PACKET);
 	welcome_packet << SERVER_PROTOCOL_VERSION << player_id << name << team;
 	m_ack_manager.add_packet(player_id, welcome_packet);
 	m_network.send_packet(channel, welcome_packet);
-
-	cerr << "Done\n";
 
 	if (is_first_player) {
 		// This is the first player.  Start a new game.
@@ -447,6 +447,8 @@ void	Server::leave(int channel, PacketReader& packet) {
 }
 
 void	Server::remove_player(const ServerPlayer& player, const char* leave_message) {
+	cerr << player.get_name() << ": Leaving: " << leave_message << endl;
+
 	const uint32_t	player_id = player.get_id();
 
 	m_waiting_players.remove(const_cast<ServerPlayer*>(&player)); // const_cast OK: only being used for comparison inside erase function
