@@ -86,6 +86,7 @@ private:
 	double		m_mouse_y;
 	Uint8*		m_keys;
 	KeyBindings	m_key_bindings;
+	KeyBindings m_alt_key_bindings;
 	std::map<int, GraphicalPlayer> m_players;
 	unsigned int	m_player_id;
 	bool		m_holding_gate;

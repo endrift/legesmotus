@@ -455,7 +455,7 @@ void GameController::process_input() {
 	while(SDL_PollEvent(&event) != 0) {
 		switch(event.type) {
 			case SDL_KEYDOWN:
-				if (event.key.keysym.sym == m_key_bindings.quit) {
+				if (event.key.keysym.sym == m_key_bindings.quit || event.key.keysym.sym == m_alt_key_bindings.quit) {
 					cerr << "Quit key pressed - quitting." << endl;
 					m_quit_game = true;
 				}
@@ -464,12 +464,13 @@ void GameController::process_input() {
 				if (m_input_bar != NULL) {
 					m_text_manager->set_active_color(Color::WHITE);
 					// If we're going back to the menu, remove the input bar.
-					if (event.key.keysym.sym == m_key_bindings.show_menu) {
+					if (event.key.keysym.sym == m_key_bindings.show_menu || event.key.keysym.sym == m_alt_key_bindings.show_menu) {
 						SDL_EnableUNICODE(0);
+						SDL_EnableKeyRepeat(0, 0); // Disable key repeat
 						m_text_manager->remove_string(m_input_bar);
 						m_input_bar = NULL;
 						m_input_text = "> ";
-					} else if (event.key.keysym.sym == m_key_bindings.send_chat) {
+					} else if (event.key.keysym.sym == m_key_bindings.send_chat || event.key.keysym.sym == m_alt_key_bindings.send_chat) {
 						// Remove the "> " from the front.
 						string message = m_input_text.substr(2);
 						
@@ -493,6 +494,7 @@ void GameController::process_input() {
 					
 						// Remove the input bar.
 						SDL_EnableUNICODE(0);
+						SDL_EnableKeyRepeat(0, 0); // Disable key repeat
 						m_text_manager->remove_string(m_input_bar);
 						m_input_bar = NULL;
 						m_input_text = "> ";
@@ -517,24 +519,26 @@ void GameController::process_input() {
 					}
 				} else {
 					//Check which key using: event.key.keysym.sym == SDLK_<SOMETHING>
-					if (event.key.keysym.sym == m_key_bindings.jump) {
+					if (event.key.keysym.sym == m_key_bindings.jump || event.key.keysym.sym == m_alt_key_bindings.jump) {
 						attempt_jump();
-					} else if (event.key.keysym.sym == m_key_bindings.show_overlay) {
+					} else if (event.key.keysym.sym == m_key_bindings.show_overlay || event.key.keysym.sym == m_alt_key_bindings.show_overlay) {
 						// TODO: Show the overlay.
-					} else if (event.key.keysym.sym == m_key_bindings.open_chat || event.key.keysym.sym == m_key_bindings.open_console) {
+					} else if (event.key.keysym.sym == m_key_bindings.open_chat || event.key.keysym.sym == m_key_bindings.open_console || event.key.keysym.sym == m_alt_key_bindings.open_chat || event.key.keysym.sym == m_alt_key_bindings.open_console) {
 						SDL_EnableUNICODE(1);
+						SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 						m_text_manager->set_active_color(Color::WHITE);
 						if (m_input_bar == NULL) {
 							m_input_bar = m_text_manager->place_string("> ", 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
 						}
-					} else if (event.key.keysym.sym == m_key_bindings.open_team_chat) {
+					} else if (event.key.keysym.sym == m_key_bindings.open_team_chat || event.key.keysym.sym == m_alt_key_bindings.open_team_chat) {
 						SDL_EnableUNICODE(1);
+						SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 						m_text_manager->set_active_color(Color::WHITE);
 						m_input_text = "> /tchat ";
 						if (m_input_bar == NULL) {
 							m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
 						}
-					} else if (event.key.keysym.sym == m_key_bindings.show_menu) {
+					} else if (event.key.keysym.sym == m_key_bindings.show_menu || event.key.keysym.sym == m_alt_key_bindings.show_menu) {
 						if (m_game_state == SHOW_MENUS) {
 							m_game_state = GAME_IN_PROGRESS;
 						} else {
@@ -588,6 +592,15 @@ void GameController::initialize_key_bindings() {
 	m_key_bindings.open_team_chat = SDLK_y;
 	m_key_bindings.open_console = SDLK_BACKQUOTE;
 	m_key_bindings.send_chat = SDLK_RETURN;
+
+	m_alt_key_bindings.quit = -1;
+	m_alt_key_bindings.jump = -1;
+	m_alt_key_bindings.show_overlay = -1;
+	m_alt_key_bindings.show_menu = -1;
+	m_alt_key_bindings.open_chat = -1;
+	m_alt_key_bindings.open_team_chat = -1;
+	m_alt_key_bindings.open_console = -1;
+	m_alt_key_bindings.send_chat = SDLK_KP_ENTER;
 }
 
 /*
@@ -596,6 +609,10 @@ void GameController::initialize_key_bindings() {
 void GameController::parse_key_input() {
 	// For keys that can be held down:
    	m_keys = SDL_GetKeyState(NULL);
+
+	if ((m_key_bindings.jump != -1 && m_keys[m_key_bindings.jump]) || (m_alt_key_bindings.jump != -1 && m_keys[m_alt_key_bindings.jump])) {
+		attempt_jump();
+	}
 }
 
 
