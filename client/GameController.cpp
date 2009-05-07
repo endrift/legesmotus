@@ -584,8 +584,8 @@ void GameController::initialize_key_bindings() {
 	m_key_bindings.jump = SDLK_SPACE;
 	m_key_bindings.show_overlay = -1;
 	m_key_bindings.show_menu = SDLK_ESCAPE;
-	m_key_bindings.open_chat = SDLK_y;
-	m_key_bindings.open_team_chat = SDLK_t;
+	m_key_bindings.open_chat = SDLK_t;
+	m_key_bindings.open_team_chat = SDLK_y;
 	m_key_bindings.open_console = SDLK_BACKQUOTE;
 	m_key_bindings.send_chat = SDLK_RETURN;
 }
