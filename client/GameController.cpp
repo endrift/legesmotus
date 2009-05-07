@@ -715,6 +715,7 @@ void GameController::move_objects(float timescale) {
 	// Check if the player is hitting a map edge.
 	if (new_x - half_width < 0) {
 		new_x = half_width;
+		new_y = m_players[m_player_id].get_y();
 		if (m_players[m_player_id].is_frozen()) {
 			m_players[m_player_id].set_x_vel(-m_players[m_player_id].get_x_vel());
 			//m_players[m_player_id].set_y_vel(m_players[m_player_id].get_y_vel());
@@ -724,6 +725,7 @@ void GameController::move_objects(float timescale) {
 		}
 	} else if (new_x + half_width > m_map_width) {
 		new_x = m_map_width - half_width;
+		new_y = m_players[m_player_id].get_y();
 		if (m_players[m_player_id].is_frozen()) {
 			m_players[m_player_id].set_x_vel(-m_players[m_player_id].get_x_vel());
 			//m_players[m_player_id].set_y_vel(m_players[m_player_id].get_y_vel());
@@ -735,6 +737,7 @@ void GameController::move_objects(float timescale) {
 	
 	if (new_y - half_height < 0) {
 		new_y = half_height;
+		new_x = m_players[m_player_id].get_x();
 		if (m_players[m_player_id].is_frozen()) {
 			m_players[m_player_id].set_x_vel(m_players[m_player_id].get_x_vel());
 			m_players[m_player_id].set_y_vel(-m_players[m_player_id].get_y_vel());
@@ -744,6 +747,7 @@ void GameController::move_objects(float timescale) {
 		}
 	} else if (new_y + half_height > m_map_height) {
 		new_y = m_map_height - half_height;
+		new_x = m_players[m_player_id].get_x();
 		if (m_players[m_player_id].is_frozen()) {
 			m_players[m_player_id].set_x_vel(m_players[m_player_id].get_x_vel());
 			m_players[m_player_id].set_y_vel(-m_players[m_player_id].get_y_vel());
