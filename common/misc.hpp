@@ -30,4 +30,12 @@ struct Color {
 // remove all trailing spaces of given string
 void		strip_trailing_spaces(std::string& str);
 
+// Sanitize/canonicalize a player name
+// Does the following things:
+//  Remove all leading and trailing whitespace
+//  Collapse multiple sequences of whitespace into one space
+//  Remove all control characters
+//  Limit the name to MAX_NAME_LENGTH characters (as defined in network.hpp)
+void		sanitize_player_name(std::string& str);
+
 #endif

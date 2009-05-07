@@ -6,6 +6,10 @@
  */
 
 #include "misc.hpp"
+#include "network.hpp"
+#include <string>
+#include <cstring>
+#include <cctype>
 
 // See .hpp file for extensive comments.
 
@@ -63,5 +67,36 @@ void	strip_trailing_spaces(string& str) {
 	if (endpos != string::npos) {
 		str = str.substr(0, endpos + 1);
 	}
+}
+
+void	sanitize_player_name(string& name) {
+	const char*	p = name.c_str();
+
+	// Skip leading whitespace
+	while (isspace(*p)) {
+		++p;
+	}
+
+	string		new_name;
+	bool		is_in_whitespace = false;
+	while (*p && new_name.size() < MAX_NAME_LENGTH) {
+		char	c = *p++;
+		if (isspace(c)) {
+			// Whitespace - skip it for now
+			is_in_whitespace = true;
+		} else {
+			if (is_in_whitespace) {
+				// End of an all-whitespace region.  Lay down a single space.
+				is_in_whitespace = false;
+				new_name += ' ';
+			}
+			if (!iscntrl(c)) {
+				// Only allow non-control characters.  Boy, the Sunlab is a tough crowd.
+				new_name += c;
+			}
+		}
+	}
+
+	name.swap(new_name);
 }
 

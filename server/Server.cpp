@@ -12,6 +12,7 @@
 #include "common/PacketReader.hpp"
 #include "common/network.hpp"
 #include "common/team.hpp"
+#include "common/misc.hpp"
 #include <string>
 #include <stdlib.h>
 #include <iostream>
@@ -271,10 +272,8 @@ void	Server::gun_fired(int channel, PacketReader& packet)
 
 void	Server::join(const IPaddress& address, PacketReader& packet)
 {
-	cerr << "join entered...\n";
 	// Free up channels by kicking dead players
 	timeout_players();
-	cerr << "done timing out players...\n";
 
 	// Parse the join packet
 	int			client_version;
@@ -282,7 +281,10 @@ void	Server::join(const IPaddress& address, PacketReader& packet)
 	char			team;
 
 	packet >> client_version >> requested_name >> team;
-	cerr << "got " << client_version << "/" << requested_name << "/" << team << '\n';
+
+	sanitize_player_name(requested_name);
+
+	cerr << "Got join request: " << client_version << "/" << requested_name << "/" << team << '\n';
 
 	// TODO: check client version.
 
@@ -326,7 +328,7 @@ void	Server::join(const IPaddress& address, PacketReader& packet)
 		return;
 	}
 
-	cerr << "bound to channel " << channel << '\n';
+	cerr << "Bound player to channel " << channel << '\n';
 
 	++m_team_count[team - 'A'];
 
@@ -335,13 +337,13 @@ void	Server::join(const IPaddress& address, PacketReader& packet)
 	uint32_t		player_id = m_next_player_id++;
 	m_players[player_id].init(player_id, channel, client_version, name.c_str(), team, m_timeout_queue);
 
-	cerr << "sending welcome packet...\n";
+	cerr << "Sending welcome packet...\n";
 	// Send the welcome packet back to this client.
 	PacketWriter		welcome_packet(WELCOME_PACKET);
 	welcome_packet << SERVER_PROTOCOL_VERSION << player_id << name << team;
 	m_network.send_packet(channel, welcome_packet);
 
-	cerr << "done sending welcome packet...\n";
+	cerr << "Done sending welcome packet...\n";
 
 	if (is_first_player) {
 		// This is the first player.  Start a new game.
