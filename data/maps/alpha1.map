@@ -67,12 +67,12 @@ alpha1
 
 #Wall in front of blue gate
 # This is a 64x64 obstacle:
-1~1~128,256~metal_obstacle64
-1~1~256,384~metal_obstacle64
-1~1~256,448~metal_obstacle64
-1~1~256,512~metal_obstacle64
-1~1~256,576~metal_obstacle64
-1~1~128,704~metal_obstacle64
+#1~1~128,256~metal_obstacle64
+#1~1~256,384~metal_obstacle64
+#1~1~256,448~metal_obstacle64
+#1~1~256,512~metal_obstacle64
+#1~1~256,576~metal_obstacle64
+#1~1~128,704~metal_obstacle64
 # This is a 128x128 obstacle:
 1~1~192,256~metal_obstacle128
 1~1~192,640~metal_obstacle128
@@ -91,12 +91,12 @@ alpha1
 
 #Wall in front of red gate
 # This is a 64x64 obstacle:
-1~1~1856,256~metal_obstacle64
-1~1~1728,384~metal_obstacle64
-1~1~1728,448~metal_obstacle64
-1~1~1728,512~metal_obstacle64
-1~1~1728,576~metal_obstacle64
-1~1~1856,708~metal_obstacle64
+#1~1~1856,256~metal_obstacle64
+#1~1~1728,384~metal_obstacle64
+#1~1~1728,448~metal_obstacle64
+#1~1~1728,512~metal_obstacle64
+#1~1~1728,576~metal_obstacle64
+#1~1~1856,708~metal_obstacle64
 # This is a 128x128 obstacle:
 1~1~1728,256~metal_obstacle128
 1~1~1728,640~metal_obstacle128

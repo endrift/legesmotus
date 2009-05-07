@@ -66,27 +66,27 @@ gamma3
 #main bluegate wall
 1~1~192,128~metal_obstacle64
 1~1~192,192~metal_obstacle64
-1~1~192,256~metal_obstacle64
-1~1~192,320~metal_obstacle64
-1~1~192,384~metal_obstacle64
-1~1~192,448~metal_obstacle64
-1~1~192,512~metal_obstacle64
-1~1~192,576~metal_obstacle64
-1~1~192,640~metal_obstacle64
-1~1~192,704~metal_obstacle64
+#1~1~192,256~metal_obstacle64
+#1~1~192,320~metal_obstacle64
+#1~1~192,384~metal_obstacle64
+#1~1~192,448~metal_obstacle64
+#1~1~192,512~metal_obstacle64
+#1~1~192,576~metal_obstacle64
+#1~1~192,640~metal_obstacle64
+#1~1~192,704~metal_obstacle64
 1~1~192,768~metal_obstacle64
 1~1~192,832~metal_obstacle64
 #main redgate wall
 1~1~1792,128~metal_obstacle64
 1~1~1792,192~metal_obstacle64
-1~1~1792,256~metal_obstacle64
-1~1~1792,320~metal_obstacle64
-1~1~1792,384~metal_obstacle64
-1~1~1792,448~metal_obstacle64
-1~1~1792,512~metal_obstacle64
-1~1~1792,576~metal_obstacle64
-1~1~1792,640~metal_obstacle64
-1~1~1792,704~metal_obstacle64
+#1~1~1792,256~metal_obstacle64
+#1~1~1792,320~metal_obstacle64
+#1~1~1792,384~metal_obstacle64
+#1~1~1792,448~metal_obstacle64
+#1~1~1792,512~metal_obstacle64
+#1~1~1792,576~metal_obstacle64
+#1~1~1792,640~metal_obstacle64
+#1~1~1792,704~metal_obstacle64
 1~1~1792,768~metal_obstacle64
 1~1~1792,832~metal_obstacle64
 
