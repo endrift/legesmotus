@@ -56,7 +56,9 @@ Color::Color(double r, double g, double b, double a) {
 }
 
 void	strip_trailing_spaces(string& str) {
-	string::size_type endpos = str.find_last_not_of("\n\t");
-	str = str.substr(0, endpos);
+	string::size_type endpos = str.find_last_not_of(" \t");
+	if (endpos != string::npos) {
+		str = str.substr(0, endpos + 1);
+	}
 }
 
