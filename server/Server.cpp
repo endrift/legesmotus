@@ -185,6 +185,8 @@ void	Server::command_server(uint32_t player_id, const char* command) {
 
 	if (strcmp(command, "help") == 0) {
 		send_system_message(*player, "/server auth <password> - Authenticate with given password");
+		send_system_message(*player, "/server teamscore - Return the score for each team");
+		send_system_message(*player, "/server teamcount - Return the number of players on each team");
 		if (player->is_op()) {
 			send_system_message(*player, "/server reset - Reset the team scores [op]");
 			send_system_message(*player, "/server map <mapname> - Load the given map [op]");
@@ -203,6 +205,16 @@ void	Server::command_server(uint32_t player_id, const char* command) {
 		} else {
 			send_system_message(*player, "Password incorrect.");
 		}
+
+	} else if (strcmp(command, "teamscore") == 0) {
+		ostringstream	msg;
+		msg << "Blue: " << m_team_score[0] << " / Red: " << m_team_score[1];
+		send_system_message(*player, msg.str().c_str());
+
+	} else if (strcmp(command, "teamcount") == 0) {
+		ostringstream	msg;
+		msg << "Blue Players: " << m_team_count[0] << " / Red Players: " << m_team_count[1];
+		send_system_message(*player, msg.str().c_str());
 
 	} else if (strcmp(command, "reset") == 0 && player->is_op()) {
 		m_team_score[0] = m_team_score[1] = 0;
