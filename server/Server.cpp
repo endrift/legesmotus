@@ -74,6 +74,8 @@ void	Server::name_change(int channel, PacketReader& packet)
 
 	packet >> sender_id >> requested_name;
 
+	sanitize_player_name(requested_name);
+
 	if (!is_authorized(channel, sender_id) || requested_name.empty()) {
 		return;
 	}
