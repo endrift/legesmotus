@@ -483,6 +483,9 @@ void GameController::process_input() {
 						} else if (message.find("/team ") == 0) {
 							string new_team(message.substr(6));
 							send_team_change_packet(new_team[0]);
+						} else if (message.find("/tchat ") == 0) {
+							string teammsg = "[TEAM]: ";
+							send_team_message(teammsg.append(message.substr(7)));
 						} else {
 							send_message(message);
 						}
@@ -517,11 +520,18 @@ void GameController::process_input() {
 						attempt_jump();
 					} else if (event.key.keysym.sym == m_key_bindings.show_overlay) {
 						// TODO: Show the overlay.
-					} else if (event.key.keysym.sym == m_key_bindings.open_chat) {
+					} else if (event.key.keysym.sym == m_key_bindings.open_chat || event.key.keysym.sym == m_key_bindings.open_console) {
 						SDL_EnableUNICODE(1);
 						m_text_manager->set_active_color(1.0, 1.0, 1.0);
 						if (m_input_bar == NULL) {
 							m_input_bar = m_text_manager->place_string("> ", 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
+						}
+					} else if (event.key.keysym.sym == m_key_bindings.open_team_chat) {
+						SDL_EnableUNICODE(1);
+						m_text_manager->set_active_color(1.0, 1.0, 1.0);
+						m_input_text = "> /tchat ";
+						if (m_input_bar == NULL) {
+							m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
 						}
 					} else if (event.key.keysym.sym == m_key_bindings.show_menu) {
 						if (m_game_state == SHOW_MENUS) {
@@ -573,7 +583,9 @@ void GameController::initialize_key_bindings() {
 	m_key_bindings.jump = SDLK_SPACE;
 	m_key_bindings.show_overlay = -1;
 	m_key_bindings.show_menu = SDLK_ESCAPE;
-	m_key_bindings.open_chat = SDLK_t;
+	m_key_bindings.open_chat = SDLK_y;
+	m_key_bindings.open_team_chat = SDLK_t;
+	m_key_bindings.open_console = SDLK_BACKQUOTE;
 	m_key_bindings.send_chat = SDLK_RETURN;
 }
 
@@ -1232,6 +1244,16 @@ void GameController::send_message(string message) {
 	message_writer << m_player_id << "" << message;
 	m_network.send_packet(message_writer);
 }
+
+/*
+ * Send a team message packet.
+ */
+void GameController::send_team_message(string message) {
+	PacketWriter	message_writer(MESSAGE_PACKET);
+	message_writer << m_player_id << m_players[m_player_id].get_team() << message;
+	m_network.send_packet(message_writer);
+}
+ 
 
 /*
  * Deal with receiving a leave packet.

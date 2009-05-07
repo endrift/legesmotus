@@ -33,6 +33,8 @@ private:
 		int show_overlay;
 		int show_menu;
 		int open_chat;
+		int open_team_chat;
+		int open_console;
 		int send_chat;
 	};
 	
@@ -141,6 +143,7 @@ public:
 	void		player_fired(unsigned int player_id, double start_x, double start_y, double direction);
 	void		send_player_shot(unsigned int shooter_id, unsigned int hit_player_id, double angle);
 	void		send_message(std::string message);
+	void		send_team_message(std::string message);
 	void		display_message(std::string message, double red=1, double green=1, double blue=1);
 	void		send_gate_hold(bool holding);
 	void		set_players_visible(bool visible);
