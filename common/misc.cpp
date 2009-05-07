@@ -55,6 +55,9 @@ Color::Color(double r, double g, double b, double a) {
 	this->a = a;
 }
 
+const Color Color::WHITE(1.0, 1.0, 1.0);
+const Color Color::BLACK(0.0, 0.0, 0.0);
+
 void	strip_trailing_spaces(string& str) {
 	string::size_type endpos = str.find_last_not_of(" \t");
 	if (endpos != string::npos) {

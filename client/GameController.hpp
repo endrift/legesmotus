@@ -15,6 +15,7 @@
 #include "SoundController.hpp"
 #include "common/PathManager.hpp"
 #include "common/PacketReader.hpp"
+#include "common/misc.hpp"
 #include "GraphicalPlayer.hpp"
 #include "Minimap.hpp"
 #include "Font.hpp"
@@ -26,6 +27,9 @@
 class TiledGraphic;
 
 class GameController {
+public:
+	static const Color		BLUE_COLOR;
+	static const Color		RED_COLOR;
 private:
 	struct KeyBindings {
 		int quit;
@@ -144,7 +148,8 @@ public:
 	void		send_player_shot(unsigned int shooter_id, unsigned int hit_player_id, double angle);
 	void		send_message(std::string message);
 	void		send_team_message(std::string message);
-	void		display_message(std::string message, double red=1, double green=1, double blue=1);
+	void		display_message(std::string message) { display_message(message, Color::WHITE); }
+	void		display_message(std::string message, Color);
 	void		send_gate_hold(bool holding);
 	void		set_players_visible(bool visible);
 	void		process_mouse_click(SDL_Event event);

@@ -22,6 +22,9 @@ struct Color {
 	double g;
 	double b;
 	double a;
+
+	static const Color WHITE;
+	static const Color BLACK;
 };
 
 // remove all trailing spaces of given string

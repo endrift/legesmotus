@@ -50,6 +50,7 @@ public:
 	void	remove_all_strings();
 	void	set_window(GameWindow* window);
 	void	set_active_color(double r, double g, double b);
+	void	set_active_color(Color c);
 	void	set_active_alpha(double a);
 	void	set_active_font(Font* font);
 	void	set_shadow_color(double r, double g, double b);

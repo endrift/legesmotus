@@ -111,6 +111,12 @@ void TextManager::set_active_color(double r, double g, double b) {
 	m_active_blue = b;
 }
 
+void TextManager::set_active_color(Color c) {
+	m_active_red = c.r;
+	m_active_green = c.g;
+	m_active_blue = c.b;
+}
+
 void TextManager::set_active_alpha(double a) {
 	m_active_alpha = a;
 }

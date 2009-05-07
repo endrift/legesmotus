@@ -35,6 +35,8 @@ const int GameController::GATE_WARNING_FLASH_LENGTH = 3000;
 const double GameController::FIRING_RECOIL = 1.5;
 const double GameController::RANDOM_ROTATION_SCALE = 1.0;
 const double GameController::MINIMAP_SCALE = 0.1;
+const Color GameController::BLUE_COLOR(0.4, 0.4, 1);
+const Color GameController::RED_COLOR(1, 0.4, 0.4);
 
 GameController::GameController() {
 	init(1024, 768, 24, false);
@@ -460,7 +462,7 @@ void GameController::process_input() {
 				
 				// If we're typing into the input bar...
 				if (m_input_bar != NULL) {
-					m_text_manager->set_active_color(1.0, 1.0, 1.0);
+					m_text_manager->set_active_color(Color::WHITE);
 					// If we're going back to the menu, remove the input bar.
 					if (event.key.keysym.sym == m_key_bindings.show_menu) {
 						SDL_EnableUNICODE(0);
@@ -476,8 +478,13 @@ void GameController::process_input() {
 							string new_name(message.substr(6));
 							send_name_change_packet(new_name.c_str());
 						} else if (message.find("/team ") == 0) {
-							string new_team(message.substr(6));
-							send_team_change_packet(new_team[0]);
+							string	new_team_string(message.substr(6));
+							char	new_team = parse_team_string(new_team_string.c_str());
+							if (is_valid_team(new_team)) {
+								send_team_change_packet(new_team);
+							} else {
+								display_message("Please enter '/team blue' or '/team red'");
+							}
 						} else if (message.find("/tchat ") == 0) {
 							send_team_message(message.substr(7));
 						} else {
@@ -516,13 +523,13 @@ void GameController::process_input() {
 						// TODO: Show the overlay.
 					} else if (event.key.keysym.sym == m_key_bindings.open_chat || event.key.keysym.sym == m_key_bindings.open_console) {
 						SDL_EnableUNICODE(1);
-						m_text_manager->set_active_color(1.0, 1.0, 1.0);
+						m_text_manager->set_active_color(Color::WHITE);
 						if (m_input_bar == NULL) {
 							m_input_bar = m_text_manager->place_string("> ", 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
 						}
 					} else if (event.key.keysym.sym == m_key_bindings.open_team_chat) {
 						SDL_EnableUNICODE(1);
-						m_text_manager->set_active_color(1.0, 1.0, 1.0);
+						m_text_manager->set_active_color(Color::WHITE);
 						m_input_text = "> /tchat ";
 						if (m_input_bar == NULL) {
 							m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
@@ -633,7 +640,7 @@ void GameController::process_mouse_click(SDL_Event event) {
 					// Open the input bar and allow the name to be entered.
 					// Should replace later, to use a separate text entry location.
 					SDL_EnableUNICODE(1);
-					m_text_manager->set_active_color(1.0, 1.0, 1.0);
+					m_text_manager->set_active_color(Color::WHITE);
 					m_input_text = "> /name ";
 					m_text_manager->remove_string(m_input_bar);
 					m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
@@ -1122,11 +1129,11 @@ void GameController::welcome(PacketReader& reader) {
 	// Insert different name colors and sprites depending on team.
 	if (team == 'A') {
 		m_players.insert(pair<int, GraphicalPlayer>(m_player_id,GraphicalPlayer(m_name.c_str(), m_player_id, team, new GraphicGroup(blue_player), blue_sprite->get_width()/2, blue_sprite->get_height()/2)));
-		m_text_manager->set_active_color(0.4, 0.4, 1.0);
+		m_text_manager->set_active_color(BLUE_COLOR);
 		m_window->register_graphic(&blue_player);
 	} else {
 		m_players.insert(pair<int, GraphicalPlayer>(m_player_id,GraphicalPlayer(m_name.c_str(), m_player_id, team, new GraphicGroup(red_player), red_sprite->get_width()/2, red_sprite->get_height()/2)));
-		m_text_manager->set_active_color(1.0, 0.4, 0.4);
+		m_text_manager->set_active_color(RED_COLOR);
 		m_window->register_graphic(&red_player);
 	}
 	m_window->register_graphic(m_players[m_player_id].get_sprite());
@@ -1163,12 +1170,12 @@ void GameController::announce(PacketReader& reader) {
 	// Add a different sprite and name color depending on team.
 	if (team == 'A') {
 		m_players.insert(pair<int, GraphicalPlayer>(playerid,GraphicalPlayer((const char*)playername.c_str(), playerid, team, new GraphicGroup(blue_player))));
-		m_text_manager->set_active_color(0.4, 0.4, 1.0);
-		display_message(joinmsg, 0.4, 0.4, 1.0);
+		m_text_manager->set_active_color(BLUE_COLOR);
+		display_message(joinmsg, BLUE_COLOR);
 	} else {
 		m_players.insert(pair<int, GraphicalPlayer>(playerid,GraphicalPlayer((const char*)playername.c_str(), playerid, team, new GraphicGroup(red_player))));
-		m_text_manager->set_active_color(1.0, 0.4, 0.4);
-		display_message(joinmsg, 1.0, 0.4, 0.4);
+		m_text_manager->set_active_color(RED_COLOR);
+		display_message(joinmsg, RED_COLOR);
 	}
 	m_minimap->add_blip(playerid,team,0,0);
 	
@@ -1295,7 +1302,7 @@ void GameController::leave(PacketReader& reader) {
 	if (playerid == m_player_id) {
 		string leavemsg = "You were kicked!  Reason: ";
 		leavemsg.append(leave_message);
-		display_message(leavemsg, 1.0, 1.0, 1.0);
+		display_message(leavemsg);
 		cerr << "You were kicked!  Reason: " << leave_message << endl;
 		m_quit_game = true;
 		return;
@@ -1311,9 +1318,9 @@ void GameController::leave(PacketReader& reader) {
 	
 	// Display a message based on their team.
 	if (m_players[playerid].get_team() == 'A') {
-		display_message(leavemsg, 0.4, 0.4, 1.0);
+		display_message(leavemsg, BLUE_COLOR);
 	} else {
-		display_message(leavemsg, 1.0, 0.4, 0.4);
+		display_message(leavemsg, RED_COLOR);
 	}
 	
 	m_text_manager->remove_string(m_players[playerid].get_name_sprite());
@@ -1392,7 +1399,7 @@ void GameController::message(PacketReader& reader) {
 		string message("[Server]: ");
 		message.append(message_text);
 
-		display_message(message, 1.0, 1.0, 1.0);
+		display_message(message);
 
 	} else if (const GraphicalPlayer* sender = get_player_by_id(sender_id)) {
 		string message(sender->get_name());
@@ -1405,9 +1412,9 @@ void GameController::message(PacketReader& reader) {
 		
 		// Show the message in a color depending on the sender's team.
 		if (sender->get_team() == 'A') {
-			display_message(message, 0.4, 0.4, 1);
+			display_message(message, BLUE_COLOR);
 		} else {
-			display_message(message, 1, 0.4, 0.4);
+			display_message(message, RED_COLOR);
 		}
 	}
 }
@@ -1451,7 +1458,7 @@ void GameController::game_start(PacketReader& reader) {
 	if (mapname.find_first_of('/') != string::npos || !m_map->load_file(m_path_manager->data_path(mapfilename.c_str(), "maps"))) {
 		string	message("You do not have the current map installed: ");
 		message += mapname;
-		display_message(message.c_str(), 1.0, 1.0, 1.0);
+		display_message(message.c_str());
 	}
 
 	m_map_width = m_map->get_width();
@@ -1473,7 +1480,7 @@ void GameController::game_start(PacketReader& reader) {
 		message << "Game starts in " << timeleft;
 	}
 	
-	display_message(message.str().c_str(), 1.0, 1.0, 1.0);
+	display_message(message.str().c_str());
 }
 
 /*
@@ -1489,19 +1496,19 @@ void GameController::game_stop(PacketReader& reader) {
 	m_game_state = GAME_OVER;
 	
 	if (winningteam == '-') {
-		display_message("DRAW", 1.0, 1.0, 1.0);
+		display_message("DRAW");
 	} else if (winningteam == m_players[m_player_id].get_team()) {
-		display_message("VICTORY!", 1.0, 1.0, 1.0);
+		display_message("VICTORY!");
 		m_sound_controller->play_sound("victory");
 	} else {
-		display_message("DEFEAT!", 1.0, 1.0, 1.0);
+		display_message("DEFEAT!");
 		m_sound_controller->play_sound("defeat");
 	}
 
 	// Temporary score display
 	ostringstream	score_msg;
 	score_msg << "Blue: " << teamascore << " / Red: " << teambscore;
-	display_message(score_msg.str().c_str(), 1.0, 1.0, 1.0);
+	display_message(score_msg.str().c_str());
 	// End temporary score display
 
 	// Reset the gates and set yourself invisible and frozen until respawn.
@@ -1593,7 +1600,7 @@ void GameController::request_denied(PacketReader& reader) {
 	if (packet_type == JOIN_PACKET) {
 		string message = "Join denied! Reason: ";
 		message.append(reason);
-		display_message(message, 1.0, 1.0, 1.0);
+		display_message(message);
 		cerr << "Join denied!  Reason: " << reason << endl;
 		m_quit_game = true;
 	}
@@ -1618,11 +1625,11 @@ void GameController::name_change(PacketReader& reader) {
 
 		// Re-create the name sprite.
 		if (player->get_team() == 'A') {
-			display_message(msg.str().c_str(), 0.4, 0.4, 1);
-			m_text_manager->set_active_color(0.4, 0.4, 1);
+			display_message(msg.str().c_str(), BLUE_COLOR);
+			m_text_manager->set_active_color(BLUE_COLOR);
 		} else {
-			display_message(msg.str().c_str(), 1, 0.4, 0.4);
-			m_text_manager->set_active_color(1, 0.4, 0.4);
+			display_message(msg.str().c_str(), RED_COLOR);
+			m_text_manager->set_active_color(RED_COLOR);
 		}
 		m_text_manager->remove_string(player->get_name_sprite());
 		player->set_name_sprite(m_text_manager->place_string(player->get_name(), player->get_x(), player->get_y()-(player->get_radius()+30), TextManager::CENTER, TextManager::LAYER_MAIN));
@@ -1652,12 +1659,12 @@ void GameController::team_change(PacketReader& reader) {
 		// Generate new graphics for it.
 		if (team == 'A') {
 			player->set_sprite(new GraphicGroup(blue_player));
-			m_text_manager->set_active_color(0.4, 0.4, 1.0);
-			display_message(msg.str().c_str(), 0.4, 0.4, 1);
+			m_text_manager->set_active_color(BLUE_COLOR);
+			display_message(msg.str().c_str(), BLUE_COLOR);
 		} else {
 			player->set_sprite(new GraphicGroup(red_player));
-			m_text_manager->set_active_color(1.0, 0.4, 0.4);
-			display_message(msg.str().c_str(), 1, 0.4, 0.4);
+			m_text_manager->set_active_color(RED_COLOR);
+			display_message(msg.str().c_str(), RED_COLOR);
 		}
 		m_minimap->add_blip(playerid,team,0,0);
 		
@@ -1710,8 +1717,8 @@ void GameController::send_team_change_packet(char new_team) {
 /*
  * Display a message on the screen.
  */
-void GameController::display_message(string message, double red, double green, double blue) {
-	m_text_manager->set_active_color(red, green, blue);
+void GameController::display_message(string message, Color color) {
+	m_text_manager->set_active_color(color);
 	int y = 20 + (m_font->ascent() + m_font->descent() + 5) * m_messages.size();
 	Graphic* message_sprite = m_text_manager->place_string(message, 20, y, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_messages.push_back(pair<Graphic*, int>(message_sprite, SDL_GetTicks() + MESSAGE_DISPLAY_TIME));
