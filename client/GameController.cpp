@@ -819,21 +819,23 @@ void GameController::move_objects(float timescale) {
 			if (newdist < olddist) {
 				if (thisobj->get_type() == Map::OBSTACLE) {
 					// If we're frozen, bounce off the wall.
-					if (m_players[m_player_id].is_frozen() && !m_players[m_player_id].is_invisible()) {
+					//if (m_players[m_player_id].is_frozen() && !m_players[m_player_id].is_invisible()) {
 						double xvel = m_players[m_player_id].get_x_vel();
 						double yvel = m_players[m_player_id].get_y_vel();
 						double my_angle = get_normalized_angle(atan2(yvel, xvel) * RADIANS_TO_DEGREES);
 						double new_angle = get_normalized_angle(angle_of_incidence + (angle_of_incidence - my_angle) - 180);
 						double vel_magnitude = sqrt(xvel * xvel + yvel * yvel);
 						m_players[m_player_id].set_velocity(vel_magnitude * cos(new_angle * DEGREES_TO_RADIANS) * .9, vel_magnitude * sin(new_angle * DEGREES_TO_RADIANS) * .9);
-						new_x = m_players[m_player_id].get_x() + m_players[m_player_id].get_x_vel() * timescale;
-						new_y = m_players[m_player_id].get_y() + m_players[m_player_id].get_y_vel() * timescale;
-					} else {
+						//new_x = m_players[m_player_id].get_x() + m_players[m_player_id].get_x_vel() * timescale;
+						//new_y = m_players[m_player_id].get_y() + m_players[m_player_id].get_y_vel() * timescale;
+						new_x = m_players[m_player_id].get_x();
+						new_y = m_players[m_player_id].get_y();
+					/*} else {
 						m_players[m_player_id].set_velocity(0, 0);
 						m_players[m_player_id].set_rotational_vel(0);
 						new_x = m_players[m_player_id].get_x();
 						new_y = m_players[m_player_id].get_y();
-					}
+					}*/
 				}
 			}
 			// If it's a gate, we're lowering it if we're unfrozen and it's owned by the enemy team.

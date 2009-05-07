@@ -92,9 +92,7 @@ private:
 	unsigned int	m_player_id;
 	bool		m_holding_gate;
 	unsigned int	m_last_fired;
-	bool		m_show_overlay;
-	TableBackground* m_overlay_background;
-	
+
 	// Do we want to keep it this way?
 	unsigned long	m_time_to_unfreeze;
 	
@@ -121,6 +119,11 @@ private:
 	Sprite*		m_logo;
 	std::map<std::string, Graphic*> m_main_menu_items;
 	std::map<std::string, Graphic*> m_options_menu_items;
+	bool		m_show_overlay;
+	TableBackground* m_overlay_background;
+	std::vector<Graphic*> m_overlay_text;
+	
+	
 	Graphic*	m_gate_warning;
 	unsigned int	m_gate_warning_time;
 	
