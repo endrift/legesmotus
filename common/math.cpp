@@ -32,3 +32,17 @@ vector<double> closest_point_on_line(int x1, int y1, int x2, int y2, int x3, int
 	closestpoint.push_back(u);
 	return closestpoint;
 }
+
+double get_normalized_angle(double angle) {
+	while (angle < 0) {
+		angle += 360;
+	}
+	while (angle >= 360) {
+		angle -= 360;
+	}
+	return angle;
+}
+
+double dot_product(Point a, Point b) {
+	return a.x * b.x + a.y * b.y;
+}

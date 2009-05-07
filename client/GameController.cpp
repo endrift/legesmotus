@@ -348,13 +348,8 @@ void GameController::run(int lockfps) {
 					double angle;
 					x_dist = (m_crosshairs->get_x() + m_offset_x) - m_players[m_player_id].get_x();
 					y_dist = (m_crosshairs->get_y() + m_offset_y) - m_players[m_player_id].get_y();
-					angle = atan2(y_dist, x_dist) * RADIANS_TO_DEGREES - m_players[m_player_id].get_rotation_degrees();
-					while (angle < 0) {
-						angle += 360;
-					}
-					while (angle > 360) {
-						angle -= 360;
-					}
+					angle = get_normalized_angle(atan2(y_dist, x_dist) * RADIANS_TO_DEGREES - m_players[m_player_id].get_rotation_degrees());
+					
 					if (angle < 90 || angle > 270) {
 						m_players[m_player_id].get_sprite()->set_scale_x(-1);
 						send_animation_packet("all", "scale_x", -1);
@@ -697,22 +692,42 @@ void GameController::move_objects(float timescale) {
 	// Check if the player is hitting a map edge.
 	if (new_x - half_width < 0) {
 		new_x = half_width;
-		m_players[m_player_id].set_velocity(0, 0);
-		m_players[m_player_id].set_rotational_vel(0);
+		if (m_players[m_player_id].is_frozen()) {
+			m_players[m_player_id].set_x_vel(-m_players[m_player_id].get_x_vel());
+			//m_players[m_player_id].set_y_vel(m_players[m_player_id].get_y_vel());
+		} else {
+			m_players[m_player_id].set_velocity(0, 0);
+			m_players[m_player_id].set_rotational_vel(0);
+		}
 	} else if (new_x + half_width > m_map_width) {
 		new_x = m_map_width - half_width;
-		m_players[m_player_id].set_velocity(0, 0);
-		m_players[m_player_id].set_rotational_vel(0);
+		if (m_players[m_player_id].is_frozen()) {
+			m_players[m_player_id].set_x_vel(-m_players[m_player_id].get_x_vel());
+			//m_players[m_player_id].set_y_vel(m_players[m_player_id].get_y_vel());
+		} else {
+			m_players[m_player_id].set_velocity(0, 0);
+			m_players[m_player_id].set_rotational_vel(0);
+		}
 	}
 	
 	if (new_y - half_height < 0) {
 		new_y = half_height;
-		m_players[m_player_id].set_velocity(0, 0);
-		m_players[m_player_id].set_rotational_vel(0);
+		if (m_players[m_player_id].is_frozen()) {
+			m_players[m_player_id].set_x_vel(m_players[m_player_id].get_x_vel());
+			m_players[m_player_id].set_y_vel(-m_players[m_player_id].get_y_vel());
+		} else {
+			m_players[m_player_id].set_velocity(0, 0);
+			m_players[m_player_id].set_rotational_vel(0);
+		}
 	} else if (new_y + half_height > m_map_height) {
 		new_y = m_map_height - half_height;
-		m_players[m_player_id].set_velocity(0, 0);
-		m_players[m_player_id].set_rotational_vel(0);
+		if (m_players[m_player_id].is_frozen()) {
+			m_players[m_player_id].set_x_vel(m_players[m_player_id].get_x_vel());
+			m_players[m_player_id].set_y_vel(-m_players[m_player_id].get_y_vel());
+		} else {
+			m_players[m_player_id].set_velocity(0, 0);
+			m_players[m_player_id].set_rotational_vel(0);
+		}
 	}
 	
 	bool holdinggate = false;
@@ -729,8 +744,10 @@ void GameController::move_objects(float timescale) {
 			continue;
 		}
 		const Polygon& poly(thisobj->get_bounding_polygon());
-		double newdist = poly.intersects_circle(currpos, radius);
-		double olddist = poly.intersects_circle(oldpos, radius);
+		double angle_of_incidence = 0;
+		double newdist = poly.intersects_circle(currpos, radius, &angle_of_incidence);
+		angle_of_incidence = get_normalized_angle(get_normalized_angle(angle_of_incidence+180));
+		double olddist = poly.intersects_circle(oldpos, radius, NULL);
 	
 		// REPEL FROZEN PLAYERS AWAY FROM GATES.
 		if (thisobj->get_type() == Map::GATE && m_players[m_player_id].is_frozen() && !m_players[m_player_id].is_invisible()) {
@@ -748,10 +765,22 @@ void GameController::move_objects(float timescale) {
 			// If we're moving closer to the object, we need to stop.
 			if (newdist < olddist) {
 				if (thisobj->get_type() == Map::OBSTACLE) {
-					m_players[m_player_id].set_velocity(0, 0);
-					m_players[m_player_id].set_rotational_vel(0);
-					new_x = m_players[m_player_id].get_x();
-					new_y = m_players[m_player_id].get_y();
+					// If we're frozen, bounce off the wall.
+					if (m_players[m_player_id].is_frozen()) {
+						double xvel = m_players[m_player_id].get_x_vel();
+						double yvel = m_players[m_player_id].get_y_vel();
+						double my_angle = get_normalized_angle(atan2(yvel, xvel) * RADIANS_TO_DEGREES);
+						double new_angle = get_normalized_angle(angle_of_incidence + (angle_of_incidence - my_angle) - 180);
+						double vel_magnitude = sqrt(xvel * xvel + yvel * yvel);
+						m_players[m_player_id].set_velocity(vel_magnitude * cos(new_angle * DEGREES_TO_RADIANS), vel_magnitude * sin(new_angle * DEGREES_TO_RADIANS));
+						new_x = m_players[m_player_id].get_x() + m_players[m_player_id].get_x_vel() * timescale;
+						new_y = m_players[m_player_id].get_y() + m_players[m_player_id].get_y_vel() * timescale;
+					} else {
+						m_players[m_player_id].set_velocity(0, 0);
+						m_players[m_player_id].set_rotational_vel(0);
+						new_x = m_players[m_player_id].get_x();
+						new_y = m_players[m_player_id].get_y();
+					}
 				}
 			}
 			// If it's a gate, we're lowering it if we're unfrozen and it's owned by the enemy team.
@@ -859,7 +888,7 @@ void GameController::attempt_jump() {
 			continue;
 		}
 		const Polygon& poly(thisobj->get_bounding_polygon());
-		double newdist = poly.intersects_circle(currpos, player->get_radius()+5);
+		double newdist = poly.intersects_circle(currpos, player->get_radius()+5, NULL);
 		if (newdist != -1) {
 			player->set_x_vel(x_vel);
 			player->set_y_vel(y_vel);	

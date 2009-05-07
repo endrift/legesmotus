@@ -94,26 +94,14 @@ void GraphicalPlayer::set_y(double y) {
 }
 
 void GraphicalPlayer::set_rotation_degrees(double rotation) {
-	m_rotation = rotation;
-	while (m_rotation < 0) {
-		m_rotation += 360;
-	}
-	while (m_rotation > 360) {
-		m_rotation -= 360;
-	}
+	m_rotation = get_normalized_angle(rotation);
 	if (m_sprite != NULL) {
 		m_sprite->set_rotation(m_rotation);
 	}
 }
 
 void GraphicalPlayer::set_rotation_radians(double rotation) {
-	m_rotation = rotation * RADIANS_TO_DEGREES;
-	while (m_rotation < 0) {
-		m_rotation += 360;
-	}
-	while (m_rotation > 360) {
-		m_rotation -= 360;
-	}
+	m_rotation = get_normalized_angle(rotation * RADIANS_TO_DEGREES);
 	if (m_sprite != NULL) {
 		m_sprite->set_rotation(m_rotation);
 	}

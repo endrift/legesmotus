@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include <cmath>
 #include <vector>
+#include "common/Point.hpp"
 
 #ifndef M_PI
 #define M_PI 3.141592653589793
@@ -33,5 +34,9 @@ std::vector<double> closest_point_on_line(int x1, int y1, int x2, int y2, int x3
 static inline double dist_between_points(int x1, int y1, int x2, int y2) {
 	return sqrt(double((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)));
 }
+
+double get_normalized_angle(double angle);
+
+double dot_product(Point a, Point b);
 
 #endif
