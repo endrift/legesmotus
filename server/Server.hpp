@@ -13,7 +13,9 @@
 #include "ServerMap.hpp"
 #include "common/AckManager.hpp"
 #include <stdint.h>
+#include <math.h>
 #include <map>
+#include <set>
 #include <list>
 #include <utility>
 
@@ -46,6 +48,10 @@ public:
 		JOIN_DELAY = 2000			// Spawn player 2 seconds after he joins mid-round (TODO: increase to 15 during production)
 	};
 
+	static inline uint32_t get_gate_open_time(size_t nbr_players) {
+		return nbr_players > 1 ? uint32_t(round(GATE_OPEN_TIME * log(2.0) / log(double(nbr_players + 1)))) : GATE_OPEN_TIME;
+	}
+
 private:
 	// Keeps track of the info for a gate:
 	class GateStatus {
@@ -57,9 +63,12 @@ private:
 			CLOSING = 3
 		};
 	private:
-		int		m_status;		// CLOSED, OPENING, or CLOSING
-		uint32_t	m_player_id;		// The player who is opening the gate
-		uint32_t	m_start_time;		// The time (in SDL ticks) at which the gate started to be moved
+		int			m_status;	// CLOSED, OPENING, or CLOSING
+		std::set<uint32_t>	m_players;	// The players who are holding the gate
+		uint32_t		m_start_time;	// The time (in SDL ticks) at which the gate started to be moved
+
+		void			set_progress(double progress);
+		uint32_t		get_open_time() const { return Server::get_gate_open_time(m_players.size()); }
 
 	public:
 		GateStatus();
@@ -68,7 +77,7 @@ private:
 		bool		is_moving() const { return m_status == OPENING || m_status == CLOSING; }
 		bool		is_engaged() const { return m_status == OPENING || m_status == OPEN; }
 		int		get_status() const { return m_status; }
-		uint32_t	get_player_id() const { return m_player_id; }
+		uint32_t	get_player_id() const { return !m_players.empty() ? *m_players.begin() : 0; } // TODO: which player ID to return?
 
 		uint32_t	time_elapsed() const;	// If moving, how many milliseconds since the gate started moving?
 		uint32_t	time_remaining() const;	// If moving, how many milliseconds until the gate finishes moving?

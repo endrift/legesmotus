@@ -14,7 +14,8 @@
 #include "common/team.hpp"
 #include "common/misc.hpp"
 #include <string>
-#include <stdlib.h>
+#include <cstdlib>
+#include <cmath>
 #include <iostream>
 #include <set>
 #include <limits>
@@ -696,8 +697,8 @@ uint32_t Server::GateStatus::time_elapsed() const {
 uint32_t Server::GateStatus::time_remaining() const {
 	if (is_moving()) {
 		uint32_t	elapsed_time = time_elapsed();
-		if (m_status == OPENING && elapsed_time < GATE_OPEN_TIME) {
-			return GATE_OPEN_TIME - elapsed_time;
+		if (m_status == OPENING && elapsed_time < get_open_time()) {
+			return get_open_time() - elapsed_time;
 		} else if (m_status == CLOSING && elapsed_time < GATE_CLOSE_TIME) {
 			return GATE_CLOSE_TIME - elapsed_time;
 		}
@@ -711,7 +712,7 @@ uint32_t Server::GateStatus::time_remaining() const {
 }
 
 void Server::GateStatus::update() {
-	if (m_status == OPENING && time_elapsed() >= GATE_OPEN_TIME) {
+	if (m_status == OPENING && time_elapsed() >= get_open_time()) {
 		m_status = OPEN;
 		m_start_time = 0;
 	} else if (m_status == CLOSING && time_elapsed() >= GATE_CLOSE_TIME) {
@@ -727,7 +728,7 @@ double	Server::GateStatus::get_progress() const {
 	case OPEN:
 		return 1.0;
 	case OPENING:
-		return time_elapsed() / double(GATE_OPEN_TIME);
+		return time_elapsed() / double(get_open_time());
 	case CLOSING:
 		return 1.0 - time_elapsed() / double(GATE_CLOSE_TIME);
 	}
@@ -736,31 +737,47 @@ double	Server::GateStatus::get_progress() const {
 
 void	Server::GateStatus::reset() {
 	m_status = CLOSED;
-	m_player_id = 0;
+	m_players.clear();
 	m_start_time = 0;
 }
 
+void	Server::GateStatus::set_progress(double progress) {
+	if (m_status == OPENING) {
+		m_start_time = SDL_GetTicks() - uint32_t(progress * get_open_time());
+	} else if (m_status == CLOSING) {
+		m_start_time = SDL_GetTicks() - uint32_t((1.0 - progress) * GATE_CLOSE_TIME);
+	}
+}
+
 bool	Server::GateStatus::set_engagement(bool is_now_engaged, uint32_t new_player_id) {
-	if (is_now_engaged && !is_engaged()) {
-		// Gate has been engaged.
-		// Start opening it...
-		m_start_time = SDL_GetTicks() - uint32_t(get_progress() * GATE_OPEN_TIME);
-		m_player_id = new_player_id;
-		m_status = OPENING;
+	bool	gate_was_changed = false;
 
-		return true;
-	} else if (!is_now_engaged && is_engaged() && m_player_id == new_player_id) {
-		// Gate has been disengaged by the player who was previously engaging it.
-		// Start closing it...
-		m_start_time = SDL_GetTicks() - uint32_t((1.0 - get_progress()) * GATE_CLOSE_TIME);
-		m_player_id = 0;
-		m_status = CLOSING;
+	if (is_now_engaged) {
+		// Gate is being engaged...
+		double	old_progress = get_progress();
+		if (!is_engaged()) {
+			// It wasn't already engaged, so start opening it...
+			m_status = OPENING;
+			gate_was_changed = true;
+		}
 
-		return true;
+		m_players.insert(new_player_id);
+		set_progress(old_progress);
+
+	} else if (!is_now_engaged && is_engaged() && m_players.count(new_player_id)) {
+		// Gate is being disengaged by a player who was previously engaging it...
+		double	old_progress = get_progress();
+		m_players.erase(new_player_id);
+
+		if (m_players.empty()) {
+			// No players left engaging the gate, so start closing it...
+			m_status = CLOSING;
+			gate_was_changed = true;
+		}
+		set_progress(old_progress);
 	}
 
-	// Nothing changed about the gate
-	return false;
+	return gate_was_changed;
 }
 
 bool	Server::waiting_to_spawn() const {
