@@ -479,8 +479,7 @@ void GameController::process_input() {
 							string new_team(message.substr(6));
 							send_team_change_packet(new_team[0]);
 						} else if (message.find("/tchat ") == 0) {
-							string teammsg = "[TEAM]: ";
-							send_team_message(teammsg.append(message.substr(7)));
+							send_team_message(message.substr(7));
 						} else {
 							send_message(message);
 						}
@@ -1398,6 +1397,10 @@ void GameController::message(PacketReader& reader) {
 	} else if (const GraphicalPlayer* sender = get_player_by_id(sender_id)) {
 		string message(sender->get_name());
 		message.append(": ");
+		if (is_valid_team(recipient[0])) {
+			// Team chat
+			message.append("[TEAM]: ");
+		}
 		message.append(message_text);
 		
 		// Show the message in a color depending on the sender's team.
