@@ -809,7 +809,7 @@ void GameController::move_objects(float timescale) {
 				double gate_x = thisobj->get_upper_left().x + thisobj->get_sprite()->get_image_width()/2;
 				double gate_y = thisobj->get_upper_left().y + thisobj->get_sprite()->get_image_height()/2;
 				double angle = atan2(gate_y - new_y, gate_x - new_x);
-				m_players[m_player_id].set_velocity(m_players[m_player_id].get_x_vel() - .02 * cos(angle), m_players[m_player_id].get_y_vel() - .02 * sin(angle));
+				m_players[m_player_id].set_velocity(m_players[m_player_id].get_x_vel() - .01 * cos(angle), m_players[m_player_id].get_y_vel() - .01 * sin(angle));
 			}
 		}
 	
