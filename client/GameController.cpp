@@ -625,7 +625,7 @@ void GameController::parse_key_input() {
 	// For keys that can be held down:
    	m_keys = SDL_GetKeyState(NULL);
    	
-   	if (m_game_state == GAME_IN_PROGRESS) {
+   	if (m_game_state == GAME_IN_PROGRESS && m_input_bar == NULL) {
 		if ((m_key_bindings.jump != -1 && m_keys[m_key_bindings.jump]) || (m_alt_key_bindings.jump != -1 && m_keys[m_alt_key_bindings.jump])) {
 			attempt_jump();
 		}
@@ -835,7 +835,7 @@ void GameController::move_objects(float timescale) {
 						m_players[m_player_id].set_rotational_vel(0);
 						new_x = m_players[m_player_id].get_x();
 						new_y = m_players[m_player_id].get_y();
-					}*
+					}
 				}
 			}
 			// If it's a gate, we're lowering it if we're unfrozen and it's owned by the enemy team.
