@@ -60,17 +60,27 @@ void	ServerNetwork::stop() {
 	}
 }
 
+void	ServerNetwork::send_packet(int channel, const std::string& packet_data) {
+	RawPacket	raw_packet(MAX_PACKET_LENGTH);
+	raw_packet.fill(packet_data);
+	send_raw_packet(channel, raw_packet);
+}
+
 void	ServerNetwork::send_packet(int channel, const PacketWriter& packet) {
 	RawPacket	raw_packet(MAX_PACKET_LENGTH);
 	raw_packet.fill(packet);
-	SDLNet_UDP_Send(m_socket, channel, raw_packet);
+	send_raw_packet(channel, raw_packet);
 }
 
 void	ServerNetwork::send_packet(const IPaddress& addr, const PacketWriter& packet) {
 	RawPacket	raw_packet(MAX_PACKET_LENGTH);
 	raw_packet.set_address(addr);
 	raw_packet.fill(packet);
-	SDLNet_UDP_Send(m_socket, -1, raw_packet);
+	send_raw_packet(-1, raw_packet);
+}
+
+void	ServerNetwork::send_raw_packet(int channel, RawPacket& raw_packet) {
+	SDLNet_UDP_Send(m_socket, channel, raw_packet);
 }
 
 void	ServerNetwork::broadcast_packet(const PacketWriter& packet, int exclude_channel) {
@@ -120,7 +130,7 @@ void	ServerNetwork::process_packet(Server& server, const RawPacket& raw_packet) 
 
 	switch (reader.packet_type()) {
 	case ACK_PACKET:
-		//server.ack(channel, reader);
+		server.ack(channel, reader);
 		break;
 
 	case PLAYER_UPDATE_PACKET:

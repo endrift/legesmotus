@@ -38,6 +38,8 @@ public:
 	void			fill(const char* data, size_t length);
 	// Fill this packet with the data in the given PacketWriter:
 	void			fill(const PacketWriter& data);
+	// Fill this packet with the data in the given string:
+	void			fill(const std::string& data);
 
 	// Allows you to access fields of the underlying SDL UDPPacket by using the -> operator:
 	UDPpacket* operator-> () { return m_packet; }

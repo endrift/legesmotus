@@ -132,6 +132,8 @@ private:
 	GraphicalPlayer* get_player_by_name(const char* name);
 	void		send_my_player_update();
 	void		attempt_jump();
+
+	void		send_ack(const PacketReader& packet);
 public:
 	GameController();
 	GameController(int width, int height);

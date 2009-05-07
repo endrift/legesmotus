@@ -43,6 +43,9 @@ void	RawPacket::fill(const char* data, size_t data_length) {
 }
 
 void	RawPacket::fill(const PacketWriter& packet) {
-	std::string	data(packet.packet_data());
+	fill(packet.packet_data());
+}
+
+void	RawPacket::fill(const string& data) {
 	fill(data.c_str(), data.size());
 }

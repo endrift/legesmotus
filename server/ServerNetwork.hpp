@@ -27,6 +27,8 @@ private:
 	// Process the individual packet which has been received
 	void		process_packet (Server& controller, const RawPacket& packet);
 
+	// Send the given raw packet to a specific channel
+	void		send_raw_packet(int channel, RawPacket& packet);
 public:
 	ServerNetwork();
 	~ServerNetwork();
@@ -45,6 +47,7 @@ public:
 	bool		receive_packets(Server& server, uint32_t timeout);
 	// Send the given packet to a specific channel
 	void		send_packet(int channel, const PacketWriter& packet);
+	void		send_packet(int channel, const std::string& packet_data);
 	// Send the given packet to a specific address
 	void		send_packet(const IPaddress& address, const PacketWriter& packet);
 	// Send the given packet to all clients

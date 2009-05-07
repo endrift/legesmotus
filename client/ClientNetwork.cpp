@@ -106,7 +106,7 @@ void	ClientNetwork::process_packet(GameController& controller, const RawPacket& 
 		break;
 
 	case PLAYER_SHOT_PACKET:
-		send_ack(reader.packet_id());
+		//send_ack(reader.packet_id());
 		controller.player_shot(reader);
 		break;
 
@@ -115,12 +115,12 @@ void	ClientNetwork::process_packet(GameController& controller, const RawPacket& 
 		break;
 
 	case GAME_START_PACKET:
-		send_ack(reader.packet_id());
+		//send_ack(reader.packet_id());
 		controller.game_start(reader);
 		break;
 
 	case GAME_STOP_PACKET:
-		send_ack(reader.packet_id());
+		//send_ack(reader.packet_id());
 		controller.game_stop(reader);
 		break;
 
@@ -129,7 +129,7 @@ void	ClientNetwork::process_packet(GameController& controller, const RawPacket& 
 		break;
 
 	case WELCOME_PACKET:
-		send_ack(reader.packet_id());
+		//send_ack(reader.packet_id());
 		controller.welcome(reader);
 		break;
 
@@ -165,11 +165,5 @@ void	ClientNetwork::process_packet(GameController& controller, const RawPacket& 
 		controller.team_change(reader);
 		break;
 	}
-}
-
-void	ClientNetwork::send_ack(uint32_t packet_id) {
-	PacketWriter		packet(ACK_PACKET);
-	packet << packet_id;
-	send_packet(packet);
 }
 

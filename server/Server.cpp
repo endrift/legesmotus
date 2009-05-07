@@ -16,6 +16,7 @@
 #include <string>
 #include <stdlib.h>
 #include <iostream>
+#include <set>
 #include <limits>
 
 using namespace std;
@@ -23,7 +24,7 @@ using namespace std;
 // This can't be an enum because we want overloading of operator<< to work OK.
 const int	Server::SERVER_PROTOCOL_VERSION = 1;
 
-Server::Server ()
+Server::Server () : m_ack_manager(*this)
 {
 	m_next_player_id = 1;
 	m_is_running = false;
@@ -32,6 +33,14 @@ Server::Server ()
 
 	m_team_count[0] = m_team_count[1] = 0;
 	m_team_score[0] = m_team_score[1] = 0;
+}
+
+void	Server::ack(int channel, PacketReader& ack_packet) {
+	uint32_t		player_id;
+	uint32_t		packet_type;
+	uint32_t		packet_id;
+	ack_packet >> player_id >> packet_type >> packet_id;
+	m_ack_manager.ack(player_id, packet_id);
 }
 
 void	Server::player_update(int channel, PacketReader& inbound_packet)
@@ -349,13 +358,14 @@ void	Server::join(const IPaddress& address, PacketReader& packet)
 	uint32_t		player_id = m_next_player_id++;
 	m_players[player_id].init(player_id, channel, client_version, name.c_str(), team, m_timeout_queue);
 
-	cerr << "Sending welcome packet...\n";
+	cerr << "Sending welcome packet... ";
 	// Send the welcome packet back to this client.
 	PacketWriter		welcome_packet(WELCOME_PACKET);
 	welcome_packet << SERVER_PROTOCOL_VERSION << player_id << name << team;
+	m_ack_manager.add_packet(player_id, welcome_packet);
 	m_network.send_packet(channel, welcome_packet);
 
-	cerr << "Done sending welcome packet...\n";
+	cerr << "Done\n";
 
 	if (is_first_player) {
 		// This is the first player.  Start a new game.
@@ -365,7 +375,8 @@ void	Server::join(const IPaddress& address, PacketReader& packet)
 		// Tell the player what map is currently in use, and how much time until the round starts (i.e. players spawn)
 		PacketWriter		game_start_packet(GAME_START_PACKET);
 		game_start_packet << m_current_map.get_name() << 0 << time_until_spawn();
-		m_network.send_packet(channel, game_start_packet); // TODO: REQUIRE ACK
+		m_ack_manager.add_packet(player_id, game_start_packet);
+		m_network.send_packet(channel, game_start_packet);
 	} else {
 		// Joining a game that has already started
 		// Add the player to the join queue
@@ -373,27 +384,37 @@ void	Server::join(const IPaddress& address, PacketReader& packet)
 		// Tell the player what map is currently in use, and how much time until he spawns
 		PacketWriter		game_start_packet(GAME_START_PACKET);
 		game_start_packet << m_current_map.get_name() << 1 << uint32_t(JOIN_DELAY);
-		m_network.send_packet(channel, game_start_packet); // TODO: REQUIRE ACK
+		m_ack_manager.add_packet(player_id, game_start_packet);
+		m_network.send_packet(channel, game_start_packet);
 	}
 
-	// Broadcast the announce packet back to all players, except for the new one
-	PacketWriter		announce_packet(ANNOUNCE_PACKET);
-	announce_packet << player_id << name << team;
-	m_network.broadcast_packet(announce_packet, channel);
-
-	// Send the new player an announce packet and score update packet for every player currently in the game
+	// Send the new player an announce packet and score update packet for every player currently in the game (except for the one just added)
 	PlayerMap::const_iterator	it(m_players.begin());
 	while (it != m_players.end()) {
 		const ServerPlayer&	player((it++)->second);
 
+		if (player.get_id() == player_id) {
+			// Skip the player just added
+			continue;
+		}
+
 		PacketWriter	announce_packet(ANNOUNCE_PACKET);
 		announce_packet << player.get_id() << player.get_name() << player.get_team();
+		m_ack_manager.add_packet(player_id, announce_packet);
 		m_network.send_packet(channel, announce_packet);
 
 		PacketWriter	score_packet(SCORE_UPDATE_PACKET);
 		score_packet << player.get_id() << player.get_score();
+		m_ack_manager.add_packet(player_id, score_packet);
 		m_network.send_packet(channel, score_packet);
 	}
+
+	// Announce the new player
+	PacketWriter		announce_packet(ANNOUNCE_PACKET);
+	announce_packet << player_id << name << team;
+	m_ack_manager.add_broadcast_packet(announce_packet);
+	m_network.broadcast_packet(announce_packet);
+
 }
 
 // Reset the scores for all players, broadcasting score updates for each one
@@ -410,6 +431,7 @@ void	Server::reset_player_scores() {
 void	Server::broadcast_score_update(const ServerPlayer& player) {
 	PacketWriter	score_packet(SCORE_UPDATE_PACKET);
 	score_packet << player.get_id() << player.get_score();
+	m_ack_manager.add_packet(player.get_id(), score_packet);
 	m_network.broadcast_packet(score_packet);
 }
 
@@ -473,6 +495,7 @@ void	Server::run(int portno, const char* map_name)
 	m_is_running = true;
 	while (m_is_running) {
 		timeout_players();
+		m_ack_manager.resend();
 
 		if (m_players_have_spawned) {
 			// Update the status of the gates
@@ -537,9 +560,9 @@ void	Server::new_game() {
 	m_waiting_players.clear(); // Waiting players get cleared out and put in general queue...
 
 	PacketWriter		packet(GAME_START_PACKET);
-	packet << m_current_map.get_name() << 0 << time_until_spawn();
+	packet << m_current_map.get_name() << 0 << uint32_t(START_DELAY);
+	m_ack_manager.add_broadcast_packet(packet);
 	m_network.broadcast_packet(packet);
-	// TODO: REQUIRE ACK
 }
 
 void	Server::game_over(char winning_team) {
@@ -551,12 +574,12 @@ void	Server::game_over(char winning_team) {
 
 	PacketWriter		packet(GAME_STOP_PACKET);
 	packet << winning_team << m_team_score[0] << m_team_score[1];
+	m_ack_manager.add_broadcast_packet(packet);
 	m_network.broadcast_packet(packet);
 	m_gates[0].reset();
 	m_gates[1].reset();
 	m_game_start_time = 0;
 	m_players_have_spawned = false;
-	// TODO: REQUIRE ACK
 }
 
 void	Server::start_game() {
@@ -570,9 +593,10 @@ void	Server::start_game() {
 		spawn_player(it->second);
 	}
 
-	// Send the game start packet (TODO: require ACK)
+	// Send the game start packet
 	PacketWriter		packet(GAME_START_PACKET);
 	packet << m_current_map.get_name() << 1 << 0;
+	m_ack_manager.add_broadcast_packet(packet);
 	m_network.broadcast_packet(packet);
 }
 
@@ -588,13 +612,14 @@ bool	Server::spawn_player(ServerPlayer& player) {
 		player.set_spawnpoint(point);
 		PacketWriter	update_packet(PLAYER_UPDATE_PACKET);
 		update_packet << player.get_id() << point->x << point->y << 0 << 0 << 0 << "";
+		m_ack_manager.add_packet(player.get_id(), update_packet);
 		m_network.send_packet(player.get_channel(), update_packet);
 		return true;
 	} else {
 		// Oh noes! No place to spawn this player. TODO: do something about it
+		send_system_message(player, "There are no spawn points on the map for you.  Try switching teams.");
 		return false;
 	}
-	// TODO: require ACK for spawn player packet (XXX: player update packets usually don't require ACKs)
 }
 
 void	Server::timeout_players() {
@@ -635,6 +660,10 @@ uint32_t	Server::server_sleep_time() const {
 
 	if (waiting_to_spawn()) {
 		sleep_time = std::min(sleep_time, time_until_spawn());
+	}
+
+	if (m_ack_manager.has_packets()) {
+		sleep_time = std::min(sleep_time, m_ack_manager.time_until_resend());
 	}
 
 	return sleep_time;
@@ -811,5 +840,26 @@ string	Server::get_unique_player_name(const char* requested_name) const {
 		name = name_to_try.str();
 	}
 	return name;
+}
+
+void	Server::ServerAckManager::kick_peer(uint32_t player_id) {
+	if (ServerPlayer* player = m_server.get_player(player_id)) {
+		m_server.remove_player(*player, "Too much packet drop");
+	}
+}
+
+void	Server::ServerAckManager::resend_packet(uint32_t player_id, const std::string& data) {
+	if (ServerPlayer* player = m_server.get_player(player_id)) {
+		m_server.m_network.send_packet(player->get_channel(), data);
+	}
+}
+
+void	Server::ServerAckManager::add_broadcast_packet(const PacketWriter& packet) {
+	set<uint32_t>			player_ids;
+	PlayerMap::const_iterator	it(m_server.m_players.begin());
+	while (it != m_server.m_players.end()) {
+		player_ids.insert((it++)->first);
+	}
+	AckManager::add_broadcast_packet(player_ids, packet);
 }
 

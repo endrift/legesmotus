@@ -1123,6 +1123,7 @@ void GameController::welcome(PacketReader& reader) {
 	m_name = playername;
 
 	cerr << "Received welcome packet. Version: " << serverversion << ", Player ID: " << playerid << ", Name: " << playername << ", Team: " << team << endl;
+	send_ack(reader);
 	
 	m_players.clear();
 	
@@ -1154,31 +1155,36 @@ void GameController::announce(PacketReader& reader) {
 	char team;
 	
 	if (m_players.empty()) {
+		// WELCOME packet not received yet
+		// do NOT send an ACK for this ANNOUNCE packet, so that the server will resend it, hopefully after the WELCOME has come in.
 		return;
 	}
+
+	send_ack(reader);
 	
-	// Ignore an announce for ourselves.
 	reader >> playerid >> playername >> team;
-	if (playerid == m_player_id) {
-		return;
-	}
 	
 	string joinmsg = "";
 	joinmsg.append(playername);
 	joinmsg.append(" has joined the game!");
+	display_message(joinmsg, team == 'A' ? BLUE_COLOR : RED_COLOR);
 	
+	// Ignore announce packet for ourself, but still display join message (above)
+	if (playerid == m_player_id) {
+		return;
+	}
+
 	// Add a different sprite and name color depending on team.
 	if (team == 'A') {
 		m_players.insert(pair<int, GraphicalPlayer>(playerid,GraphicalPlayer((const char*)playername.c_str(), playerid, team, new GraphicGroup(blue_player))));
 		m_text_manager->set_active_color(BLUE_COLOR);
-		display_message(joinmsg, BLUE_COLOR);
 	} else {
 		m_players.insert(pair<int, GraphicalPlayer>(playerid,GraphicalPlayer((const char*)playername.c_str(), playerid, team, new GraphicGroup(red_player))));
 		m_text_manager->set_active_color(RED_COLOR);
-		display_message(joinmsg, RED_COLOR);
 	}
 	m_minimap->add_blip(playerid,team,0,0);
 	
+	// Register the player sprite with the window
 	m_window->register_graphic(m_players[playerid].get_sprite());
 	m_players[playerid].set_name_sprite(m_text_manager->place_string(m_players[playerid].get_name(), m_players[playerid].get_x(), m_players[playerid].get_y()-(m_players[playerid].get_radius()+30), TextManager::CENTER, TextManager::LAYER_MAIN));
 	m_players[playerid].set_radius(40);
@@ -1200,6 +1206,11 @@ void GameController::player_update(PacketReader& reader) {
 	double rotation;
 	string flags;
 	reader >> player_id >> x >> y >> velocity_x >> velocity_y >> rotation >> flags;
+
+	if (player_id == m_player_id) {
+		// If the player update packet is for this player, send an ACK for it
+		send_ack(reader);
+	}
 	
 	GraphicalPlayer* currplayer = get_player_by_id(player_id);
 	if (currplayer == NULL) {
@@ -1447,10 +1458,18 @@ void GameController::gate_update(PacketReader& reader) {
  * When a game start packet is received.
  */
 void GameController::game_start(PacketReader& reader) {
+	if (m_players.empty()) {
+		// WELCOME packet not received yet
+		// do NOT send an ACK for this GAME_START packet, so that the server will resend it, hopefully after the WELCOME has come in.
+		return;
+	}
+
 	string 		mapname;
 	bool		game_started;
 	uint32_t	timeleft;
 	reader >> mapname >> game_started >> timeleft;
+
+	send_ack(reader);
 
 	// Load the map
 	string		mapfilename(mapname + ".map");
@@ -1492,6 +1511,8 @@ void GameController::game_stop(PacketReader& reader) {
 	int		teambscore;
 	
 	reader >> winningteam >> teamascore >> teambscore;
+
+	send_ack(reader);
 	
 	m_game_state = GAME_OVER;
 	
@@ -1522,13 +1543,21 @@ void GameController::game_stop(PacketReader& reader) {
  * Called when a score update packet is received.
  */
 void GameController::score_update(PacketReader& reader) {
+	if (m_players.empty()) {
+		// WELCOME packet not received yet
+		// do NOT send an ACK for this SCORE_UPDATE packet, so that the server will resend it, hopefully after the WELCOME has come in.
+	}
+
 	uint32_t	player_id;
 	int		score;
 	reader >> player_id >> score;
 
+	send_ack(reader);
+
 	if (GraphicalPlayer* player = get_player_by_id(player_id)) {
 		player->set_score(score);
 	}
+
 }
 
 /*
@@ -1742,5 +1771,11 @@ GraphicalPlayer* GameController::get_player_by_name(const char* name) {
 		}
 	}
 	return NULL;
+}
+
+void	GameController::send_ack(const PacketReader& packet) {
+	PacketWriter		ack_packet(ACK_PACKET);
+	ack_packet << m_player_id << packet.packet_type() << packet.packet_id();
+	m_network.send_packet(ack_packet);
 }
 

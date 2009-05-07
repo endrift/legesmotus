@@ -11,6 +11,7 @@
 #include "ServerNetwork.hpp"
 #include "ServerPlayer.hpp"
 #include "ServerMap.hpp"
+#include "common/AckManager.hpp"
 #include <stdint.h>
 #include <map>
 #include <list>
@@ -89,6 +90,16 @@ private:
 		bool		set_engagement(bool is_engaged, uint32_t player_id);
 	};
 
+	class ServerAckManager : public AckManager {
+		Server&		m_server;
+	public:
+		explicit ServerAckManager(Server& server) : m_server(server) { }
+		virtual void	kick_peer(uint32_t player_id);
+		virtual void	resend_packet(uint32_t player_id, const std::string& data);
+
+		void		add_broadcast_packet(const PacketWriter& packet);
+	};
+	friend class ServerAckManager;
 
 	//
 	// Game State
@@ -96,6 +107,7 @@ private:
 	std::string		m_password;		// Password for admin access
 	bool			m_is_running;
 	ServerNetwork		m_network;
+	ServerAckManager	m_ack_manager;
 	uint32_t		m_next_player_id;	// Used to allocate next player ID
 	PlayerMap		m_players;
 	ServerMap		m_current_map;
@@ -202,6 +214,7 @@ public:
 	Server ();
 
 	// Called upon receipt of network packets:
+	void		ack(int channel, PacketReader& packet);
 	void		player_update(int channel, PacketReader& packet);
 	void		join(const IPaddress& address, PacketReader& packet);
 	void		leave(int channel, PacketReader& packet);

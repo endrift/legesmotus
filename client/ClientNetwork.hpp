@@ -24,9 +24,6 @@ private:
 	// Process the individual packet which has been received
 	void		process_packet (GameController& controller, const RawPacket& packet);
 
-	// Send an acknowledgment packet for given packet id back to the server
-	void		send_ack (uint32_t packet_id);
-	
 public:
 	ClientNetwork();
 	~ClientNetwork();
