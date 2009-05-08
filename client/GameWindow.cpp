@@ -110,12 +110,50 @@ GameWindow* GameWindow::get_instance() {
 	return m_instance;
 }
 
+GameWindow* GameWindow::get_optimal_instance() {
+	int depth;
+	size_t num_modes;
+	supported_resolutions(NULL, NULL, &depth, &num_modes);
+	int *w = new int[num_modes];
+	int *h = new int[num_modes];
+	supported_resolutions(w, h, &depth, &num_modes);
+	int max_w = 0;
+	int max_h = 0;
+	for(size_t i = 0; i < num_modes; ++i) {
+		if(w[i]*h[i] > max_w*max_h) {
+			max_h = w[i];
+			max_w = h[i];
+		}
+	}
+	delete[] w;
+	delete[] h;
+	return get_instance(max_w, max_h, depth, true);
+}
+
 void GameWindow::destroy_instance() {
 	if (m_instance == NULL) {
 		return;
 	}
 	delete m_instance;
 	m_instance = NULL;
+}
+
+void GameWindow::supported_resolutions(int* widths, int* heights, int* depth, size_t* num_modes) {
+	const SDL_VideoInfo *vidInfo = SDL_GetVideoInfo();
+	*depth = vidInfo->vfmt->BitsPerPixel;
+	SDL_Rect **res = SDL_ListModes(NULL,SDL_OPENGL|SDL_FULLSCREEN);
+
+	size_t real_num;
+	if(widths == NULL || heights == NULL) {
+		for(real_num = 0; res[real_num]; ++real_num);
+		*num_modes = real_num;
+	} else {
+		for(real_num = 0; res[real_num] && real_num < *num_modes; ++real_num) {
+			widths[real_num] = res[real_num]->w;
+			heights[real_num] = res[real_num]->h;
+		}
+	}
+	*num_modes = real_num;
 }
 
 int GameWindow::get_width() const {

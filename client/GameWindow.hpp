@@ -36,7 +36,13 @@ public:
 	static GameWindow*	get_instance(int width, int height, int depth, bool fullscreen);
 	// Get the current instance, or NULL if there is no such instance
 	static GameWindow*	get_instance();
+	static GameWindow*	get_optimal_instance();
 	static void		destroy_instance();
+
+	// Pass NULL, NULL to get depth and number of modes, or pointers for all to get all the modes
+	// If num_modes is less than the actual number, only some are added, with no particular distinction
+	// These are not necessarily sorted at all
+	static void		supported_resolutions(int* widths, int* heights, int* depth, size_t* num_modes);
 
 	int			get_width() const;
 	int			get_height() const;
