@@ -1602,18 +1602,23 @@ void GameController::score_update(PacketReader& reader) {
 	if (m_players.empty()) {
 		// WELCOME packet not received yet
 		// do NOT send an ACK for this SCORE_UPDATE packet, so that the server will resend it, hopefully after the WELCOME has come in.
+		return;
 	}
 
-	uint32_t	player_id;
+	std::string	subject;
 	int		score;
-	reader >> player_id >> score;
+	reader >> subject >> score;
 
 	send_ack(reader);
 
-	if (GraphicalPlayer* player = get_player_by_id(player_id)) {
+	if (is_valid_team(subject[0])) {
+		char	team = subject[0];
+
+		// TODO: Nathan, update team score here
+
+	} else if (GraphicalPlayer* player = get_player_by_id(atoi(subject.c_str()))) {
 		player->set_score(score);
 	}
-
 }
 
 /*

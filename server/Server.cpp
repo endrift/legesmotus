@@ -304,13 +304,15 @@ void	Server::join(const IPaddress& address, PacketReader& packet)
 	string			requested_name;
 	char			team;
 
-	packet >> client_version >> requested_name >> team;
+	packet >> client_version;
+
+	// TODO: check client version here.
+
+	packet >> requested_name >> team;
 
 	sanitize_player_name(requested_name);
 
 	cerr << "Join request from " << format_ip_address(address) << ": Client version=" << client_version << "; Requested name=" << requested_name << "; Requested team=" << team << endl;
-
-	// TODO: check client version.
 
 	if (!is_valid_team(team)) {
 		// Assign to team equitably.
@@ -360,7 +362,7 @@ void	Server::join(const IPaddress& address, PacketReader& packet)
 	bool			is_first_player = m_players.empty();
 
 	uint32_t		player_id = m_next_player_id++;
-	m_players[player_id].init(player_id, channel, client_version, name.c_str(), team, m_timeout_queue);
+	ServerPlayer&		new_player = m_players[player_id].init(player_id, channel, client_version, name.c_str(), team, m_timeout_queue);
 
 	cerr << requested_name << ": Joined on team " << team << ", bound to channel " << channel << ", with ID " << player_id << endl;
 
@@ -383,7 +385,7 @@ void	Server::join(const IPaddress& address, PacketReader& packet)
 	} else {
 		// Joining a game that has already started
 		// Add the player to the join queue
-		m_waiting_players.push_back(&m_players[player_id]);
+		m_waiting_players.push_back(&new_player);
 		// Tell the player what map is currently in use, and how much time until he spawns
 		PacketWriter		game_start_packet(GAME_START_PACKET);
 		game_start_packet << m_current_map.get_name() << 1 << uint32_t(JOIN_DELAY);
@@ -412,6 +414,9 @@ void	Server::join(const IPaddress& address, PacketReader& packet)
 		m_network.send_packet(channel, score_packet);
 	}
 
+	// Send the player the team scores
+	report_team_scores(new_player);
+
 	// Announce the new player
 	PacketWriter		announce_packet(ANNOUNCE_PACKET);
 	announce_packet << player_id << name << team;
@@ -434,8 +439,24 @@ void	Server::reset_player_scores() {
 void	Server::broadcast_score_update(const ServerPlayer& player) {
 	PacketWriter	score_packet(SCORE_UPDATE_PACKET);
 	score_packet << player.get_id() << player.get_score();
-	m_ack_manager.add_packet(player.get_id(), score_packet);
+	m_ack_manager.add_broadcast_packet(score_packet);
 	m_network.broadcast_packet(score_packet);
+}
+
+// Report the team scores to given player
+void	Server::report_team_scores(const ServerPlayer& recipient_player) {
+	{
+		PacketWriter	score_packet(SCORE_UPDATE_PACKET);
+		score_packet << 'A' << m_team_score[0];
+		m_ack_manager.add_packet(recipient_player.get_id(), score_packet);
+		m_network.send_packet(recipient_player.get_channel(), score_packet);
+	}
+	{
+		PacketWriter	score_packet(SCORE_UPDATE_PACKET);
+		score_packet << 'B' << m_team_score[1];
+		m_ack_manager.add_packet(recipient_player.get_id(), score_packet);
+		m_network.send_packet(recipient_player.get_channel(), score_packet);
+	}
 }
 
 void	Server::leave(int channel, PacketReader& packet) {

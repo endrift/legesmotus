@@ -57,7 +57,7 @@ public:
 	Queue::iterator	get_timeout_queue_position() const { return m_timeout_queue_position; }
 
 	// Initialize the player
-	void		init(uint32_t player_id, int channel, int client_version, const char* name, char team, Queue& timeout_queue);
+	ServerPlayer&	init(uint32_t player_id, int channel, int client_version, const char* name, char team, Queue& timeout_queue);
 
 };
 

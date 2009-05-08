@@ -18,7 +18,7 @@ ServerPlayer::ServerPlayer() {
 	m_join_time = m_last_seen_time = 0;
 }
 
-void ServerPlayer::init(uint32_t player_id, int channel, int client_version, const char* name, char team, ServerPlayer::Queue& timeout_queue) {
+ServerPlayer& ServerPlayer::init(uint32_t player_id, int channel, int client_version, const char* name, char team, ServerPlayer::Queue& timeout_queue) {
 	Player::set_id(player_id);
 	Player::set_name(name);
 	Player::set_team(team);
@@ -30,6 +30,8 @@ void ServerPlayer::init(uint32_t player_id, int channel, int client_version, con
 
 	timeout_queue.push_back(this);
 	m_timeout_queue_position = --timeout_queue.end();
+
+	return *this;
 }
 
 void ServerPlayer::reset_join_time() {

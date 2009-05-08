@@ -153,8 +153,11 @@ private:
 	// Reset the scores for all players, broadcasting score updates for each one (call at beginning of new game)
 	void			reset_player_scores();
 
-	// Broadcast to all players a score update for the give player
+	// Broadcast to all players a score update for the given player
 	void			broadcast_score_update(const ServerPlayer&);
+
+	// Report to given player the team scores
+	void			report_team_scores(const ServerPlayer& recipient_player);
 
 	// Send a message
 	void			send_system_message(const ServerPlayer& recipient, const char* message);
