@@ -136,8 +136,11 @@ void TableBackground::draw_row(int row) const {
 				glVertex3d(m_image_width - side_offset + sin(i*M_PI/32)*side_offset, top_offset - cos(i*M_PI/32)*top_offset, 0);
 			}
 			glEnd();
+		} else {
+			side_offset = 0;
 		}
 	} else if (row == m_num_rows - 1) {
+		top_offset = 0;
 		if (m_corner_radius > 0) {
 			glBegin(GL_TRIANGLE_FAN);
 			glVertex3d(side_offset, height - bottom_offset, 0);
@@ -151,11 +154,13 @@ void TableBackground::draw_row(int row) const {
 				glVertex3d(m_image_width - side_offset + sin(i*M_PI/32)*side_offset, height - bottom_offset + cos(i*M_PI/32)*bottom_offset, 0);
 			}
 			glEnd();
+		} else {
+			side_offset = 0;
 		}
-		top_offset = 0;
 	} else {
 		top_offset = 0;
 		bottom_offset = 0;
+		side_offset = 0;
 	}
 
 	glBegin(GL_QUADS);
@@ -211,7 +216,6 @@ void TableBackground::set_image_width(double width) {
 
 void TableBackground::set_border_width(double pixels) {
 	m_border_width = pixels;
-	m_corner_radius = max<double>(m_corner_radius, pixels); // XXX Hack until square corners are fixed
 }
 
 void TableBackground::set_border_color(Color color) {
