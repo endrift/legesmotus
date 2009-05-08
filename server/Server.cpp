@@ -230,6 +230,7 @@ void	Server::command_server(uint32_t player_id, const char* command) {
 
 	} else if (strcmp(command, "reset") == 0 && player->is_op()) {
 		m_team_score[0] = m_team_score[1] = 0;
+		// TODO: reset all player scores, broadcast score updates...
 		send_system_message(*player, "Team scores reset.");
 
 	} else if (strncmp(command, "map ", 4) == 0 && player->is_op()) {

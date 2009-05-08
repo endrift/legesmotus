@@ -1,6 +1,7 @@
 #include "common/Point.hpp"
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 #include <ostream>
 
 using namespace std;
@@ -16,6 +17,10 @@ void	Point::init_from_string(const char* str) {
 		// No comma found.
 		clear();
 	}
+}
+
+double	Point::distance(Point a, Point b) {
+	return sqrt(double((b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y)));
 }
 
 ostream&	operator<<(ostream& out, Point point) {

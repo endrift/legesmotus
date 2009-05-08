@@ -91,6 +91,11 @@ public:
 	// Reset the player's score to 0
 	void reset_score() { set_score(0); }
 
+	struct compare_by_score {
+		bool operator() (const Player* a, const Player* b) const {
+			return a->get_score() > b->get_score();
+		}
+	};
 };
 
 #endif

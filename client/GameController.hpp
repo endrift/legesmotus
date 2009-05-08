@@ -169,6 +169,7 @@ public:
 	void		toggle_score_overlay(bool visible);
 	void		change_team_scores(int bluescore, int redscore);
 	void 		update_individual_scores();
+	void 		update_individual_score_line(int count, const GraphicalPlayer& currplayer);
 	
 	// Network callbacks:
 	void		welcome(PacketReader& reader);

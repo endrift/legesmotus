@@ -137,11 +137,11 @@ void TiledGraphic::draw(const GameWindow* window) const {
 	glTexCoord2d(0.0,0.0);
 	glVertex2i(0,0);
 	glTexCoord2d(m_width/m_tile_width,0.0);
-	glVertex2i(m_width,0);
+	glVertex2i(int(m_width),0);
 	glTexCoord2d(m_width/m_tile_width,m_height/m_tile_height);
-	glVertex2i(m_width,m_height);
+	glVertex2i(int(m_width),int(m_height));
 	glTexCoord2d(0.0,m_height/m_tile_height);
-	glVertex2i(0,m_height);
+	glVertex2i(0,int(m_height));
 	glEnd();
 	glPopMatrix();
 }

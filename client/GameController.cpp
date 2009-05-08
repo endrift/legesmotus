@@ -398,7 +398,7 @@ void GameController::run(int lockfps) {
 						angle -= 120;
 					}
 					m_players[m_player_id].get_sprite()->get_graphic("frontarm")->set_rotation(angle);
-					send_animation_packet("frontarm", "rotation", angle);
+					send_animation_packet("frontarm", "rotation", int(round(angle))); // XXX
 				}
 				send_my_player_update();
 				
@@ -677,8 +677,8 @@ void GameController::process_mouse_click(SDL_Event event) {
 		map<string, Graphic*>::iterator it;
 		for ( it=m_main_menu_items.begin() ; it != m_main_menu_items.end(); it++ ) {
 			Graphic* thisitem = (*it).second;
-			int x = thisitem->get_x();
-			int y = thisitem->get_y();
+			double x = thisitem->get_x(); // XXX
+			double y = thisitem->get_y(); // XXX
 			if (event.button.x >= x && event.button.x <= x + thisitem->get_image_width()
 			    && event.button.y >= y && event.button.y <= y + thisitem->get_image_height()) {
 				if ((*it).first == "Quit") {
@@ -699,8 +699,8 @@ void GameController::process_mouse_click(SDL_Event event) {
 		map<string, Graphic*>::iterator it;
 		for ( it=m_options_menu_items.begin() ; it != m_options_menu_items.end(); it++ ) {
 			Graphic* thisitem = (*it).second;
-			int x = thisitem->get_x();
-			int y = thisitem->get_y();
+			double x = thisitem->get_x(); // XXX
+			double y = thisitem->get_y(); // XXX
 			if (event.button.x >= x && event.button.x <= x + thisitem->get_image_width()
 			    && event.button.y >= y && event.button.y <= y + thisitem->get_image_height()) {
 				if ((*it).first == "Back") {
@@ -813,7 +813,7 @@ void GameController::move_objects(float timescale) {
 	
 	const list<MapObject>& map_objects(m_map->get_objects());
 	list<MapObject>::const_iterator thisobj;
-	int radius = m_players[m_player_id].get_radius();
+	double radius = m_players[m_player_id].get_radius(); // XXX
 	Point currpos = Point(new_x, new_y);
 	Point oldpos = Point(m_players[m_player_id].get_x(), m_players[m_player_id].get_y());
 	
@@ -892,7 +892,7 @@ void GameController::move_objects(float timescale) {
 	// Set name sprites visible/invisible. and move players.
 	map<int, GraphicalPlayer>::iterator it;
 	for ( it=m_players.begin() ; it != m_players.end(); it++ ) {
-		GraphicalPlayer currplayer = (*it).second;
+		const GraphicalPlayer& currplayer = (*it).second;
 		if (currplayer.is_invisible()) {
 			currplayer.get_name_sprite()->set_invisible(true);
 		} else {
@@ -1001,8 +1001,8 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 			continue;
 		}
 		const Polygon& poly(thisobj->get_bounding_polygon());
-		double dist_to_obstacle = dist_between_points(start_x, start_y, thisobj->get_sprite()->get_x() + thisobj->get_sprite()->get_image_width()/2, thisobj->get_sprite()->get_y() + thisobj->get_sprite()->get_image_height()/2) + 100;
-		Point endpos = Point(start_x + dist_to_obstacle * cos(direction * DEGREES_TO_RADIANS), start_y + dist_to_obstacle * sin(direction * DEGREES_TO_RADIANS));
+		double dist_to_obstacle = Point::distance(Point(start_x, start_y), Point(thisobj->get_sprite()->get_x() + thisobj->get_sprite()->get_image_width()/2, thisobj->get_sprite()->get_y() + thisobj->get_sprite()->get_image_height()/2)) + 100.0;
+		Point endpos(start_x + dist_to_obstacle * cos(direction * DEGREES_TO_RADIANS), start_y + dist_to_obstacle * sin(direction * DEGREES_TO_RADIANS));
 		
 		Point newpoint = poly.intersects_line(startpos, endpos);
 		
@@ -1010,7 +1010,7 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 			continue;
 		}
 		
-		double newdist = dist_between_points(start_x, start_y, newpoint.x, newpoint.y);
+		double newdist = Point::distance(Point(start_x, start_y), newpoint);
 		
 		if (newdist != -1 && newdist < shortestdist) {
 			shortestdist = newdist;
@@ -1022,15 +1022,15 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 	
 	// Now check if any players are closer.
 	if (player_id == m_player_id) {
-		double player_hit = -1;
+		const GraphicalPlayer* hit_player = NULL;
 		
 		map<int, GraphicalPlayer>::iterator it;
 		for ( it=m_players.begin() ; it != m_players.end(); it++ ) {
-			GraphicalPlayer currplayer = (*it).second;
+			const GraphicalPlayer& currplayer = (*it).second;
 			if (currplayer.get_id() == player_id) {
 				continue;
 			}
-			double playerdist = dist_between_points(start_x, start_y, currplayer.get_x(), currplayer.get_y());
+			double playerdist = Point::distance(Point(start_x, start_y), Point(currplayer.get_x(), currplayer.get_y()));
 			
 			if (playerdist > shortestdist) {
 				continue;
@@ -1044,7 +1044,7 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 				continue;
 			}
 			
-			double dist = dist_between_points(currplayer.get_x(), currplayer.get_y(), closestpoint.at(0), closestpoint.at(1));
+			double dist = Point::distance(Point(currplayer.get_x(), currplayer.get_y()), Point(closestpoint.at(0), closestpoint.at(1)));
 			
 			// If the closest point was behind the beginning of the shot, it's not a hit.
 			if (closestpoint.at(2) < 0) {
@@ -1055,7 +1055,7 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 			if (dist < currplayer.get_radius()) {
 				shortestdist = playerdist;
 				wallhitpoint = Point(0, 0);
-				player_hit = currplayer.get_id();
+				hit_player = &currplayer;
 				end_x = closestpoint.at(0);
 				end_y = closestpoint.at(1);
 			}
@@ -1068,7 +1068,7 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 			Point newpoint = m_map_polygon.intersects_line(startpos, endpos);
 		
 			if (newpoint.x != -1 || newpoint.y != -1) {		
-				double newdist = dist_between_points(start_x, start_y, newpoint.x, newpoint.y);
+				double newdist = Point::distance(Point(start_x, start_y), newpoint);
 		
 				if (newdist != -1 && newdist < shortestdist) {
 					shortestdist = newdist;
@@ -1108,8 +1108,8 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 		
 		m_network.send_packet(gun_fired);
 		
-		if (player_hit != -1 && !m_players[player_hit].is_frozen()) {
-			send_player_shot(player_id, player_hit, direction-180);
+		if (hit_player != NULL && !hit_player->is_frozen()) {
+			send_player_shot(player_id, hit_player->get_id(), direction-180);
 		}
 	}
 }
@@ -1124,7 +1124,7 @@ void GameController::set_players_visible(bool visible) {
 
 	map<int, GraphicalPlayer>::iterator it;
 	for ( it=m_players.begin() ; it != m_players.end(); it++ ) {
-		GraphicalPlayer currplayer = (*it).second;
+		const GraphicalPlayer& currplayer = (*it).second;
 		if (currplayer.get_sprite() == NULL) {
 			continue;
 		}
@@ -1158,7 +1158,7 @@ void GameController::toggle_score_overlay(bool visible) {
  */
 void GameController::change_team_scores(int bluescore, int redscore) {
 	m_text_manager->set_active_font(m_menu_font);
-	m_text_manager->set_active_color(1.0, 1.0, 1.0);
+	m_text_manager->set_active_color(Color::WHITE);
 	
 	if (redscore != -1) {
 		if (m_overlay_items.count("red score") != 0) {
@@ -1195,89 +1195,66 @@ void GameController::change_team_scores(int bluescore, int redscore) {
  * Update individual scores.
  */
 void GameController::update_individual_scores() {
+	// Place all the players into one of two lists based on their team
+	list<const GraphicalPlayer*>	blue_players;
+	list<const GraphicalPlayer*>	red_players;
+
+	for (map<int, GraphicalPlayer>::iterator it = m_players.begin(); it != m_players.end(); ++it) {
+		if (it->second.get_sprite() != NULL && it->second.get_team() == 'A') {
+			blue_players.push_back(&it->second);
+		} else if (it->second.get_sprite() != NULL && it->second.get_team() == 'B') {
+			red_players.push_back(&it->second);
+		}
+	}
+	// Sort these lists by score
+	blue_players.sort(Player::compare_by_score());
+	red_players.sort(Player::compare_by_score());
+
 	m_text_manager->set_active_font(m_medium_font);
-	m_text_manager->set_active_color(1.0, 1.0, 1.0);
+	m_text_manager->set_active_color(Color::WHITE);
 	
 	int count = 0;
 	
-	map<int, GraphicalPlayer>::iterator it;
-	for ( it=m_players.begin() ; it != m_players.end(); it++ ) {
-		GraphicalPlayer currplayer = (*it).second;
-		if (currplayer.get_team() == 'A') {
-			if (currplayer.get_sprite() == NULL) {
-				continue;
-			}
-			string playername = currplayer.get_name();
-			playername.append(": ");
-			string playernameforscore = currplayer.get_name();
-			string playerscore = playernameforscore.append("score");
-		
-			m_text_manager->set_active_color(BLUE_COLOR);
-		
-			if (m_overlay_items.count(playerscore) != 0) {
-				m_text_manager->remove_string(m_overlay_items[playerscore]);
-			}
-			if (m_overlay_items.count(playername) != 0) {
-				m_text_manager->remove_string(m_overlay_items[playername]);
-			}
-		
-			stringstream scoreprinter;
-			scoreprinter << currplayer.get_score();
-		 	m_overlay_items[playername] = m_text_manager->place_string(playername, m_overlay_background->get_x() - m_overlay_background->get_image_width()/2 + 10, 230 + count*25, TextManager::LEFT, TextManager::LAYER_HUD);
-			m_overlay_items[playerscore] = m_text_manager->place_string(scoreprinter.str(), m_overlay_background->get_x(), 230 + count*25, TextManager::LEFT, TextManager::LAYER_HUD);
-		
-			m_overlay_items[playername]->set_priority(-4);
-			m_window->unregister_graphic(m_overlay_items[playername]);
-			m_window->register_hud_graphic(m_overlay_items[playername]);
-		
-			m_overlay_items[playerscore]->set_priority(-4);
-			m_window->unregister_graphic(m_overlay_items[playerscore]);
-			m_window->register_hud_graphic(m_overlay_items[playerscore]);
-		
-			count++;
-		}
+	for (list<const GraphicalPlayer*>::iterator it = blue_players.begin() ; it != blue_players.end(); ++it) {
+		update_individual_score_line(count++, **it);
 	}
 	
 	count += 2;
 	
-	for ( it=m_players.begin() ; it != m_players.end(); it++ ) {
-		GraphicalPlayer currplayer = (*it).second;
-		if (currplayer.get_team() == 'B') {
-			if (currplayer.get_sprite() == NULL) {
-				continue;
-			}
-			string playername = currplayer.get_name();
-			playername.append(": ");
-			string playernameforscore = currplayer.get_name();
-			string playerscore = playernameforscore.append("score");
-		
-			m_text_manager->set_active_color(RED_COLOR);
-					
-			if (m_overlay_items.count(playerscore) != 0) {
-				m_text_manager->remove_string(m_overlay_items[playerscore]);
-			}
-			if (m_overlay_items.count(playername) != 0) {
-				m_text_manager->remove_string(m_overlay_items[playername]);
-			}
-		
-			stringstream scoreprinter;
-			scoreprinter << currplayer.get_score();
-		 	m_overlay_items[playername] = m_text_manager->place_string(playername, m_overlay_background->get_x() - m_overlay_background->get_image_width()/2 + 10, 230 + count*25, TextManager::LEFT, TextManager::LAYER_HUD);
-			m_overlay_items[playerscore] = m_text_manager->place_string(scoreprinter.str(), m_overlay_background->get_x(), 230 + count*25, TextManager::LEFT, TextManager::LAYER_HUD);
-		
-			m_overlay_items[playername]->set_priority(-4);
-			m_window->unregister_graphic(m_overlay_items[playername]);
-			m_window->register_hud_graphic(m_overlay_items[playername]);
-		
-			m_overlay_items[playerscore]->set_priority(-4);
-			m_window->unregister_graphic(m_overlay_items[playerscore]);
-			m_window->register_hud_graphic(m_overlay_items[playerscore]);
-		
-			count++;
-		}
+	for (list<const GraphicalPlayer*>::iterator it = red_players.begin() ; it != red_players.end(); ++it) {
+		update_individual_score_line(count++, **it);
 	}
 
 	m_text_manager->set_active_font(m_font);
+}
+
+void GameController::update_individual_score_line(int count, const GraphicalPlayer& currplayer) {
+
+	string playername = currplayer.get_name();
+	string playernameforscore = currplayer.get_name();
+	string playerscore = playernameforscore.append("score");
+
+	m_text_manager->set_active_color(currplayer.get_team() == 'A' ? BLUE_COLOR : RED_COLOR);
+
+	if (m_overlay_items.count(playerscore) != 0) {
+		m_text_manager->remove_string(m_overlay_items[playerscore]);
+	}
+	if (m_overlay_items.count(playername) != 0) {
+		m_text_manager->remove_string(m_overlay_items[playername]);
+	}
+
+	stringstream scoreprinter;
+	scoreprinter << currplayer.get_score();
+	m_overlay_items[playername] = m_text_manager->place_string(playername, m_overlay_background->get_x() - m_overlay_background->get_image_width()/2 + 10, 230 + count*25, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_overlay_items[playerscore] = m_text_manager->place_string(scoreprinter.str(), m_overlay_background->get_x(), 230 + count*25, TextManager::LEFT, TextManager::LAYER_HUD);
+
+	m_overlay_items[playername]->set_priority(-4);
+	m_window->unregister_graphic(m_overlay_items[playername]);
+	m_window->register_hud_graphic(m_overlay_items[playername]);
+
+	m_overlay_items[playerscore]->set_priority(-4);
+	m_window->unregister_graphic(m_overlay_items[playerscore]);
+	m_window->register_hud_graphic(m_overlay_items[playerscore]);
 }
 
 /*
