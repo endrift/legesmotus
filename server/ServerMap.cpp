@@ -72,3 +72,6 @@ void	ServerMap::add_object(PacketReader& object_data) {
 	}
 }
 
+int	ServerMap::total_capacity(char team) const {
+	return is_valid_team(team) ? m_spawnpoints[team - 'A'].size() : 0;
+}

@@ -38,7 +38,7 @@ extern "C" int main(int argc, char* argv[]) try {
 	srand(time(0));
 
 	string			password;
-	string			map_name("alpha1"); // XXX: what should the default map be?  should there be a default map?
+	string			map_name("alpha1");
 	unsigned int		portno = DEFAULT_PORTNO;
 
 	for (int i = 1; i < argc; i++) {
@@ -75,5 +75,7 @@ extern "C" int main(int argc, char* argv[]) try {
 
 } catch (const LMException& e) {
 	cerr << "Error: " << e.what() << endl;
+	cerr << "1. Make sure that you are running the server from the top-level source directory, OR that your $LM_DATA_DIR environment variable is set to the directory containing the game resources." << endl;
+	cerr << "2. Make sure that you are not already running the server." << endl;
 	return 1;
 }

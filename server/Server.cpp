@@ -127,10 +127,8 @@ void	Server::team_change(int channel, PacketReader& packet)
 	++m_team_count[new_team - 'A'];
 
 	if (m_players_have_spawned) {
-		// Hide and freeze the player (TODO: abstract the sending of this packet)
-		PacketWriter	freeze_packet(PLAYER_UPDATE_PACKET);
-		freeze_packet << player->get_id() << 0 << 0 << 0 << 0 << 0 << "IF";
-		m_network.broadcast_packet(freeze_packet);
+		// Hide and freeze the player
+		send_spawn_packet(*player, Point(0, 0), false);
 
 		// Add them to the waiting to spawn list
 		player->reset_join_time();
@@ -643,10 +641,7 @@ void	Server::spawn_waiting_players() {
 bool	Server::spawn_player(ServerPlayer& player) {
 	if (const Point* point = m_current_map.next_spawnpoint(player.get_team())) {
 		player.set_spawnpoint(point);
-		PacketWriter	update_packet(PLAYER_UPDATE_PACKET);
-		update_packet << player.get_id() << point->x << point->y << 0 << 0 << 0 << "";
-		m_ack_manager.add_packet(player.get_id(), update_packet);
-		m_network.send_packet(player.get_channel(), update_packet);
+		send_spawn_packet(player, *point, true);
 		return true;
 	} else {
 		// Oh noes! No place to spawn this player.
@@ -908,5 +903,12 @@ void	Server::ServerAckManager::add_broadcast_packet(const PacketWriter& packet) 
 		player_ids.insert((it++)->first);
 	}
 	AckManager::add_broadcast_packet(player_ids, packet);
+}
+
+void	Server::send_spawn_packet(const ServerPlayer& player, Point spawnpoint, bool is_alive) {
+	PacketWriter	spawn_packet(PLAYER_UPDATE_PACKET);
+	spawn_packet << player.get_id() << spawnpoint.x << spawnpoint.y << 0 << 0 << 0 << (is_alive ? "" : "IF");
+	m_ack_manager.add_packet(player.get_id(), spawn_packet);
+	m_network.send_packet(player.get_channel(), spawn_packet);
 }
 

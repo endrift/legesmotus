@@ -104,6 +104,7 @@ extern "C" int main(int argc, char* argv[]) try {
 } catch (const LMException& e) {
 	cerr << "Error: " << e.what() << endl;
 	cerr << "1. If on X11, check that your $DISPLAY environment variable is set properly." << endl;
-	cerr << "2. Make sure that the game resources are installed." << endl;
+	cerr << "2. Make sure that you are running Leges Motus from the top-level source directory, OR that your $LM_DATA_DIR environment variable is set to the directory containing the game resources." << endl;
+	       
 	return 1;
 }

@@ -33,7 +33,7 @@ public:
 	// How much TOTAL space is available on the map?
 	int		total_teamA_capacity() const { return m_spawnpoints[0].size(); }
 	int		total_teamB_capacity() const { return m_spawnpoints[1].size(); }
-	int		total_capacity(char team) const { return m_spawnpoints[team - 'A'].size(); } // TODO: check validity of team argument
+	int		total_capacity(char team) const;
 	int		total_capacity() const { return total_teamA_capacity() + total_teamB_capacity(); }
 
 	// Acquire the next available spawnpoint for the given team

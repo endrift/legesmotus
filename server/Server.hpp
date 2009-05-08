@@ -78,7 +78,8 @@ private:
 		bool		is_moving() const { return m_status == OPENING || m_status == CLOSING; }
 		bool		is_engaged() const { return m_status == OPENING || m_status == OPEN; }
 		int		get_status() const { return m_status; }
-		uint32_t	get_player_id() const { return !m_players.empty() ? *m_players.begin() : 0; } // TODO: which player ID to return?
+		uint32_t	get_player_id() const { return !m_players.empty() ? *m_players.begin() : 0; }
+		// TODO: which player ID should I return above?  Right now this information isn't being used (it's sent to the client, which ignores it), but if the client ever provides information about who is lowering the gate, this would be important.
 
 		uint32_t	time_elapsed() const;	// If moving, how many milliseconds since the gate started moving?
 		uint32_t	time_remaining() const;	// If moving, how many milliseconds until the gate finishes moving?
@@ -117,7 +118,7 @@ private:
 	// Game State
 	//
 	std::string		m_password;		// Password for admin access
-	bool			m_is_running;
+	bool			m_is_running;		// When this is false, run() stops its main loop
 	ServerNetwork		m_network;
 	ServerAckManager	m_ack_manager;
 	uint32_t		m_next_player_id;	// Used to allocate next player ID
@@ -126,7 +127,7 @@ private:
 	GateStatus		m_gates[2];		// [0] = Team A's gate  [1] = Team B's gate
 	uint32_t		m_game_start_time;	// Time at which the game started
 	bool			m_players_have_spawned;	// True if any players have spawned
-	ServerPlayer::Queue	m_waiting_players;	// Players who have joined after start of round and are waiting to be spawned
+	ServerPlayer::Queue	m_waiting_players;	// Players who have joined after start of round and are waiting to spawn
 	ServerPlayer::Queue	m_timeout_queue;	// A list of players in the order in which they will timeout
 	int			m_team_count[2];	// [0] = # of players on team A  [1] == # of players on team B
 	int			m_team_score[2];	// [0] = team A's score  [1] = team B's score
@@ -162,13 +163,19 @@ private:
 	// Report to given player the team scores
 	void			report_team_scores(const ServerPlayer& recipient_player);
 
-	// Send a message
+	// Send a packet to spawn a player at specified point
+	// If is_alive is true, the player will be un-frozen and visible.
+	// If is_alive is false, the player will be frozen and invisible.
+	void			send_spawn_packet(const ServerPlayer& player, Point spawnpoint, bool is_alive);
+
+	// Server command support
 	void			send_system_message(const ServerPlayer& recipient, const char* message);
 	void			command_server(uint32_t player_id, const char* command);
 
 	// Timeout all old players
 	void			timeout_players();
 
+	// If a player can't join (no space on map, invalid player name), call this to send back a REJECT packet:
 	void			reject_join(const IPaddress& addr, const char* why);
 
 	//
@@ -207,11 +214,14 @@ private:
 	ServerPlayer*		get_player_by_name(const char* name);
 	const ServerPlayer*	get_player_by_name(const char* name) const;
 
+	// Given a player name, return a name that is unique among all player names.
+	// Does so by appending a number until no player has the name.
 	std::string		get_unique_player_name(const char* requested_name) const;
 
 	// Remove the given player from the game
 	void			remove_player(const ServerPlayer& player, const char* leave_message);
 
+	// When a player is removed or switches teams, call this function to release any resources (gate holds, team counts, spawnpoints) that the player holds:
 	void			release_player_resources(const ServerPlayer& player);
 
 	//
