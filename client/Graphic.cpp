@@ -97,11 +97,11 @@ void Graphic::transform_gl() const {
 	glTranslated(-round(m_center_x), -round(m_center_y), 0.0);
 }
 
-int Graphic::get_image_width() const {
+double Graphic::get_image_width() const {
 	return m_image_width;
 }
 
-int Graphic::get_image_height() const {
+double Graphic::get_image_height() const {
 	return m_image_height;
 }
 

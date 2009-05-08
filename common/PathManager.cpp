@@ -38,7 +38,7 @@ PathManager::PathManager(const char* argv0) {
 PathManager::PathManager(const char* basedir, const char* datadir) {
 	strncpy(m_base_directory,basedir,sizeof(m_base_directory));
 	m_base_directory[sizeof(m_base_directory)-1] = '\0';
-	strncpy(m_data_directory,basedir,sizeof(m_data_directory));
+	strncpy(m_data_directory,datadir,sizeof(m_data_directory));
 	m_data_directory[sizeof(m_data_directory)-1] = '\0';
 }
 

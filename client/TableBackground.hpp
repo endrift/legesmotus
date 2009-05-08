@@ -18,9 +18,7 @@ private:
 	std::vector<double>	m_row_heights;
 
 	Color	m_border_color;
-	int	m_border_width;
-
-	Color	m_intensity;
+	double	m_border_width;
 
 	void draw_row(int row) const;
 public:
@@ -34,14 +32,14 @@ public:
 	void	set_row_height(int row, double height);
 	void	set_image_width(double width);
 
-	void	set_border_width(int pixels);
+	void	set_border_width(double pixels);
 	void	set_border_color(Color color);
 	void	set_cell_color(int row, Color color);
 
-	virtual void	set_alpha(double alpha);
-	virtual void	set_red_intensity(double r);
-	virtual void	set_green_intensity(double g);
-	virtual void	set_blue_intensity(double b);
+	virtual void	set_alpha(double alpha) { (void)(alpha); }
+	virtual void	set_red_intensity(double r) { (void)(r); }
+	virtual void	set_green_intensity(double g) { (void)(g); }
+	virtual void	set_blue_intensity(double b) { (void)(b); }
 
 	virtual void	draw(const GameWindow* window) const;
 };

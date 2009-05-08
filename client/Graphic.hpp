@@ -34,8 +34,8 @@ private:
 	void		init(SDL_Surface* image);
 
 protected:
-	int		m_image_width;
-	int		m_image_height;
+	double		m_image_width;
+	double		m_image_height;
 
 	GLuint	get_texture_id() const;
 	Graphic();
@@ -58,8 +58,8 @@ public:
 	virtual		~Graphic();
 	virtual	Graphic* clone() const = 0;
 	
-	int		get_image_width() const;
-	int		get_image_height() const;
+	double		get_image_width() const;
+	double		get_image_height() const;
 
 	double		get_x() const;
 	double		get_y() const;

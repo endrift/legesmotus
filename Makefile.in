@@ -29,7 +29,7 @@ endif
 
 INCLUDES = -I$(BASEDIR)
 
-CXXFLAGS += -Wall -fno-rtti -g
+CXXFLAGS += -Wall -Wextra -pedantic -fno-rtti -g
 LDFLAGS += $(CXXFLAGS)
 CXXFLAGS += $(FLAGS_SDL) $(FLAGS_GL) $(INCLUDES)
 LIBS = $(LIBS_SDL)

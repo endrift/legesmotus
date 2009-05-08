@@ -12,7 +12,6 @@ TableBackground::TableBackground(int num_rows, double width) {
 	m_num_rows = 0; // Pre-set this because set_num_rows depends on the old value
 	set_num_rows(num_rows);
 	m_image_width = width;
-	m_intensity = Color(1.0, 1.0, 1.0, 1.0);
 	m_border_width = 1;
 	set_center_x(width*0.5);
 }
@@ -76,7 +75,7 @@ void TableBackground::set_image_width(double width) {
 	m_image_width = width;
 }
 
-void TableBackground::set_border_width(int pixels) {
+void TableBackground::set_border_width(double pixels) {
 	m_border_width = pixels;
 }
 
@@ -92,29 +91,13 @@ void TableBackground::set_cell_color(int row, Color color) {
 	m_cell_colors[row] = color;
 }
 
-void TableBackground::set_alpha(double alpha) {
-	m_intensity.a = alpha;
-}
-
-void TableBackground::set_red_intensity(double r) {
-	m_intensity.r = r;
-}
-
-void TableBackground::set_green_intensity(double g) {
-	m_intensity.g = g;
-}
-
-void TableBackground::set_blue_intensity(double b) {
-	m_intensity.b = b;
-}
-
 void TableBackground::draw(const GameWindow* window) const {
+	(void)(window); // Unused
 	glDisable(GL_TEXTURE_2D);
 	glEnable(GL_DEPTH_TEST); // Enable depth test so parts aren't redrawn
 	glClearDepth(-1);
 	glDepthFunc(GL_GREATER);
 	glClear(GL_DEPTH_BUFFER_BIT);
-	glColorMask(m_intensity.r, m_intensity.g, m_intensity.b, m_intensity.a);
 
 	glPushMatrix();
 	transform_gl();
