@@ -248,10 +248,10 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_overlay_background->set_y(100);
 	m_overlay_background->set_x(m_screen_width/2);
 	m_window->register_hud_graphic(m_overlay_background);
-	m_overlay_items["red label"] = m_text_manager->place_string("Red Team:", m_overlay_background->get_x() - m_overlay_background->get_image_width()/2 + 3, 115, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_overlay_items["red label"] = m_text_manager->place_string("Red Team:", m_overlay_background->get_x() - m_overlay_background->get_image_width()/2 + 10, 115, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_overlay_items["blue label"] = m_text_manager->place_string("Blue Team:", m_overlay_background->get_x(), 115, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_text_manager->set_active_font(m_medium_font);
-	m_overlay_items["name label"] = m_text_manager->place_string("Name:", m_overlay_background->get_x() - m_overlay_background->get_image_width()/2 + 3, 190, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_overlay_items["name label"] = m_text_manager->place_string("Name:", m_overlay_background->get_x() - m_overlay_background->get_image_width()/2 + 10, 190, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_overlay_items["score label"] = m_text_manager->place_string("Score:", m_overlay_background->get_x(), 190, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_text_manager->set_active_font(m_menu_font);
 	change_team_scores(0, 0);
@@ -1167,7 +1167,7 @@ void GameController::change_team_scores(int bluescore, int redscore) {
 		
 		stringstream redscoreprinter;
 		redscoreprinter << redscore;
-	 	m_overlay_items["red score"] = m_text_manager->place_string(redscoreprinter.str(), m_overlay_items["red label"]->get_x() + m_overlay_items["red label"]->get_image_width() + 5, 115, TextManager::LEFT, TextManager::LAYER_HUD);
+	 	m_overlay_items["red score"] = m_text_manager->place_string(redscoreprinter.str(), m_overlay_items["red label"]->get_x() + m_overlay_items["red label"]->get_image_width() + 10, 115, TextManager::LEFT, TextManager::LAYER_HUD);
 	
 		m_overlay_items["red score"]->set_priority(-4);
 		m_window->unregister_graphic(m_overlay_items["red score"]);
@@ -1181,7 +1181,7 @@ void GameController::change_team_scores(int bluescore, int redscore) {
 		
 		stringstream bluescoreprinter;
 		bluescoreprinter << bluescore;
-		m_overlay_items["blue score"] = m_text_manager->place_string(bluescoreprinter.str(), m_overlay_items["blue label"]->get_x() + m_overlay_items["blue label"]->get_image_width() + 5, 115, TextManager::LEFT, TextManager::LAYER_HUD);
+		m_overlay_items["blue score"] = m_text_manager->place_string(bluescoreprinter.str(), m_overlay_items["blue label"]->get_x() + m_overlay_items["blue label"]->get_image_width() + 10, 115, TextManager::LEFT, TextManager::LAYER_HUD);
 	
 		m_overlay_items["blue score"]->set_priority(-4);
 		m_window->unregister_graphic(m_overlay_items["blue score"]);
@@ -1223,7 +1223,7 @@ void GameController::update_individual_scores() {
 		
 			stringstream scoreprinter;
 			scoreprinter << currplayer.get_score();
-		 	m_overlay_items[playername] = m_text_manager->place_string(playername, m_overlay_background->get_x() - m_overlay_background->get_image_width()/2 + 5, 230 + count*25, TextManager::LEFT, TextManager::LAYER_HUD);
+		 	m_overlay_items[playername] = m_text_manager->place_string(playername, m_overlay_background->get_x() - m_overlay_background->get_image_width()/2 + 10, 230 + count*25, TextManager::LEFT, TextManager::LAYER_HUD);
 			m_overlay_items[playerscore] = m_text_manager->place_string(scoreprinter.str(), m_overlay_background->get_x(), 230 + count*25, TextManager::LEFT, TextManager::LAYER_HUD);
 		
 			m_overlay_items[playername]->set_priority(-4);
@@ -1262,7 +1262,7 @@ void GameController::update_individual_scores() {
 		
 			stringstream scoreprinter;
 			scoreprinter << currplayer.get_score();
-		 	m_overlay_items[playername] = m_text_manager->place_string(playername, m_overlay_background->get_x() - m_overlay_background->get_image_width()/2 + 5, 230 + count*25, TextManager::LEFT, TextManager::LAYER_HUD);
+		 	m_overlay_items[playername] = m_text_manager->place_string(playername, m_overlay_background->get_x() - m_overlay_background->get_image_width()/2 + 10, 230 + count*25, TextManager::LEFT, TextManager::LAYER_HUD);
 			m_overlay_items[playerscore] = m_text_manager->place_string(scoreprinter.str(), m_overlay_background->get_x(), 230 + count*25, TextManager::LEFT, TextManager::LAYER_HUD);
 		
 			m_overlay_items[playername]->set_priority(-4);
