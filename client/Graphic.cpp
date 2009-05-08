@@ -44,10 +44,14 @@ Graphic::Graphic(const Graphic& other) {
 }
 
 Graphic::~Graphic() {
-	if (m_tex_count != NULL && *m_tex_count <= 1) {
-		glDeleteTextures(1,&m_tex_id);
-		SDL_FreeSurface(m_image);
-		delete m_tex_count;
+	if (m_tex_count != NULL) {
+		if(*m_tex_count <= 1) {
+			glDeleteTextures(1,&m_tex_id);
+			SDL_FreeSurface(m_image);
+			delete m_tex_count;
+		} else {
+			--*m_tex_count;
+		}
 	}
 }
 
