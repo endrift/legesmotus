@@ -16,6 +16,13 @@
 
 using namespace std;
 
+StringTokenizer::StringTokenizer() {
+	m_delimiter = 0;
+	m_buffer = NULL;
+	m_next_token = NULL;
+	m_tokens_left = 0;
+}
+
 const char*	StringTokenizer::get_next() {
 	if (m_next_token == NULL) {
 		// Already at end
@@ -47,18 +54,7 @@ const char*	StringTokenizer::get_next() {
 
 
 void	StringTokenizer::init(const char* str, char delimiter) {
-	delete[] m_buffer;
-	m_buffer = NULL;
-
-	m_delimiter = delimiter;
-
-	// Copy in the packet data
-	m_buffer = new char[strlen(str) + 1];
-	strcpy(m_buffer, str);
-	// Start at the beginning
-	m_next_token = m_buffer;
-
-	m_tokens_left = numeric_limits<size_t>::max();
+	init_from_raw_data(str, strlen(str), delimiter);
 }
 
 void	StringTokenizer::init(const char* str, char delimiter, size_t max_tokens) {
@@ -66,14 +62,28 @@ void	StringTokenizer::init(const char* str, char delimiter, size_t max_tokens) {
 	m_tokens_left = max_tokens;
 }
 
+void	StringTokenizer::init_from_raw_data(const char* str, size_t len, char delimiter) {
+	delete[] m_buffer;
+	m_buffer = NULL;
+
+	m_delimiter = delimiter;
+
+	// Copy in the data
+	m_buffer = new char[len + 1];
+	memcpy(m_buffer, str, len);
+	m_buffer[len] = '\0';
+	// Start at the beginning
+	m_next_token = m_buffer;
+
+	m_tokens_left = numeric_limits<size_t>::max();
+}
+
 StringTokenizer::~StringTokenizer() {
 	delete[] m_buffer;
 }
 
-const char*	StringTokenizer::get_rest() {
-	const char*	rest = m_next_token;
-	m_next_token = NULL; // Getting rest - invalidate tokenizer
-	return rest;
+const char*	StringTokenizer::get_rest() const {
+	return m_next_token;
 }
 
 StringTokenizer&	StringTokenizer::operator>> (bool& b)

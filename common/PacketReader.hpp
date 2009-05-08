@@ -11,11 +11,10 @@
 #include "RawPacket.hpp"
 #include "SDL_net.h"
 #include "network.hpp"
+#include "StringTokenizer.hpp"
 #include <string>
 #include <stdint.h>
 #include <iosfwd>
-
-class Point;
 
 /*
  * The packet reader provides a convenient inteface for reading fields from packets.
@@ -37,61 +36,29 @@ class Point;
  *	// message_text is now "Cover me, I'm going for the gate!"
  */
 
-class PacketReader {
+class PacketReader : private StringTokenizer {
 private:
 	uint32_t	m_packet_type;
 	uint32_t	m_packet_id;
-
-	char		m_separator;	// The character that separates fields in the packet
-	char*		m_buffer;	// The packet data is stored in here.
-	char*		m_next_field;	// Points to the field that will be processed next. (NULL if at end)
-
-	const char*	get_next ();	// Advance to the next field and return the old one.
 
 public:
 	// Construct a packet reader from the given raw packet data
 	explicit PacketReader(const char* packet_data, char separator =PACKET_FIELD_SEPARATOR);
 	explicit PacketReader(const RawPacket& packet);
-	~PacketReader();
 
 	// Get the packet type and packet ID at any time:
 	uint32_t	packet_type() const { return m_packet_type; }
 	uint32_t	packet_id() const { return m_packet_id; }
 
-	// Discard (i.e. ignore) the next field
-	void		discard_next() { get_next(); }
+	// Import operations from the base class:
+	using StringTokenizer::discard_next;
+	using StringTokenizer::get_rest;
+	using StringTokenizer::operator>>;
+	using StringTokenizer::has_more;
 
-	// Get the remaining un-processed packet data in raw form:
-	const char*	get_rest () const;
-
-	// The following functions read the next field into the variable of the given type:
-	PacketReader&	operator>> (bool&);
-	PacketReader&	operator>> (char&);
-	PacketReader&	operator>> (unsigned char&);
-
-	PacketReader&	operator>> (short&);
-	PacketReader&	operator>> (unsigned short&);
-
-	PacketReader&	operator>> (int&);
-	PacketReader&	operator>> (unsigned int&);
-
-	PacketReader&	operator>> (long&);
-	PacketReader&	operator>> (unsigned long&);
-
-	PacketReader&	operator>> (float&);
-	PacketReader&	operator>> (double&);
-
-	PacketReader&	operator>> (Point&);
-
-	PacketReader&	operator>> (std::string&);
-
-	// Is there another field to be read?
-	bool		has_more() const { return m_next_field != NULL; }
-
-	// To test whether there are any fields left for processing
+	// To test whether there are any tokens left for processing
 	bool		operator! () const { return !has_more(); }
 			operator const void* () const { return has_more() ? this : NULL; }
-
 };
 
 // Write the remaining un-processed raw packet data to an output stream:

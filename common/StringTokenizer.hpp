@@ -43,6 +43,7 @@ private:
 	StringTokenizer& operator=(const StringTokenizer&) { return *this; }
 
 public:
+	StringTokenizer();
 	StringTokenizer(const std::string& str, char delimiter) { m_buffer = NULL; init(str.c_str(), delimiter); }
 	StringTokenizer(const std::string& str, char delimiter, size_t max_tokens) { m_buffer = NULL; init(str.c_str(), delimiter, max_tokens); }
 	StringTokenizer(const char* str, char delimiter) { m_buffer = NULL; init(str, delimiter); }
@@ -52,6 +53,7 @@ public:
 	// Initialize
 	void			init(const char* str, char delimiter);
 	void			init(const char* str, char delimiter, size_t max_tokens);
+	void			init_from_raw_data(const char* str, size_t len, char delimiter); // Initialize from the first len characters of str
 
 	// Get the next token
 	const char*		get_next ();
@@ -60,7 +62,7 @@ public:
 	void			discard_next() { get_next(); }
 
 	// Get the remaining tokens as one string
-	const char*		get_rest ();
+	const char*		get_rest () const;
 
 	// The following functions read the next token into the variable of the given type:
 	StringTokenizer&	operator>> (bool&);

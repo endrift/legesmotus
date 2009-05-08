@@ -44,7 +44,7 @@ public:
 		// Allow 2 seconds for all players to join at beginning of round before spawning them.
 		// TODO: increase to 15 seconds during production
 		// If players join after this time period, they will be subject to JOIN_DELAY below
-		START_DELAY = 2000,
+		START_DELAY = 5000,
 		JOIN_DELAY = 2000			// Spawn player 2 seconds after he joins mid-round (TODO: increase to 15 during production)
 	};
 
