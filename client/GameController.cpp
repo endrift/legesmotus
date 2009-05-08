@@ -69,6 +69,8 @@ GameController::~GameController() {
 		m_text_manager->remove_string(m_messages[i].first);
 		m_messages.erase(m_messages.begin() + i);
 	}
+	
+	m_text_manager->remove_all_strings();
 
 	// TEMPORARY MAP CODE BY ANDREW
 	delete m_map;
@@ -120,6 +122,7 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_text_manager = new TextManager(m_font, m_window);
 	
 	m_menu_font = new Font(m_path_manager->data_path("JuraDemiBold.ttf", "fonts"), 34);
+	m_medium_font = new Font(m_path_manager->data_path("JuraMedium.ttf", "fonts"), 20);
 	
 	m_sound_controller = new SoundController();
 	m_holding_gate = false;
@@ -232,18 +235,35 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_options_menu_items["Toggle Sound"] = m_text_manager->place_string("Toggle Sound", 50, 300, TextManager::LEFT, TextManager::LAYER_HUD);
 	
 	// Initialize the overlay.
-	m_overlay_background = new TableBackground(2, m_screen_width - 300);
+	m_overlay_background = new TableBackground(3, m_screen_width - 300);
 	m_overlay_background->set_row_height(0, 80);
-	m_overlay_background->set_row_height(1, m_screen_height - 280);
+	m_overlay_background->set_row_height(1, 43);
+	m_overlay_background->set_row_height(2, m_screen_height - 323);
 	m_overlay_background->set_priority(-2);
 	m_overlay_background->set_border_color(Color(1,1,1,0.8));
 	m_overlay_background->set_border_width(2);
-	m_overlay_background->set_cell_color(0,Color(0.2,0.2,0.2,0.5));
-	m_overlay_background->set_cell_color(1,Color(0.2,0.2,0.5,0.5));
+	m_overlay_background->set_cell_color(0,Color(0.1,0.1,0.1,0.8));
+	m_overlay_background->set_cell_color(1,Color(0.2,0.1,0.1,0.8));
+	m_overlay_background->set_cell_color(2,Color(0.1,0.1,0.15,0.8));
 	m_overlay_background->set_y(100);
 	m_overlay_background->set_x(m_screen_width/2);
-	m_overlay_background->set_invisible(true);
 	m_window->register_hud_graphic(m_overlay_background);
+	m_overlay_items["red label"] = m_text_manager->place_string("Red Team:", m_overlay_background->get_x() - m_overlay_background->get_image_width()/2 + 3, 115, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_overlay_items["blue label"] = m_text_manager->place_string("Blue Team:", m_overlay_background->get_x(), 115, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_text_manager->set_active_font(m_medium_font);
+	m_overlay_items["name label"] = m_text_manager->place_string("Name:", m_overlay_background->get_x() - m_overlay_background->get_image_width()/2 + 3, 190, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_overlay_items["score label"] = m_text_manager->place_string("Score:", m_overlay_background->get_x(), 190, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_text_manager->set_active_font(m_menu_font);
+	change_team_scores(0, 0);
+	update_individual_scores();
+		
+	map<string, Graphic*>::iterator it;
+	for ( it=m_overlay_items.begin() ; it != m_overlay_items.end(); it++ ) {
+		Graphic* thisitem = (*it).second;
+		thisitem->set_priority(-4);
+		m_window->unregister_graphic(thisitem);
+		m_window->register_hud_graphic(thisitem);
+	}
 	
 	m_text_manager->set_active_color(1.0, 0.4, 0.4);
 	m_gate_warning = m_text_manager->place_string("Your gate is going down!", m_screen_width/2, m_screen_height - 200, TextManager::CENTER, TextManager::LAYER_HUD);
@@ -601,7 +621,7 @@ void GameController::initialize_key_bindings() {
 	// -1 = unused
 	m_key_bindings.quit = -1;
 	m_key_bindings.jump = SDLK_SPACE;
-	m_key_bindings.show_overlay = -1;
+	m_key_bindings.show_overlay = SDLK_TAB;
 	m_key_bindings.show_menu = SDLK_ESCAPE;
 	m_key_bindings.open_chat = SDLK_t;
 	m_key_bindings.open_team_chat = SDLK_y;
@@ -632,13 +652,19 @@ void GameController::parse_key_input() {
 	}
 	
 	if ((m_key_bindings.show_overlay != -1 && m_keys[m_key_bindings.show_overlay]) || (m_alt_key_bindings.show_overlay != -1 && m_keys[m_alt_key_bindings.show_overlay])) {
-		if (m_game_state == GAME_IN_PROGRESS || m_game_state == GAME_OVER) {
-			toggle_score_overlay(true);
-		} else {
-			toggle_score_overlay(false);
+		if (m_game_state == GAME_IN_PROGRESS) {
+			if (m_overlay_background->is_invisible() == true) {
+				toggle_score_overlay(true);
+			}
+		} else if (m_game_state != GAME_OVER) {
+			if (m_overlay_background->is_invisible() == false) {
+				toggle_score_overlay(false);
+			}
 		}
 	} else {
-		toggle_score_overlay(false);
+		if (m_game_state != GAME_OVER && m_overlay_background->is_invisible() == false) {
+			toggle_score_overlay(false);
+		}
 	}
 }
 
@@ -1118,7 +1144,140 @@ void GameController::set_players_visible(bool visible) {
  * Show or hide the overlay.
  */
 void GameController::toggle_score_overlay(bool visible) {
+	update_individual_scores();
 	m_overlay_background->set_invisible(!visible);
+	map<string, Graphic*>::iterator it;
+	for ( it=m_overlay_items.begin() ; it != m_overlay_items.end(); it++ ) {
+		Graphic* thisitem = (*it).second;
+		thisitem->set_invisible(!visible);
+	}
+}
+
+/*
+ * Change team scores.
+ */
+void GameController::change_team_scores(int bluescore, int redscore) {
+	m_text_manager->set_active_font(m_menu_font);
+	m_text_manager->set_active_color(1.0, 1.0, 1.0);
+	
+	if (redscore != -1) {
+		if (m_overlay_items.count("red score") != 0) {
+			m_text_manager->remove_string(m_overlay_items["red score"]);
+		}
+		
+		stringstream redscoreprinter;
+		redscoreprinter << redscore;
+	 	m_overlay_items["red score"] = m_text_manager->place_string(redscoreprinter.str(), m_overlay_items["red label"]->get_x() + m_overlay_items["red label"]->get_image_width() + 5, 115, TextManager::LEFT, TextManager::LAYER_HUD);
+	
+		m_overlay_items["red score"]->set_priority(-4);
+		m_window->unregister_graphic(m_overlay_items["red score"]);
+		m_window->register_hud_graphic(m_overlay_items["red score"]);
+	}
+	
+	if (bluescore != -1) {
+		if (m_overlay_items.count("blue score") != 0) {
+			m_text_manager->remove_string(m_overlay_items["blue score"]);
+		}
+		
+		stringstream bluescoreprinter;
+		bluescoreprinter << bluescore;
+		m_overlay_items["blue score"] = m_text_manager->place_string(bluescoreprinter.str(), m_overlay_items["blue label"]->get_x() + m_overlay_items["blue label"]->get_image_width() + 5, 115, TextManager::LEFT, TextManager::LAYER_HUD);
+	
+		m_overlay_items["blue score"]->set_priority(-4);
+		m_window->unregister_graphic(m_overlay_items["blue score"]);
+		m_window->register_hud_graphic(m_overlay_items["blue score"]);
+	}
+
+	m_text_manager->set_active_font(m_font);
+}
+
+/*
+ * Update individual scores.
+ */
+void GameController::update_individual_scores() {
+	m_text_manager->set_active_font(m_medium_font);
+	m_text_manager->set_active_color(1.0, 1.0, 1.0);
+	
+	int count = 0;
+	
+	map<int, GraphicalPlayer>::iterator it;
+	for ( it=m_players.begin() ; it != m_players.end(); it++ ) {
+		GraphicalPlayer currplayer = (*it).second;
+		if (currplayer.get_team() == 'A') {
+			if (currplayer.get_sprite() == NULL) {
+				continue;
+			}
+			string playername = currplayer.get_name();
+			playername.append(": ");
+			string playernameforscore = currplayer.get_name();
+			string playerscore = playernameforscore.append("score");
+		
+			m_text_manager->set_active_color(BLUE_COLOR);
+		
+			if (m_overlay_items.count(playerscore) != 0) {
+				m_text_manager->remove_string(m_overlay_items[playerscore]);
+			}
+			if (m_overlay_items.count(playername) != 0) {
+				m_text_manager->remove_string(m_overlay_items[playername]);
+			}
+		
+			stringstream scoreprinter;
+			scoreprinter << currplayer.get_score();
+		 	m_overlay_items[playername] = m_text_manager->place_string(playername, m_overlay_background->get_x() - m_overlay_background->get_image_width()/2 + 5, 230 + count*25, TextManager::LEFT, TextManager::LAYER_HUD);
+			m_overlay_items[playerscore] = m_text_manager->place_string(scoreprinter.str(), m_overlay_background->get_x(), 230 + count*25, TextManager::LEFT, TextManager::LAYER_HUD);
+		
+			m_overlay_items[playername]->set_priority(-4);
+			m_window->unregister_graphic(m_overlay_items[playername]);
+			m_window->register_hud_graphic(m_overlay_items[playername]);
+		
+			m_overlay_items[playerscore]->set_priority(-4);
+			m_window->unregister_graphic(m_overlay_items[playerscore]);
+			m_window->register_hud_graphic(m_overlay_items[playerscore]);
+		
+			count++;
+		}
+	}
+	
+	count += 2;
+	
+	for ( it=m_players.begin() ; it != m_players.end(); it++ ) {
+		GraphicalPlayer currplayer = (*it).second;
+		if (currplayer.get_team() == 'B') {
+			if (currplayer.get_sprite() == NULL) {
+				continue;
+			}
+			string playername = currplayer.get_name();
+			playername.append(": ");
+			string playernameforscore = currplayer.get_name();
+			string playerscore = playernameforscore.append("score");
+		
+			m_text_manager->set_active_color(RED_COLOR);
+					
+			if (m_overlay_items.count(playerscore) != 0) {
+				m_text_manager->remove_string(m_overlay_items[playerscore]);
+			}
+			if (m_overlay_items.count(playername) != 0) {
+				m_text_manager->remove_string(m_overlay_items[playername]);
+			}
+		
+			stringstream scoreprinter;
+			scoreprinter << currplayer.get_score();
+		 	m_overlay_items[playername] = m_text_manager->place_string(playername, m_overlay_background->get_x() - m_overlay_background->get_image_width()/2 + 5, 230 + count*25, TextManager::LEFT, TextManager::LAYER_HUD);
+			m_overlay_items[playerscore] = m_text_manager->place_string(scoreprinter.str(), m_overlay_background->get_x(), 230 + count*25, TextManager::LEFT, TextManager::LAYER_HUD);
+		
+			m_overlay_items[playername]->set_priority(-4);
+			m_window->unregister_graphic(m_overlay_items[playername]);
+			m_window->register_hud_graphic(m_overlay_items[playername]);
+		
+			m_overlay_items[playerscore]->set_priority(-4);
+			m_window->unregister_graphic(m_overlay_items[playerscore]);
+			m_window->register_hud_graphic(m_overlay_items[playerscore]);
+		
+			count++;
+		}
+	}
+
+	m_text_manager->set_active_font(m_font);
 }
 
 /*
@@ -1551,6 +1710,8 @@ void GameController::game_start(PacketReader& reader) {
 			message << " Time until spawn: " << timeleft;
 		}
 		m_sound_controller->play_sound("begin");
+			
+		toggle_score_overlay(false);
 	} else {
 		message << "Game starts in " << timeleft;
 	}
@@ -1581,6 +1742,9 @@ void GameController::game_stop(PacketReader& reader) {
 		display_message("DEFEAT!");
 		m_sound_controller->play_sound("defeat");
 	}
+	
+	change_team_scores(teamascore, teambscore);
+	toggle_score_overlay(true);
 
 	// Temporary score display
 	ostringstream	score_msg;
@@ -1613,9 +1777,12 @@ void GameController::score_update(PacketReader& reader) {
 
 	if (is_valid_team(subject[0])) {
 		char	team = subject[0];
-
-		// TODO: Nathan, update team score here
-
+		if (team == 'A') {
+			change_team_scores(score, -1);
+		} else {
+			change_team_scores(-1, score);
+		}
+		toggle_score_overlay(!m_overlay_background->is_invisible());
 	} else if (GraphicalPlayer* player = get_player_by_id(atoi(subject.c_str()))) {
 		player->set_score(score);
 	}

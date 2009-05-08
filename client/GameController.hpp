@@ -64,6 +64,7 @@ private:
 	TextManager*	m_text_manager;
 	SoundController* m_sound_controller;
 	Font*		m_font;
+	Font*		m_medium_font;
 	Font*		m_menu_font;
 	
 	std::string	m_name;
@@ -121,7 +122,7 @@ private:
 	std::map<std::string, Graphic*> m_options_menu_items;
 	bool		m_show_overlay;
 	TableBackground* m_overlay_background;
-	std::vector<Graphic*> m_overlay_text;
+	std::map<std::string, Graphic*> m_overlay_items;
 	
 	
 	Graphic*	m_gate_warning;
@@ -166,6 +167,8 @@ public:
 	void		send_name_change_packet(const char* new_name);
 	void		send_team_change_packet(char new_team);
 	void		toggle_score_overlay(bool visible);
+	void		change_team_scores(int bluescore, int redscore);
+	void 		update_individual_scores();
 	
 	// Network callbacks:
 	void		welcome(PacketReader& reader);
