@@ -279,14 +279,14 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_blue_gate_status_rect = new TableBackground(1, GATE_STATUS_RECT_WIDTH);
 	m_blue_gate_status_rect->set_row_height(0, 40);
 	m_blue_gate_status_rect->set_priority(-1);
-	m_blue_gate_status_rect->set_cell_color(0, Color(0.0, 0.0, 1.0, 0.8));
+	m_blue_gate_status_rect->set_cell_color(0, Color(0.0, 0.0, 1.0, 0.5));
 	m_blue_gate_status_rect->set_x(m_screen_width - 2 * m_blue_gate_status_rect->get_image_width() - 20);
 	m_blue_gate_status_rect->set_y(m_screen_height - m_blue_gate_status_rect->get_image_height() - 20);
 	m_window->register_hud_graphic(m_blue_gate_status_rect);
 	m_blue_gate_status_rect_back = new TableBackground(1, GATE_STATUS_RECT_WIDTH);
 	m_blue_gate_status_rect_back->set_row_height(0, 40);
 	m_blue_gate_status_rect_back->set_priority(0);
-	m_blue_gate_status_rect_back->set_cell_color(0, Color(0.1, 0.1, 0.1, 0.8));
+	m_blue_gate_status_rect_back->set_cell_color(0, Color(0.1, 0.1, 0.1, 0.5));
 	m_blue_gate_status_rect_back->set_x(m_screen_width - 2 * m_blue_gate_status_rect->get_image_width() - 20);
 	m_blue_gate_status_rect_back->set_y(m_screen_height - m_blue_gate_status_rect->get_image_height() - 20);
 	m_window->register_hud_graphic(m_blue_gate_status_rect_back);
@@ -294,14 +294,14 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_red_gate_status_rect = new TableBackground(1, GATE_STATUS_RECT_WIDTH);
 	m_red_gate_status_rect->set_row_height(0, 40);
 	m_red_gate_status_rect->set_priority(-1);
-	m_red_gate_status_rect->set_cell_color(0, Color(1.0, 0.0, 0.0, 0.8));
+	m_red_gate_status_rect->set_cell_color(0, Color(1.0, 0.0, 0.0, 0.5));
 	m_red_gate_status_rect->set_x(m_screen_width - m_red_gate_status_rect->get_image_width() - 10);
 	m_red_gate_status_rect->set_y(m_screen_height - m_red_gate_status_rect->get_image_height() - 20);
 	m_window->register_hud_graphic(m_red_gate_status_rect);
 	m_red_gate_status_rect_back = new TableBackground(1, GATE_STATUS_RECT_WIDTH);
 	m_red_gate_status_rect_back->set_row_height(0, 40);
 	m_red_gate_status_rect_back->set_priority(0);
-	m_red_gate_status_rect_back->set_cell_color(0, Color(0.1, 0.1, 0.1, 0.8));
+	m_red_gate_status_rect_back->set_cell_color(0, Color(0.1, 0.1, 0.1, 0.5));
 	m_red_gate_status_rect_back->set_x(m_screen_width - m_red_gate_status_rect->get_image_width() - 10);
 	m_red_gate_status_rect_back->set_y(m_screen_height - m_red_gate_status_rect->get_image_height() - 20);
 	m_window->register_hud_graphic(m_red_gate_status_rect_back);
@@ -474,6 +474,13 @@ void GameController::run(int lockfps) {
 					Graphic* thisitem = (*it).second;
 					thisitem->set_invisible(true);
 				}
+				
+				m_blue_gate_status_rect->set_invisible(true);
+				m_blue_gate_status_text->set_invisible(true);
+				m_blue_gate_status_rect_back->set_invisible(true);
+				m_red_gate_status_rect->set_invisible(true);
+				m_red_gate_status_text->set_invisible(true);
+				m_red_gate_status_rect_back->set_invisible(true);
 			} else if (m_game_state == SHOW_OPTIONS_MENU) {
 				if (m_map != NULL) {
 					m_map->set_visible(false);
@@ -492,6 +499,13 @@ void GameController::run(int lockfps) {
 					Graphic* thisitem = (*it).second;
 					thisitem->set_invisible(false);
 				}
+				
+				m_blue_gate_status_rect->set_invisible(true);
+				m_blue_gate_status_text->set_invisible(true);
+				m_blue_gate_status_rect_back->set_invisible(true);
+				m_red_gate_status_rect->set_invisible(true);
+				m_red_gate_status_text->set_invisible(true);
+				m_red_gate_status_rect_back->set_invisible(true);
 			} else {
 				if (m_map != NULL) {
 					m_map->set_visible(true);
@@ -510,6 +524,13 @@ void GameController::run(int lockfps) {
 					Graphic* thisitem = (*it).second;
 					thisitem->set_invisible(true);
 				}
+				
+				m_blue_gate_status_rect->set_invisible(false);
+				m_blue_gate_status_text->set_invisible(false);
+				m_blue_gate_status_rect_back->set_invisible(false);
+				m_red_gate_status_rect->set_invisible(false);
+				m_red_gate_status_text->set_invisible(false);
+				m_red_gate_status_rect_back->set_invisible(false);
 			}
 			
 			m_window->redraw();
