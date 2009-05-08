@@ -8,7 +8,7 @@
 #include "TableBackground.hpp"
 #include "common/LMException.hpp"
 
-TableBackground::TableBackground(int num_rows, int width) {
+TableBackground::TableBackground(int num_rows, double width) {
 	m_num_rows = 0; // Pre-set this because set_num_rows depends on the old value
 	set_num_rows(num_rows);
 	m_image_width = width;
@@ -22,7 +22,7 @@ TableBackground* TableBackground::clone() const {
 }
 
 void TableBackground::draw_row(int row) const {
-	int height = m_row_heights[row];
+	double height = m_row_heights[row];
 	glBegin(GL_QUADS);
 	glColor4d(m_cell_colors[row].r, m_cell_colors[row].g, m_cell_colors[row].b, m_cell_colors[row].a);
 	glVertex3d(m_border_width, m_border_width, 1);
@@ -42,7 +42,7 @@ int TableBackground::get_num_rows() const {
 	return m_num_rows;
 }
 
-int TableBackground::get_row_height(int row) const {
+double TableBackground::get_row_height(int row) const {
 	if (row >= m_num_rows || row < 0) {
 		throw LMException("Row out of bounds");
 	}
@@ -57,22 +57,22 @@ void TableBackground::set_num_rows(int num_rows) {
 	m_num_rows = num_rows;
 	for (int i = old_num_rows; i < num_rows; ++i) {
 		m_cell_colors[i] = Color(0,0,0,0);
-		m_row_heights[i] = 0;
+		m_row_heights[i] = 0.0;
 	}
 }
 
-void TableBackground::set_row_height(int row, int height) {
+void TableBackground::set_row_height(int row, double height) {
 	if (row >= m_num_rows || row < 0) {
 		throw LMException("Row out of bounds");
 	}
 	
-	int delta = height - m_row_heights[row];
+	double delta = height - m_row_heights[row];
 	m_row_heights[row] = height;
 
 	m_image_height += delta;
 }
 
-void TableBackground::set_image_width(int width) {
+void TableBackground::set_image_width(double width) {
 	m_image_width = width;
 }
 
@@ -114,7 +114,7 @@ void TableBackground::draw(const GameWindow* window) const {
 	glClearDepth(-1);
 	glDepthFunc(GL_GREATER);
 	glClear(GL_DEPTH_BUFFER_BIT);
-	glColorMask(m_intensity.r != 0.0, m_intensity.g != 0.0, m_intensity.b != 0.0, m_intensity.a != 0.0);
+	glColorMask(m_intensity.r, m_intensity.g, m_intensity.b, m_intensity.a);
 
 	glPushMatrix();
 	transform_gl();
@@ -123,7 +123,7 @@ void TableBackground::draw(const GameWindow* window) const {
 	}
 	glPopMatrix();
 
-	glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
+	glColorMask(1.0,1.0,1.0,1.0);
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_TEXTURE_2D);
 }

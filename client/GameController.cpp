@@ -1219,6 +1219,7 @@ void GameController::update_individual_scores() {
 		update_individual_score_line(count++, **it);
 	}
 	
+	// Skip two lines between the two teams
 	count += 2;
 	
 	for (list<const GraphicalPlayer*>::iterator it = red_players.begin() ; it != red_players.end(); ++it) {

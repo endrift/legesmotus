@@ -15,7 +15,7 @@ class TableBackground : public Graphic {
 private:
 	int	m_num_rows;
 	std::vector<Color>	m_cell_colors;
-	std::vector<int>	m_row_heights;
+	std::vector<double>	m_row_heights;
 
 	Color	m_border_color;
 	int	m_border_width;
@@ -24,15 +24,15 @@ private:
 
 	void draw_row(int row) const;
 public:
-	TableBackground(int num_rows, int width);
+	TableBackground(int num_rows, double width);
 	virtual TableBackground* clone() const;
 
 	int	get_num_rows() const;
-	int	get_row_height(int row) const;
+	double	get_row_height(int row) const;
 
 	void	set_num_rows(int num_rows);
-	void	set_row_height(int row, int height);
-	void	set_image_width(int width);
+	void	set_row_height(int row, double height);
+	void	set_image_width(double width);
 
 	void	set_border_width(int pixels);
 	void	set_border_color(Color color);
