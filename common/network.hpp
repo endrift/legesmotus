@@ -12,8 +12,7 @@
 #include "SDL_net.h"
 
 // What to use to separate packet fields?
-//const char PACKET_FIELD_SEPARATOR = '\f';	// Formfeed
-const char PACKET_FIELD_SEPARATOR = '~';	// Formfeed
+const char PACKET_FIELD_SEPARATOR = '\f';	// Formfeed
 
 // Maximum length of packets:
 enum { MAX_PACKET_LENGTH = 1024 };

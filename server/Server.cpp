@@ -116,7 +116,7 @@ void	Server::team_change(int channel, PacketReader& packet)
 
 	// Check to make sure there is space on the current map for the new team
 	if (m_team_count[new_team - 'A'] >= m_current_map.total_capacity(new_team)) {
-		// TODO: send back a rejection packet
+		send_system_message(*player, "There are no spawn points left the map for this team.");
 		return;
 	}
 
@@ -306,13 +306,18 @@ void	Server::join(const IPaddress& address, PacketReader& packet)
 
 	packet >> client_version;
 
-	// TODO: check client version here.
+	cerr << "Join request from " << format_ip_address(address) << ": Client version=" << client_version << endl;
+
+	if (client_version != SERVER_PROTOCOL_VERSION) {
+		cerr << "Rejected join for incompatible client version." << endl;
+		reject_join(address, "Incompatible version.  Please upgrade your client.");
+		return;
+	}
 
 	packet >> requested_name >> team;
 
 	sanitize_player_name(requested_name);
 
-	cerr << "Join request from " << format_ip_address(address) << ": Client version=" << client_version << "; Requested name=" << requested_name << "; Requested team=" << team << endl;
 
 	if (!is_valid_team(team)) {
 		// Assign to team equitably.
@@ -642,7 +647,7 @@ bool	Server::spawn_player(ServerPlayer& player) {
 		m_network.send_packet(player.get_channel(), update_packet);
 		return true;
 	} else {
-		// Oh noes! No place to spawn this player. TODO: do something about it
+		// Oh noes! No place to spawn this player.
 		send_system_message(player, "There are no spawn points on the map for you.  Try switching teams.");
 		return false;
 	}
