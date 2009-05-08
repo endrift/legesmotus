@@ -38,6 +38,7 @@ const double GameController::RANDOM_ROTATION_SCALE = 1.0;
 const double GameController::MINIMAP_SCALE = 0.1;
 const Color GameController::BLUE_COLOR(0.4, 0.4, 1);
 const Color GameController::RED_COLOR(1, 0.4, 0.4);
+const int GameController::GATE_STATUS_RECT_WIDTH = 80;
 
 GameController::GameController(PathManager& path_manager) : m_path_manager(path_manager) {
 	init(1024, 768, 24, false);
@@ -71,6 +72,9 @@ GameController::~GameController() {
 	}
 	
 	m_text_manager->remove_all_strings();
+
+	delete m_blue_gate_status_rect;
+	delete m_red_gate_status_rect;
 
 	// TEMPORARY MAP CODE BY ANDREW
 	delete m_map;
@@ -239,21 +243,23 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_overlay_background->set_priority(-2);
 	m_overlay_background->set_border_color(Color(1,1,1,0.8));
 	m_overlay_background->set_border_width(2);
-	m_overlay_background->set_cell_color(0,Color(0.1,0.1,0.1,0.8));
-	m_overlay_background->set_cell_color(1,Color(0.2,0.1,0.1,0.8));
-	m_overlay_background->set_cell_color(2,Color(0.1,0.1,0.15,0.8));
+	m_overlay_background->set_cell_color(0, Color(0.1,0.1,0.1,0.8));
+	m_overlay_background->set_cell_color(1, Color(0.2,0.1,0.1,0.8));
+	m_overlay_background->set_cell_color(2, Color(0.1,0.1,0.15,0.8));
 	m_overlay_background->set_y(100);
 	m_overlay_background->set_x(m_screen_width/2);
 	m_window->register_hud_graphic(m_overlay_background);
+	
 	m_overlay_items["red label"] = m_text_manager->place_string("Red Team:", m_overlay_background->get_x() - m_overlay_background->get_image_width()/2 + 10, 115, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_overlay_items["blue label"] = m_text_manager->place_string("Blue Team:", m_overlay_background->get_x(), 115, TextManager::LEFT, TextManager::LAYER_HUD);
+	
 	m_text_manager->set_active_font(m_medium_font);
 	m_overlay_items["name label"] = m_text_manager->place_string("Name:", m_overlay_background->get_x() - m_overlay_background->get_image_width()/2 + 10, 190, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_overlay_items["score label"] = m_text_manager->place_string("Score:", m_overlay_background->get_x(), 190, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_text_manager->set_active_font(m_menu_font);
+	
 	change_team_scores(0, 0);
 	update_individual_scores();
-		
+	
 	map<string, Graphic*>::iterator it;
 	for ( it=m_overlay_items.begin() ; it != m_overlay_items.end(); it++ ) {
 		Graphic* thisitem = (*it).second;
@@ -262,12 +268,55 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 		m_window->register_hud_graphic(thisitem);
 	}
 	
+	// Initialize the gate warning.
+	m_text_manager->set_active_font(m_menu_font);
 	m_text_manager->set_active_color(1.0, 0.4, 0.4);
 	m_gate_warning = m_text_manager->place_string("Your gate is going down!", m_screen_width/2, m_screen_height - 200, TextManager::CENTER, TextManager::LAYER_HUD);
 	m_gate_warning->set_invisible(true);
 	m_gate_warning_time = 0;
 	
+	// Initialize the gate status bars.
+	m_blue_gate_status_rect = new TableBackground(1, GATE_STATUS_RECT_WIDTH);
+	m_blue_gate_status_rect->set_row_height(0, 40);
+	m_blue_gate_status_rect->set_priority(-1);
+	m_blue_gate_status_rect->set_cell_color(0, Color(0.0, 0.0, 1.0, 0.8));
+	m_blue_gate_status_rect->set_x(m_screen_width - 2 * m_blue_gate_status_rect->get_image_width() - 20);
+	m_blue_gate_status_rect->set_y(m_screen_height - m_blue_gate_status_rect->get_image_height() - 20);
+	m_window->register_hud_graphic(m_blue_gate_status_rect);
+	m_blue_gate_status_rect_back = new TableBackground(1, GATE_STATUS_RECT_WIDTH);
+	m_blue_gate_status_rect_back->set_row_height(0, 40);
+	m_blue_gate_status_rect_back->set_priority(0);
+	m_blue_gate_status_rect_back->set_cell_color(0, Color(0.1, 0.1, 0.1, 0.8));
+	m_blue_gate_status_rect_back->set_x(m_screen_width - 2 * m_blue_gate_status_rect->get_image_width() - 20);
+	m_blue_gate_status_rect_back->set_y(m_screen_height - m_blue_gate_status_rect->get_image_height() - 20);
+	m_window->register_hud_graphic(m_blue_gate_status_rect_back);
+	
+	m_red_gate_status_rect = new TableBackground(1, GATE_STATUS_RECT_WIDTH);
+	m_red_gate_status_rect->set_row_height(0, 40);
+	m_red_gate_status_rect->set_priority(-1);
+	m_red_gate_status_rect->set_cell_color(0, Color(1.0, 0.0, 0.0, 0.8));
+	m_red_gate_status_rect->set_x(m_screen_width - m_red_gate_status_rect->get_image_width() - 10);
+	m_red_gate_status_rect->set_y(m_screen_height - m_red_gate_status_rect->get_image_height() - 20);
+	m_window->register_hud_graphic(m_red_gate_status_rect);
+	m_red_gate_status_rect_back = new TableBackground(1, GATE_STATUS_RECT_WIDTH);
+	m_red_gate_status_rect_back->set_row_height(0, 40);
+	m_red_gate_status_rect_back->set_priority(0);
+	m_red_gate_status_rect_back->set_cell_color(0, Color(0.1, 0.1, 0.1, 0.8));
+	m_red_gate_status_rect_back->set_x(m_screen_width - m_red_gate_status_rect->get_image_width() - 10);
+	m_red_gate_status_rect_back->set_y(m_screen_height - m_red_gate_status_rect->get_image_height() - 20);
+	m_window->register_hud_graphic(m_red_gate_status_rect_back);
+	
+	// Initialize the gate status bar labels.
+	m_text_manager->set_active_color(1.0, 1.0, 1.0);
 	m_text_manager->set_active_font(m_font);
+	m_blue_gate_status_text = m_text_manager->place_string("Blue Gate", m_blue_gate_status_rect->get_x() + 1, m_blue_gate_status_rect->get_y() + m_blue_gate_status_rect->get_image_height()/4, TextManager::CENTER, TextManager::LAYER_HUD);
+	m_blue_gate_status_text->set_priority(-4);
+	m_window->unregister_graphic(m_blue_gate_status_text);
+	m_window->register_hud_graphic(m_blue_gate_status_text);
+	m_red_gate_status_text = m_text_manager->place_string("Red Gate", m_red_gate_status_rect->get_x() + 2, m_red_gate_status_rect->get_y() + m_red_gate_status_rect->get_image_height()/4, TextManager::CENTER, TextManager::LAYER_HUD);
+	m_red_gate_status_text->set_priority(-4);
+	m_window->unregister_graphic(m_red_gate_status_text);
+	m_window->register_hud_graphic(m_red_gate_status_text);
 	
 	// Set up the minimap.
 	m_minimap = new Minimap(m_path_manager, MINIMAP_SCALE);
@@ -1640,6 +1689,12 @@ void GameController::gate_update(PacketReader& reader) {
 	}
 	
 	m_map->set_gate_progress(team, progress);
+	
+	if (team == 'A') {
+		m_blue_gate_status_rect->set_image_width((1-progress) * GATE_STATUS_RECT_WIDTH);
+	} else if (team == 'B') {
+		m_red_gate_status_rect->set_image_width((1-progress) * GATE_STATUS_RECT_WIDTH);
+	}
 }
 
 /*
@@ -1686,7 +1741,7 @@ void GameController::game_start(PacketReader& reader) {
 			
 		toggle_score_overlay(false);
 	} else {
-		message << "Game starts in " << timeleft;
+		message << "Game starts in " << timeleft/1000 << " seconds.";
 	}
 	
 	display_message(message.str().c_str());
@@ -1727,6 +1782,8 @@ void GameController::game_stop(PacketReader& reader) {
 
 	// Reset the gates and set yourself invisible and frozen until respawn.
 	m_map->reset_gates();
+	m_blue_gate_status_rect->set_image_width(GATE_STATUS_RECT_WIDTH);
+	m_red_gate_status_rect->set_image_width(GATE_STATUS_RECT_WIDTH);
 	m_players[m_player_id].set_is_invisible(true);
 	m_minimap->set_blip_invisible(m_player_id,true);
 	m_players[m_player_id].set_is_frozen(true);

@@ -58,6 +58,7 @@ private:
 	const static double FIRING_RECOIL;
 	const static double RANDOM_ROTATION_SCALE;
 	const static double MINIMAP_SCALE;
+	const static int GATE_STATUS_RECT_WIDTH;
 	
 	PathManager& 	m_path_manager;
 
@@ -124,6 +125,12 @@ private:
 	TableBackground* m_overlay_background;
 	std::map<std::string, Graphic*> m_overlay_items;
 	
+	TableBackground* m_red_gate_status_rect;
+	TableBackground* m_blue_gate_status_rect;
+	TableBackground* m_red_gate_status_rect_back;
+	TableBackground* m_blue_gate_status_rect_back;
+	Graphic*	m_red_gate_status_text;
+	Graphic*	m_blue_gate_status_text;
 	
 	Graphic*	m_gate_warning;
 	unsigned int	m_gate_warning_time;
