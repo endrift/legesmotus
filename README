@@ -1,8 +1,141 @@
-Leges Motus
+     __                                     _             
+    / /  ___  __ _  ___  ___    /\/\   ___ | |_ _   _ ___ 
+   / /  / _ \/ _` |/ _ \/ __|  /    \ / _ \| __| | | / __|
+  / /__|  __/ (_| |  __/\__ \ / /\/\ \ (_) | |_| |_| \__ \
+  \____/\___|\__, |\___||___/ \/    \/\___/ \__|\__,_|___/
+             |___/                                        
 
 Andrew Ayer | Nathan Partlan | Jeffrey Pfau | Danny Schneider
 
-This README unintentionally left blank!!
+ABOUT
 
-When will this madness end!!!!????
-Now.
+Leges Motus is a 2D networked, team-based shooter set in zero gravity.
+
+
+BUILDING
+
+To build all components, type 'make' in the top-level directory.
+
+If you would like to build only the client or only the server, you may type 'make client' or 'make server' in the top-level directory.
+
+If you change any header file, you must type 'make clean' before re-building.
+
+
+RUNNING THE CLIENT
+
+To run the client, type './client/legesmotus' in the top-level directory.
+
+The client supports the following command-line options:
+  -n NAME	set your player name (default: your user name)
+  -t red|blue	set your team (default: auto-balanced)
+  -s SERVER	set the hostname of the server (default: the central development server)
+  -p PORTNO	set the port number of the server (default: 16877)
+  -w WIDTH	set the screen width, in pixels (default: 1024)
+  -h HEIGHT	set the screen height, in pixels (default: 768)
+  -?, --help	display this help, and exit
+      --version	display version information and exit
+
+If you specify the width and height of your actual screen resolution, the game will run in fullscreen.
+
+
+RUNNING THE SERVER
+
+To run the server, type './server/lmserver' in the top-level directory.
+
+The server supports the following command-line options:
+Usage: ./server/lmserver [OPTION]
+Options:
+  -p PORTNO	set the port number to listen on (default: 16877)
+  -P PASSWORD	set the admin password (default: admin mode is disabled)
+  -m MAPNAME	set the map name (default: alpha1)
+  -?, --help	display this help, and exit
+      --version	display version information and exit
+
+
+SPECIFYING THE DATA DIRECTORY
+
+By default, you MUST run both the client and server from the top-level source directory, so that it can find the data files.  However, if you set the $LM_DATA_DIR environment variable to the location of the data/ directory, you may run the programs from anywhere.
+
+
+CONTROLS
+
+	space		Jump in direction of mouse pointer
+	left click	Fire in direction of mouse pointer
+	t		Open chat
+	y		Open team chat
+	~		Open console/chat
+	ESC		Return to main menu / close chat console
+	tab		Show the scoreboard
+
+
+CLIENT COMMANDS
+
+These commands are entered in the client's chat bar:
+
+	/tchat MESSAGE	Send a message to your team
+	/name NEWNAME	Change your name
+	/team red|blue	Change teams
+	/server COMMAND	Send the command to the server (see below for list of server commands)
+	NAME: MESSAGE	Send message to specified player only
+
+
+SERVER COMMANDS
+
+These commands are entered in the client's chat bar.  Some commands (marked as [op]) require you to authenticate first with the password specified on the command-line to the server.
+
+	/server auth PASSWORD	Authenticate with given password
+	/server teamscore 	Return the score for each team
+	/server teamcount	Return the number of players on each team
+	/server reset		Reset the team scores [op]
+	/server map MAPNAME	Load the given map [op]
+	/server newgame		Start new game [op]
+	/server kick PLAYER	Kick a player [op]
+	/server shutdown	Shutdown the server [op]
+	/server help		Display this help
+
+
+GAMEPLAY
+
+The objective of the game is to reach the opposing team's gate and stay next to it until it opens fully.
+
+Shoot enemy players to freeze them. They will un-freeze a number of seconds after they are frozen.
+
+You can move by jumping off of any obstacle, and you will jump in the direction of the mouse pointer. You will also move due to the recoil from firing your gun. When frozen, you will bounce off of obstacles. If you unfreeze away from obstacles, shoot your weapon to move back towards the nearest obstacle.
+
+
+ORGANIZATION
+
+The code is divided into three components, located in the following directories:
+
+	common		Common code for both client and server
+	client		The client
+	server		The server
+
+The data for the program are located in the data directory, and are divided into four parts:
+
+	data/fonts	Fonts
+	data/maps	Maps
+	data/sounds	Sounds
+	data/sprites	Sprites
+
+
+CREDITS
+
+Original Designers and Programmers:
+	Andrew Ayer		Server, networking, support code, map handling
+	Nathan Partlan		Game logic, component integration, client design and interface, physics
+	Jeffrey Pfau		Graphics code, sprites, multi-platform support
+	Danny Schneider		Maps, sound, assist with client
+
+Thanks:
+	Kenny Coane		Official project mentor
+	Robert Mustacchi	Shadow mentor
+	Jon Silverman		All-around great guy
+	All our testers in the Sun Lab at Brown University's Department of Computer Science
+
+Public Domain Sounds From:
+	http://www.a1freesoundeffects.com/
+	http://www.allmusiclibrary.com/free_sound_effects.php
+	http://www.imphenzia.com/soundtrack/
+	http://www.freesound.org/samplesViewSingle.php?id=49287
+

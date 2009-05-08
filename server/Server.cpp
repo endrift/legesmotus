@@ -204,7 +204,7 @@ void	Server::command_server(uint32_t player_id, const char* command) {
 			send_system_message(*player, "/server reset - Reset the team scores [op]");
 			send_system_message(*player, "/server map <mapname> - Load the given map [op]");
 			send_system_message(*player, "/server newgame - Start new game [op]");
-			send_system_message(*player, "/server kick <player-id> - Kick a player [op]");
+			send_system_message(*player, "/server kick <player-name> - Kick a player [op]");
 			send_system_message(*player, "/server shutdown - Shutdown the server [op]");
 		}
 		send_system_message(*player, "/server help - Display this help");
