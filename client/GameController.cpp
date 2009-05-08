@@ -248,6 +248,8 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_overlay_background->set_cell_color(2, Color(0.1,0.1,0.15,0.8));
 	m_overlay_background->set_y(100);
 	m_overlay_background->set_x(m_screen_width/2);
+	m_overlay_background->set_border_collapse(true);
+	m_overlay_background->set_corner_radius(20);
 	m_window->register_hud_graphic(m_overlay_background);
 	
 	m_overlay_items["red label"] = m_text_manager->place_string("Red Team:", m_overlay_background->get_x() - m_overlay_background->get_image_width()/2 + 10, 115, TextManager::LEFT, TextManager::LAYER_HUD);
