@@ -256,8 +256,8 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_overlay_items["blue label"] = m_text_manager->place_string("Blue Team:", m_overlay_background->get_x(), 115, TextManager::LEFT, TextManager::LAYER_HUD);
 	
 	m_text_manager->set_active_font(m_medium_font);
-	m_overlay_items["name label"] = m_text_manager->place_string("Name:", m_overlay_background->get_x() - m_overlay_background->get_image_width()/2 + 10, 190, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_overlay_items["score label"] = m_text_manager->place_string("Score:", m_overlay_background->get_x(), 190, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_overlay_items["name label"] = m_text_manager->place_string("Name", m_overlay_background->get_x() - m_overlay_background->get_image_width()/2 + 10, 190, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_overlay_items["score label"] = m_text_manager->place_string("Score", m_overlay_background->get_x(), 190, TextManager::LEFT, TextManager::LAYER_HUD);
 	
 	change_team_scores(0, 0);
 	update_individual_scores();
