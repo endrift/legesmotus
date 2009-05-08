@@ -39,12 +39,14 @@ extern "C" int main(int argc, char* argv[]) {
 	aback.set_priority(1);
 	tb.set_priority(2);
 	tb.set_border_color(Color(1,1,1,0.5));
-	tb.set_border_width(2);
+	tb.set_border_width(4);
 	tb.set_cell_color(0,Color(1,0,0,0.2));
 	tb.set_cell_color(1,Color(0,0,1,0.2));
 	tb.set_row_height(0,48);
 	tb.set_row_height(1,48);
 	tb.set_center_y(48);
+	tb.set_corner_radius(16);
+	tb.set_border_collapse(true);
 	Mask m(&mask,&tg);
 	m.set_priority(1);
 	m.set_x(250);

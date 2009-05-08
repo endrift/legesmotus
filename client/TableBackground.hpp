@@ -19,6 +19,8 @@ private:
 
 	Color	m_border_color;
 	double	m_border_width;
+	double	m_corner_radius;
+	bool	m_border_collapse;
 
 	void draw_row(int row) const;
 public:
@@ -35,6 +37,8 @@ public:
 	void	set_border_width(double pixels);
 	void	set_border_color(Color color);
 	void	set_cell_color(int row, Color color);
+	void	set_corner_radius(double radius);
+	void	set_border_collapse(bool collapse);
 
 	virtual void	set_alpha(double alpha) { (void)(alpha); }
 	virtual void	set_red_intensity(double r) { (void)(r); }
