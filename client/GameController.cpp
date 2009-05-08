@@ -39,6 +39,7 @@ const double GameController::MINIMAP_SCALE = 0.1;
 const Color GameController::BLUE_COLOR(0.4, 0.4, 1);
 const Color GameController::RED_COLOR(1, 0.4, 0.4);
 const int GameController::GATE_STATUS_RECT_WIDTH = 80;
+const int GameController::FROZEN_STATUS_RECT_WIDTH = 60;
 
 GameController::GameController(PathManager& path_manager) : m_path_manager(path_manager) {
 	init(1024, 768, 24, false);
@@ -320,6 +321,30 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_window->unregister_graphic(m_red_gate_status_text);
 	m_window->register_hud_graphic(m_red_gate_status_text);
 	
+	// Initialize the frozen status bar.
+	m_frozen_status_rect = new TableBackground(1, FROZEN_STATUS_RECT_WIDTH);
+	m_frozen_status_rect->set_row_height(0, 20);
+	m_frozen_status_rect->set_priority(-1);
+	m_frozen_status_rect->set_cell_color(0, Color(0.0, 0.5, 1.0, 0.5));
+	m_frozen_status_rect->set_x(m_screen_width - m_frozen_status_rect->get_image_width() - 10);
+	m_frozen_status_rect->set_y(m_screen_height - m_frozen_status_rect->get_image_height() - 20);
+	m_window->register_hud_graphic(m_frozen_status_rect);
+	m_frozen_status_rect_back = new TableBackground(1, FROZEN_STATUS_RECT_WIDTH);
+	m_frozen_status_rect_back->set_row_height(0, 20);
+	m_frozen_status_rect_back->set_priority(0);
+	m_frozen_status_rect_back->set_cell_color(0, Color(0.1, 0.1, 0.1, 0.5));
+	m_frozen_status_rect_back->set_x(m_screen_width - m_frozen_status_rect->get_image_width() - 10);
+	m_frozen_status_rect_back->set_y(m_screen_height - m_frozen_status_rect->get_image_height() - 20);
+	m_window->register_hud_graphic(m_frozen_status_rect_back);
+	
+	// Initialize the frozen status bar label.
+	m_text_manager->set_active_color(1.0, 1.0, 1.0);
+	m_text_manager->set_active_font(m_font);
+	m_frozen_status_text = m_text_manager->place_string("Frozen", m_frozen_status_rect->get_x() + 1, m_frozen_status_rect->get_y() + 2, TextManager::CENTER, TextManager::LAYER_HUD);
+	m_frozen_status_text->set_priority(-4);
+	m_window->unregister_graphic(m_frozen_status_text);
+	m_window->register_hud_graphic(m_frozen_status_text);
+	
 	// Set up the minimap.
 	m_minimap = new Minimap(m_path_manager, MINIMAP_SCALE);
 	m_minimap->set_x(m_screen_width - 120);
@@ -356,11 +381,21 @@ void GameController::run(int lockfps) {
 			m_sound_controller->play_sound("unfreeze");
 			m_players[m_player_id].set_is_frozen(false);
 			m_time_to_unfreeze = 0;
+			m_total_time_frozen = 0;
 		}
 		
 		// Update movement and graphics if frame rate is correct.
 		unsigned long currframe = SDL_GetTicks();
 		if((currframe - startframe) >= delay) {
+			if (m_time_to_unfreeze != 0) {
+				m_frozen_status_rect->set_x(m_players[m_player_id].get_x() - m_offset_x);
+				m_frozen_status_rect->set_y(m_players[m_player_id].get_y() + m_players[m_player_id].get_radius() + 15 - m_offset_y);
+				m_frozen_status_rect_back->set_x(m_frozen_status_rect->get_x());
+				m_frozen_status_rect_back->set_y(m_frozen_status_rect->get_y());
+				m_text_manager->reposition_string(m_frozen_status_text, m_frozen_status_rect_back->get_x() - m_frozen_status_rect_back->get_image_width()/2 + 3, m_frozen_status_rect_back->get_y() + 2);
+				m_frozen_status_rect->set_image_width(((m_time_to_unfreeze - SDL_GetTicks())/(double)m_total_time_frozen) * FROZEN_STATUS_RECT_WIDTH);
+			}
+		
 			// Erase messages that are too old.
 			for (unsigned int i = 0; i < m_messages.size(); i++) {
 				if (m_messages[i].second < currframe) {
@@ -483,6 +518,9 @@ void GameController::run(int lockfps) {
 				m_red_gate_status_rect->set_invisible(true);
 				m_red_gate_status_text->set_invisible(true);
 				m_red_gate_status_rect_back->set_invisible(true);
+				m_frozen_status_rect->set_invisible(true);
+				m_frozen_status_text->set_invisible(true);
+				m_frozen_status_rect_back->set_invisible(true);
 			} else if (m_game_state == SHOW_OPTIONS_MENU) {
 				if (m_map != NULL) {
 					m_map->set_visible(false);
@@ -508,6 +546,9 @@ void GameController::run(int lockfps) {
 				m_red_gate_status_rect->set_invisible(true);
 				m_red_gate_status_text->set_invisible(true);
 				m_red_gate_status_rect_back->set_invisible(true);
+				m_frozen_status_rect->set_invisible(true);
+				m_frozen_status_text->set_invisible(true);
+				m_frozen_status_rect_back->set_invisible(true);
 			} else {
 				if (m_map != NULL) {
 					m_map->set_visible(true);
@@ -533,6 +574,15 @@ void GameController::run(int lockfps) {
 				m_red_gate_status_rect->set_invisible(false);
 				m_red_gate_status_text->set_invisible(false);
 				m_red_gate_status_rect_back->set_invisible(false);
+				if (m_players[m_player_id].is_frozen() && !m_players[m_player_id].is_invisible()) {
+					m_frozen_status_rect->set_invisible(false);
+					m_frozen_status_text->set_invisible(false);
+					m_frozen_status_rect_back->set_invisible(false);
+				} else {
+					m_frozen_status_rect->set_invisible(true);
+					m_frozen_status_text->set_invisible(true);
+					m_frozen_status_rect_back->set_invisible(true);
+				}
 			}
 			
 			m_window->redraw();
@@ -1674,6 +1724,7 @@ void GameController::player_shot(PacketReader& reader) {
 		m_sound_controller->play_sound("freeze");
 		m_players[m_player_id].set_is_frozen(true);
 		m_time_to_unfreeze = SDL_GetTicks() + time_to_unfreeze;
+		m_total_time_frozen = time_to_unfreeze;
 		if (shot_angle != 0) {
 			m_players[m_player_id].set_velocity(m_players[m_player_id].get_x_vel() - FIRING_RECOIL * cos((shot_angle) * DEGREES_TO_RADIANS), m_players[m_player_id].get_y_vel() - FIRING_RECOIL * sin((shot_angle) * DEGREES_TO_RADIANS));
 		}

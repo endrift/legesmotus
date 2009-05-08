@@ -59,6 +59,7 @@ private:
 	const static double RANDOM_ROTATION_SCALE;
 	const static double MINIMAP_SCALE;
 	const static int GATE_STATUS_RECT_WIDTH;
+	const static int FROZEN_STATUS_RECT_WIDTH;
 	
 	PathManager& 	m_path_manager;
 
@@ -97,8 +98,8 @@ private:
 	bool		m_holding_gate;
 	unsigned int	m_last_fired;
 
-	// Do we want to keep it this way?
 	unsigned long	m_time_to_unfreeze;
+	unsigned long	m_total_time_frozen;
 	
 	// TEMPORARY SPRITE CODE
 	Sprite*		gun_normal;
@@ -134,6 +135,10 @@ private:
 	
 	Graphic*	m_gate_warning;
 	unsigned int	m_gate_warning_time;
+	
+	TableBackground* m_frozen_status_rect;
+	TableBackground* m_frozen_status_rect_back;
+	Graphic*	m_frozen_status_text;
 	
 	// MINIMAP CODE BY JEFFREY
 	Minimap*		m_minimap;
