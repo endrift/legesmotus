@@ -36,7 +36,7 @@ Server::Server () : m_ack_manager(*this)
 	m_team_score[0] = m_team_score[1] = 0;
 }
 
-void	Server::ack(int channel, PacketReader& ack_packet) {
+void	Server::ack(int /*channel*/, PacketReader& ack_packet) {
 	uint32_t		player_id;
 	uint32_t		packet_type;
 	uint32_t		packet_id;
@@ -264,7 +264,7 @@ void	Server::command_server(uint32_t player_id, const char* command) {
 	}
 }
 
-void	Server::player_shot(int channel, PacketReader& inbound_packet)
+void	Server::player_shot(int /*channel*/, PacketReader& inbound_packet)
 {
 	uint32_t		shooter_id;
 	uint32_t		shot_player_id;

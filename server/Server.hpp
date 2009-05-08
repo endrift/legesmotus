@@ -49,7 +49,7 @@ public:
 	};
 
 	static inline uint32_t get_gate_open_time(size_t nbr_players) {
-		return nbr_players > 1 ? uint32_t(round(GATE_OPEN_TIME * log(2.0) / log(double(nbr_players + 1)))) : GATE_OPEN_TIME;
+		return nbr_players > 1 ? uint32_t(round(GATE_OPEN_TIME * log(2.0) / log(double(nbr_players + 1)))) : uint32_t(GATE_OPEN_TIME);
 	}
 
 private:
