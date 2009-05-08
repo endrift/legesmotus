@@ -1301,6 +1301,9 @@ void GameController::update_individual_scores() {
 void GameController::update_individual_score_line(int count, const GraphicalPlayer& currplayer) {
 
 	string playername = currplayer.get_name();
+	stringstream idprinter;
+	idprinter << currplayer.get_id();
+	string playerid = idprinter.str();
 	string playernameforscore = currplayer.get_name();
 	string playerscore = playernameforscore.append("score");
 
@@ -1309,22 +1312,40 @@ void GameController::update_individual_score_line(int count, const GraphicalPlay
 	if (m_overlay_items.count(playerscore) != 0) {
 		m_text_manager->remove_string(m_overlay_items[playerscore]);
 	}
-	if (m_overlay_items.count(playername) != 0) {
-		m_text_manager->remove_string(m_overlay_items[playername]);
+	if (m_overlay_items.count(playerid) != 0) {
+		m_text_manager->remove_string(m_overlay_items[playerid]);
 	}
 
 	stringstream scoreprinter;
 	scoreprinter << currplayer.get_score();
-	m_overlay_items[playername] = m_text_manager->place_string(playername, m_overlay_background->get_x() - m_overlay_background->get_image_width()/2 + 10, 230 + count*25, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_overlay_items[playerid] = m_text_manager->place_string(playername, m_overlay_background->get_x() - m_overlay_background->get_image_width()/2 + 10, 230 + count*25, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_overlay_items[playerscore] = m_text_manager->place_string(scoreprinter.str(), m_overlay_background->get_x(), 230 + count*25, TextManager::LEFT, TextManager::LAYER_HUD);
 
-	m_overlay_items[playername]->set_priority(-4);
-	m_window->unregister_graphic(m_overlay_items[playername]);
-	m_window->register_hud_graphic(m_overlay_items[playername]);
+	m_overlay_items[playerid]->set_priority(-4);
+	m_window->unregister_graphic(m_overlay_items[playerid]);
+	m_window->register_hud_graphic(m_overlay_items[playerid]);
 
 	m_overlay_items[playerscore]->set_priority(-4);
 	m_window->unregister_graphic(m_overlay_items[playerscore]);
 	m_window->register_hud_graphic(m_overlay_items[playerscore]);
+}
+
+void GameController::delete_individual_score(const GraphicalPlayer& currplayer) {
+	stringstream idprinter;
+	idprinter << currplayer.get_id();
+	string playerid = idprinter.str();
+	string playernameforscore = currplayer.get_name();
+	string playerscore = playernameforscore.append("score");
+
+	if (m_overlay_items.count(playerscore) != 0) {
+		m_text_manager->remove_string(m_overlay_items[playerscore]);
+	}
+	if (m_overlay_items.count(playerid) != 0) {
+		m_text_manager->remove_string(m_overlay_items[playerid]);
+	}
+	
+	m_overlay_items.erase(playerscore);
+	m_overlay_items.erase(playerid);
 }
 
 /*
@@ -1494,6 +1515,7 @@ void GameController::player_update(PacketReader& reader) {
 	} else {
 		currplayer->set_is_invisible(true);
 		m_players[player_id].get_name_sprite()->set_invisible(true);
+		m_players[player_id].set_velocity(0, 0);
 		m_minimap->set_blip_invisible(player_id,true);
 	}
 	
@@ -1599,6 +1621,7 @@ void GameController::leave(PacketReader& reader) {
 	m_text_manager->remove_string(m_players[playerid].get_name_sprite());
 	m_window->unregister_graphic(m_players[playerid].get_sprite());
 	m_minimap->remove_blip(playerid);
+	delete_individual_score(m_players[playerid]);
 	delete m_players[playerid].get_sprite();
 	m_players.erase(playerid);
 }
@@ -1928,6 +1951,8 @@ void GameController::name_change(PacketReader& reader) {
 		ostringstream	msg;
 		msg << player->get_name() << " is now known as " << new_name;
 
+		delete_individual_score(m_players[player_id]);
+
 		player->set_name(new_name.c_str());
 		if (player_id == m_player_id) {
 			m_name = new_name;
@@ -1955,6 +1980,8 @@ void GameController::team_change(PacketReader& reader) {
 	reader >> playerid >> team;
 
 	if (GraphicalPlayer* player = get_player_by_id(playerid)) {
+		delete_individual_score(m_players[playerid]);
+	
 		player->set_team(team);
 
 		ostringstream	msg;
