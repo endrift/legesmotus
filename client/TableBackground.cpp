@@ -211,6 +211,7 @@ void TableBackground::set_image_width(double width) {
 
 void TableBackground::set_border_width(double pixels) {
 	m_border_width = pixels;
+	m_corner_radius = max<double>(m_corner_radius, pixels); // XXX Hack until square corners are fixed
 }
 
 void TableBackground::set_border_color(Color color) {
