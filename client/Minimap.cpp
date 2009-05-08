@@ -12,13 +12,13 @@
 
 using namespace std;
 
-Minimap::Minimap(double scale) {
+Minimap::Minimap(PathManager& path_manager, double scale) : m_path_manager(path_manager) {
 	m_whole = new GraphicGroup;
 
-	Sprite mask_sprite("data/sprites/mini_circle.png");
+	Sprite mask_sprite(m_path_manager.data_path("mini_circle.png", "sprites"));
 	GraphicGroup group;
 	Mask mask(&mask_sprite,&group);
-	Sprite background("data/sprites/mini_bg.png");
+	Sprite background(m_path_manager.data_path("mini_bg.png", "sprites"));
 
 	mask.set_priority(Graphic::FOREGROUND);
 	background.set_priority(Graphic::BACKGROUND);
@@ -28,8 +28,8 @@ Minimap::Minimap(double scale) {
 	m_minimask = static_cast<Mask*>(m_whole->get_graphic("mask"));
 	m_minigroup = static_cast<GraphicGroup*>(m_minimask->get_masked());
 
-	m_master_blip_red = new Sprite("data/sprites/mini_blip_red.png");
-	m_master_blip_blue = new Sprite("data/sprites/mini_blip_blue.png");
+	m_master_blip_red = new Sprite(m_path_manager.data_path("mini_blip_red.png", "sprites"));
+	m_master_blip_blue = new Sprite(m_path_manager.data_path("mini_blip_blue.png", "sprites"));
 
 	m_scale = scale;
 }

@@ -59,6 +59,8 @@ private:
 	const static double RANDOM_ROTATION_SCALE;
 	const static double MINIMAP_SCALE;
 	
+	PathManager& 	m_path_manager;
+
 	GameWindow* 	m_window;
 	ClientNetwork	m_network;
 	TextManager*	m_text_manager;
@@ -96,8 +98,6 @@ private:
 
 	// Do we want to keep it this way?
 	unsigned long	m_time_to_unfreeze;
-	
-	PathManager* 	m_path_manager;
 	
 	// TEMPORARY SPRITE CODE
 	Sprite*		gun_normal;
@@ -143,8 +143,8 @@ private:
 
 	void		send_ack(const PacketReader& packet);
 public:
-	GameController();
-	GameController(int width, int height);
+	explicit GameController(PathManager& pathman);
+	GameController(PathManager& pathman, int width, int height);
 	~GameController();
 	
 	void		run(int lockfps=60);

@@ -13,12 +13,14 @@
 #include <list>
 
 class GameWindow;
+class PathManager;
 
 /*
  * Derives from Map, and adds graphics stuff.
  */
 class GraphicalMap : public Map {
 private:
+	PathManager&			m_path_manager;
 	GameWindow* 			m_window;
 	std::list<MapObject>		m_objects;
 	MapObject*			m_gates[2];
@@ -31,7 +33,7 @@ private:
 	MapObject*			get_gate_object(char team);
 
 public:
-	explicit GraphicalMap(GameWindow* window);
+	GraphicalMap(PathManager&, GameWindow* window);
 	virtual ~GraphicalMap();
 
 	const std::list<MapObject>&	get_objects() const { return m_objects; }

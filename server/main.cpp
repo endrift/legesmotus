@@ -9,6 +9,7 @@
 #include "ServerSDL.hpp"
 #include "common/LMException.hpp"
 #include "common/network.hpp"
+#include "common/PathManager.hpp"
 #include <iostream>
 #include <stdlib.h>
 #include <time.h>
@@ -63,7 +64,9 @@ extern "C" int main(int argc, char* argv[]) try {
 		}
 	}
 
-	Server			server;
+	PathManager		path_manager(argv[0]);
+
+	Server			server(path_manager);
 
 	server.set_password(password.c_str());
 	server.run(portno, map_name.c_str());

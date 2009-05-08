@@ -20,6 +20,7 @@
 #include <utility>
 
 class PacketReader;
+class PathManager;
 
 class Server {
 private:
@@ -109,6 +110,8 @@ private:
 		void		add_broadcast_packet(const PacketWriter& packet);
 	};
 	friend class ServerAckManager;
+
+	PathManager&		m_path_manager;
 
 	//
 	// Game State
@@ -223,7 +226,7 @@ private:
 	uint32_t		server_sleep_time() const;
 
 public:
-	Server ();
+	explicit Server (PathManager& path_manager);
 
 	// Called upon receipt of network packets:
 	void		ack(int channel, PacketReader& packet);

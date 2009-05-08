@@ -11,10 +11,12 @@
 #include "Mask.hpp"
 #include "Sprite.hpp"
 #include "GraphicGroup.hpp"
+#include "common/PathManager.hpp"
 #include <stdint.h>
 
 class Minimap {
 private:
+	PathManager&	m_path_manager;
 	Mask*		m_minimask;
 	GraphicGroup*	m_minigroup;
 	GraphicGroup*	m_whole;
@@ -22,7 +24,7 @@ private:
 	Sprite*		m_master_blip_blue;
 	double		m_scale;
 public:
-	Minimap(double scale = 0.125); // TODO pass PathManager
+	explicit Minimap(PathManager& path_manager, double scale = 0.125);
 	~Minimap();
 
 	void set_x(double x);

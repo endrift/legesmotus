@@ -39,11 +39,11 @@ const double GameController::MINIMAP_SCALE = 0.1;
 const Color GameController::BLUE_COLOR(0.4, 0.4, 1);
 const Color GameController::RED_COLOR(1, 0.4, 0.4);
 
-GameController::GameController() {
+GameController::GameController(PathManager& path_manager) : m_path_manager(path_manager) {
 	init(1024, 768, 24, false);
 }
 
-GameController::GameController(int width, int height) {
+GameController::GameController(PathManager& path_manager, int width, int height) : m_path_manager(path_manager) {
 	init(width, height, 24, true);
 }
 
@@ -78,7 +78,6 @@ GameController::~GameController() {
 	delete m_text_manager;
 	delete m_sound_controller;
 	delete m_font;
-	delete m_path_manager;
 	delete m_shot;
 
 	m_minimap->unregister_with_window(m_window);
@@ -113,32 +112,30 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_quit_game = false;
 	m_window = GameWindow::get_instance(m_screen_width, m_screen_height, m_pixel_depth, m_fullscreen);
 
-	m_path_manager = new PathManager(""); // TODO: Pass it a path.
-
 	m_time_to_unfreeze = 0;
 	m_last_fired = 0;
 
-	m_font = new Font(m_path_manager->data_path("JuraMedium.ttf", "fonts"), 14);
+	m_font = new Font(m_path_manager.data_path("JuraMedium.ttf", "fonts"), 14);
 	m_text_manager = new TextManager(m_font, m_window);
 	
-	m_menu_font = new Font(m_path_manager->data_path("JuraDemiBold.ttf", "fonts"), 34);
-	m_medium_font = new Font(m_path_manager->data_path("JuraMedium.ttf", "fonts"), 20);
+	m_menu_font = new Font(m_path_manager.data_path("JuraDemiBold.ttf", "fonts"), 34);
+	m_medium_font = new Font(m_path_manager.data_path("JuraMedium.ttf", "fonts"), 20);
 	
-	m_sound_controller = new SoundController();
+	m_sound_controller = new SoundController(m_path_manager);
 	m_holding_gate = false;
 
-	m_map = new GraphicalMap(m_window);
+	m_map = new GraphicalMap(m_path_manager, m_window);
 	m_map_width = 0;
 	m_map_height = 0;
 
 	// Initialize the gun sprites.
-	gun_normal = new Sprite(m_path_manager->data_path("gun_noshot.png", "sprites"));
+	gun_normal = new Sprite(m_path_manager.data_path("gun_noshot.png", "sprites"));
 	gun_normal->set_x(3);
 	gun_normal->set_y(19);
 	gun_normal->set_rotation(-15);
 	gun_normal->set_priority(-1);
 	
-	m_gun_fired = new Sprite(m_path_manager->data_path("gun_shot.png", "sprites"));
+	m_gun_fired = new Sprite(m_path_manager.data_path("gun_shot.png", "sprites"));
 	m_gun_fired->set_x(3);
 	m_gun_fired->set_y(19);
 	m_gun_fired->set_rotation(-15);
@@ -146,9 +143,9 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_gun_fired->set_invisible(true);
 	
 	// Initialize all of the components of the player sprites.
-	blue_sprite = new Sprite(m_path_manager->data_path("blue_armless.png","sprites"));
-	blue_back_arm = new Sprite(m_path_manager->data_path("blue_backarm.png","sprites"));
-	blue_front_arm = new Sprite(m_path_manager->data_path("blue_frontarm.png","sprites"));
+	blue_sprite = new Sprite(m_path_manager.data_path("blue_armless.png","sprites"));
+	blue_back_arm = new Sprite(m_path_manager.data_path("blue_backarm.png","sprites"));
+	blue_front_arm = new Sprite(m_path_manager.data_path("blue_frontarm.png","sprites"));
 	blue_back_arm->set_center_x(27);
 	blue_back_arm->set_center_y(29);
 	blue_back_arm->set_x(-5);
@@ -172,9 +169,9 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	blue_player.add_graphic(&blue_arm_gun, "frontarm");
 	blue_player.set_invisible(true);
 	
-	red_sprite = new Sprite(m_path_manager->data_path("red_armless.png","sprites"));
-	red_back_arm = new Sprite(m_path_manager->data_path("red_backarm.png","sprites"));
-	red_front_arm = new Sprite(m_path_manager->data_path("red_frontarm.png","sprites"));
+	red_sprite = new Sprite(m_path_manager.data_path("red_armless.png","sprites"));
+	red_back_arm = new Sprite(m_path_manager.data_path("red_backarm.png","sprites"));
+	red_front_arm = new Sprite(m_path_manager.data_path("red_frontarm.png","sprites"));
 	red_front_arm->set_center_x(49);
 	red_front_arm->set_center_y(33);
 	red_front_arm->set_x(17);
@@ -198,14 +195,14 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	red_player.add_graphic(&red_arm_gun, "frontarm");
 	red_player.set_invisible(true);
 	
-	m_crosshairs = new Sprite("data/sprites/crosshairs.png");
+	m_crosshairs = new Sprite(m_path_manager.data_path("crosshairs.png", "sprites"));
 	m_crosshairs->set_priority(-1);
 	m_window->register_hud_graphic(m_crosshairs);
 	
-	m_shot = new Sprite("data/sprites/shot.png");
+	m_shot = new Sprite(m_path_manager.data_path("shot.png", "sprites"));
 	m_shot->set_invisible(true);
 	
-	m_logo = new Sprite("data/sprites/legesmotuslogo.png");
+	m_logo = new Sprite(m_path_manager.data_path("legesmotuslogo.png", "sprites"));
 	m_logo->set_x(m_screen_width/2);
 	m_logo->set_y(100);
 	m_logo->set_priority(-1);
@@ -273,7 +270,7 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_text_manager->set_active_font(m_font);
 	
 	// Set up the minimap.
-	m_minimap = new Minimap(MINIMAP_SCALE);
+	m_minimap = new Minimap(m_path_manager, MINIMAP_SCALE);
 	m_minimap->set_x(m_screen_width - 120);
 	m_minimap->set_y(120);
 	m_minimap->register_with_window(m_window);
@@ -1643,8 +1640,6 @@ void GameController::gate_update(PacketReader& reader) {
 	}
 	
 	m_map->set_gate_progress(team, progress);
-
-	// TODO: use the player id to display a HUD message or something...
 }
 
 /*
@@ -1667,7 +1662,7 @@ void GameController::game_start(PacketReader& reader) {
 	// Load the map
 	string		mapfilename(mapname + ".map");
 
-	if (mapname.find_first_of('/') != string::npos || !m_map->load_file(m_path_manager->data_path(mapfilename.c_str(), "maps"))) {
+	if (mapname.find_first_of('/') != string::npos || !m_map->load_file(m_path_manager.data_path(mapfilename.c_str(), "maps"))) {
 		string	message("You do not have the current map installed: ");
 		message += mapname;
 		display_message(message.c_str());

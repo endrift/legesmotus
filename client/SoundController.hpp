@@ -11,8 +11,11 @@
 #include <string>
 #include "SDL_mixer.h"
 
+class PathManager;
+
 class SoundController {
 private:
+	PathManager&	m_path_manager;
 	Mix_Chunk* 	m_gunshot_sound;
 	Mix_Chunk* 	m_freeze_sound;
 	Mix_Chunk* 	m_unfreeze_sound;
@@ -24,11 +27,10 @@ private:
 	bool		m_sound_on;
 
 public:
-	SoundController();
+	explicit SoundController(PathManager&);
 	~SoundController();
 	
 	void		play_sound(std::string sound);
-	int		main();
 	bool		is_sound_on() const { return m_sound_on; }
 	void		set_sound_on(bool on);
 	

@@ -11,13 +11,14 @@
 #include "Sprite.hpp"
 #include "TiledGraphic.hpp"
 #include "common/PacketReader.hpp"
+#include "common/PathManager.hpp"
 #include "common/team.hpp"
 #include <memory>
 #include <limits>
 
 using namespace std;
 
-GraphicalMap::GraphicalMap(GameWindow* window) {
+GraphicalMap::GraphicalMap(PathManager& path_manager, GameWindow* window) : m_path_manager(path_manager) {
 	m_window = window;
 	m_gates[0] = m_gates[1] = NULL;
 }
@@ -55,10 +56,9 @@ void	GraphicalMap::add_object(PacketReader& object_data) {
 		{
 			string	sprite_name;
 			object_data >> sprite_name;
+			sprite_name += ".png";
 
-			string	sprite_path("data/sprites/"); // TODO: don't hard code, really
-			sprite_path += sprite_name;
-			sprite_path += ".png";
+			string	sprite_path(m_path_manager.data_path(sprite_name.c_str(), "sprites"));
 
 			if (type == OBSTACLE) {
 				Sprite*		sprite = new Sprite(sprite_path.c_str());
@@ -121,12 +121,12 @@ void	GraphicalMap::add_object(PacketReader& object_data) {
 
 			map_object.set_team(team);
 
-			string	sprite_path("data/sprites/"); // TODO: don't hard code, really
+			string	sprite_path;
 			if (team == 'B') {
-				sprite_path += "red_gate.png";
+				sprite_path = m_path_manager.data_path("red_gate.png", "sprites");
 				m_gates[1] = &map_object;
 			} else if (team == 'A') {
-				sprite_path += "blue_gate.png";
+				sprite_path = m_path_manager.data_path("blue_gate.png", "sprites");
 				m_gates[0] = &map_object;
 			}
 

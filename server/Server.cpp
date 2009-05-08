@@ -13,6 +13,7 @@
 #include "common/network.hpp"
 #include "common/team.hpp"
 #include "common/misc.hpp"
+#include "common/PathManager.hpp"
 #include <string>
 #include <cstdlib>
 #include <cmath>
@@ -25,7 +26,7 @@ using namespace std;
 // This can't be an enum because we want overloading of operator<< to work OK.
 const int	Server::SERVER_PROTOCOL_VERSION = 1;
 
-Server::Server () : m_ack_manager(*this)
+Server::Server (PathManager& path_manager) : m_path_manager(path_manager), m_ack_manager(*this)
 {
 	m_next_player_id = 1;
 	m_is_running = false;
@@ -871,12 +872,10 @@ void	Server::reject_join(const IPaddress& addr, const char* why) {
 }
 
 bool	Server::load_map(const char* map_name) {
-	// TODO: use path manager
-	string		map_filename("data/maps/");
-	map_filename += map_name;
+	string		map_filename(map_name);
 	map_filename += ".map";
 
-	return m_current_map.load_file(map_filename.c_str());
+	return m_current_map.load_file(m_path_manager.data_path(map_filename.c_str(), "maps"));
 }
 
 string	Server::get_unique_player_name(const char* requested_name) const {

@@ -8,8 +8,10 @@
 #include "GameController.hpp"
 #include "ClientSDL.hpp"
 #include "common/LMException.hpp"
+#include "common/PathManager.hpp"
 #include "common/misc.hpp"
 #include "common/network.hpp"
+#include "common/team.hpp"
 #include <iostream>
 
 using namespace std;
@@ -18,7 +20,7 @@ static void display_usage(const char* progname) {
 	cout << "Usage: " << progname << " [OPTION]" << endl;
 	cout << "Options:" << endl;
 	cout << "  -n NAME	set your player name" << endl;
-	cout << "  -t A|B	set your team" << endl;
+	cout << "  -t red|blue	set your team" << endl;
 	cout << "  -s SERVER	set the hostname of the server" << endl;
 	cout << "  -p PORTNO	set the port number of the server" << endl;
 	cout << "  -w WIDTH	set the screen width, in pixels" << endl;
@@ -60,7 +62,12 @@ extern "C" int main(int argc, char* argv[]) try {
 			name = argv[i+1];
 			++i;
 		} else if (strcmp(argv[i], "-t") == 0 && argc > i+1) {
-			team = argv[i+1][0];
+			team = parse_team_string(argv[i+1]);
+			if (!is_valid_team(team)) {
+				cerr << argv[0] << ": Unrecognized team `" << argv[i+1] << "'" << endl;
+				display_usage(argv[0]);
+				return 2;
+			}
 			++i;
 		} else if (strcmp(argv[i], "--version") == 0) {
 			display_version();
@@ -75,10 +82,12 @@ extern "C" int main(int argc, char* argv[]) try {
 		}
 	}
 
+	PathManager	pathman(argv[0]);
+
 	if (width != 0 && height != 0) {
-		game_controller = new GameController(width, height);
+		game_controller = new GameController(pathman, width, height);
 	} else {
-		game_controller = new GameController();
+		game_controller = new GameController(pathman);
 	}
 
 	cout << "Welcome to Leges Motus." << endl;
