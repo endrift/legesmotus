@@ -18,7 +18,7 @@ class PacketWriter;
 
 class AckManager {
 	enum {
-		ACK_TIME = 500,
+		ACK_TIME = 1000,
 		RETRIES = 2
 	};
 protected:
