@@ -30,7 +30,9 @@ Sprite* Font::render_string(const string& text) {
 	SDL_Color white = { 255, 255, 255, 0 };
 	SDL_Surface* rendered = TTF_RenderUTF8_Blended(m_font,text.c_str(),white);
 	if(!rendered) return NULL;
-	return new Sprite(rendered);
+	Sprite* text_sprite = new Sprite(rendered);
+	SDL_FreeSurface(rendered);
+	return text_sprite;
 }
 
 int Font::line_skip() const {
