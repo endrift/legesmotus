@@ -698,7 +698,7 @@ void GameController::process_input() {
 							m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
 						}
 					} else if (event.key.keysym.sym == m_key_bindings.show_menu || event.key.keysym.sym == m_alt_key_bindings.show_menu) {
-						if (m_game_state == SHOW_MENUS) {
+						if (m_game_state == SHOW_MENUS && !m_players.empty()) {
 							m_game_state = GAME_IN_PROGRESS;
 						} else {
 							m_game_state = SHOW_MENUS;
