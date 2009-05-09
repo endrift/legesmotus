@@ -86,101 +86,78 @@ const char*	StringTokenizer::get_rest() const {
 	return m_next_token;
 }
 
-StringTokenizer&	StringTokenizer::operator>> (bool& b)
-{
-	// True if:
-	//  - "yes"
-	//  - "true"
-	//  - "on"
-	//  - positive integer
+StringTokenizer&	StringTokenizer::operator>> (bool& b) {
+	// The following values are considered true:
+	//  any positive integer, "true", "yes", "on"
+	// Any other value is considered false.
 
-	const char*	p = get_next();
-
+	const char* p = get_next();
 	b = p && (strcasecmp(p, "yes") == 0 || strcasecmp(p, "true") == 0 || strcasecmp(p, "on") == 0 || atoi(p) > 0);
-
 	return *this;
 }
 
-
-StringTokenizer&	StringTokenizer::operator>> (char& c)
-{
-	const char*	p = get_next();
-	c = p ? *p : 0;
+StringTokenizer&	StringTokenizer::operator>> (char& c) {
+	const char* p = get_next();
+	c = p ? p[0] : '\0';
 	return *this;
 }
 
-
-StringTokenizer&	StringTokenizer::operator>> (short& i)
-{
-	const char*	p = get_next();
+StringTokenizer&	StringTokenizer::operator>> (short& i) {
+	const char* p = get_next();
 	i = p ? short(atoi(p)) : 0;
 	return *this;
 }
 
-
-StringTokenizer&	StringTokenizer::operator>> (unsigned short& i)
-{
-	const char*	p = get_next();
-	i = p ? (unsigned short)(atoi(p)) : 0;
+StringTokenizer&	StringTokenizer::operator>> (unsigned short& i) {
+	const char* p = get_next();
+	i = p ? (unsigned short)atoi(p) : 0;
 	return *this;
 }
 
-
-StringTokenizer&	StringTokenizer::operator>> (int& i)
-{
-	const char*	p = get_next();
+StringTokenizer&	StringTokenizer::operator>> (int& i) {
+	const char* p = get_next();
 	i = p ? atoi(p) : 0;
 	return *this;
 }
 
-
-StringTokenizer&	StringTokenizer::operator>> (unsigned int& i)
-{
-	const char*	p = get_next();
-	i = p ? (unsigned int)(atoi(p)) : 0;
+StringTokenizer&	StringTokenizer::operator>> (unsigned int& i) {
+	const char* p = get_next();
+	i = p ? (unsigned int)atoi(p) : 0;
 	return *this;
 }
 
-
-StringTokenizer&	StringTokenizer::operator>> (long& i)
-{
-	const char*	p = get_next();
+StringTokenizer&	StringTokenizer::operator>> (long& i) {
+	const char* p = get_next();
 	i = p ? atol(p) : 0;
 	return *this;
 }
 
+StringTokenizer&	StringTokenizer::operator>> (unsigned long& i) {
+	const char* p = get_next();
+	i = p ? strtoul(p, NULL, 10) : 0;
+	return *this;
+}
 
-StringTokenizer&	StringTokenizer::operator>> (unsigned long& i)
-{
-	const char*	p = get_next();
-	i = p ? strtoul(p, 0, 10) : 0;
+StringTokenizer&	StringTokenizer::operator>> (float& i) {
+	const char* p = get_next();
+	i = p ? strtof(p, NULL) : 0.0;
 	return *this;
 }
 
 
-StringTokenizer&	StringTokenizer::operator>> (float& i)
-{
-	const char*	p = get_next();
-	i = p ? strtof(p, 0) : 0.0;
-	return *this;
-}
-
-
-StringTokenizer&	StringTokenizer::operator>> (double& i)
-{
-	const char*	p = get_next();
+StringTokenizer&	StringTokenizer::operator>> (double& i) {
+	const char* p = get_next();
 	i = p ? atof(p) : 0;
 	return *this;
 }
 
 
-StringTokenizer&	StringTokenizer::operator>> (string& s)
-{
-	if (const char* p = get_next())
+StringTokenizer&	StringTokenizer::operator>> (string& s) {
+	if (const char* p = get_next()) {
 		s = p;
-	else
+	} else {
 		s.clear();
-
+	}
 	return *this;
 }
 
