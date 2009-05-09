@@ -38,6 +38,18 @@ The client supports the following command-line options:
 If you specify the width and height of your actual screen resolution, the game will run in fullscreen.
 
 
+REQUIREMENTS
+
+The following libraries must be installed in order to build and run Leges Motus:
+
+ SDL
+ SDL_image
+ SDL_ttf
+ SDL_net
+ SDL_mixer
+ OpenGL
+
+
 RUNNING THE SERVER
 
 To run the server, type './server/lmserver' in the top-level directory.
