@@ -50,6 +50,7 @@ Text* TextManager::place_string(const std::string& text, double x, double y, Ali
 		rendered->set_shadow_offset(m_shadow_x, m_shadow_y);
 	}
 	reposition_string(rendered, x, y, align);
+	m_texts.push_back(rendered);
 	if (m_window != NULL) {
 		switch(layer) {
 		case LAYER_HUD:

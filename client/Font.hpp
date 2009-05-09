@@ -18,6 +18,7 @@ private:
 	TTF_Font*	m_font;
 public:
 	Font(const char* filename, int size);
+	~Font();
 
 	Sprite*	render_string(const std::string& text);
 	int	line_skip() const;

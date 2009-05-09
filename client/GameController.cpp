@@ -61,6 +61,7 @@ GameController::~GameController() {
 	delete red_front_arm;
 	delete red_back_arm;
 	delete m_crosshairs;
+	delete gun_normal;
 
 	for (unsigned int i = 0; i < m_shots.size(); i++) {
 		m_window->unregister_graphic(m_shots[i].first);
@@ -83,7 +84,11 @@ GameController::~GameController() {
 	delete m_text_manager;
 	delete m_sound_controller;
 	delete m_font;
+	delete m_menu_font;
+	delete m_medium_font;
+
 	delete m_shot;
+	delete m_logo;
 
 	m_minimap->unregister_with_window(m_window);
 	delete m_minimap;

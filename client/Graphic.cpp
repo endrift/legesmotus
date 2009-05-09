@@ -21,6 +21,7 @@ Graphic::Graphic(SDL_Surface* image) {
 Graphic::Graphic(const char* filename) {
 	SDL_Surface* loaded = IMG_Load(filename);
 	init(loaded);
+	SDL_FreeSurface(loaded);
 }
 
 Graphic::Graphic(const Graphic& other) {

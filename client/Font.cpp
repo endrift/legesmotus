@@ -11,12 +11,18 @@
 using namespace std;
 
 Font::Font(const char* filename, int size) {
-	if(!TTF_WasInit() && TTF_Init() == -1) {
+	if (!TTF_WasInit() && TTF_Init() == -1) {
 		throw LMException("Could not init SDL_TTF!");
 	}
 	m_font = TTF_OpenFont(filename, size);
-	if(!m_font) {
+	if (!m_font) {
 		throw LMException("Could not load font!");
+	}
+}
+
+Font::~Font() {
+	if (m_font != NULL) {
+		TTF_CloseFont(m_font);
 	}
 }
 
