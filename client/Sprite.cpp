@@ -35,8 +35,8 @@ void Sprite::init() {
 	m_red = 1.0;
 	m_green = 1.0;
 	m_blue = 1.0;
-	m_width = toPow2(get_image_width());
-	m_height = toPow2(get_image_height());
+	m_width = toPow2(int(get_image_width()));
+	m_height = toPow2(int(get_image_height()));
 	set_center_x(get_image_width()/2.0);
 	set_center_y(get_image_height()/2.0);
 	set_antialiasing(true);

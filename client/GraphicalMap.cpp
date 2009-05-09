@@ -82,7 +82,7 @@ void	GraphicalMap::add_object(PacketReader& object_data) {
 					bounding_polygon.add_line(upper_left + previous_point, upper_left + first_point); // Translate to be relative to the upper left of the map
 				} else {
 					// If no points were specified in the file, assume it's a rectangle representing the width and height of the sprite.
-					bounding_polygon.make_rectangle(sprite->get_image_width(), sprite->get_image_height(), upper_left);
+					bounding_polygon.make_rectangle(int(sprite->get_image_width()), int(sprite->get_image_height()), upper_left); // XXX: casting double to int here
 				}
 
 				sprite->set_priority(Graphic::OBSTACLE);
@@ -137,7 +137,7 @@ void	GraphicalMap::add_object(PacketReader& object_data) {
 			sprite->set_antialiasing(false);
 			map_object.set_sprite(sprite);
 
-			map_object.get_bounding_polygon().make_rectangle(sprite->get_image_width() + GATE_EXTENT * 2, GATE_HEIGHT, upper_left - Point(GATE_EXTENT, 0));
+			map_object.get_bounding_polygon().make_rectangle(int(sprite->get_image_width()) + GATE_EXTENT * 2, GATE_HEIGHT, upper_left - Point(GATE_EXTENT, 0)); // XXX: casting double to int here
 		}
 
 		break;

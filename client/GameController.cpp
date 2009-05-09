@@ -449,7 +449,7 @@ void GameController::run(int lockfps) {
 			
 			lastmoveframe = SDL_GetTicks();
 			
-			// TODO: Uncomment if framerate is needed.
+			// Uncomment if framerate is needed.
 			// the framerate:
 			//int framerate = (1000/(currframe - startframe));
 			
@@ -486,7 +486,7 @@ void GameController::run(int lockfps) {
 						angle -= 120;
 					}
 					m_players[m_player_id].get_sprite()->get_graphic("frontarm")->set_rotation(angle);
-					send_animation_packet("frontarm", "rotation", int(round(angle))); // XXX
+					send_animation_packet("frontarm", "rotation", int(round(angle))); // XXX: going double->int here
 				}
 				send_my_player_update();
 				
@@ -801,8 +801,8 @@ void GameController::process_mouse_click(SDL_Event event) {
 		map<string, Graphic*>::iterator it;
 		for ( it=m_main_menu_items.begin() ; it != m_main_menu_items.end(); it++ ) {
 			Graphic* thisitem = (*it).second;
-			double x = thisitem->get_x(); // XXX
-			double y = thisitem->get_y(); // XXX
+			double x = thisitem->get_x();
+			double y = thisitem->get_y();
 			if (event.button.x >= x && event.button.x <= x + thisitem->get_image_width()
 			    && event.button.y >= y && event.button.y <= y + thisitem->get_image_height()) {
 				if ((*it).first == "Quit") {
@@ -823,8 +823,8 @@ void GameController::process_mouse_click(SDL_Event event) {
 		map<string, Graphic*>::iterator it;
 		for ( it=m_options_menu_items.begin() ; it != m_options_menu_items.end(); it++ ) {
 			Graphic* thisitem = (*it).second;
-			double x = thisitem->get_x(); // XXX
-			double y = thisitem->get_y(); // XXX
+			double x = thisitem->get_x();
+			double y = thisitem->get_y();
 			if (event.button.x >= x && event.button.x <= x + thisitem->get_image_width()
 			    && event.button.y >= y && event.button.y <= y + thisitem->get_image_height()) {
 				if ((*it).first == "Back") {
@@ -937,7 +937,7 @@ void GameController::move_objects(float timescale) {
 	
 	const list<MapObject>& map_objects(m_map->get_objects());
 	list<MapObject>::const_iterator thisobj;
-	double radius = m_players[m_player_id].get_radius(); // XXX
+	double radius = m_players[m_player_id].get_radius();
 	Point currpos = Point(new_x, new_y);
 	Point oldpos = Point(m_players[m_player_id].get_x(), m_players[m_player_id].get_y());
 	
@@ -1160,8 +1160,8 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 				continue;
 			}
 			
-			int end_x = start_x + playerdist * cos(direction * DEGREES_TO_RADIANS);
-			int end_y = start_y + playerdist * sin(direction * DEGREES_TO_RADIANS);
+			double end_x = start_x + playerdist * cos(direction * DEGREES_TO_RADIANS);
+			double end_y = start_y + playerdist * sin(direction * DEGREES_TO_RADIANS);
 			vector<double> closestpoint = closest_point_on_line(start_x, start_y, end_x, end_y, currplayer.get_x(), currplayer.get_y());
 			
 			if (closestpoint.size() == 0) {
