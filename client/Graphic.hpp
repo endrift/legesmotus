@@ -16,7 +16,6 @@
 class GameWindow;
 class Graphic {
 private:
-	SDL_Surface*	m_image;
 	GLuint		m_tex_id;
 	int*		m_tex_count;
 

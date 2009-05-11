@@ -36,7 +36,6 @@ Graphic::Graphic(const Graphic& other) {
 	m_priority = other.m_priority;
 	m_image_width = other.m_image_width;
 	m_image_height = other.m_image_height;
-	m_image = other.m_image;
 	m_tex_id = other.m_tex_id;
 	m_tex_count = other.m_tex_count;
 	if (m_tex_count != NULL) {
@@ -48,7 +47,6 @@ Graphic::~Graphic() {
 	if (m_tex_count != NULL) {
 		if(*m_tex_count <= 1) {
 			glDeleteTextures(1,&m_tex_id);
-			SDL_FreeSurface(m_image);
 			delete m_tex_count;
 		} else {
 			--*m_tex_count;
@@ -63,7 +61,6 @@ void Graphic::init(SDL_Surface* image) {
 	m_center_y = 0.0;
 	m_invisible = false;
 	m_tex_count = NULL;
-	m_image = NULL;
 	m_priority = 0;
 	m_x = 0;
 	m_y = 0;
@@ -79,16 +76,17 @@ void Graphic::init(SDL_Surface* image) {
 	m_image_height = image->h;
 	int width = toPow2(image->w);
 	int height = toPow2(image->h);
-	m_image = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
+	SDL_Surface *hw_image = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
 	SDL_SetAlpha(image, 0, SDL_ALPHA_OPAQUE);
-	SDL_BlitSurface(image, NULL, m_image, NULL);
+	SDL_BlitSurface(image, NULL, hw_image, NULL);
 	m_tex_count = new int;
 	*m_tex_count = 1;
 	glGenTextures(1, &m_tex_id);
 	glBindTexture(GL_TEXTURE_2D, m_tex_id);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, m_image->pixels);
+	glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, hw_image->pixels);
+	SDL_FreeSurface(hw_image); // Note: this line depends on OpenGL copying texture to VRAM--if graphical corruption occurs, change this back
 }
 
 GLuint Graphic::get_texture_id() const {
