@@ -83,6 +83,7 @@ GameController::~GameController() {
 	delete m_frozen_status_rect_back;
 	
 	delete m_input_bar_back;
+	delete m_chat_window_back;
 
 	// TEMPORARY MAP CODE BY ANDREW
 	delete m_map;
