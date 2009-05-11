@@ -116,6 +116,8 @@ private:
 	Sprite*		red_back_arm;
 	Sprite*		m_crosshairs;
 	Graphic*	m_input_bar;
+	TableBackground* m_input_bar_back;
+	TableBackground* m_chat_window_back;
 	
 	Sprite*		m_shot;
 

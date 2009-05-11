@@ -76,7 +76,13 @@ GameController::~GameController() {
 	m_text_manager->remove_all_strings();
 
 	delete m_blue_gate_status_rect;
+	delete m_blue_gate_status_rect_back;
 	delete m_red_gate_status_rect;
+	delete m_red_gate_status_rect_back;
+	delete m_frozen_status_rect;
+	delete m_frozen_status_rect_back;
+	
+	delete m_input_bar_back;
 
 	// TEMPORARY MAP CODE BY ANDREW
 	delete m_map;
@@ -350,6 +356,26 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_window->unregister_graphic(m_frozen_status_text);
 	m_window->register_hud_graphic(m_frozen_status_text);
 	
+	// Initiialize the input bar background
+	m_input_bar_back = new TableBackground(1, 0);
+	m_input_bar_back->set_row_height(0, 20);
+	m_input_bar_back->set_priority(0);
+	m_input_bar_back->set_cell_color(0, Color(0.0, 0.0, 0.0, 0.7));
+	m_input_bar_back->set_x(17);
+	m_input_bar_back->set_y(m_screen_height - 102);
+	m_input_bar_back->set_invisible(true);
+	m_window->register_hud_graphic(m_input_bar_back);
+	
+	// Initiialize the chat window background
+	m_chat_window_back = new TableBackground(1, 0);
+	m_chat_window_back->set_row_height(0, 20);
+	m_chat_window_back->set_priority(0);
+	m_chat_window_back->set_cell_color(0, Color(0.0, 0.0, 0.0, 0.7));
+	m_chat_window_back->set_x(17);
+	m_chat_window_back->set_y(17);
+	m_chat_window_back->set_invisible(true);
+	m_window->register_hud_graphic(m_chat_window_back);
+	
 	// Set up the minimap.
 	m_minimap = new Minimap(m_path_manager, MINIMAP_SCALE);
 	m_minimap->set_x(m_screen_width - 120);
@@ -401,18 +427,30 @@ void GameController::run(int lockfps) {
 				m_frozen_status_rect->set_image_width(((m_time_to_unfreeze - SDL_GetTicks())/(double)m_total_time_frozen) * FROZEN_STATUS_RECT_WIDTH);
 			}
 		
+			bool erasedone = false;
 			// Erase messages that are too old.
 			for (unsigned int i = 0; i < m_messages.size(); i++) {
 				if (m_messages[i].second < currframe) {
+					m_chat_window_back->set_row_height(0, m_chat_window_back->get_row_height(0) - m_messages[i].first->get_image_height());
 					m_text_manager->remove_string(m_messages[i].first);
 					m_messages.erase(m_messages.begin() + i);
+					erasedone = true;
 				}
 			}
 			
-			// Reposition messages that remain after removing.
-			for (unsigned int i = 0; i < m_messages.size(); i++) {
-				int y = 20 + (m_font->ascent() + m_font->descent() + 5) * i;
-				m_text_manager->reposition_string(m_messages[i].first, 20, y, TextManager::LEFT);
+			if (erasedone) {
+				m_chat_window_back->set_image_width(0);
+				// Reposition messages that remain after removing.
+				for (unsigned int i = 0; i < m_messages.size(); i++) {
+					int y = 20 + (m_font->ascent() + m_font->descent() + 5) * i;
+					m_text_manager->reposition_string(m_messages[i].first, 20, y, TextManager::LEFT);
+					if (m_chat_window_back->get_image_width() < m_messages[i].first->get_image_width() + 6) {
+						m_chat_window_back->set_image_width(m_messages[i].first->get_image_width() + 6);
+					}
+				}
+				if (m_messages.size() == 0) {
+					m_chat_window_back->set_invisible(true);
+				}
 			}
 			
 			// Change shot displays based on time.
@@ -628,6 +666,7 @@ void GameController::process_input() {
 						SDL_EnableKeyRepeat(0, 0); // Disable key repeat
 						m_text_manager->remove_string(m_input_bar);
 						m_input_bar = NULL;
+						m_input_bar_back->set_invisible(true);
 						m_input_text = "> ";
 					} else if (event.key.keysym.sym == m_key_bindings.send_chat || event.key.keysym.sym == m_alt_key_bindings.send_chat) {
 						// Remove the "> " from the front.
@@ -656,6 +695,7 @@ void GameController::process_input() {
 						SDL_EnableKeyRepeat(0, 0); // Disable key repeat
 						m_text_manager->remove_string(m_input_bar);
 						m_input_bar = NULL;
+						m_input_bar_back->set_invisible(true);
 						m_input_text = "> ";
 					} else if (event.key.keysym.sym == SDLK_BACKSPACE) {
 						// Delete text.
@@ -665,6 +705,8 @@ void GameController::process_input() {
 						m_input_text.erase(m_input_text.length() - 1);
 						m_text_manager->remove_string(m_input_bar);
 						m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
+						m_input_bar_back->set_image_width(m_input_bar->get_image_width() + 6);
+						m_input_bar_back->set_invisible(false);
 					} else {
 						// Otherwise, it's a regular character. Type it in.
 						if ( (event.key.keysym.unicode & 0xFF80) == 0 && event.key.keysym.unicode != 0) {
@@ -675,19 +717,21 @@ void GameController::process_input() {
 						// Replace the text display with the new one.
 						m_text_manager->remove_string(m_input_bar);
 						m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
+						m_input_bar_back->set_image_width(m_input_bar->get_image_width() + 6);
+						m_input_bar_back->set_invisible(false);
 					}
 				} else {
 					//Check which key using: event.key.keysym.sym == SDLK_<SOMETHING>
 					if (event.key.keysym.sym == m_key_bindings.jump || event.key.keysym.sym == m_alt_key_bindings.jump) {
 						attempt_jump();
-					} else if (event.key.keysym.sym == m_key_bindings.show_overlay || event.key.keysym.sym == m_alt_key_bindings.show_overlay) {
-						// TODO: Show the overlay.
 					} else if (event.key.keysym.sym == m_key_bindings.open_chat || event.key.keysym.sym == m_key_bindings.open_console || event.key.keysym.sym == m_alt_key_bindings.open_chat || event.key.keysym.sym == m_alt_key_bindings.open_console) {
 						SDL_EnableUNICODE(1);
 						SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 						m_text_manager->set_active_color(Color::WHITE);
 						if (m_input_bar == NULL) {
 							m_input_bar = m_text_manager->place_string("> ", 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
+							m_input_bar_back->set_image_width(m_input_bar->get_image_width() + 6);
+							m_input_bar_back->set_invisible(false);
 						}
 					} else if (event.key.keysym.sym == m_key_bindings.open_team_chat || event.key.keysym.sym == m_alt_key_bindings.open_team_chat) {
 						SDL_EnableUNICODE(1);
@@ -696,6 +740,8 @@ void GameController::process_input() {
 						m_input_text = "> /tchat ";
 						if (m_input_bar == NULL) {
 							m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
+							m_input_bar_back->set_image_width(m_input_bar->get_image_width() + 6);
+							m_input_bar_back->set_invisible(false);
 						}
 					} else if (event.key.keysym.sym == m_key_bindings.show_menu || event.key.keysym.sym == m_alt_key_bindings.show_menu) {
 						if (m_game_state == SHOW_MENUS && !m_players.empty()) {
@@ -776,7 +822,7 @@ void GameController::parse_key_input() {
 	}
 	
 	if ((m_key_bindings.show_overlay != -1 && m_keys[m_key_bindings.show_overlay]) || (m_alt_key_bindings.show_overlay != -1 && m_keys[m_alt_key_bindings.show_overlay])) {
-		if (m_game_state == GAME_IN_PROGRESS) {
+		if (m_game_state == GAME_IN_PROGRESS && m_input_bar == NULL) {
 			if (m_overlay_background->is_invisible() == true) {
 				toggle_score_overlay(true);
 			}
@@ -837,6 +883,8 @@ void GameController::process_mouse_click(SDL_Event event) {
 					m_input_text = "> /name ";
 					m_text_manager->remove_string(m_input_bar);
 					m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
+					m_input_bar_back->set_image_width(m_input_bar->get_image_width() + 6);
+					m_input_bar_back->set_invisible(false);
 				} else if ((*it).first == "Toggle Sound") {
 					if (m_sound_controller->is_sound_on()) {
 						m_sound_controller->set_sound_on(false);
@@ -2115,6 +2163,11 @@ void GameController::display_message(string message, Color color) {
 	int y = 20 + (m_font->ascent() + m_font->descent() + 5) * m_messages.size();
 	Graphic* message_sprite = m_text_manager->place_string(message, 20, y, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_messages.push_back(pair<Graphic*, int>(message_sprite, SDL_GetTicks() + MESSAGE_DISPLAY_TIME));
+	m_chat_window_back->set_row_height(0, y + message_sprite->get_image_height() + 6 - m_chat_window_back->get_y());
+	if (m_chat_window_back->get_image_width() < message_sprite->get_image_width() + 6) {
+		m_chat_window_back->set_image_width(message_sprite->get_image_width() + 6);
+	}
+	m_chat_window_back->set_invisible(false);
 }
 
 /*
