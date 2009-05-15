@@ -21,8 +21,13 @@ private:
 	IPaddress	m_server_address;	// The resolved address of the server (host and port)
 	int		m_server_channel;	// The channel to which the server is bound
 
-	// Process the individual packet which has been received
-	void		process_packet (GameController& controller, const RawPacket& packet);
+	// Process the individual packet which has been received.
+	// Packets from our bound server
+	void		process_bound_packet(GameController& controller, const RawPacket& packet);
+	// Packets from other sources (e.g. for server browsing)
+	void		process_unbound_packet(GameController& controller, const RawPacket& packet);
+
+	void		send_raw_packet(int channel, RawPacket& raw_packet);
 
 public:
 	ClientNetwork();
@@ -35,12 +40,15 @@ public:
 	// Disconnect from server (Does not send leave packet)
 	void		disconnect();
 
-	bool		is_connected() const { return m_socket != NULL; }
+	bool		is_connected() const { return m_server_channel != -1; }
 
 	// Process all the pending packets and notify the game controller of their receipt
 	void		receive_packets(GameController& game_controller);
 	// Send the given packet to the server
 	void		send_packet(const PacketWriter& packet);
+
+	// Send the given packet to the specific address
+	void		send_unbound_packet(const IPaddress& dest, const PacketWriter& packet);
 
 	// The following two functions are for internal use only.  They are public in order to facilitate testing.
 	// Use receive_packets and send_packet instead!

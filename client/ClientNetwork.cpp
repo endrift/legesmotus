@@ -17,31 +17,25 @@
 using namespace std;
 
 ClientNetwork::ClientNetwork() {
-	m_socket = NULL;
+	m_socket = SDLNet_UDP_Open(0);
 	m_server_channel = -1;
 }
 
 ClientNetwork::~ClientNetwork() {
 	disconnect();
+	SDLNet_UDP_Close(m_socket);
+	m_socket = NULL;
 }
 
 bool	ClientNetwork::connect(const char* hostname, unsigned int portno) {
 	disconnect();
 
-	m_socket = SDLNet_UDP_Open(0);
-
-	if (m_socket == NULL) {
-		return false;
-	}
-
 	if (SDLNet_ResolveHost(&m_server_address, const_cast<char*>(hostname), portno) == -1) {
-		disconnect();
 		return false;
 	}
 
 	m_server_channel = SDLNet_UDP_Bind(m_socket, -1, &m_server_address);
 	if (m_server_channel == -1) {
-		disconnect();
 		return false;
 	}
 
@@ -50,38 +44,40 @@ bool	ClientNetwork::connect(const char* hostname, unsigned int portno) {
 
 void	ClientNetwork::disconnect() {
 	if (is_connected()) {
-		SDLNet_UDP_Close(m_socket);
-		m_socket = NULL;
+		SDLNet_UDP_Unbind(m_socket, m_server_channel);
+		m_server_channel = -1;
 	}
 }
 
 void	ClientNetwork::send_packet(const PacketWriter& packet) {
 	RawPacket	raw_packet(MAX_PACKET_LENGTH);
 	raw_packet.fill(packet);
-	send_raw_packet(raw_packet);
+	send_raw_packet(m_server_channel, raw_packet);
 }
 
-void	ClientNetwork::send_raw_packet(RawPacket& raw_packet) {
+void	ClientNetwork::send_unbound_packet(const IPaddress& dest, const PacketWriter& packet) {
+	RawPacket	raw_packet(MAX_PACKET_LENGTH);
+	raw_packet.set_address(dest);
+	raw_packet.fill(packet);
+	send_raw_packet(-1, raw_packet);
+}
+
+void	ClientNetwork::send_raw_packet(int channel, RawPacket& raw_packet) {
 	if (m_socket == NULL) {
 		return;
 	}
-	SDLNet_UDP_Send(m_socket, m_server_channel, raw_packet);
+	SDLNet_UDP_Send(m_socket, channel, raw_packet);
+}
+
+void	ClientNetwork::send_raw_packet(RawPacket& raw_packet) {
+	send_raw_packet(m_server_channel, raw_packet);
 }
 
 bool	ClientNetwork::receive_raw_packet(RawPacket& raw_packet) {
 	if (m_socket == NULL) {
 		return false;
 	}
-	while (SDLNet_UDP_Recv(m_socket, raw_packet) == 1) {
-		if (raw_packet->channel == m_server_channel) {
-			// Only accept packets coming from the server.
-			return true;
-		}
-		// If not from server, will loop back around to try again.
-	}
-
-	// No more packets to receive
-	return false;
+	return SDLNet_UDP_Recv(m_socket, raw_packet) == 1;
 }
 
 void	ClientNetwork::receive_packets(GameController& controller) {
@@ -89,11 +85,15 @@ void	ClientNetwork::receive_packets(GameController& controller) {
 
 	// Keep receiving packets for as long as we can.
 	while (receive_raw_packet(raw_packet)) {
-		process_packet(controller, raw_packet);
+		if (raw_packet->channel == m_server_channel) {
+			process_bound_packet(controller, raw_packet);
+		} else {
+			process_unbound_packet(controller, raw_packet);
+		}
 	}
 }
 
-void	ClientNetwork::process_packet(GameController& controller, const RawPacket& raw_packet) {
+void	ClientNetwork::process_bound_packet(GameController& controller, const RawPacket& raw_packet) {
 	PacketReader	reader(raw_packet);
 	
 	switch (reader.packet_type()) {
@@ -163,6 +163,16 @@ void	ClientNetwork::process_packet(GameController& controller, const RawPacket& 
 
 	case TEAM_CHANGE_PACKET:
 		controller.team_change(reader);
+		break;
+	}
+}
+
+void	ClientNetwork::process_unbound_packet(GameController& controller, const RawPacket& raw_packet) {
+	PacketReader	reader(raw_packet);
+	
+	switch (reader.packet_type()) {
+	case INFO_PACKET:
+		controller.server_info(raw_packet->address, reader);
 		break;
 	}
 }

@@ -133,7 +133,7 @@ void	ServerNetwork::process_unbound_packet(Server& server, const RawPacket& raw_
 		break;
 
 	case INFO_PACKET:
-		//server.info(address, reader);
+		server.info(address, reader);
 		break;
 
 	}

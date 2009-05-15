@@ -53,6 +53,7 @@ public:
 
 	int			get_width() const;
 	int			get_height() const;
+	int			get_depth() const;
 	bool			is_fullscreen() const;
 
 	double			get_offset_x() const;

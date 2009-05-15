@@ -25,6 +25,7 @@ static void display_usage(const char* progname) {
 	cout << "  -p PORTNO	set the port number of the server" << endl;
 	cout << "  -w WIDTH	set the screen width, in pixels" << endl;
 	cout << "  -h HEIGHT	set the screen height, in pixels" << endl;
+	cout << "  -f 		run the game in fullscreen" << endl;
 	cout << "  -?, --help	display this help, and exit" << endl;
 	cout << "      --version\tdisplay version information and exit" << endl;
 }
@@ -38,15 +39,18 @@ static void display_version() {
 extern "C" int main(int argc, char* argv[]) try {
 	ClientSDL		client_sdl;
 	GameController*		game_controller;
-	int			width = 0;
-	int			height = 0;
+	int			width = 1024;
+	int			height = 768;
+	bool			fullscreen = false;
 	char			team = 0;
 	string			server = "legesmotus.beanwood.com";
 	unsigned int		portno = DEFAULT_PORTNO;
 	string			name = "";
 	
 	for (int i = 1; i < argc; i++) {
-		if (strcmp(argv[i], "-w") == 0 && argc > i+1) {
+		if (strcmp(argv[i], "-f") == 0) {
+			fullscreen = true;
+		} else if (strcmp(argv[i], "-w") == 0 && argc > i+1) {
 			width = atoi(argv[i+1]);
 			++i;
 		} else if (strcmp(argv[i], "-h") == 0 && argc > i+1) {
@@ -84,10 +88,10 @@ extern "C" int main(int argc, char* argv[]) try {
 
 	PathManager	pathman(argv[0]);
 
-	if (width != 0 && height != 0) {
-		game_controller = new GameController(pathman, width, height);
-	} else {
+	if (fullscreen) {
 		game_controller = new GameController(pathman);
+	} else {
+		game_controller = new GameController(pathman, width, height);
 	}
 
 	cout << "Welcome to Leges Motus." << endl;

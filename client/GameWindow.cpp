@@ -173,6 +173,10 @@ int GameWindow::get_height() const {
 	return m_height;
 }
 
+int GameWindow::get_depth() const {
+	return m_depth;
+}
+
 double GameWindow::get_offset_x() const {
 	return m_offset_x;
 }

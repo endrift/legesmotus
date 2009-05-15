@@ -42,11 +42,11 @@ const int GameController::GATE_STATUS_RECT_WIDTH = 80;
 const int GameController::FROZEN_STATUS_RECT_WIDTH = 60;
 
 GameController::GameController(PathManager& path_manager) : m_path_manager(path_manager) {
-	init(1024, 768, 24, false);
+	init(GameWindow::get_optimal_instance());
 }
 
-GameController::GameController(PathManager& path_manager, int width, int height) : m_path_manager(path_manager) {
-	init(width, height, 24, true);
+GameController::GameController(PathManager& path_manager, int width, int height, int depth, bool fullscreen) : m_path_manager(path_manager) {
+	init(GameWindow::get_instance(width, height, depth, fullscreen));
 }
 
 /*
@@ -107,7 +107,7 @@ GameController::~GameController() {
 /*
  * Initialize all of the subsystems, sprites, etc.
  */
-void GameController::init(int width, int height, int depth, bool fullscreen) {
+void GameController::init(GameWindow* window) {
 	srand ( time(NULL) );
 	
 	initialize_key_bindings();
@@ -115,8 +115,8 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	// Initial game state will be showing the main menu.
 	m_game_state = SHOW_MENUS;
 	
-	m_screen_width = width;
-	m_screen_height = height;
+	m_screen_width = window->get_width();
+	m_screen_height = window->get_height();
 	
 	m_input_text = "> ";
 	m_input_bar = NULL;
@@ -124,10 +124,10 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_client_version = "0.0.3";
 	m_protocol_number = 1;
 	
-	m_pixel_depth = depth;
-	m_fullscreen = fullscreen;
+	m_pixel_depth = window->get_depth();
+	m_fullscreen = window->is_fullscreen();
 	m_quit_game = false;
-	m_window = GameWindow::get_instance(m_screen_width, m_screen_height, m_pixel_depth, m_fullscreen);
+	m_window = window;
 
 	m_time_to_unfreeze = 0;
 	m_last_fired = 0;
@@ -382,6 +382,16 @@ void GameController::init(int width, int height, int depth, bool fullscreen) {
 	m_minimap->set_x(m_screen_width - 120);
 	m_minimap->set_y(120);
 	m_minimap->register_with_window(m_window);
+
+	/* PROOF OF CONCEPT CODE for scanning the LAN for Leges Motus servers
+	{
+		IPaddress broadcast_address;
+		if (SDLNet_ResolveHost(&broadcast_address, "255.255.255.255", DEFAULT_PORTNO) != -1) {
+			PacketWriter info_request_packet(INFO_PACKET);
+			m_network.send_unbound_packet(broadcast_address, info_request_packet);
+		}
+	}
+	*/
 }
 
 /*
@@ -2199,3 +2209,15 @@ void	GameController::send_ack(const PacketReader& packet) {
 	ack_packet << m_player_id << packet.packet_type() << packet.packet_id();
 	m_network.send_packet(ack_packet);
 }
+
+
+void	GameController::server_info(const IPaddress& server_address, PacketReader& info_packet) {
+	// Proof of concept code for server scanning
+	int		server_protocol_version;
+	string		current_map_name;
+	int		team_count[2];
+	info_packet >> server_protocol_version >> current_map_name >> team_count[0] >> team_count[1];
+
+	cerr << "Received INFO packet from " << format_ip_address(server_address) << ": Protocol=" << server_protocol_version << "; Map=" << current_map_name << "; Blue Players=" << team_count[0] << "; Red Players=" << team_count[1] << endl;
+}
+

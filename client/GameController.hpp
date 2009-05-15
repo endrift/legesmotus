@@ -148,7 +148,7 @@ private:
 	// TEMPORARY MAP CODE BY ANDREW
 	GraphicalMap*	m_map;
 	
-	void		init(int width, int height, int depth, bool fullscreen);
+	void		init(GameWindow* window);
 	void		process_input();
 	GraphicalPlayer* get_player_by_id(unsigned int player_id);
 	GraphicalPlayer* get_player_by_name(const char* name);
@@ -158,7 +158,7 @@ private:
 	void		send_ack(const PacketReader& packet);
 public:
 	explicit GameController(PathManager& pathman);
-	GameController(PathManager& pathman, int width, int height);
+	GameController(PathManager& pathman, int width, int height, int depth =24, bool fullscreen =false);
 	~GameController();
 	
 	void		run(int lockfps=60);
@@ -202,6 +202,7 @@ public:
 	void		request_denied(PacketReader& reader);
 	void		name_change(PacketReader& reader);
 	void		team_change(PacketReader& reader);
+	void		server_info(const IPaddress& server_address, PacketReader& reader);
 };
 
 #endif
