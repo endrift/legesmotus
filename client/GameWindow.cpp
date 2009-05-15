@@ -126,8 +126,8 @@ GameWindow* GameWindow::get_optimal_instance() {
 	int max_h = 0;
 	for(size_t i = 0; i < num_modes; ++i) {
 		if(w[i]*h[i] > max_w*max_h) {
-			max_h = w[i];
-			max_w = h[i];
+			max_w = w[i];
+			max_h = h[i];
 		}
 	}
 	delete[] w;
