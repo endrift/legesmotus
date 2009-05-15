@@ -199,7 +199,7 @@ void	Server::command_server(uint32_t player_id, const char* command) {
 		send_system_message(*player, "/server teamscore - Return the score for each team");
 		send_system_message(*player, "/server teamcount - Return the number of players on each team");
 		if (player->is_op()) {
-			send_system_message(*player, "/server reset - Reset the team scores [op]");
+			send_system_message(*player, "/server reset - Reset the scores [op]");
 			send_system_message(*player, "/server map <mapname> - Load the given map [op]");
 			send_system_message(*player, "/server newgame - Start new game [op]");
 			send_system_message(*player, "/server kick <player-name> - Kick a player [op]");
@@ -229,8 +229,9 @@ void	Server::command_server(uint32_t player_id, const char* command) {
 
 	} else if (strcmp(command, "reset") == 0 && player->is_op()) {
 		m_team_score[0] = m_team_score[1] = 0;
-		// TODO: reset all player scores, broadcast score updates...
-		send_system_message(*player, "Team scores reset.");
+		// TODO: have to update the team score on the client somehow...
+		reset_player_scores();
+		send_system_message(*player, "Scores reset.");
 
 	} else if (strncmp(command, "map ", 4) == 0 && player->is_op()) {
 		const char*	new_map_name = command + 4;
@@ -294,8 +295,7 @@ void	Server::gun_fired(int channel, PacketReader& packet)
 }
 
 
-void	Server::join(const IPaddress& address, PacketReader& packet)
-{
+void	Server::join(const IPaddress& address, PacketReader& packet) {
 	// Free up channels by kicking dead players
 	timeout_players();
 
@@ -428,6 +428,12 @@ void	Server::join(const IPaddress& address, PacketReader& packet)
 	m_ack_manager.add_broadcast_packet(announce_packet);
 	m_network.broadcast_packet(announce_packet);
 
+}
+
+void	Server::info(const IPaddress& address, PacketReader& request_packet) {
+	PacketWriter	response_packet(INFO_PACKET);
+	response_packet << SERVER_PROTOCOL_VERSION << m_current_map.get_name() << m_team_count[0] << m_team_count[1];
+	m_network.send_packet(address, response_packet);
 }
 
 // Reset the scores for all players, broadcasting score updates for each one

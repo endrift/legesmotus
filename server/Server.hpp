@@ -242,6 +242,7 @@ public:
 	void		ack(int channel, PacketReader& packet);
 	void		player_update(int channel, PacketReader& packet);
 	void		join(const IPaddress& address, PacketReader& packet);
+	void		info(const IPaddress& address, PacketReader& packet);
 	void		leave(int channel, PacketReader& packet);
 	void		player_shot(int channel, PacketReader& packet);
 	void		message(int channel, PacketReader& packet);

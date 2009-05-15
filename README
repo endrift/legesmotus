@@ -98,7 +98,7 @@ These commands are entered in the client's chat bar.  Some commands (marked as [
 	/server auth PASSWORD	Authenticate with given password
 	/server teamscore 	Return the score for each team
 	/server teamcount	Return the number of players on each team
-	/server reset		Reset the team scores [op]
+	/server reset		Reset the scores [op]
 	/server map MAPNAME	Load the given map [op]
 	/server newgame		Start new game [op]
 	/server kick PLAYER	Kick a player [op]

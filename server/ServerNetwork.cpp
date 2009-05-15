@@ -116,17 +116,32 @@ bool	ServerNetwork::receive_packets(Server& server, uint32_t timeout) {
 }
 
 void	ServerNetwork::process_packet(Server& server, const RawPacket& raw_packet) {
-	PacketReader	reader(raw_packet);
-	int		channel = raw_packet->channel;
-
-	if (channel == -1) {
-		// Unbound packet
-		if (reader.packet_type() == JOIN_PACKET) {
-			// Only makes sense for joins
-			server.join(raw_packet->address, reader);
-		}
-		return;
+	if (raw_packet->channel == -1) {
+		process_unbound_packet(server, raw_packet);
+	} else {
+		process_bound_packet(server, raw_packet);
 	}
+}
+
+void	ServerNetwork::process_unbound_packet(Server& server, const RawPacket& raw_packet) {
+	const IPaddress&	address = raw_packet->address;
+	PacketReader		reader(raw_packet);
+
+	switch (reader.packet_type()) {
+	case JOIN_PACKET:
+		server.join(address, reader);
+		break;
+
+	case INFO_PACKET:
+		//server.info(address, reader);
+		break;
+
+	}
+}
+
+void	ServerNetwork::process_bound_packet(Server& server, const RawPacket& raw_packet) {
+	int		channel = raw_packet->channel;
+	PacketReader	reader(raw_packet);
 
 	switch (reader.packet_type()) {
 	case ACK_PACKET:

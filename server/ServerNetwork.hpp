@@ -26,7 +26,9 @@ private:
 	std::list<int>		m_unbound_channels;
 
 	// Process the individual packet which has been received
-	void		process_packet (Server& controller, const RawPacket& packet);
+	void		process_packet(Server& controller, const RawPacket& packet);
+	void		process_bound_packet(Server& controller, const RawPacket& packet);
+	void		process_unbound_packet(Server& controller, const RawPacket& packet);
 
 	// Send the given raw packet to a specific channel
 	void		send_raw_packet(int channel, RawPacket& packet);
