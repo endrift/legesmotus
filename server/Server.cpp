@@ -432,7 +432,7 @@ void	Server::join(const IPaddress& address, PacketReader& packet) {
 
 void	Server::info(const IPaddress& address, PacketReader& request_packet) {
 	PacketWriter	response_packet(INFO_PACKET);
-	response_packet << SERVER_PROTOCOL_VERSION << m_current_map.get_name() << m_team_count[0] << m_team_count[1];
+	response_packet << request_packet.packet_id() << SERVER_PROTOCOL_VERSION << m_current_map.get_name() << m_team_count[0] << m_team_count[1];
 	m_network.send_packet(address, response_packet);
 }
 

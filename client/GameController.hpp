@@ -147,6 +147,10 @@ private:
 
 	// TEMPORARY MAP CODE BY ANDREW
 	GraphicalMap*	m_map;
+
+	// Server Browsing/Scanning
+	uint32_t	m_current_scan_id;
+	uint32_t	m_scan_start_time;
 	
 	void		init(GameWindow* window);
 	void		process_input();
@@ -154,6 +158,9 @@ private:
 	GraphicalPlayer* get_player_by_name(const char* name);
 	void		send_my_player_update();
 	void		attempt_jump();
+
+	// Scan the local network for servers:
+	void		scan_local_network();
 
 	void		send_ack(const PacketReader& packet);
 public:

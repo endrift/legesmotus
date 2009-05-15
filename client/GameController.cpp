@@ -383,15 +383,10 @@ void GameController::init(GameWindow* window) {
 	m_minimap->set_y(120);
 	m_minimap->register_with_window(m_window);
 
-	/* PROOF OF CONCEPT CODE for scanning the LAN for Leges Motus servers
-	{
-		IPaddress broadcast_address;
-		if (SDLNet_ResolveHost(&broadcast_address, "255.255.255.255", DEFAULT_PORTNO) != -1) {
-			PacketWriter info_request_packet(INFO_PACKET);
-			m_network.send_unbound_packet(broadcast_address, info_request_packet);
-		}
-	}
-	*/
+	m_current_scan_id = 0;
+
+	// Uncomment to test local area network scanning
+	//scan_local_network();
 }
 
 /*
@@ -2213,11 +2208,20 @@ void	GameController::send_ack(const PacketReader& packet) {
 
 void	GameController::server_info(const IPaddress& server_address, PacketReader& info_packet) {
 	// Proof of concept code for server scanning
+	uint32_t	request_packet_id;
 	int		server_protocol_version;
 	string		current_map_name;
 	int		team_count[2];
-	info_packet >> server_protocol_version >> current_map_name >> team_count[0] >> team_count[1];
+	info_packet >> request_packet_id >> server_protocol_version >> current_map_name >> team_count[0] >> team_count[1];
 
-	cerr << "Received INFO packet from " << format_ip_address(server_address) << ": Protocol=" << server_protocol_version << "; Map=" << current_map_name << "; Blue Players=" << team_count[0] << "; Red Players=" << team_count[1] << endl;
+	if (request_packet_id == m_current_scan_id) {
+		cerr << "Received INFO packet from " << format_ip_address(server_address, true) << ": Protocol=" << server_protocol_version << "; Map=" << current_map_name << "; Blue players=" << team_count[0] << "; Red players=" << team_count[1] << "; Ping time=" << SDL_GetTicks() - m_scan_start_time << "ms" << endl;
+	}
 }
 
+void	GameController::scan_local_network() {
+	PacketWriter info_request_packet(INFO_PACKET);
+	m_current_scan_id = info_request_packet.packet_id();
+	m_scan_start_time = SDL_GetTicks();
+	m_network.broadcast_packet(DEFAULT_PORTNO, info_request_packet);
+}

@@ -50,6 +50,9 @@ public:
 	// Send the given packet to the specific address
 	void		send_unbound_packet(const IPaddress& dest, const PacketWriter& packet);
 
+	// Send the given packet to all systems on the LAN
+	void		broadcast_packet(unsigned int portno, const PacketWriter& packet);
+
 	// The following two functions are for internal use only.  They are public in order to facilitate testing.
 	// Use receive_packets and send_packet instead!
 

@@ -46,6 +46,6 @@ enum {
 	TEAM_CHANGE_PACKET = 18
 };
 
-std::string	format_ip_address(const IPaddress& addr);
+std::string	format_ip_address(const IPaddress& addr, bool resolve =false);
 
 #endif

@@ -62,6 +62,18 @@ void	ClientNetwork::send_unbound_packet(const IPaddress& dest, const PacketWrite
 	send_raw_packet(-1, raw_packet);
 }
 
+void	ClientNetwork::broadcast_packet(unsigned int portno, const PacketWriter& packet) {
+	RawPacket	raw_packet(MAX_PACKET_LENGTH);
+
+	if (SDLNet_ResolveHost(&raw_packet->address, "255.255.255.255", portno) == -1) {
+		// Unlikely to happen
+		return;
+	}
+
+	raw_packet.fill(packet);
+	send_raw_packet(-1, raw_packet);
+}
+
 void	ClientNetwork::send_raw_packet(int channel, RawPacket& raw_packet) {
 	if (m_socket == NULL) {
 		return;
