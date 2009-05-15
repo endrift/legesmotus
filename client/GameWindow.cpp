@@ -140,7 +140,11 @@ void GameWindow::destroy_instance() {
 
 void GameWindow::supported_resolutions(int* widths, int* heights, int* depth, size_t* num_modes) {
 	const SDL_VideoInfo *vidInfo = SDL_GetVideoInfo();
-	*depth = vidInfo->vfmt->BitsPerPixel;
+	if (vidInfo == NULL) {
+		*depth = 24; // Hopefully they have a modern display
+	} else {
+		*depth = vidInfo->vfmt->BitsPerPixel;
+	}
 	SDL_Rect **res = SDL_ListModes(NULL,SDL_OPENGL|SDL_FULLSCREEN);
 
 	size_t real_num;
