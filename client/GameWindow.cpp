@@ -98,7 +98,7 @@ void GameWindow::deinit_video() {
 GameWindow* GameWindow::get_instance(int width, int height, int depth, bool fullscreen) {
 	if (m_instance == NULL) {
 		if (!init_video()) {
-			return NULL;
+			throw LMException(SDL_GetError());
 		}
 		m_instance = new GameWindow(width, height, depth, fullscreen);
 	} else {
@@ -116,7 +116,7 @@ GameWindow* GameWindow::get_optimal_instance() {
 	int depth;
 	size_t num_modes;
 	if (!init_video()) {
-		return NULL;
+		throw LMException(SDL_GetError());
 	}
 	supported_resolutions(NULL, NULL, &depth, &num_modes);
 	int *w = new int[num_modes];
