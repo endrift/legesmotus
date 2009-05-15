@@ -30,6 +30,12 @@ private:
 	~GameWindow();
 public:
 
+	// Initialize the video subsystem, if it hasn't been already
+	// This will return true iff the subsystem is initialized
+	// NB: It will return true if the system was already initialized
+	static bool		init_video();
+	static void		deinit_video();
+
 	// Will get the current GameWindow, adjusted to these dimensions, if one exists
 	// If it doesn't exist, it will construct it
 	// Depth cannot be changed while running
@@ -42,6 +48,7 @@ public:
 	// Pass NULL, NULL to get depth and number of modes, or pointers for all to get all the modes
 	// If num_modes is less than the actual number, only some are added, with no particular distinction
 	// These are not necessarily sorted at all
+	// NB: Video must be initialized before this function is called. Most functions will call it themselves first.
 	static void		supported_resolutions(int* widths, int* heights, int* depth, size_t* num_modes);
 
 	int			get_width() const;

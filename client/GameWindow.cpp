@@ -24,26 +24,17 @@ GameWindow::GameWindow(int width, int height, int depth, bool fullscreen) {
 	m_offset_y = 0;
 	switch (depth) {
 	case 16:
-		if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
-			throw LMException(SDL_GetError());
-		}
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
 		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
 		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
 		SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 1);
 		break;
 	case 24:
-		if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
-			throw LMException(SDL_GetError());
-		}
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
 		break;
 	case 32:
-		if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
-			throw LMException(SDL_GetError());
-		}
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
@@ -90,14 +81,25 @@ GameWindow::GameWindow(int width, int height, int depth, bool fullscreen) {
 }
 
 GameWindow::~GameWindow() {
-	if (m_context != NULL) {
-		SDL_QuitSubSystem(SDL_INIT_VIDEO);
-	}
 	m_instance = NULL;
+}
+
+bool GameWindow::init_video() {
+	if (SDL_WasInit(SDL_INIT_VIDEO)) {
+		return true;
+	}
+	return SDL_InitSubSystem(SDL_INIT_VIDEO) == 0;
+}
+
+void GameWindow::deinit_video() {
+	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
 
 GameWindow* GameWindow::get_instance(int width, int height, int depth, bool fullscreen) {
 	if (m_instance == NULL) {
+		if (!init_video()) {
+			return NULL;
+		}
 		m_instance = new GameWindow(width, height, depth, fullscreen);
 	} else {
 		m_instance->set_dimensions(width,height);
@@ -113,6 +115,9 @@ GameWindow* GameWindow::get_instance() {
 GameWindow* GameWindow::get_optimal_instance() {
 	int depth;
 	size_t num_modes;
+	if (!init_video()) {
+		return NULL;
+	}
 	supported_resolutions(NULL, NULL, &depth, &num_modes);
 	int *w = new int[num_modes];
 	int *h = new int[num_modes];
