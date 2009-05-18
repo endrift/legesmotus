@@ -8,7 +8,11 @@
 #include "network.hpp"
 #include "SDL_net.h"
 #include "SDL.h"
+#ifdef __WIN32
+#include <Winsock2.h>
+#else
 #include <arpa/inet.h>
+#endif
 #include <stdio.h>
 #include <sstream>
 
