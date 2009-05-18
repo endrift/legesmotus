@@ -21,7 +21,7 @@ using namespace std;
 
 string	get_username() {
 	char username[64];
-	size_t unlen = sizeof(username);
+	DWORD unlen = sizeof(username);
 	if (GetUserName(username,&unlen)) {
 		return string(username);
 	} else {

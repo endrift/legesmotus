@@ -33,7 +33,10 @@ CXXFLAGS += -Wall -fno-rtti -g
 LDFLAGS += $(CXXFLAGS)
 CXXFLAGS += $(FLAGS_SDL) $(FLAGS_GL) $(INCLUDES)
 LIBS = $(LIBS_SDL)
-CLIENTLIBS = $(LIBS_GL) $(LIBS_SDL) $(LIBS_SDL_OTHER)
+ifeq ($(MACHINE),Windows)
+LIBS += -lwsock32
+endif
+CLIENTLIBS = $(LIBS_GL) $(LIBS) $(LIBS_SDL_OTHER)
 
 H_GL	= $(CLIENT)/compat_gl.h
 H_SDL	= $(COMMON)/compat_sdl.h
