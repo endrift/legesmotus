@@ -2,6 +2,9 @@ all:
 COMMON = $(BASEDIR)/common
 CLIENT = $(BASEDIR)/client
 SERVER = $(BASEDIR)/server
+FRAMEWORKS = /Library/Frameworks
+#Uncomment for UNIX-style builds on Mac OS X (i.e. without frameworks)
+UNIXSTYLE = 1
 
 MACHINE = $(shell uname -s)
 ifeq ($(MACHINE),)
@@ -12,9 +15,18 @@ MACHINE = Windows
 endif
 endif
 
+ifeq ($(MACHINE)$(UNIXSTYLE),Darwin)
+FLAGS_SDL = -I$(FRAMEWORKS)/SDL.framework/Headers -I$(FRAMEWORKS)/SDL_net.framework/Headers
+FLAGS_SDL_OTHER  = -I$(FRAMEWORKS)/SDL_image.framework/Headers
+FLAGS_SDL_OTHER += -I$(FRAMEWORKS)/SDL_ttf.framework/Headers
+FLAGS_SDL_OTHER += -I$(FRAMEWORKS)/SDL_mixer.framework/Headers
+LIBS_SDL = -framework SDL -framework SDL_net 
+LIBS_SDL_OTHER = -framework SDL_image -framework SDL_ttf -framework SDL_mixer
+else
 FLAGS_SDL = $(shell sdl-config --cflags)
-LIBS_SDL = $(shell sdl-config --libs)
-LIBS_SDL_OTHER = -lSDL_image -lSDL_ttf -lSDL_net -lSDL_mixer
+LIBS_SDL = $(shell sdl-config --libs) -lSDL_net 
+LIBS_SDL_OTHER = -lSDL_image -lSDL_ttf -lSDL_mixer
+endif
 
 ifeq ($(MACHINE),Darwin)
 FLAGS_GL = -FOpenGL

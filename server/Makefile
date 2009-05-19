@@ -2,8 +2,6 @@ BASEDIR = ..
 include ../Makefile.in
 OBJS = Server.o ServerMap.o ServerNetwork.o ServerPlayer.o ServerSDL.o #put .o filenames here (DO NOT PUT .cpp!)
 
-LIBS += -lSDL_net
-
 INCLUDES = -I..
 
 CXXFLAGS += $(INCLUDES)

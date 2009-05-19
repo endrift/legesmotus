@@ -6,8 +6,8 @@
  */
 
 #include "network.hpp"
+#include "compat_sdl.h"
 #include "SDL_net.h"
-#include "SDL.h"
 #ifdef __WIN32
 #include <Winsock2.h>
 #else
