@@ -15,4 +15,4 @@ lmserver: ../liblmserver.a ../liblmcommon.a main.o
 	$(AR) crus ../liblmserver.a $(OBJS)
 
 clean:
-	rm -f $(OBJS) main.o *~
+	rm -f $(OBJS) main.o ../liblmserver.a *~

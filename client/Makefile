@@ -13,7 +13,7 @@ legesmotus: ../liblmclient.a ../liblmcommon.a main.o
 	$(AR) crus ../liblmclient.a $(OBJS)
 
 clean:
-	rm -f $(OBJS) *~ main.o legesmotus
+	rm -f $(OBJS) *~ main.o ../liblmclient.a legesmotus
 
 # ==================================== #
 

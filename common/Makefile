@@ -9,7 +9,7 @@ all: ../liblmcommon.a
 	$(AR) crus ../liblmcommon.a $(OBJS)
 
 clean:
-	rm -f $(OBJS) *~
+	rm -f $(OBJS) ../liblmcommon.a *~
 
 # ==================================== #
 
