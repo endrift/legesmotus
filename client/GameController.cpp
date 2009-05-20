@@ -45,7 +45,7 @@ GameController::GameController(PathManager& path_manager) : m_path_manager(path_
 	init(GameWindow::get_optimal_instance());
 }
 
-GameController::GameController(PathManager& path_manager, int width, int height, int depth, bool fullscreen) : m_path_manager(path_manager) {
+GameController::GameController(PathManager& path_manager, int width, int height, bool fullscreen, int depth) : m_path_manager(path_manager) {
 	init(GameWindow::get_instance(width, height, depth, fullscreen));
 }
 

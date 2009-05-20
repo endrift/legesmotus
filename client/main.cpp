@@ -39,8 +39,8 @@ static void display_version() {
 extern "C" int main(int argc, char* argv[]) try {
 	ClientSDL		client_sdl;
 	GameController*		game_controller;
-	int			width = 1024;
-	int			height = 768;
+	int			width = 0;
+	int			height = 0;
 	bool			fullscreen = false;
 	char			team = 0;
 	string			server = "legesmotus.beanwood.com";
@@ -88,10 +88,15 @@ extern "C" int main(int argc, char* argv[]) try {
 
 	PathManager	pathman(argv[0]);
 
-	if (fullscreen) {
+	if (width > 0 && height > 0) {
+		// Use the specified width and height
+		game_controller = new GameController(pathman, width, height, fullscreen);
+	} else if (fullscreen) {
+		// Use optimal settings
 		game_controller = new GameController(pathman);
 	} else {
-		game_controller = new GameController(pathman, width, height);
+		// Use 1024x768 in non-fullscreen mode
+		game_controller = new GameController(pathman, 1024, 768, false);
 	}
 
 	cout << "Welcome to Leges Motus." << endl;

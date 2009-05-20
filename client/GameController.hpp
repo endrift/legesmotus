@@ -165,7 +165,7 @@ private:
 	void		send_ack(const PacketReader& packet);
 public:
 	explicit GameController(PathManager& pathman);
-	GameController(PathManager& pathman, int width, int height, int depth =24, bool fullscreen =false);
+	GameController(PathManager& pathman, int width, int height, bool fullscreen =false, int depth =24);
 	~GameController();
 	
 	void		run(int lockfps=60);
