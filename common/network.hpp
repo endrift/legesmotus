@@ -48,4 +48,7 @@ enum {
 
 std::string	format_ip_address(const IPaddress& addr, bool resolve =false);
 
+// Returns true if the given IP address is the localhost
+bool		is_localhost(const IPaddress& addr);
+
 #endif

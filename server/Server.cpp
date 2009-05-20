@@ -370,6 +370,11 @@ void	Server::join(const IPaddress& address, PacketReader& packet) {
 
 	cerr << requested_name << ": Joined on team " << team << ", bound to channel " << channel << ", with ID " << player_id << endl;
 
+	if (m_password.empty() && is_localhost(address)) {
+		// If no operator password was set, give players connecting from the localhost operator privileges
+		new_player.set_is_op(true);
+	}
+
 	// Send the welcome packet back to this client.
 	PacketWriter		welcome_packet(WELCOME_PACKET);
 	welcome_packet << SERVER_PROTOCOL_VERSION << player_id << name << team;

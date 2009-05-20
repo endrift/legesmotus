@@ -18,7 +18,7 @@
 
 using namespace std;
 
-string	format_ip_address(const IPaddress& addr, bool resolve) { // XXX: this function probably doesn't work in Windows (use of ntohl and ntohs)
+string	format_ip_address(const IPaddress& addr, bool resolve) {
 	const char*		name = NULL;
 	if (resolve && (name = SDLNet_ResolveIP(const_cast<IPaddress*>(&addr))) != NULL) {
 		ostringstream	full_name;
@@ -38,3 +38,8 @@ string	format_ip_address(const IPaddress& addr, bool resolve) { // XXX: this fun
 
 	return buffer;
 }
+
+bool	is_localhost(const IPaddress& addr) {
+	return ntohl(addr.host) >> 24 == 127;
+}
+
