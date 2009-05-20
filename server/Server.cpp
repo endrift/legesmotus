@@ -255,7 +255,6 @@ void	Server::command_server(uint32_t player_id, const char* command) {
 		}
 
 	} else if (strcmp(command, "shutdown") == 0 && player->is_op()) {
-		// TODO: do nicely by sending a shutdown packet, etc.
 		send_system_message(*player, "Server going down after this message.");
 		m_is_running = false;
 
@@ -520,7 +519,7 @@ void	Server::release_player_resources(const ServerPlayer& player) {
 	--m_team_count[player.get_team() - 'A'];
 }
 
-void	Server::run(int portno, const char* map_name)
+void	Server::start(int portno, const char* map_name)
 {
 	if (!load_map(map_name)) {
 		throw LMException("Failed to load map.");
@@ -528,7 +527,10 @@ void	Server::run(int portno, const char* map_name)
 	if (!m_network.start(portno)) {
 		throw LMException("Failed to start server network on port.");
 	}
+}
 
+void	Server::run()
+{
 	m_is_running = true;
 	while (m_is_running) {
 		timeout_players();
@@ -567,6 +569,12 @@ void	Server::run(int portno, const char* map_name)
 		}
 		
 		m_network.receive_packets(*this, server_sleep_time());
+	}
+
+	// Kick any players still in the game!
+	// XXX: do we still want to send a SHUTDOWN packet?  Maybe SHUTDOWN is not necessary...
+	while (!m_players.empty()) {
+		remove_player(m_players.begin()->second, "Server shutting down");
 	}
 }
 

@@ -13,7 +13,7 @@
 // See .hpp file for comments.
 
 CommonSDL::CommonSDL() {
-	if (SDL_Init(0) == - 1) {
+	if (SDL_Init(0) == -1) {
 		throw LMException("Failed to initialize SDL.");
 	}
 	

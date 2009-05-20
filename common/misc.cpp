@@ -7,6 +7,7 @@
 
 #include "misc.hpp"
 #include "network.hpp"
+#include "LMException.hpp"
 #include <string>
 #include <cstring>
 #include <cctype>
@@ -29,11 +30,18 @@ string	get_username() {
 	}
 }
 
+void	daemonize() {
+	throw LMException("Sorry, daemonization not supported on Windows.");
+}
+
 #else
 
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <pwd.h>
 #include <unistd.h>
+#include <errno.h>
 
 string	get_username() {
 	if (struct passwd* pw = getpwuid(getuid())) {
@@ -41,6 +49,49 @@ string	get_username() {
 	} else {
 		return "Tux";
 	}
+}
+
+void	daemonize() {
+	// Fork, and exit the parent process
+	pid_t	pid = fork();
+	if (pid < 0) {
+		throw LMException(strerror(errno));
+	} else if (pid > 0) {
+		// Parent process
+		exit(0);
+	}
+
+	// Dupe stdin, stdout, and stderr to /dev/null
+	if (isatty(0)) {
+		int fd = open("/dev/null", O_RDONLY);
+		if (fd < 0) {
+			close(0);
+		} else {
+			dup2(fd, 0);
+			close(fd);
+		}
+	}
+	if (isatty(1)) {
+		int fd = open("/dev/null", O_WRONLY);
+		if (fd < 0) {
+			close(1);
+		} else {
+			dup2(fd, 1);
+			close(fd);
+		}
+	}
+	if (isatty(2)) {
+		int fd = open("/dev/null", O_WRONLY);
+		if (fd < 0) {
+			close(2);
+		} else {
+			dup2(fd, 2);
+			close(fd);
+		}
+	}
+
+	// Create a new session
+	setsid();
 }
 
 #endif

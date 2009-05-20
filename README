@@ -60,6 +60,7 @@ Options:
   -p PORTNO	set the port number to listen on (default: 16877)
   -P PASSWORD	set the admin password (default: admin mode is disabled)
   -m MAPNAME	set the map name (default: alpha1)
+  -d		daemonize the server (not on Windows)
   -?, --help	display this help, and exit
       --version	display version information and exit
 

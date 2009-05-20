@@ -38,4 +38,7 @@ void		strip_trailing_spaces(std::string& str);
 //  Limit the name to MAX_NAME_LENGTH characters (as defined in network.hpp)
 void		sanitize_player_name(std::string& str);
 
+// Daemonize the program (not on Windows)
+void		daemonize();
+
 #endif

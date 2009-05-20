@@ -10,6 +10,7 @@
 #include "common/LMException.hpp"
 #include "common/network.hpp"
 #include "common/PathManager.hpp"
+#include "common/misc.hpp"
 #include <iostream>
 #include <stdlib.h>
 #include <time.h>
@@ -22,6 +23,7 @@ static void display_usage(const char* progname) {
 	cout << "  -p PORTNO	set the port number to listen on" << endl;
 	cout << "  -P PASSWORD	set the admin password" << endl;
 	cout << "  -m MAPNAME	set the map name" << endl;
+	cout << "  -d		daemonize the server (not on Windows)" << endl;
 	cout << "  -?, --help	display this help, and exit" << endl;
 	cout << "      --version\tdisplay version information and exit" << endl;
 }
@@ -40,6 +42,7 @@ extern "C" int main(int argc, char* argv[]) try {
 	string			password;
 	string			map_name("alpha1");
 	unsigned int		portno = DEFAULT_PORTNO;
+	bool			daemonize = false;
 
 	for (int i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "-p") == 0 && argc > i+1) {
@@ -51,6 +54,8 @@ extern "C" int main(int argc, char* argv[]) try {
 		} else if (strcmp(argv[i], "-m") == 0 && argc > i+1) {
 			map_name = argv[i+1];
 			++i;
+		} else if (strcmp(argv[i], "-d") == 0) {
+			daemonize = true;
 		} else if (strcmp(argv[i], "--version") == 0) {
 			display_version();
 			return 0;
@@ -69,7 +74,13 @@ extern "C" int main(int argc, char* argv[]) try {
 	Server			server(path_manager);
 
 	server.set_password(password.c_str());
-	server.run(portno, map_name.c_str());
+	server.start(portno, map_name.c_str());
+
+	if (daemonize) {
+		::daemonize();
+	}
+
+	server.run();
 
 	return 0;
 

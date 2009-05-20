@@ -252,7 +252,8 @@ public:
 	void		name_change(int channel, PacketReader& packet);
 	void		team_change(int channel, PacketReader& packet);
 
-	void		run(int portno, const char* map_name); // map_name is NAME of map (excluding .map)
+	void		start(int portno, const char* map_name); // map_name is NAME of map (excluding .map)
+	void		run();
 
 	void		set_password(const char* pw);
 };
