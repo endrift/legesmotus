@@ -66,8 +66,8 @@ extern "C" int main(int argc, char* argv[]) try {
 		} else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-?") == 0) {
 			display_usage(argv[0]);
 			return 0;
-		} else if (strncmp(argv[i], "-psn", 4) == 0) { //Ignore -psn for Macs
-			++i;
+		} else if (strncmp(argv[i], "-psn", 4) == 0) {
+			//Ignore -psn for Macs
 		} else {
 			cerr << argv[0] << ": Unrecognized option `" << argv[i] << "'" << endl;
 			display_usage(argv[0]);
