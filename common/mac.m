@@ -23,7 +23,7 @@
 	NSArray* args = [[pInfo arguments] retain];
 	
 	NSUInteger argc = [args count];
-	char const **argv = NSZoneMalloc(NSDefaultMallocZone(), argc);
+	char const **argv = NSZoneMalloc(NSDefaultMallocZone(), argc*sizeof(char const**));
 	NSUInteger i;
 
 	//FILE* log = fopen("log","w");
