@@ -4,7 +4,7 @@ CLIENT = $(BASEDIR)/client
 SERVER = $(BASEDIR)/server
 FRAMEWORKS = /Library/Frameworks
 #Uncomment for UNIX-style builds on Mac OS X (i.e. without frameworks)
-UNIXSTYLE = 1
+#UNIXSTYLE = 1
 
 MACHINE = $(shell uname -s)
 ifeq ($(MACHINE),)
@@ -20,6 +20,7 @@ FLAGS_SDL = -I$(FRAMEWORKS)/SDL.framework/Headers -I$(FRAMEWORKS)/SDL_net.framew
 FLAGS_SDL_OTHER  = -I$(FRAMEWORKS)/SDL_image.framework/Headers
 FLAGS_SDL_OTHER += -I$(FRAMEWORKS)/SDL_ttf.framework/Headers
 FLAGS_SDL_OTHER += -I$(FRAMEWORKS)/SDL_mixer.framework/Headers
+LIBS += -framework AppKit
 LIBS_SDL = -framework SDL -framework SDL_net 
 LIBS_SDL_OTHER = -framework SDL_image -framework SDL_ttf -framework SDL_mixer
 else
@@ -44,10 +45,11 @@ INCLUDES = -I$(BASEDIR)
 CXXFLAGS += -Wall -fno-rtti -g
 LDFLAGS += $(CXXFLAGS)
 CXXFLAGS += $(FLAGS_SDL) $(FLAGS_GL) $(INCLUDES)
-LIBS = $(LIBS_SDL)
+LIBS += $(LIBS_SDL)
 ifeq ($(MACHINE),Windows)
 LIBS += -lwsock32
 endif
+CLIENTFLAGS = $(FLAGS_SDL_OTHER)
 CLIENTLIBS = $(LIBS_GL) $(LIBS) $(LIBS_SDL_OTHER)
 
 H_GL	= $(CLIENT)/compat_gl.h
@@ -64,3 +66,6 @@ H_GAMEWINDOW		= $(CLIENT)/GameWindow.hpp
 H_CLIENTSDL		+= $(H_COMMONSDL)
 H_GAMEWINDOW		+= $(H_SDL)
 H_GAMECONTROLLER	+= $(H_GAMEWINDOW) $(H_CLIENTNETWORK)
+
+%.nib: %.xib
+	ibtool --compile $@ $<
