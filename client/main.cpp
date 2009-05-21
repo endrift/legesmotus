@@ -16,6 +16,12 @@
 
 using namespace std;
 
+extern "C" void clean_exit() {
+	SDL_Event quit_event;
+	quit_event.type = SDL_QUIT;
+	SDL_PushEvent(&quit_event);
+}
+
 static void display_usage(const char* progname) {
 	cout << "Usage: " << progname << " [OPTION]" << endl;
 	cout << "Options:" << endl;

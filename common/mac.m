@@ -23,19 +23,22 @@
 	NSArray* args = [[pInfo arguments] retain];
 	
 	NSUInteger argc = [args count];
-	char const **argv = NSZoneMalloc(NSDefaultMallocZone(),argc);
+	char const **argv = NSZoneMalloc(NSDefaultMallocZone(), argc);
 	NSUInteger i;
 
 	//FILE* log = fopen("log","w");
 
 	// TODO see how Unicode paths are handled
-	if (argc >= 2 && [[(NSString*)[args objectAtIndex:1] substringToIndex:4] isEqualToString:@"-psn"]) {
-		//fprintf(log,"Launched from finder %s\n",[[[NSBundle mainBundle] bundlePath] UTF8String]);
-		NSString* lpath = [[NSBundle mainBundle] bundlePath];
-		lpath = [lpath stringByAppendingString:@"/.."];
-		NSString *dataPath = [lpath stringByAppendingString:@"/data"];
-		setenv("LM_DATA_DIR",[dataPath UTF8String],0);
-		// TODO LM_EXEC_DIR
+	if (argc >= 2) {
+		NSString *arg1 = (NSString*)[args objectAtIndex:1];
+		if ([arg1 length] > 4 && [[arg1 substringToIndex:4] isEqualToString:@"-psn"]) {
+			//fprintf(log,"Launched from finder %s\n",[[[NSBundle mainBundle] bundlePath] UTF8String]);
+			NSString* lpath = [[NSBundle mainBundle] bundlePath];
+			lpath = [lpath stringByAppendingString:@"/.."];
+			NSString *dataPath = [lpath stringByAppendingString:@"/data"];
+			setenv("LM_DATA_DIR", [dataPath UTF8String], 0);
+			// TODO LM_EXEC_DIR
+		}
 	}
 
 	for (i = 0; i < argc; ++i) {
@@ -44,9 +47,9 @@
 		//fprintf(log,"%s\n",argv[i]);
 	}
 
-	status = SDL_main([args count],argv);
+	status = SDL_main([args count], argv);
 
-	NSZoneFree(NSDefaultMallocZone(),argv);
+	NSZoneFree(NSDefaultMallocZone(), argv);
 	[args release];
 
 	exit(status);
@@ -62,7 +65,7 @@
 @implementation LMApplication
 
 - (void)terminate:(id)sender {
-	raise(SIGINT);
+	clean_exit();
 }
 
 @end
@@ -75,5 +78,5 @@
 
 int main(int argc, char *argv[]) {
 	[LMApplication poseAsClass:[NSApplication class]];
-    return NSApplicationMain(argc,  (const char **) argv);
+    return NSApplicationMain(argc, (const char **)argv);
 }

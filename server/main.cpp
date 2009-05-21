@@ -17,6 +17,10 @@
 
 using namespace std;
 
+extern "C" void clean_exit() {
+	// TODO write
+}
+
 static void display_usage(const char* progname) {
 	cout << "Usage: " << progname << " [OPTION]" << endl;
 	cout << "Options:" << endl;

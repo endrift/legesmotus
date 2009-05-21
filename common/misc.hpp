@@ -14,6 +14,9 @@
 // Return the username of the current user.
 std::string		get_username();
 
+// Signals to the program that it should clean up and exit; implemented elsewhere
+extern "C" void clean_exit();
+
 // Represent a color (with red, green, blue, and alpha components)
 struct Color {
 	Color();

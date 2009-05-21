@@ -31,7 +31,7 @@ clean:
 
 
 ifeq ($(MACHINE)$(UNIXSTYLE),Darwin)
-Leges\ Motus.app:
+Leges\ Motus.app: client
 	mkdir -p "Leges Motus.app/Contents/MacOS"
 	mkdir -p "Leges Motus.app/Contents/Resources"
 	mkdir -p "Leges Motus.app/Contents/Frameworks"
@@ -44,7 +44,7 @@ Leges\ Motus.app:
 	test -d "Leges Motus.app/Contents/Frameworks/SDL_ttf.framework" || cp -Rf /Library/Frameworks/SDL_ttf.framework "Leges Motus.app/Contents/Frameworks"
 	test -d "Leges Motus.app/Contents/Frameworks/SDL_mixer.framework" || cp -Rf /Library/Frameworks/SDL_mixer.framework "Leges Motus.app/Contents/Frameworks"
 
-LM\ Server.app:
+LM\ Server.app: server
 	mkdir -p "LM Server.app/Contents/MacOS"
 	mkdir -p "LM Server.app/Contents/Resources"
 	mkdir -p "LM Server.app/Contents/Frameworks"
@@ -57,4 +57,4 @@ LM\ Server.app:
 bundle: legesmotus Leges\ Motus.app LM\ Server.app
 endif
 
-.PHONY: clean common server client
+.PHONY: clean common server client bundle
