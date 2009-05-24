@@ -28,7 +28,6 @@ void	UDPSocket::init() {
 	}
 
 	int		one = 1;
-	setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
 	setsockopt(fd, SOL_SOCKET, SO_BROADCAST, &one, sizeof(one));
 }
 
@@ -89,8 +88,9 @@ bool	UDPSocket::has_packets(uint64_t wait_time) {
 	if (timeout.tv_usec < 0) {
 		std::cerr << "tv_usec is negative! WTF!?\n";
 	}
+	std::cerr << "fd + 1 = " << fd + 1 << '\n';
 
-	int		retval = select(fd + 1, &read_fds, 0, 0, timeout.tv_sec >= 0 ? &timeout : NULL);
+	int		retval = select(fd + 1, &read_fds, 0, 0, &timeout);
 
 	return retval > 0;
 }
