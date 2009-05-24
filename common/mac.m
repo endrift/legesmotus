@@ -9,6 +9,9 @@
 #import <unistd.h>
 //#import <stdio.h>
 
+int SDL_main(int argc, const char** argv);
+void clean_exit();
+
 // LMMain
 
 @interface LMMain : NSObject
@@ -22,9 +25,9 @@
 	NSProcessInfo* pInfo = [NSProcessInfo processInfo];
 	NSArray* args = [[pInfo arguments] retain];
 	
-	NSUInteger argc = [args count];
+	unsigned int argc = [args count];
 	char const **argv = NSZoneMalloc(NSDefaultMallocZone(), argc*sizeof(char const**));
-	NSUInteger i;
+	unsigned int i;
 
 	//FILE* log = fopen("log","w");
 
