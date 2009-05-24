@@ -68,6 +68,3 @@ H_GAMEWINDOW		= $(CLIENT)/GameWindow.hpp
 H_CLIENTSDL		+= $(H_COMMONSDL)
 H_GAMEWINDOW		+= $(H_SDL)
 H_GAMECONTROLLER	+= $(H_GAMEWINDOW) $(H_CLIENTNETWORK)
-
-%.nib: %.xib
-	ibtool --compile $@ $<

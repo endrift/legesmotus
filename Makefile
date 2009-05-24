@@ -37,7 +37,7 @@ Leges\ Motus.app: client
 	mkdir -p "Leges Motus.app/Contents/Frameworks"
 	cp -f client/legesmotus "Leges Motus.app/Contents/MacOS/"
 	cp -f client/Info.plist "Leges Motus.app/Contents/"
-	cp -f client/legesmotus.nib "Leges Motus.app/Contents/Resources"
+	cp -Rf client/legesmotus.nib "Leges Motus.app/Contents/Resources"
 	test -d "Leges Motus.app/Contents/Frameworks/SDL.framework" || cp -Rf /Library/Frameworks/SDL.framework "Leges Motus.app/Contents/Frameworks"
 	test -d "Leges Motus.app/Contents/Frameworks/SDL_net.framework" || cp -Rf /Library/Frameworks/SDL_net.framework "Leges Motus.app/Contents/Frameworks"
 	test -d "Leges Motus.app/Contents/Frameworks/SDL_image.framework" || cp -Rf /Library/Frameworks/SDL_image.framework "Leges Motus.app/Contents/Frameworks"
@@ -50,7 +50,7 @@ LM\ Server.app: server
 	mkdir -p "LM Server.app/Contents/Frameworks"
 	cp -f server/lmserver "LM Server.app/Contents/MacOS/"
 	cp -f server/Info.plist "LM Server.app/Contents/"
-	cp -f server/lmserver.nib "LM Server.app/Contents/Resources"
+	cp -Rf server/lmserver.nib "LM Server.app/Contents/Resources"
 	test -d "LM Server.app/Contents/Frameworks/SDL.framework" || cp -Rf /Library/Frameworks/SDL.framework "LM Server.app/Contents/Frameworks"
 	test -d "LM Server.app/Contents/Frameworks/SDL_net.framework" || cp -Rf /Library/Frameworks/SDL_net.framework "LM Server.app/Contents/Frameworks"
 

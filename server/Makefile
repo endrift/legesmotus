@@ -2,13 +2,9 @@ BASEDIR = ..
 include ../Makefile.in
 OBJS = Server.o ServerMap.o ServerNetwork.o ServerPlayer.o ServerSDL.o #put .o filenames here (DO NOT PUT .cpp!)
 
-ifeq ($(MACHINE)$(UNIXSTYLE),Darwin)
-RES_PLATFORM = lmserver.nib
-endif
-
 all: lmserver
 
-lmserver: ../liblmserver.a ../liblmcommon.a main.o $(RES_PLATFORM)
+lmserver: ../liblmserver.a ../liblmcommon.a main.o
 	$(CXX) $(LDFLAGS) -o lmserver -L.. main.o -llmserver -llmcommon $(LIBS)
 
 ../liblmserver.a: $(OBJS)

@@ -5,17 +5,11 @@
  * 
  */
 
-#import <Cocoa/Cocoa.h>
+#import "mac.h"
 #import <unistd.h>
 //#import <stdio.h>
 
-int SDL_main(int argc, const char** argv);
-void clean_exit();
-
 // LMMain
-
-@interface LMMain : NSObject
-@end
 
 @implementation LMMain
 
@@ -61,9 +55,6 @@ void clean_exit();
 @end
 
 // LMApplication
-
-@interface LMApplication : NSApplication
-@end
 
 @implementation LMApplication
 
