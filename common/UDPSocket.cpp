@@ -8,6 +8,7 @@
 #include "common/LMException.hpp"
 #include "common/UDPPacket.hpp"
 #include "UDPSocket.hpp"
+#include <limits>
 
 #ifdef __WIN32
 #include "Winsock2.h"
@@ -75,7 +76,14 @@ bool	UDPSocket::has_packets(uint64_t wait_time) {
 	FD_ZERO(&read_fds);
 	FD_SET(fd, &read_fds);
 
-	int		retval = select(fd + 1, &read_fds, 0, 0, &timeout);
+	if (timeout.tv_sec < 0) {
+		timeout.tv_sec = std::numeric_limits<long>::max();
+	}
+	if (timeout.tv_sec < 0) {
+		timeout.tv_sec = std::numeric_limits<time_t>::max();
+	}
+
+	int		retval = select(fd + 1, &read_fds, 0, 0, timeout.tv_sec >= 0 ? &timeout : NULL);
 
 	return retval > 0;
 }
