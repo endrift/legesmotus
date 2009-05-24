@@ -709,8 +709,17 @@ void	Server::gate_update(const IPAddress& address, PacketReader& packet) {
 	}
 }
 
-uint64_t	Server::server_sleep_time() const {
-	uint64_t	sleep_time = std::numeric_limits<uint64_t>::max();
+uint32_t	Server::server_sleep_time() const {
+	/*
+	 * Intentionally cap the server sleep time at the largest unsigned 32-bit integer,
+	 * because this function is returning a uint32_t, since all network timeouts use
+	 * uint32_t's.  This is because some OS's (*cough*, Mac OS X, *cough*) have undefined
+	 * maximums for timeouts being passed to select().  Keeping everything 32-bit means we
+	 * shouldn't exceed this undefined max.  It's OK if the server has to wake up every 49
+	 * days.
+	 * ("A wait of 49 days should be sufficient to keep it from busywaiting" -- Jeffrey)
+	 */
+	uint64_t	sleep_time = std::numeric_limits<uint32_t>::max();
 
 	if (m_players_have_spawned) {
 		// Take into account gate changes, and gate status updates

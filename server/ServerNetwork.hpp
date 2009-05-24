@@ -40,7 +40,7 @@ public:
 	// Process all packets and notify the server of their receipt
 	// Wait up to the given timeout (in ms) for packets
 	// Returns: true if packets were received, false if timeout happened first
-	bool		receive_packets(Server& server, uint64_t timeout);
+	bool		receive_packets(Server& server, uint32_t timeout);
 
 	// Send the given packet to the given address
 	void		send_packet(const IPAddress& address, const PacketWriter& packet);

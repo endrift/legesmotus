@@ -8,8 +8,6 @@
 #include "common/LMException.hpp"
 #include "common/UDPPacket.hpp"
 #include "UDPSocket.hpp"
-#include <limits>
-#include <iostream>
 
 #ifdef __WIN32
 #include "Winsock2.h"
@@ -69,26 +67,12 @@ bool	UDPSocket::bind(unsigned int portno) {
 }
 
 
-bool	UDPSocket::has_packets(uint64_t wait_time) {
+bool	UDPSocket::has_packets(uint32_t wait_time) {
 	struct timeval	timeout = { wait_time / 1000, (wait_time % 1000) * 1000 };
 
 	fd_set		read_fds;
 	FD_ZERO(&read_fds);
 	FD_SET(fd, &read_fds);
-
-	if (timeout.tv_sec < 0) {
-		timeout.tv_sec = std::numeric_limits<long>::max();
-	}
-	if (timeout.tv_sec < 0) {
-		timeout.tv_sec = std::numeric_limits<time_t>::max();
-	}
-	if (timeout.tv_sec < 0) {
-		std::cerr << "tv_sec is still negative! WTF!?\n";
-	}
-	if (timeout.tv_usec < 0) {
-		std::cerr << "tv_usec is negative! WTF!?\n";
-	}
-	std::cerr << "fd + 1 = " << fd + 1 << '\n';
 
 	int		retval = select(fd + 1, &read_fds, 0, 0, &timeout);
 

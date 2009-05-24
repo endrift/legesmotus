@@ -244,7 +244,7 @@ private:
 	//
 
 	// What's the maximum amount of time the server should sleep for between requests? (in milliseconds)
-	uint64_t		server_sleep_time() const;
+	uint32_t		server_sleep_time() const;
 
 public:
 	explicit Server (PathManager& path_manager);

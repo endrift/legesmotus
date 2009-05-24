@@ -28,7 +28,7 @@ public:
 
 	// return true as soon as a packet is ready for reading
 	// will wait for up to wait_time milliseconds for a packet, after which it will return false
-	bool	has_packets(uint64_t wait_time =0); 
+	bool	has_packets(uint32_t wait_time =0); 
 
 	bool	send(const UDPPacket&);
 	bool	recv(UDPPacket&);

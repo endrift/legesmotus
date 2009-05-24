@@ -13,7 +13,6 @@
 #include "common/PacketReader.hpp"
 #include "common/UDPPacket.hpp"
 #include "common/IPAddress.hpp"
-#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -49,7 +48,7 @@ void	ServerNetwork::send_raw_packet(const UDPPacket& raw_packet) {
 	m_socket.send(raw_packet);
 }
 
-bool	ServerNetwork::receive_packets(Server& server, uint64_t timeout) {
+bool	ServerNetwork::receive_packets(Server& server, uint32_t timeout) {
 	if (timeout == 0) {
 		// Immediately timeout.
 		return false;
@@ -63,12 +62,9 @@ bool	ServerNetwork::receive_packets(Server& server, uint64_t timeout) {
 	UDPPacket	raw_packet(MAX_PACKET_LENGTH);
 
 	// Receive all the packets we can.
-	int		count = 0;
 	while (m_socket.has_packets() && m_socket.recv(raw_packet)) {
 		process_packet(server, raw_packet);
-		++count;
 	}
-	//std::cerr << "received " << count << " packets...\n";
 	return true;
 }
 
