@@ -84,7 +84,7 @@ bool	UDPSocket::send(const UDPPacket& packet) {
 	struct sockaddr_in	addr;
 	packet.get_address().populate_sockaddr(addr);
 
-	ssize_t			bytes_sent = sendto(fd, packet.get_data(), packet.get_length(), MSG_NOSIGNAL, reinterpret_cast<const sockaddr*>(&addr), sizeof(addr));
+	ssize_t			bytes_sent = sendto(fd, packet.get_data(), packet.get_length(), 0, reinterpret_cast<const sockaddr*>(&addr), sizeof(addr));
 	
 	return bytes_sent >= 0 && size_t(bytes_sent) == packet.get_length();
 }
