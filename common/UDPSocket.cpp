@@ -9,6 +9,7 @@
 #include "common/UDPPacket.hpp"
 #include "UDPSocket.hpp"
 #include <limits>
+#include <iostream>
 
 #ifdef __WIN32
 #include "Winsock2.h"
@@ -81,6 +82,12 @@ bool	UDPSocket::has_packets(uint64_t wait_time) {
 	}
 	if (timeout.tv_sec < 0) {
 		timeout.tv_sec = std::numeric_limits<time_t>::max();
+	}
+	if (timeout.tv_sec < 0) {
+		std::cerr << "tv_sec is still negative! WTF!?\n";
+	}
+	if (timeout.tv_usec < 0) {
+		std::cerr << "tv_usec is negative! WTF!?\n";
 	}
 
 	int		retval = select(fd + 1, &read_fds, 0, 0, timeout.tv_sec >= 0 ? &timeout : NULL);
