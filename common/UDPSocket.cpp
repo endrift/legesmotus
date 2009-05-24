@@ -22,11 +22,33 @@
 
 
 void	UDPSocket::init() {
+#ifdef __WIN32__
+	static struct WinSock {
+		WinSock() {
+			WSADATA	wsaData;
+			WORD	version = MAKEWORD(2, 0);
+
+			if (WSAStartup(version, &wsaData) != 0) {
+				throw LMException("Failed to initialize WinSock");
+			}
+
+			if (LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 0 ) {
+				WSACleanup();
+				throw LMException("Required version of WinSock not supported");
+			}
+		}
+		~WinSock() {
+			WSACleanup();
+		}
+	} winsock;
+#endif
+
 	if ((fd = ::socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
 		throw LMException("Failed to create UDP socket");
 	}
 
-	// the const char* cast is necessary to build on Windows, but should be harmless.
+	// The cast to char* is necessary to build on Windows, but should be harmless.
+	// On Unix, the char* will be implicitly cast to a void*, which would have happened anyways even if there were no explicit cast.
 	int		one = 1;
 	setsockopt(fd, SOL_SOCKET, SO_BROADCAST, reinterpret_cast<const char*>(&one), sizeof(one));
 }
