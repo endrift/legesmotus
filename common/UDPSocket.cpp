@@ -7,6 +7,7 @@
 
 #include "common/LMException.hpp"
 #include "common/UDPPacket.hpp"
+#include "common/network.hpp"
 #include "UDPSocket.hpp"
 
 #ifdef __WIN32
@@ -25,8 +26,9 @@ void	UDPSocket::init() {
 		throw LMException("Failed to create UDP socket");
 	}
 
+	// the const char* cast is necessary to build on Windows, but should be harmless.
 	int		one = 1;
-	setsockopt(fd, SOL_SOCKET, SO_BROADCAST, &one, sizeof(one));
+	setsockopt(fd, SOL_SOCKET, SO_BROADCAST, reinterpret_cast<const char*>(&one), sizeof(one));
 }
 
 UDPSocket::UDPSocket() {

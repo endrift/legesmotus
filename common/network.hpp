@@ -51,4 +51,10 @@ bool		resolve_ip_address(std::string& resolved_hostname, uint16_t* portno, const
 
 std::string	format_ip_address(const IPAddress& addr, bool resolve =false);
 
+#ifdef __WIN32
+int		inet_aton(const char* cp, struct in_addr* inp); // Compatibility wrapper for Windows
+
+typedef int socklen_t;
+#endif
+
 #endif

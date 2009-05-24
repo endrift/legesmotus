@@ -75,3 +75,20 @@ bool	resolve_ip_address(std::string& resolved_hostname, uint16_t* portno, const 
 
 	return false;
 }
+
+#ifdef __WIN32
+
+int	inet_aton(const char* cp, struct in_addr* inp) {
+	if (cp) {
+		unsigned long addr = inet_addr(cp);
+		if (addr != INADDR_NONE) {
+			// Valid address
+			inp->s_addr = addr;
+			return 1;
+		}
+	}
+	return 0;
+}
+
+#endif
+
