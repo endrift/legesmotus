@@ -7,7 +7,7 @@
 
 #include "ClientSDL.hpp"
 #include "common/LMException.hpp"
-#include "compat_sdl.h"
+#include "SDL.h"
 
 // See ClientSDL.hpp for a description of this class's purpose.
 

@@ -8,7 +8,7 @@
 #ifndef LM_CLIENT_GAMEWINDOW_HPP
 #define LM_CLIENT_GAMEWINDOW_HPP
 
-#include "compat_sdl.h"
+#include "SDL.h"
 #include "GraphicGroup.hpp"
 
 class GameWindow {
