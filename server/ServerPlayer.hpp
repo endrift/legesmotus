@@ -10,6 +10,7 @@
 
 #include "common/Player.hpp"
 #include "common/Point.hpp"
+#include "common/IPAddress.hpp"
 #include <stdint.h>
 #include <list>
 
@@ -18,15 +19,15 @@ public:
 	typedef std::list<ServerPlayer*> Queue;
 
 private:
-	int		m_channel;		// The SDL channel that this player is bound to.
-	int		m_client_version;	// The version of the client that this player is using.
+	IPAddress	m_address;		// The address from which the player is connecting.
+	int		m_client_version;	// The version of the player's client.
 
 	bool		m_is_op;		// This player has been authenticated with op status
 
 	const Point*	m_spawnpoint;		// Where the player was spawned, if anywhere yet
 
-	uint32_t	m_join_time;		// SDL tick at which the player joined the game
-	uint32_t	m_last_seen_time;	// The SDL tick at which this player was last seen (i.e. last had a packet from)
+	uint64_t	m_join_time;		// The tick time at which the player joined the game
+	uint64_t	m_last_seen_time;	// The tick time at which this player was last seen (i.e. last had a packet from)
 
 	// Iterator into a list which keeps track of when players were last seen:
 	Queue::iterator	m_timeout_queue_position;
@@ -35,7 +36,7 @@ public:
 	ServerPlayer();
 
 	// Standard getters
-	int		get_channel() const { return m_channel; }
+	const IPAddress& get_address() const { return m_address; }
 	int		get_client_version() const { return m_client_version; }
 
 	bool		is_op() const { return m_is_op; }
@@ -48,7 +49,7 @@ public:
 
 	// For spawning
 	void		reset_join_time();
-	uint32_t	time_until_spawn() const;	// How many milliseconds until this player can spawn?
+	uint64_t	time_until_spawn() const;	// How many milliseconds until this player can spawn?
 	bool		is_ready_to_spawn() const { return time_until_spawn() == 0; }
 
 	// For time out handling
@@ -57,7 +58,7 @@ public:
 	Queue::iterator	get_timeout_queue_position() const { return m_timeout_queue_position; }
 
 	// Initialize the player
-	ServerPlayer&	init(uint32_t player_id, int channel, int client_version, const char* name, char team, Queue& timeout_queue);
+	ServerPlayer&	init(uint32_t player_id, const IPAddress& address, int client_version, const char* name, char team, Queue& timeout_queue);
 
 };
 

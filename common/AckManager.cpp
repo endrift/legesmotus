@@ -8,13 +8,13 @@
 #include "AckManager.hpp"
 #include "PacketWriter.hpp"
 #include "PacketWriter.hpp"
-#include "SDL_net.h"
+#include "timer.hpp"
 #include <limits>
 
 using namespace std;
 
 AckManager::SentPacket::SentPacket(uint32_t arg_peer_id, const PacketWriter& arg_packet) : data(arg_packet.packet_data()) {
-	send_time = SDL_GetTicks();
+	send_time = get_ticks();
 	peer_ids.insert(arg_peer_id);
 	packet_type = arg_packet.packet_type();
 	packet_id = arg_packet.packet_id();
@@ -22,7 +22,7 @@ AckManager::SentPacket::SentPacket(uint32_t arg_peer_id, const PacketWriter& arg
 }
 
 AckManager::SentPacket::SentPacket(const set<uint32_t>& arg_peer_ids, const PacketWriter& arg_packet) : peer_ids(arg_peer_ids), data(arg_packet.packet_data()) {
-	send_time = SDL_GetTicks();
+	send_time = get_ticks();
 	packet_type = arg_packet.packet_type();
 	packet_id = arg_packet.packet_id();
 	tries_left = RETRIES;
@@ -33,15 +33,15 @@ void AckManager::SentPacket::ack(uint32_t peer_id) {
 }
 
 void AckManager::SentPacket::reset_send_time() {
-	send_time = SDL_GetTicks();
+	send_time = get_ticks();
 }
 
-uint32_t AckManager::SentPacket::time_since_send() const {
-	return SDL_GetTicks() - send_time;
+uint64_t AckManager::SentPacket::time_since_send() const {
+	return get_ticks() - send_time;
 }
 
-uint32_t AckManager::SentPacket::time_until_resend() const {
-	uint32_t	time_elapsed = time_since_send();
+uint64_t AckManager::SentPacket::time_until_resend() const {
+	uint64_t	time_elapsed = time_since_send();
 	if (time_elapsed < ACK_TIME) {
 		return ACK_TIME - time_elapsed;
 	} else {
@@ -71,8 +71,8 @@ void AckManager::ack(uint32_t peer_id, uint32_t packet_id) {
 	}
 }
 
-uint32_t AckManager::time_until_resend() const {
-	return m_packets.empty() ? numeric_limits<uint32_t>::max() : m_packets.front().time_until_resend();
+uint64_t AckManager::time_until_resend() const {
+	return m_packets.empty() ? numeric_limits<uint64_t>::max() : m_packets.front().time_until_resend();
 }
 
 void AckManager::resend() {

@@ -1,5 +1,5 @@
 #include "client/ClientNetwork.hpp"
-#include "common/RawPacket.hpp"
+#include "common/UDPPacket.hpp"
 #include "common/network.hpp"
 #include "SDL_thread.h"
 #include "SDL_mutex.h"
@@ -18,13 +18,13 @@ public:
 		m_lock = SDL_CreateMutex();
 	}
 
-	bool receive_raw_packet(RawPacket& packet) {
+	bool receive_raw_packet(UDPPacket& packet) {
 		SDL_mutexP(m_lock);
 		bool	result = m_network.receive_raw_packet(packet);
 		SDL_mutexV(m_lock);
 		return result;
 	}
-	void send_raw_packet(RawPacket& packet) {
+	void send_raw_packet(const UDPPacket& packet) {
 		SDL_mutexP(m_lock);
 		m_network.send_raw_packet(packet);
 		SDL_mutexV(m_lock);
@@ -33,11 +33,11 @@ public:
 
 static int do_recv_thread(void* data) {
 	LockedClientNetwork&	network(*static_cast<LockedClientNetwork*>(data));
-	RawPacket		packet(MAX_PACKET_LENGTH);
+	UDPPacket		packet(MAX_PACKET_LENGTH);
 
 	while (true) {
 		if (network.receive_raw_packet(packet)) {
-			cout.write(reinterpret_cast<char*>(packet->data), packet->len);
+			cout.write(packet.get_data(), packet.get_length());
 			cout << endl;
 		} else {
 			SDL_Delay(10);
@@ -65,8 +65,9 @@ int main (int argc, char** argv) {
 
 	string			line;
 	while (getline(cin, line)) {
-		RawPacket	packet(MAX_PACKET_LENGTH);
+		UDPPacket	packet(MAX_PACKET_LENGTH);
 
+		packet.set_address(network.get_server_address());
 		packet.fill(line.c_str(), line.length());
 		locked_network.send_raw_packet(packet);
 	}

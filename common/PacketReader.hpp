@@ -8,13 +8,13 @@
 #ifndef LM_COMMON_PACKETREADER_HPP
 #define LM_COMMON_PACKETREADER_HPP
 
-#include "RawPacket.hpp"
-#include "SDL_net.h"
 #include "network.hpp"
 #include "StringTokenizer.hpp"
 #include <string>
 #include <stdint.h>
 #include <iosfwd>
+
+class UDPPacket;
 
 /*
  * The packet reader provides a convenient inteface for reading fields from packets.
@@ -44,7 +44,7 @@ private:
 public:
 	// Construct a packet reader from the given raw packet data
 	explicit PacketReader(const char* packet_data, char separator =PACKET_FIELD_SEPARATOR);
-	explicit PacketReader(const RawPacket& packet);
+	explicit PacketReader(const UDPPacket& packet);
 
 	// Get the packet type and packet ID at any time:
 	uint32_t	packet_type() const { return m_packet_type; }

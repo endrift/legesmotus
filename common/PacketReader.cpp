@@ -6,6 +6,7 @@
  */
 
 #include "PacketReader.hpp"
+#include "UDPPacket.hpp"
 #include "Point.hpp"
 #include <cstring>
 #include <cstdlib>
@@ -20,8 +21,8 @@ PacketReader::PacketReader(const char* packet_data, char separator) : StringToke
 	*this >> m_packet_type >> m_packet_id;
 }
 
-PacketReader::PacketReader(const RawPacket& packet) {
-	StringTokenizer::init_from_raw_data(reinterpret_cast<const char*>(packet->data), packet->len, PACKET_FIELD_SEPARATOR);
+PacketReader::PacketReader(const UDPPacket& packet) {
+	StringTokenizer::init_from_raw_data(packet.get_data(), packet.get_length(), PACKET_FIELD_SEPARATOR);
 	// Process the first two fields, which are always packet type and packet ID
 	*this >> m_packet_type >> m_packet_id;
 }

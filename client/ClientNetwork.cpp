@@ -11,103 +11,79 @@
 #include "common/network.hpp"
 #include "common/PacketWriter.hpp"
 #include "common/PacketReader.hpp"
-#include "common/RawPacket.hpp"
+#include "common/UDPPacket.hpp"
+#include "common/UDPSocket.hpp"
+#include "common/IPAddress.hpp"
 #include <iostream>
 
 using namespace std;
 
 ClientNetwork::ClientNetwork() {
-	m_socket = SDLNet_UDP_Open(0);
-	m_server_channel = -1;
+	m_is_connected = false;
 }
 
 ClientNetwork::~ClientNetwork() {
-	disconnect();
-	SDLNet_UDP_Close(m_socket);
-	m_socket = NULL;
 }
 
 bool	ClientNetwork::connect(const char* hostname, unsigned int portno) {
 	disconnect();
 
-	if (SDLNet_ResolveHost(&m_server_address, const_cast<char*>(hostname), portno) == -1) {
+	if (!resolve_hostname(m_server_address, hostname, portno)) {
 		return false;
 	}
 
-	m_server_channel = SDLNet_UDP_Bind(m_socket, -1, &m_server_address);
-	if (m_server_channel == -1) {
-		return false;
-	}
-
+	m_is_connected = true;
 	return true;
 }
 
 void	ClientNetwork::disconnect() {
-	if (is_connected()) {
-		SDLNet_UDP_Unbind(m_socket, m_server_channel);
-		m_server_channel = -1;
-	}
+	m_is_connected = false;
 }
 
 void	ClientNetwork::send_packet(const PacketWriter& packet) {
-	RawPacket	raw_packet(MAX_PACKET_LENGTH);
-	raw_packet.fill(packet);
-	send_raw_packet(m_server_channel, raw_packet);
+	if (is_connected()) {
+		send_packet_to(m_server_address, packet);
+	}
 }
 
-void	ClientNetwork::send_unbound_packet(const IPaddress& dest, const PacketWriter& packet) {
-	RawPacket	raw_packet(MAX_PACKET_LENGTH);
+void	ClientNetwork::send_packet_to(const IPAddress& dest, const PacketWriter& packet) {
+	UDPPacket	raw_packet(MAX_PACKET_LENGTH);
 	raw_packet.set_address(dest);
 	raw_packet.fill(packet);
-	send_raw_packet(-1, raw_packet);
+	send_raw_packet(raw_packet);
 }
 
 void	ClientNetwork::broadcast_packet(unsigned int portno, const PacketWriter& packet) {
-	RawPacket	raw_packet(MAX_PACKET_LENGTH);
-
-	if (SDLNet_ResolveHost(&raw_packet->address, "255.255.255.255", portno) == -1) {
-		// Unlikely to happen
-		return;
-	}
-
+	UDPPacket	raw_packet(MAX_PACKET_LENGTH);
+	raw_packet.set_address(IPAddress(htonl(INADDR_BROADCAST), htons(portno))); // TODO: abstract the INADDR_BROADCAST and the htonl/htons
 	raw_packet.fill(packet);
-	send_raw_packet(-1, raw_packet);
+	send_raw_packet(raw_packet);
 }
 
-void	ClientNetwork::send_raw_packet(int channel, RawPacket& raw_packet) {
-	if (m_socket == NULL) {
-		return;
-	}
-	SDLNet_UDP_Send(m_socket, channel, raw_packet);
+void	ClientNetwork::send_raw_packet(const UDPPacket& raw_packet) {
+	m_socket.send(raw_packet);
 }
 
-void	ClientNetwork::send_raw_packet(RawPacket& raw_packet) {
-	send_raw_packet(m_server_channel, raw_packet);
-}
-
-bool	ClientNetwork::receive_raw_packet(RawPacket& raw_packet) {
-	if (m_socket == NULL) {
-		return false;
-	}
-	return SDLNet_UDP_Recv(m_socket, raw_packet) == 1;
+bool	ClientNetwork::receive_raw_packet(UDPPacket& raw_packet) {
+	return m_socket.has_packets() && m_socket.recv(raw_packet);
 }
 
 void	ClientNetwork::receive_packets(GameController& controller) {
-	RawPacket	raw_packet(MAX_PACKET_LENGTH);
+	UDPPacket	raw_packet(MAX_PACKET_LENGTH);
 
 	// Keep receiving packets for as long as we can.
 	while (receive_raw_packet(raw_packet)) {
-		if (raw_packet->channel == m_server_channel) {
-			process_bound_packet(controller, raw_packet);
+		if (is_connected() && raw_packet.get_address() == m_server_address) {
+			process_server_packet(controller, raw_packet);
 		} else {
 			process_unbound_packet(controller, raw_packet);
 		}
 	}
 }
 
-void	ClientNetwork::process_bound_packet(GameController& controller, const RawPacket& raw_packet) {
+void	ClientNetwork::process_server_packet(GameController& controller, const UDPPacket& raw_packet) {
 	PacketReader	reader(raw_packet);
-	
+
 	switch (reader.packet_type()) {
 	case PLAYER_UPDATE_PACKET:
 		controller.player_update(reader);
@@ -179,12 +155,12 @@ void	ClientNetwork::process_bound_packet(GameController& controller, const RawPa
 	}
 }
 
-void	ClientNetwork::process_unbound_packet(GameController& controller, const RawPacket& raw_packet) {
+void	ClientNetwork::process_unbound_packet(GameController& controller, const UDPPacket& raw_packet) {
 	PacketReader	reader(raw_packet);
 	
 	switch (reader.packet_type()) {
 	case INFO_PACKET:
-		controller.server_info(raw_packet->address, reader);
+		controller.server_info(raw_packet.get_address(), reader);
 		break;
 	}
 }

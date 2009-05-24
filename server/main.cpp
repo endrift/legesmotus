@@ -6,7 +6,6 @@
  */
 
 #include "Server.hpp"
-#include "ServerSDL.hpp"
 #include "common/LMException.hpp"
 #include "common/network.hpp"
 #include "common/PathManager.hpp"
@@ -39,8 +38,6 @@ static void display_version() {
 }
 
 extern "C" int main(int argc, char* argv[]) try {
-	ServerSDL		server_sdl;
-
 	srand(time(0));
 
 	string			password;

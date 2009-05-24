@@ -21,6 +21,7 @@
 
 class PacketReader;
 class PathManager;
+class IPAddress;
 
 class Server {
 private:
@@ -49,8 +50,8 @@ public:
 		JOIN_DELAY = 2000			// Spawn player 2 seconds after he joins mid-round (TODO: increase to 15 during production)
 	};
 
-	static inline uint32_t get_gate_open_time(size_t nbr_players) {
-		return nbr_players > 1 ? uint32_t(round(GATE_OPEN_TIME * log(2.0) / log(double(nbr_players + 1)))) : uint32_t(GATE_OPEN_TIME);
+	static inline uint64_t get_gate_open_time(size_t nbr_players) {
+		return nbr_players > 1 ? uint64_t(round(GATE_OPEN_TIME * log(2.0) / log(double(nbr_players + 1)))) : uint64_t(GATE_OPEN_TIME);
 	}
 
 private:
@@ -66,10 +67,10 @@ private:
 	private:
 		int			m_status;	// CLOSED, OPENING, or CLOSING
 		std::set<uint32_t>	m_players;	// The players who are holding the gate
-		uint32_t		m_start_time;	// The time (in SDL ticks) at which the gate started to be moved
+		uint64_t		m_start_time;	// The tick time at which the gate started to be moved
 
 		void			set_progress(double progress);
-		uint32_t		get_open_time() const { return Server::get_gate_open_time(m_players.size()); }
+		uint64_t		get_open_time() const { return Server::get_gate_open_time(m_players.size()); }
 
 	public:
 		GateStatus();
@@ -81,8 +82,8 @@ private:
 		uint32_t	get_player_id() const { return !m_players.empty() ? *m_players.begin() : 0; }
 		// TODO: which player ID should I return above?  Right now this information isn't being used (it's sent to the client, which ignores it), but if the client ever provides information about who is lowering the gate, this would be important.
 
-		uint32_t	time_elapsed() const;	// If moving, how many milliseconds since the gate started moving?
-		uint32_t	time_remaining() const;	// If moving, how many milliseconds until the gate finishes moving?
+		uint64_t	time_elapsed() const;	// If moving, how many milliseconds since the gate started moving?
+		uint64_t	time_remaining() const;	// If moving, how many milliseconds until the gate finishes moving?
 
 		// Return a number in range [0,1] to indicate progress of gate:
 		//  (0.0 == fully closed, 1.0 == fully open)
@@ -125,7 +126,7 @@ private:
 	PlayerMap		m_players;
 	ServerMap		m_current_map;
 	GateStatus		m_gates[2];		// [0] = Team A's gate  [1] = Team B's gate
-	uint32_t		m_game_start_time;	// Time at which the game started
+	uint64_t		m_game_start_time;	// Time at which the game started
 	bool			m_players_have_spawned;	// True if any players have spawned
 	ServerPlayer::Queue	m_waiting_players;	// Players who have joined after start of round and are waiting to spawn
 	ServerPlayer::Queue	m_timeout_queue;	// A list of players in the order in which they will timeout
@@ -148,11 +149,25 @@ private:
 	// Network Helpers
 	//
 
-	// Make sure the given channel is authorized to speak for given player ID
-	bool			is_authorized(int channel, uint32_t player_id) const;
+	// Make sure the given address is authorized to speak for given player ID
+	bool			is_authorized(const IPAddress& address, uint32_t player_id) const;
 
-	// Relay the received packet to all clients, except the client on specified channel (if not -1)
-	void			rebroadcast_packet(PacketReader& packet, int exclude_channel =-1);
+	// Broadcast a packet to all connected players
+	void			broadcast_packet(const PacketWriter& packet);
+
+	// Broadcast a packet to all connected players on the given team
+	void			broadcast_team_packet(const PacketWriter& packet, char team);
+
+	// Broadcast a packet to all connected players, except to the given player
+	void			broadcast_packet_except(const PacketWriter& packet, uint32_t excluded_player_id);
+
+	// Relay the received packet to all connected players
+	void			rebroadcast_packet(const PacketReader& packet);
+
+	// Relay the received packet to all connected players, except for the given player
+	void			rebroadcast_packet_except(const PacketReader& packet, uint32_t excluded_player_id);
+
+	/* */
 
 	// Reset the scores for all players, broadcasting score updates for each one (call at beginning of new game)
 	void			reset_player_scores();
@@ -176,7 +191,7 @@ private:
 	void			timeout_players();
 
 	// If a player can't join (no space on map, invalid player name), call this to send back a REJECT packet:
-	void			reject_join(const IPaddress& addr, const char* why);
+	void			reject_join(const IPAddress& addr, const char* why);
 
 	//
 	// Game State Helpers
@@ -206,7 +221,7 @@ private:
 	void			game_over(char winning_team);
 
 	bool			waiting_to_spawn() const; // Return true if we're waiting to spawn players
-	uint32_t		time_until_spawn() const; // Time in ms until players should spawn
+	uint64_t		time_until_spawn() const; // Time in ms until players should spawn
 
 	// Returns the player with given player_id, NULL if not found
 	ServerPlayer*		get_player(uint32_t player_id);
@@ -228,29 +243,25 @@ private:
 	// Main Loop Helpers
 	//
 
-	// Process and discard all pending SDL input
-	// Should be called at least once in every INPUT_POLL_FREQUENCY seconds.
-	void			process_input();
-
 	// What's the maximum amount of time the server should sleep for between requests? (in milliseconds)
-	uint32_t		server_sleep_time() const;
+	uint64_t		server_sleep_time() const;
 
 public:
 	explicit Server (PathManager& path_manager);
 
 	// Called upon receipt of network packets:
-	void		ack(int channel, PacketReader& packet);
-	void		player_update(int channel, PacketReader& packet);
-	void		join(const IPaddress& address, PacketReader& packet);
-	void		info(const IPaddress& address, PacketReader& packet);
-	void		leave(int channel, PacketReader& packet);
-	void		player_shot(int channel, PacketReader& packet);
-	void		message(int channel, PacketReader& packet);
-	void		gun_fired(int channel, PacketReader& packet);
-	void		gate_update(int channel, PacketReader& packet);
-	void		player_animation(int channel, PacketReader& packet);
-	void		name_change(int channel, PacketReader& packet);
-	void		team_change(int channel, PacketReader& packet);
+	void		ack(const IPAddress& address, PacketReader& packet);
+	void		player_update(const IPAddress& address, PacketReader& packet);
+	void		join(const IPAddress& address, PacketReader& packet);
+	void		info(const IPAddress& address, PacketReader& packet);
+	void		leave(const IPAddress& address, PacketReader& packet);
+	void		player_shot(const IPAddress& address, PacketReader& packet);
+	void		message(const IPAddress& address, PacketReader& packet);
+	void		gun_fired(const IPAddress& address, PacketReader& packet);
+	void		gate_update(const IPAddress& address, PacketReader& packet);
+	void		player_animation(const IPAddress& address, PacketReader& packet);
+	void		name_change(const IPAddress& address, PacketReader& packet);
+	void		team_change(const IPAddress& address, PacketReader& packet);
 
 	void		start(int portno, const char* map_name); // map_name is NAME of map (excluding .map)
 	void		run();

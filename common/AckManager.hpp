@@ -23,7 +23,7 @@ class AckManager {
 	};
 protected:
 	struct SentPacket {
-		uint32_t		send_time;
+		uint64_t		send_time;
 		std::set<uint32_t>	peer_ids;
 		uint32_t		packet_type;
 		uint32_t		packet_id;
@@ -34,8 +34,8 @@ protected:
 		SentPacket(const std::set<uint32_t>& peer_ids, const PacketWriter& packet);
 
 		void			ack(uint32_t peer_id);
-		uint32_t		time_since_send() const;
-		uint32_t		time_until_resend() const;
+		uint64_t		time_since_send() const;
+		uint64_t		time_until_resend() const;
 		void			reset_send_time();
 		bool			has_peers() const { return !peer_ids.empty(); }
 	};
@@ -56,7 +56,7 @@ public:
 	void		add_broadcast_packet(const std::set<uint32_t>& peer_ids, const PacketWriter& packet);
 	void		ack(uint32_t peer_id, uint32_t packet_id);
 	bool		has_packets() const { return !m_packets.empty(); }
-	uint32_t	time_until_resend() const;
+	uint64_t	time_until_resend() const;
 	void		resend();
 };
 

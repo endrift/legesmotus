@@ -9,7 +9,7 @@
 #define LM_COMMON_NETWORK_HPP
 
 #include <string>
-#include "SDL_net.h"
+#include "IPAddress.hpp"
 
 // What to use to separate packet fields?
 const char PACKET_FIELD_SEPARATOR = '\f';	// Formfeed
@@ -46,9 +46,9 @@ enum {
 	TEAM_CHANGE_PACKET = 18
 };
 
-std::string	format_ip_address(const IPaddress& addr, bool resolve =false);
+bool		resolve_hostname(IPAddress& resolved_addr, const char* hostname_to_resolve, uint16_t portno); // portno must be in host-byte order
+bool		resolve_ip_address(std::string& resolved_hostname, uint16_t* portno, const IPAddress& address_to_resolve); // portno will be in host-byte order
 
-// Returns true if the given IP address is the localhost
-bool		is_localhost(const IPaddress& addr);
+std::string	format_ip_address(const IPAddress& addr, bool resolve =false);
 
 #endif

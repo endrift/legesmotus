@@ -9,7 +9,7 @@
 #define LM_CLIENT_GRAPHIC_HPP
 
 #include "compat_gl.h"
-#include "common/compat_sdl.h"
+#include "compat_sdl.h"
 #include "common/misc.hpp"
 #include <string>
 

@@ -18,6 +18,7 @@
 #include "common/math.hpp"
 #include "common/team.hpp"
 #include "common/StringTokenizer.hpp"
+#include "common/IPAddress.hpp"
 
 #include <vector>
 #include <stdio.h>
@@ -2206,7 +2207,7 @@ void	GameController::send_ack(const PacketReader& packet) {
 }
 
 
-void	GameController::server_info(const IPaddress& server_address, PacketReader& info_packet) {
+void	GameController::server_info(const IPAddress& server_address, PacketReader& info_packet) {
 	// Proof of concept code for server scanning
 	uint32_t	request_packet_id;
 	int		server_protocol_version;

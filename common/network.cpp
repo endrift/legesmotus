@@ -6,23 +6,25 @@
  */
 
 #include "network.hpp"
-#include "compat_sdl.h"
-#include "SDL_net.h"
 #ifdef __WIN32
 #include <Winsock2.h>
 #else
 #include <arpa/inet.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
 #endif
 #include <stdio.h>
 #include <sstream>
 
 using namespace std;
 
-string	format_ip_address(const IPaddress& addr, bool resolve) {
-	const char*		name = NULL;
-	if (resolve && (name = SDLNet_ResolveIP(const_cast<IPaddress*>(&addr))) != NULL) {
+string	format_ip_address(const IPAddress& addr, bool resolve) {
+	string			hostname;
+
+	if (resolve && resolve_ip_address(hostname, NULL, addr)) {
 		ostringstream	full_name;
-		full_name << name << ':' << ntohs(addr.port);
+		full_name << hostname << ':' << ntohs(addr.port);
 		return full_name.str();
 	}
 
@@ -39,7 +41,37 @@ string	format_ip_address(const IPaddress& addr, bool resolve) {
 	return buffer;
 }
 
-bool	is_localhost(const IPaddress& addr) {
-	return ntohl(addr.host) >> 24 == 127;
+bool	resolve_hostname(IPAddress& resolved_addr, const char* hostname_to_resolve, uint16_t portno) {
+	resolved_addr.port = htons(portno);
+
+	struct in_addr		addr;
+	if (inet_aton(hostname_to_resolve, &addr)) {
+		// IP address specified for hostname - no need to resolve
+		resolved_addr.set_host(addr);
+		return true;
+	} else {
+		// Attempt to resolve
+		struct hostent*	host = gethostbyname(hostname_to_resolve);
+		if (host && host->h_addrtype == AF_INET && host->h_length == 4) {
+			memcpy(&resolved_addr.host, host->h_addr_list[0], 4);
+			return true;
+		}
+	}
+	
+	return false;
 }
 
+bool	resolve_ip_address(std::string& resolved_hostname, uint16_t* portno, const IPAddress& address_to_resolve) {
+	if (portno) {
+		*portno = ntohs(address_to_resolve.port);
+	}
+
+	// Attempt to resolve
+	struct hostent*	host = gethostbyaddr(reinterpret_cast<const char*>(&address_to_resolve.host), 4, AF_INET);
+	if (host && host->h_name) {
+		resolved_hostname = host->h_name;
+		return true;
+	}
+
+	return false;
+}

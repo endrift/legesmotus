@@ -62,9 +62,8 @@ CLIENTLIBS = $(LIBS_GL) $(LIBS) $(LIBS_SDL_OTHER)
 CXXFLAGS += $(CFLAGS) -fno-rtti
 
 H_GL	= $(CLIENT)/compat_gl.h
-H_SDL	= $(COMMON)/compat_sdl.h
+H_SDL	= $(CLIENT)/compat_sdl.h
 
-H_COMMONSDL	= $(COMMON)/CommonSDL.hpp
 H_LMEXCEPTION	= $(COMMON)/LMException.hpp
 
 H_CLIENTNETWORK		= $(CLIENT)/ClientNetwork.hpp
@@ -72,6 +71,5 @@ H_CLIENTSDL		= $(CLIENT)/ClientSDL.hpp
 H_GAMECONTROLLER	= $(CLIENT)/GameController.hpp
 H_GAMEWINDOW		= $(CLIENT)/GameWindow.hpp
 
-H_CLIENTSDL		+= $(H_COMMONSDL)
 H_GAMEWINDOW		+= $(H_SDL)
 H_GAMECONTROLLER	+= $(H_GAMEWINDOW) $(H_CLIENTNETWORK)

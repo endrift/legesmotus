@@ -8,12 +8,14 @@
 #include "Server.hpp"
 #include "ServerNetwork.hpp"
 #include "common/LMException.hpp"
+#include "common/IPAddress.hpp"
 #include "common/PacketWriter.hpp"
 #include "common/PacketReader.hpp"
 #include "common/network.hpp"
 #include "common/team.hpp"
 #include "common/misc.hpp"
 #include "common/PathManager.hpp"
+#include "common/timer.hpp"
 #include <string>
 #include <cstdlib>
 #include <cmath>
@@ -37,7 +39,7 @@ Server::Server (PathManager& path_manager) : m_path_manager(path_manager), m_ack
 	m_team_score[0] = m_team_score[1] = 0;
 }
 
-void	Server::ack(int /*channel*/, PacketReader& ack_packet) {
+void	Server::ack(const IPAddress& /*address*/, PacketReader& ack_packet) {
 	uint32_t		player_id;
 	uint32_t		packet_type;
 	uint32_t		packet_id;
@@ -45,30 +47,29 @@ void	Server::ack(int /*channel*/, PacketReader& ack_packet) {
 	m_ack_manager.ack(player_id, packet_id);
 }
 
-void	Server::player_update(int channel, PacketReader& inbound_packet)
+void	Server::player_update(const IPAddress& address, PacketReader& inbound_packet)
 {
 	uint32_t		player_id;
 	inbound_packet >> player_id;
 
-	if (is_authorized(channel, player_id)) {
+	if (is_authorized(address, player_id)) {
 		// Mark the player as seen
 		get_player(player_id)->seen(m_timeout_queue);
 
 		// Re-broadcast the packet to all _other_ players
 		PacketWriter	outbound_packet(PLAYER_UPDATE_PACKET);
 		outbound_packet << player_id << inbound_packet;
-		m_network.broadcast_packet(outbound_packet, channel);
-
+		broadcast_packet_except(outbound_packet, player_id);
 	}
 }
 
-void	Server::player_animation(int channel, PacketReader& packet)
+void	Server::player_animation(const IPAddress& address, PacketReader& packet)
 {
-	// Just broadcast this packet to all other players
-	rebroadcast_packet(packet, channel);
+	// Just broadcast this packet to all other players (TODO: actually exclude other players...)
+	rebroadcast_packet(packet);
 }
 
-void	Server::name_change(int channel, PacketReader& packet)
+void	Server::name_change(const IPAddress& address, PacketReader& packet)
 {
 	uint32_t		sender_id = 0;
 	string			requested_name;
@@ -77,7 +78,7 @@ void	Server::name_change(int channel, PacketReader& packet)
 
 	sanitize_player_name(requested_name);
 
-	if (!is_authorized(channel, sender_id) || requested_name.empty()) {
+	if (!is_authorized(address, sender_id) || requested_name.empty()) {
 		return;
 	}
 
@@ -94,10 +95,10 @@ void	Server::name_change(int channel, PacketReader& packet)
 
 	PacketWriter		outbound_packet(NAME_CHANGE_PACKET);
 	outbound_packet << player->get_id() << player->get_name();
-	m_network.broadcast_packet(outbound_packet);
+	broadcast_packet(outbound_packet);
 }
 
-void	Server::team_change(int channel, PacketReader& packet)
+void	Server::team_change(const IPAddress& address, PacketReader& packet)
 {
 	// Parse the packet and sanity-check
 	uint32_t		sender_id = 0;
@@ -105,7 +106,7 @@ void	Server::team_change(int channel, PacketReader& packet)
 
 	packet >> sender_id >> new_team;
 
-	if (!is_authorized(channel, sender_id) || !is_valid_team(new_team)) {
+	if (!is_authorized(address, sender_id) || !is_valid_team(new_team)) {
 		return;
 	}
 
@@ -138,10 +139,10 @@ void	Server::team_change(int channel, PacketReader& packet)
 	// Notify all players that this player has switched teams:
 	PacketWriter		outbound_packet(TEAM_CHANGE_PACKET);
 	outbound_packet << player->get_id() << player->get_team();
-	m_network.broadcast_packet(outbound_packet);
+	broadcast_packet(outbound_packet);
 }
 
-void	Server::message(int channel, PacketReader& packet)
+void	Server::message(const IPAddress& address, PacketReader& packet)
 {
 	uint32_t		sender_id = 0;
 	string			recipient;
@@ -149,7 +150,7 @@ void	Server::message(int channel, PacketReader& packet)
 
 	packet >> sender_id >> recipient >> message;
 
-	if (!is_authorized(channel, sender_id)) {
+	if (!is_authorized(address, sender_id)) {
 		return;
 	}
 	if (message.substr(0, 8) == "/server ") {
@@ -162,22 +163,15 @@ void	Server::message(int channel, PacketReader& packet)
 
 	if (recipient.empty()) {
 		// To everyone
-		m_network.broadcast_packet(outbound_packet);
+		broadcast_packet(outbound_packet);
 	} else if (is_valid_team(recipient[0])) {
 		// Specific Team
-		char				recipient_team = recipient[0];
-		PlayerMap::const_iterator	it(m_players.begin());
-		while (it != m_players.end()) {
-			if (it->second.get_team() == recipient_team) {
-				m_network.send_packet(it->second.get_channel(), outbound_packet);
-			}
-			++it;
-		}
+		broadcast_team_packet(outbound_packet, recipient[0]);
 	} else {
 		// Specific player
 		uint32_t	recipient_id = atol(recipient.c_str());
 		if (const ServerPlayer* recipient_player = get_player(recipient_id)) {
-			m_network.send_packet(recipient_player->get_channel(), outbound_packet);
+			m_network.send_packet(recipient_player->get_address(), outbound_packet);
 		}
 	}
 }
@@ -185,7 +179,7 @@ void	Server::message(int channel, PacketReader& packet)
 void	Server::send_system_message(const ServerPlayer& recipient_player, const char* message) {
 	PacketWriter	outbound_packet(MESSAGE_PACKET);
 	outbound_packet << 0L << recipient_player.get_id() << message;
-	m_network.send_packet(recipient_player.get_channel(), outbound_packet);
+	m_network.send_packet(recipient_player.get_address(), outbound_packet);
 }
 
 void	Server::command_server(uint32_t player_id, const char* command) {
@@ -263,7 +257,7 @@ void	Server::command_server(uint32_t player_id, const char* command) {
 	}
 }
 
-void	Server::player_shot(int /*channel*/, PacketReader& inbound_packet)
+void	Server::player_shot(const IPAddress& /*address*/, PacketReader& inbound_packet)
 {
 	uint32_t		shooter_id;
 	uint32_t		shot_player_id;
@@ -274,7 +268,7 @@ void	Server::player_shot(int /*channel*/, PacketReader& inbound_packet)
 	// Inform all players that this player has been shot
 	PacketWriter		outbound_packet(PLAYER_SHOT_PACKET);
 	outbound_packet << shooter_id << shot_player_id << int(FREEZE_TIME) << angle;
-	m_network.broadcast_packet(outbound_packet);
+	broadcast_packet(outbound_packet);
 	// TODO: REQUIRE ACK
 
 	if (ServerPlayer* shooter = get_player(shooter_id)) {
@@ -286,16 +280,16 @@ void	Server::player_shot(int /*channel*/, PacketReader& inbound_packet)
 	}
 }
 
-void	Server::gun_fired(int channel, PacketReader& packet)
+void	Server::gun_fired(const IPAddress& address, PacketReader& packet)
 {
-	// Just broadcast this packet to all other players
-	rebroadcast_packet(packet, channel);
+	// Just broadcast this packet to all other players (TODO: actually exclude other players...)
+	rebroadcast_packet(packet);
 	// TODO: REQUIRE ACK
 }
 
 
-void	Server::join(const IPaddress& address, PacketReader& packet) {
-	// Free up channels by kicking dead players
+void	Server::join(const IPAddress& address, PacketReader& packet) {
+	// Kick dead players
 	timeout_players();
 
 	// Parse the join packet
@@ -353,24 +347,16 @@ void	Server::join(const IPaddress& address, PacketReader& packet) {
 	// Get a unique name for the player
 	string			name(get_unique_player_name(requested_name.c_str()));
 
-	// Try to bind player's address
-	int			channel = m_network.bind(address);
-	if (channel == -1) {
-		cerr << "Rejected join for " << requested_name << ": No space on server" << endl;
-		reject_join(address, "No space on server.");
-		return;
-	}
-
 	++m_team_count[team - 'A'];
 
 	bool			is_first_player = m_players.empty();
 
 	uint32_t		player_id = m_next_player_id++;
-	ServerPlayer&		new_player = m_players[player_id].init(player_id, channel, client_version, name.c_str(), team, m_timeout_queue);
+	ServerPlayer&		new_player = m_players[player_id].init(player_id, address, client_version, name.c_str(), team, m_timeout_queue);
 
-	cerr << requested_name << ": Joined on team " << team << ", bound to channel " << channel << ", with ID " << player_id << endl;
+	cerr << requested_name << ": Joined on team " << team << ", with ID " << player_id << endl;
 
-	if (m_password.empty() && is_localhost(address)) {
+	if (m_password.empty() && address.is_localhost()) {
 		// If no operator password was set, give players connecting from the localhost operator privileges
 		new_player.set_is_op(true);
 	}
@@ -379,7 +365,7 @@ void	Server::join(const IPaddress& address, PacketReader& packet) {
 	PacketWriter		welcome_packet(WELCOME_PACKET);
 	welcome_packet << SERVER_PROTOCOL_VERSION << player_id << name << team;
 	m_ack_manager.add_packet(player_id, welcome_packet);
-	m_network.send_packet(channel, welcome_packet);
+	m_network.send_packet(address, welcome_packet);
 
 	if (is_first_player) {
 		// This is the first player.  Start a new game.
@@ -390,16 +376,16 @@ void	Server::join(const IPaddress& address, PacketReader& packet) {
 		PacketWriter		game_start_packet(GAME_START_PACKET);
 		game_start_packet << m_current_map.get_name() << 0 << time_until_spawn();
 		m_ack_manager.add_packet(player_id, game_start_packet);
-		m_network.send_packet(channel, game_start_packet);
+		m_network.send_packet(address, game_start_packet);
 	} else {
 		// Joining a game that has already started
 		// Add the player to the join queue
 		m_waiting_players.push_back(&new_player);
 		// Tell the player what map is currently in use, and how much time until he spawns
 		PacketWriter		game_start_packet(GAME_START_PACKET);
-		game_start_packet << m_current_map.get_name() << 1 << uint32_t(JOIN_DELAY);
+		game_start_packet << m_current_map.get_name() << 1 << uint64_t(JOIN_DELAY);
 		m_ack_manager.add_packet(player_id, game_start_packet);
-		m_network.send_packet(channel, game_start_packet);
+		m_network.send_packet(address, game_start_packet);
 	}
 
 	// Send the new player an announce packet and score update packet for every player currently in the game (except for the one just added)
@@ -415,12 +401,12 @@ void	Server::join(const IPaddress& address, PacketReader& packet) {
 		PacketWriter	announce_packet(ANNOUNCE_PACKET);
 		announce_packet << player.get_id() << player.get_name() << player.get_team();
 		m_ack_manager.add_packet(player_id, announce_packet);
-		m_network.send_packet(channel, announce_packet);
+		m_network.send_packet(address, announce_packet);
 
 		PacketWriter	score_packet(SCORE_UPDATE_PACKET);
 		score_packet << player.get_id() << player.get_score();
 		m_ack_manager.add_packet(player_id, score_packet);
-		m_network.send_packet(channel, score_packet);
+		m_network.send_packet(address, score_packet);
 	}
 
 	// Send the player the team scores
@@ -430,11 +416,11 @@ void	Server::join(const IPaddress& address, PacketReader& packet) {
 	PacketWriter		announce_packet(ANNOUNCE_PACKET);
 	announce_packet << player_id << name << team;
 	m_ack_manager.add_broadcast_packet(announce_packet);
-	m_network.broadcast_packet(announce_packet);
+	broadcast_packet(announce_packet);
 
 }
 
-void	Server::info(const IPaddress& address, PacketReader& request_packet) {
+void	Server::info(const IPAddress& address, PacketReader& request_packet) {
 	PacketWriter	response_packet(INFO_PACKET);
 	response_packet << request_packet.packet_id() << SERVER_PROTOCOL_VERSION << m_current_map.get_name() << m_team_count[0] << m_team_count[1];
 	m_network.send_packet(address, response_packet);
@@ -455,7 +441,7 @@ void	Server::broadcast_score_update(const ServerPlayer& player) {
 	PacketWriter	score_packet(SCORE_UPDATE_PACKET);
 	score_packet << player.get_id() << player.get_score();
 	m_ack_manager.add_broadcast_packet(score_packet);
-	m_network.broadcast_packet(score_packet);
+	broadcast_packet(score_packet);
 }
 
 // Report the team scores to given player
@@ -464,22 +450,22 @@ void	Server::report_team_scores(const ServerPlayer& recipient_player) {
 		PacketWriter	score_packet(SCORE_UPDATE_PACKET);
 		score_packet << 'A' << m_team_score[0];
 		m_ack_manager.add_packet(recipient_player.get_id(), score_packet);
-		m_network.send_packet(recipient_player.get_channel(), score_packet);
+		m_network.send_packet(recipient_player.get_address(), score_packet);
 	}
 	{
 		PacketWriter	score_packet(SCORE_UPDATE_PACKET);
 		score_packet << 'B' << m_team_score[1];
 		m_ack_manager.add_packet(recipient_player.get_id(), score_packet);
-		m_network.send_packet(recipient_player.get_channel(), score_packet);
+		m_network.send_packet(recipient_player.get_address(), score_packet);
 	}
 }
 
-void	Server::leave(int channel, PacketReader& packet) {
+void	Server::leave(const IPAddress& address, PacketReader& packet) {
 	uint32_t	player_id;
 	string		leave_message;
 	packet >> player_id >> leave_message;
 
-	if (is_authorized(channel, player_id)) {
+	if (is_authorized(address, player_id)) {
 		remove_player(*get_player(player_id), leave_message.c_str());
 	}
 }
@@ -495,13 +481,10 @@ void	Server::remove_player(const ServerPlayer& player, const char* leave_message
 	// Broadcast to the game that this player has left
 	PacketWriter	leave_packet(LEAVE_PACKET);
 	leave_packet << player_id << leave_message;
-	m_network.broadcast_packet(leave_packet);
+	broadcast_packet(leave_packet);
 
 	// Release resources held by the player (gates, spawn points, team count, etc.)
 	release_player_resources(player);
-
-	// Unbind the network socket
-	m_network.unbind(player.get_channel());
 
 	// Fully remove the player
 	m_players.erase(player_id);
@@ -584,35 +567,69 @@ void	Server::run()
 }
 
 // Arguments:
-//  - channel: the channel that the packet is coming from
+//  - address: the address that the packet is coming from
 //  - player_id: the player ID which the packet claims to represent
-bool	Server::is_authorized(int channel, uint32_t player_id) const {
+bool	Server::is_authorized(const IPAddress& address, uint32_t player_id) const {
 	// Look up the player ID in the players map
 	const ServerPlayer*	player = get_player(player_id);
 	
 	// Make sure that both:
 	//  1. The alleged player actually exists, and
-	//  2. The player's stored channel matches the channel that the request is coming from
-	return player != NULL && player->get_channel() == channel;
+	//  2. The player's stored address matches the address that the request is coming from
+	return player != NULL && player->get_address() == address;
 }
 
-void	Server::rebroadcast_packet(PacketReader& packet, int exclude_channel) {
+void	Server::broadcast_packet(const PacketWriter& packet) {
+	PlayerMap::const_iterator	it(m_players.begin());
+	while (it != m_players.end()) {
+		m_network.send_packet(it->second.get_address(), packet);
+		++it;
+	}
+}
+
+void	Server::broadcast_team_packet(const PacketWriter& packet, char team) {
+	PlayerMap::const_iterator	it(m_players.begin());
+	while (it != m_players.end()) {
+		if (it->second.get_team() == team) {
+			m_network.send_packet(it->second.get_address(), packet);
+		}
+		++it;
+	}
+}
+
+void	Server::broadcast_packet_except(const PacketWriter& packet, uint32_t excluded_player_id) {
+	PlayerMap::const_iterator	it(m_players.begin());
+	while (it != m_players.end()) {
+		if (it->second.get_id() != excluded_player_id) {
+			m_network.send_packet(it->second.get_address(), packet);
+		}
+		++it;
+	}
+}
+
+void	Server::rebroadcast_packet(const PacketReader& packet) {
 	PacketWriter		resent_packet(packet.packet_type());
 	resent_packet << packet;
-	m_network.broadcast_packet(resent_packet, exclude_channel);
+	broadcast_packet(resent_packet);
+}
+
+void	Server::rebroadcast_packet_except(const PacketReader& packet, uint32_t excluded_player_id) {
+	PacketWriter		resent_packet(packet.packet_type());
+	resent_packet << packet;
+	broadcast_packet_except(resent_packet, excluded_player_id);
 }
 
 void	Server::new_game() {
-	m_game_start_time = SDL_GetTicks();
+	m_game_start_time = get_ticks();
 	m_players_have_spawned = false;
 	m_gates[0].reset();
 	m_gates[1].reset();
 	m_waiting_players.clear(); // Waiting players get cleared out and put in general queue...
 
 	PacketWriter		packet(GAME_START_PACKET);
-	packet << m_current_map.get_name() << 0 << uint32_t(START_DELAY);
+	packet << m_current_map.get_name() << 0 << uint64_t(START_DELAY);
 	m_ack_manager.add_broadcast_packet(packet);
-	m_network.broadcast_packet(packet);
+	broadcast_packet(packet);
 }
 
 void	Server::game_over(char winning_team) {
@@ -625,7 +642,7 @@ void	Server::game_over(char winning_team) {
 	PacketWriter		packet(GAME_STOP_PACKET);
 	packet << winning_team << m_team_score[0] << m_team_score[1];
 	m_ack_manager.add_broadcast_packet(packet);
-	m_network.broadcast_packet(packet);
+	broadcast_packet(packet);
 	m_gates[0].reset();
 	m_gates[1].reset();
 	m_game_start_time = 0;
@@ -647,7 +664,7 @@ void	Server::start_game() {
 	PacketWriter		packet(GAME_START_PACKET);
 	packet << m_current_map.get_name() << 1 << 0;
 	m_ack_manager.add_broadcast_packet(packet);
-	m_network.broadcast_packet(packet);
+	broadcast_packet(packet);
 }
 
 void	Server::spawn_waiting_players() {
@@ -676,13 +693,13 @@ void	Server::timeout_players() {
 }
 
 
-void	Server::gate_update(int channel, PacketReader& packet) {
+void	Server::gate_update(const IPAddress& address, PacketReader& packet) {
 	uint32_t		player_id;
 	char			team;
 	bool			is_engaged;
 	packet >> player_id >> team >> is_engaged;
 
-	if (!is_authorized(channel, player_id) || !is_valid_team(team)) {
+	if (!is_authorized(address, player_id) || !is_valid_team(team)) {
 		// Invalid packet
 		return;
 	}
@@ -692,14 +709,14 @@ void	Server::gate_update(int channel, PacketReader& packet) {
 	}
 }
 
-uint32_t	Server::server_sleep_time() const {
-	uint32_t	sleep_time = std::numeric_limits<uint32_t>::max();
+uint64_t	Server::server_sleep_time() const {
+	uint64_t	sleep_time = std::numeric_limits<uint64_t>::max();
 
 	if (m_players_have_spawned) {
 		// Take into account gate changes, and gate status updates
 
 		if (get_gate('A').is_moving() || get_gate('B').is_moving()) {
-			sleep_time = std::min(sleep_time, uint32_t(GATE_UPDATE_FREQUENCY));
+			sleep_time = std::min(sleep_time, uint64_t(GATE_UPDATE_FREQUENCY));
 		}
 		sleep_time = std::min(sleep_time, get_gate('A').time_remaining());
 		sleep_time = std::min(sleep_time, get_gate('B').time_remaining());
@@ -716,33 +733,24 @@ uint32_t	Server::server_sleep_time() const {
 	return sleep_time;
 }
 
-void Server::process_input() {
-	SDL_Event event;
-	while (SDL_PollEvent(&event)) {
-		if (event.type == SDL_QUIT) {
-			m_is_running = false;
-		}
-	}
-}
-
 void	Server::report_gate_status(char team, int change_in_status) {
 	const GateStatus&	gate(get_gate(team));
 	PacketWriter		packet(GATE_UPDATE_PACKET);
 	packet << gate.get_player_id() << team << gate.get_progress() << change_in_status;
-	m_network.broadcast_packet(packet);
+	broadcast_packet(packet);
 }
 
 Server::GateStatus::GateStatus() {
 	reset();
 }
 
-uint32_t Server::GateStatus::time_elapsed() const {
-	return is_moving() ? SDL_GetTicks() - m_start_time : 0;
+uint64_t Server::GateStatus::time_elapsed() const {
+	return is_moving() ? get_ticks() - m_start_time : 0;
 }
 
-uint32_t Server::GateStatus::time_remaining() const {
+uint64_t Server::GateStatus::time_remaining() const {
 	if (is_moving()) {
-		uint32_t	elapsed_time = time_elapsed();
+		uint64_t	elapsed_time = time_elapsed();
 		if (m_status == OPENING && elapsed_time < get_open_time()) {
 			return get_open_time() - elapsed_time;
 		} else if (m_status == CLOSING && elapsed_time < GATE_CLOSE_TIME) {
@@ -753,7 +761,7 @@ uint32_t Server::GateStatus::time_remaining() const {
 		return 0;
 	} else {
 		// Gate is not moving.
-		return numeric_limits<uint32_t>::max();
+		return numeric_limits<uint64_t>::max();
 	}
 }
 
@@ -789,9 +797,9 @@ void	Server::GateStatus::reset() {
 
 void	Server::GateStatus::set_progress(double progress) {
 	if (m_status == OPENING) {
-		m_start_time = SDL_GetTicks() - uint32_t(progress * get_open_time());
+		m_start_time = get_ticks() - uint64_t(progress * get_open_time());
 	} else if (m_status == CLOSING) {
-		m_start_time = SDL_GetTicks() - uint32_t((1.0 - progress) * GATE_CLOSE_TIME);
+		m_start_time = get_ticks() - uint64_t((1.0 - progress) * GATE_CLOSE_TIME);
 	}
 }
 
@@ -830,11 +838,11 @@ bool	Server::waiting_to_spawn() const {
 	return (!m_players_have_spawned && !m_players.empty()) ||
 		(m_players_have_spawned && !m_waiting_players.empty());
 }
-uint32_t Server::time_until_spawn() const {
+uint64_t Server::time_until_spawn() const {
 	if (!m_players_have_spawned && !m_players.empty()) {
 		// Game has not started yet, but players have joined.
 		// All players spawn START_DELAY milliseconds after the first player joined
-		uint32_t	time_elapsed = SDL_GetTicks() - m_game_start_time;
+		uint64_t	time_elapsed = get_ticks() - m_game_start_time;
 		if (time_elapsed < START_DELAY) {
 			return START_DELAY - time_elapsed;
 		} else {
@@ -846,7 +854,7 @@ uint32_t Server::time_until_spawn() const {
 		// When does the first one spawn?
 		return m_waiting_players.front()->time_until_spawn();
 	}
-	return std::numeric_limits<uint32_t>::max();
+	return std::numeric_limits<uint64_t>::max();
 }
 
 ServerPlayer*		Server::get_player(uint32_t player_id) {
@@ -879,7 +887,7 @@ void	Server::set_password(const char* pw) {
 	m_password = pw;
 }
 
-void	Server::reject_join(const IPaddress& addr, const char* why) {
+void	Server::reject_join(const IPAddress& addr, const char* why) {
 	PacketWriter	packet(REQUEST_DENIED_PACKET);
 	packet << int(JOIN_PACKET) << why;
 	m_network.send_packet(addr, packet);
@@ -911,7 +919,7 @@ void	Server::ServerAckManager::kick_peer(uint32_t player_id) {
 
 void	Server::ServerAckManager::resend_packet(uint32_t player_id, const std::string& data) {
 	if (ServerPlayer* player = m_server.get_player(player_id)) {
-		m_server.m_network.send_packet(player->get_channel(), data);
+		m_server.m_network.send_packet(player->get_address(), data);
 	}
 }
 
@@ -928,6 +936,6 @@ void	Server::send_spawn_packet(const ServerPlayer& player, Point spawnpoint, boo
 	PacketWriter	spawn_packet(PLAYER_UPDATE_PACKET);
 	spawn_packet << player.get_id() << spawnpoint.x << spawnpoint.y << 0 << 0 << 0 << (is_alive ? "" : "IF");
 	m_ack_manager.add_packet(player.get_id(), spawn_packet);
-	m_network.send_packet(player.get_channel(), spawn_packet);
+	m_network.send_packet(player.get_address(), spawn_packet);
 }
 

@@ -106,6 +106,8 @@ These commands are entered in the client's chat bar.  Some commands (marked as [
 	/server shutdown	Shutdown the server [op]
 	/server help		Display this help
 
+If no operator password is set, then any player connecting from the localhost (127.0.0.1) will be given operator status.  If this is undesirable behavior, then be sure to set an operator password.
+
 
 GAMEPLAY
 

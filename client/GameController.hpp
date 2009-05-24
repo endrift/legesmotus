@@ -26,6 +26,7 @@
 #include <map>
 
 class TiledGraphic;
+class IPAddress;
 
 class GameController {
 public:
@@ -209,7 +210,7 @@ public:
 	void		request_denied(PacketReader& reader);
 	void		name_change(PacketReader& reader);
 	void		team_change(PacketReader& reader);
-	void		server_info(const IPaddress& server_address, PacketReader& reader);
+	void		server_info(const IPAddress& server_address, PacketReader& reader);
 };
 
 #endif
