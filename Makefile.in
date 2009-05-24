@@ -20,20 +20,18 @@ endif
 endif
 
 ifeq ($(MACHINE)$(UNIXSTYLE),Darwin)
-FLAGS_SDL = -I$(FRAMEWORKS)/SDL.framework/Headers -I$(FRAMEWORKS)/SDL_net.framework/Headers
-FLAGS_SDL_OTHER  = -I$(FRAMEWORKS)/SDL_image.framework/Headers
-FLAGS_SDL_OTHER += -I$(FRAMEWORKS)/SDL_ttf.framework/Headers
-FLAGS_SDL_OTHER += -I$(FRAMEWORKS)/SDL_mixer.framework/Headers
+FLAGS_SDL  = -I$(FRAMEWORKS)/SDL.framework/Headers
+FLAGS_SDL += -I$(FRAMEWORKS)/SDL_image.framework/Headers
+FLAGS_SDL += -I$(FRAMEWORKS)/SDL_ttf.framework/Headers
+FLAGS_SDL += -I$(FRAMEWORKS)/SDL_mixer.framework/Headers
 LIBS += -framework AppKit
-LIBS_SDL = -framework SDL -framework SDL_net 
-LIBS_SDL_OTHER = -framework SDL_image -framework SDL_ttf -framework SDL_mixer
+LIBS_SDL = -framework SDL -framework SDL_image -framework SDL_ttf -framework SDL_mixer
 ifneq ($(UNIVERSAL),)
 CFLAGS += -arch ppc -arch i386
 endif
 else
 FLAGS_SDL = $(shell sdl-config --cflags)
-LIBS_SDL = $(shell sdl-config --libs) -lSDL_net 
-LIBS_SDL_OTHER = -lSDL_image -lSDL_ttf -lSDL_mixer
+LIBS_SDL = $(shell sdl-config --libs) -lSDL_image -lSDL_ttf -lSDL_mixer
 endif
 
 ifeq ($(MACHINE),Darwin)
@@ -51,13 +49,12 @@ INCLUDES = -I$(BASEDIR)
 
 CFLAGS += -Wall -g
 LDFLAGS += $(CFLAGS)
-CFLAGS += $(FLAGS_SDL) $(FLAGS_GL) $(INCLUDES)
-LIBS += $(LIBS_SDL)
+CFLAGS += $(FLAGS_GL) $(INCLUDES)
 ifeq ($(MACHINE),Windows)
 LIBS += -lwsock32
 endif
-CLIENTFLAGS = $(FLAGS_SDL_OTHER)
-CLIENTLIBS = $(LIBS_GL) $(LIBS) $(LIBS_SDL_OTHER)
+CLIENTFLAGS = $(FLAGS_SDL)
+CLIENTLIBS = $(LIBS_GL) $(LIBS) $(LIBS_SDL)
 
 CXXFLAGS += $(CFLAGS) -fno-rtti
 
