@@ -3,8 +3,12 @@ COMMON = $(BASEDIR)/common
 CLIENT = $(BASEDIR)/client
 SERVER = $(BASEDIR)/server
 FRAMEWORKS = /Library/Frameworks
-#Uncomment for UNIX-style builds on Mac OS X (i.e. without frameworks)
+
+# Mac options
+# UNIX-style builds on Mac OS X (i.e. without frameworks)
 #UNIXSTYLE = 1
+# Universal Binary builds
+UNIVERSAL = 1
 
 MACHINE = $(shell uname -s)
 ifeq ($(MACHINE),)
@@ -23,6 +27,9 @@ FLAGS_SDL_OTHER += -I$(FRAMEWORKS)/SDL_mixer.framework/Headers
 LIBS += -framework AppKit
 LIBS_SDL = -framework SDL -framework SDL_net 
 LIBS_SDL_OTHER = -framework SDL_image -framework SDL_ttf -framework SDL_mixer
+ifneq ($(UNIVERSAL),)
+CFLAGS += -arch ppc -arch i386
+endif
 else
 FLAGS_SDL = $(shell sdl-config --cflags)
 LIBS_SDL = $(shell sdl-config --libs) -lSDL_net 
