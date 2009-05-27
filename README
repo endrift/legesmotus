@@ -45,7 +45,6 @@ The following libraries must be installed in order to build and run Leges Motus:
  SDL
  SDL_image
  SDL_ttf
- SDL_net
  SDL_mixer
  OpenGL
 
