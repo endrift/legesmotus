@@ -33,7 +33,7 @@ cat > "$hfile" <<-EOF
 /*
  * $hfile
  *
- * Copyright 2009 - Nathan Partlan, Andrew Ayer, Daniel Schneider, and Jeffrey Pfau
+$(sed 's/^/ * /' < boilerplate.txt)
  * 
  */
 
@@ -55,7 +55,7 @@ cat > "$cfile" <<-EOF
 /*
  * $cfile
  *
- * Copyright 2009 - Nathan Partlan, Andrew Ayer, Daniel Schneider, and Jeffrey Pfau
+$(sed 's/^/ * /' < boilerplate.txt)
  * 
  */
 
