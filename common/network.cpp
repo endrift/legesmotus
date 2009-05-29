@@ -32,6 +32,7 @@
 #include <netdb.h>
 #endif
 #include <stdio.h>
+#include <string.h>
 #include <sstream>
 
 using namespace std;
