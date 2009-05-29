@@ -69,3 +69,6 @@ H_GAMEWINDOW		= $(CLIENT)/GameWindow.hpp
 
 H_GAMEWINDOW		+= $(H_GL)
 H_GAMECONTROLLER	+= $(H_GAMEWINDOW) $(H_CLIENTNETWORK)
+
+%.o: %.rc
+	windres $< -o $@

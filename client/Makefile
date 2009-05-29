@@ -5,10 +5,14 @@ OBJS = ClientNetwork.o ClientSDL.o GameController.o GameWindow.o MapObject.o Spr
 	Mask.o Minimap.o TableBackground.o #put .o filenames here (DO NOT PUT .cpp!)
 CXXFLAGS += $(CLIENTFLAGS)
 
+ifeq ($(MACHINE),Windows)
+PLATFORM_DEP = legesmotus-res.o
+endif
+
 all: legesmotus
 
-legesmotus: ../liblmclient.a ../liblmcommon.a main.o
-	$(CXX) $(LDFLAGS) -o legesmotus -L.. main.o -llmclient -llmcommon $(CLIENTLIBS)
+legesmotus: ../liblmclient.a ../liblmcommon.a main.o $(PLATFORM_DEP)
+	$(CXX) $(LDFLAGS) -o legesmotus -L.. main.o -llmclient -llmcommon $(CLIENTLIBS) $(PLATFORM_DEP)
 
 ../liblmclient.a: $(OBJS)
 	$(AR) crus ../liblmclient.a $(OBJS)
