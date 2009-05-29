@@ -58,6 +58,7 @@ void	daemonize() {
 #include <fcntl.h>
 #include <pwd.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <errno.h>
 
 string	get_username() {
