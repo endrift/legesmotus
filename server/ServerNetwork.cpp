@@ -137,6 +137,10 @@ void	ServerNetwork::process_packet(Server& server, const UDPPacket& raw_packet) 
 	case TEAM_CHANGE_PACKET:
 		server.team_change(address, reader);
 		break;
+
+	case REGISTER_SERVER_PACKET:
+		server.register_server_packet(address, reader);
+		break;
 	}
 }
 

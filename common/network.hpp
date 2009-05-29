@@ -64,7 +64,9 @@ enum {
 	PLAYER_ANIMATION_PACKET = 15,
 	REQUEST_DENIED_PACKET = 16,
 	NAME_CHANGE_PACKET = 17,
-	TEAM_CHANGE_PACKET = 18
+	TEAM_CHANGE_PACKET = 18,
+	REGISTER_SERVER_PACKET = 19,
+	UNREGISTER_SERVER_PACKET = 20,
 };
 
 bool		resolve_hostname(IPAddress& resolved_addr, const char* hostname_to_resolve, uint16_t portno); // portno must be in host-byte order

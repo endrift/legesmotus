@@ -184,7 +184,7 @@ private:
 	void		scan_local_network();
 
 	// Connect to the meta server to scan the Internet
-	void		contact_meta_server();
+	void		contact_metaserver();
 
 	void		send_ack(const PacketReader& packet);
 public:

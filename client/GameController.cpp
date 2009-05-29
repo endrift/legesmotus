@@ -405,11 +405,14 @@ void GameController::init(GameWindow* window) {
 	m_current_scan_id = 0;
 	if (!resolve_hostname(m_metaserver_address, METASERVER_HOSTNAME, METASERVER_PORTNO)) {
 		// TODO: better error message
-		std::cerr << "Failed to resolved metaserver hostname.  Internet-wide server browsing will not be enabled." << std::endl;
+		std::cerr << "Unable to resolve metaserver hostname.  Internet-wide server browsing will not be enabled." << std::endl;
 	}
 
 	// Uncomment to test local area network scanning
 	//scan_local_network();
+
+	// Uncomment to test meta server browsing
+	contact_metaserver();
 }
 
 /*
@@ -2264,7 +2267,7 @@ void	GameController::scan_local_network() {
 	m_network.broadcast_packet(DEFAULT_PORTNO, info_request_packet);
 }
 
-void	GameController::contact_meta_server() {
+void	GameController::contact_metaserver() {
 	PacketWriter info_request_packet(INFO_PACKET);
 	m_current_scan_id = info_request_packet.packet_id();
 	info_request_packet << m_protocol_number << m_current_scan_id << get_ticks() << m_client_version;

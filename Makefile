@@ -7,7 +7,7 @@ endif
 
 all: legesmotus $(MACBUNDLE)
 
-legesmotus: common server client
+legesmotus: common server client metaserver
 
 common:
 	$(MAKE) -C common
@@ -17,6 +17,9 @@ server: common
 
 client: common
 	$(MAKE) -C client
+
+metaserver: common
+	$(MAKE) -C metaserver
 
 tests: common server client
 	$(MAKE) -C tests

@@ -45,12 +45,21 @@ using namespace std;
 // This can't be an enum because we want overloading of operator<< to work OK.
 const int	Server::SERVER_PROTOCOL_VERSION = 1;
 
+const char	Server::SERVER_VERSION[] = "0.0.1";
+
 Server::Server (PathManager& path_manager) : m_path_manager(path_manager), m_ack_manager(*this)
 {
 	m_next_player_id = 1;
 	m_is_running = false;
+	m_portno = 0;
 	m_game_start_time = 0;
 	m_players_have_spawned = false;
+
+	m_register_with_metaserver = true;
+	m_last_metaserver_contact_time = 0;
+	m_metaserver_id = 0;
+	m_metaserver_token = 0;
+	m_metaserver_contact_frequency = 60000; // Initially, report every 60 seconds
 
 	m_team_count[0] = m_team_count[1] = 0;
 	m_team_score[0] = m_team_score[1] = 0;
@@ -529,13 +538,22 @@ void	Server::release_player_resources(const ServerPlayer& player) {
 	--m_team_count[player.get_team() - 'A'];
 }
 
-void	Server::start(int portno, const char* map_name)
+void	Server::start(uint16_t portno, const char* map_name)
 {
 	if (!load_map(map_name)) {
 		throw LMException("Failed to load map.");
 	}
 	if (!m_network.start(portno)) {
 		throw LMException("Failed to start server network on port.");
+	}
+	m_portno = portno;
+	if (m_register_with_metaserver && !resolve_hostname(m_metaserver_address, METASERVER_HOSTNAME, METASERVER_PORTNO)) {
+		// TODO: better error message
+		std::cerr << "Unable to resolve metaserver hostname.  This server will NOT be registered with the meta server." << std::endl;
+		m_register_with_metaserver = false;
+	}
+	if (m_register_with_metaserver) {
+		register_with_metaserver();
 	}
 }
 
@@ -545,6 +563,10 @@ void	Server::run()
 	while (m_is_running) {
 		timeout_players();
 		m_ack_manager.resend();
+
+		if (m_register_with_metaserver && get_ticks() - m_last_metaserver_contact_time >= m_metaserver_contact_frequency) {
+			register_with_metaserver();
+		}
 
 		if (m_players_have_spawned) {
 			// Update the status of the gates
@@ -585,6 +607,10 @@ void	Server::run()
 	// XXX: do we still want to send a SHUTDOWN packet?  Maybe SHUTDOWN is not necessary...
 	while (!m_players.empty()) {
 		remove_player(m_players.begin()->second, "Server shutting down");
+	}
+
+	if (m_register_with_metaserver) {
+		unregister_with_metaserver();
 	}
 }
 
@@ -742,6 +768,15 @@ uint32_t	Server::server_sleep_time() const {
 	 * ("A wait of 49 days should be sufficient to keep it from busywaiting" -- Jeffrey)
 	 */
 	uint64_t	sleep_time = std::numeric_limits<uint32_t>::max();
+
+	if (m_register_with_metaserver) {
+		uint64_t	time_since_contact = get_ticks() - m_last_metaserver_contact_time;
+		if (time_since_contact < m_metaserver_contact_frequency) {
+			sleep_time = std::min(sleep_time, m_metaserver_contact_frequency - time_since_contact);
+		} else {
+			sleep_time = 0;
+		}
+	 }
 
 	if (m_players_have_spawned) {
 		// Take into account gate changes, and gate status updates
@@ -918,6 +953,10 @@ void	Server::set_password(const char* pw) {
 	m_password = pw;
 }
 
+void	Server::set_register_with_metaserver(bool rwms) {
+	m_register_with_metaserver = rwms;
+}
+
 void	Server::reject_join(const IPAddress& addr, const char* why) {
 	PacketWriter	packet(REQUEST_DENIED_PACKET);
 	packet << int(JOIN_PACKET) << why;
@@ -968,5 +1007,29 @@ void	Server::send_spawn_packet(const ServerPlayer& player, Point spawnpoint, boo
 	spawn_packet << player.get_id() << spawnpoint.x << spawnpoint.y << 0 << 0 << 0 << (is_alive ? "" : "IF");
 	m_ack_manager.add_packet(player.get_id(), spawn_packet);
 	m_network.send_packet(player.get_address(), spawn_packet);
+}
+
+void	Server::register_with_metaserver() {
+	m_last_metaserver_contact_time = get_ticks();
+
+	PacketWriter	packet(REGISTER_SERVER_PACKET);
+	packet << SERVER_PROTOCOL_VERSION << SERVER_VERSION << m_portno;
+	if (m_metaserver_id) {
+		packet << m_metaserver_id << m_metaserver_token;
+	}
+
+	m_network.send_packet(m_metaserver_address, packet);
+}
+
+void	Server::unregister_with_metaserver() {
+	PacketWriter	packet(UNREGISTER_SERVER_PACKET);
+	packet << m_metaserver_id << m_metaserver_token;
+	m_network.send_packet(m_metaserver_address, packet);
+}
+
+void	Server::register_server_packet(const IPAddress& address, PacketReader& packet) {
+	if (m_register_with_metaserver && address == m_metaserver_address) {
+		packet >> m_metaserver_id >> m_metaserver_token >> m_metaserver_contact_frequency;
+	}
 }
 

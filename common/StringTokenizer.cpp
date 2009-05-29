@@ -127,7 +127,7 @@ StringTokenizer&	StringTokenizer::operator>> (short& i) {
 
 StringTokenizer&	StringTokenizer::operator>> (unsigned short& i) {
 	const char* p = get_next();
-	i = p ? (unsigned short)atoi(p) : 0;
+	i = p ? (unsigned short)strtoul(p, NULL, 10) : 0;
 	return *this;
 }
 
@@ -139,7 +139,7 @@ StringTokenizer&	StringTokenizer::operator>> (int& i) {
 
 StringTokenizer&	StringTokenizer::operator>> (unsigned int& i) {
 	const char* p = get_next();
-	i = p ? (unsigned int)atoi(p) : 0;
+	i = p ? (unsigned int)strtoul(p, NULL, 10) : 0;
 	return *this;
 }
 

@@ -55,8 +55,11 @@ static void display_usage(const char* progname) {
 
 static void display_version() {
 	cout << "Leges Motus" << endl;
-	cout << "A 2D team-based shooter set in zero gravity" << endl;
-	cout << "Copyright 2009 - Nathan Partlan, Andrew Ayer, Daniel Schneider, and Jeffrey Pfau" << endl;
+	cout << "A networked, 2D shooter set in zero gravity" << endl;
+	cout << endl;
+	cout << "Copyright 2009 Andrew Ayer, Nathan Partlan, Jeffrey Pfau" << endl;
+	cout << "Leges Motus is free and open source software; see the source for copying conditions." << endl;
+	cout << "There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE." << endl;
 }
 
 extern "C" int main(int argc, char* argv[]) try {

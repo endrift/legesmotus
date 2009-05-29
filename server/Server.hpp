@@ -41,8 +41,11 @@ class PathManager;
 class IPAddress;
 
 class Server {
-private:
+public:
 	static const int	SERVER_PROTOCOL_VERSION;	// Defined in Server.cpp
+	static const char	SERVER_VERSION[];		// Defined in Server.cpp
+
+private:
 	typedef std::map<uint32_t, ServerPlayer> PlayerMap;	// A std::map from player_id to the player object
 
 	// Internal time constants - should not be set by user
@@ -137,6 +140,7 @@ private:
 	//
 	std::string		m_password;		// Password for admin access
 	bool			m_is_running;		// When this is false, run() stops its main loop
+	uint16_t		m_portno;
 	ServerNetwork		m_network;
 	ServerAckManager	m_ack_manager;
 	uint32_t		m_next_player_id;	// Used to allocate next player ID
@@ -150,6 +154,19 @@ private:
 	int			m_team_count[2];	// [0] = # of players on team A  [1] == # of players on team B
 	int			m_team_score[2];	// [0] = team A's score  [1] = team B's score
 
+
+	//
+	// Meta server stuff
+	//
+	bool			m_register_with_metaserver;
+	IPAddress		m_metaserver_address;
+	uint64_t		m_last_metaserver_contact_time;	// Time in ticks of the last update
+	uint32_t		m_metaserver_id;
+	uint32_t		m_metaserver_token;
+	uint32_t		m_metaserver_contact_frequency;
+
+	void			register_with_metaserver();
+	void			unregister_with_metaserver();
 
 	//
 	// Gate Helpers
@@ -279,11 +296,13 @@ public:
 	void		player_animation(const IPAddress& address, PacketReader& packet);
 	void		name_change(const IPAddress& address, PacketReader& packet);
 	void		team_change(const IPAddress& address, PacketReader& packet);
+	void		register_server_packet(const IPAddress& address, PacketReader& packet);
 
-	void		start(int portno, const char* map_name); // map_name is NAME of map (excluding .map)
+	void		start(uint16_t portno, const char* map_name); // map_name is NAME of map (excluding .map)
 	void		run();
 
 	void		set_password(const char* pw);
+	void		set_register_with_metaserver(bool);
 };
 
 #endif

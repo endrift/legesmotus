@@ -1,5 +1,5 @@
 /*
- * Server/main.cpp
+ * MetaServer/main.cpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,10 +22,9 @@
  * 
  */
 
-#include "Server.hpp"
+#include "MetaServer.hpp"
 #include "common/LMException.hpp"
 #include "common/network.hpp"
-#include "common/PathManager.hpp"
 #include "common/misc.hpp"
 #include <iostream>
 #include <stdlib.h>
@@ -37,20 +36,28 @@ extern "C" void clean_exit() {
 	// TODO write
 }
 
+namespace {
+	// in seconds:
+	enum {
+		DEFAULT_SERVER_TIMEOUT = 2700,	// 45 minutes
+		DEFAULT_CONTACT_FREQUENCY = 900	// 15 minutes
+	};
+}
+
 static void display_usage(const char* progname) {
 	cout << "Usage: " << progname << " [OPTION]" << endl;
 	cout << "Options:" << endl;
-	cout << "  -p PORTNO	set the port number to listen on [default: " << DEFAULT_PORTNO << "]" << endl;
-	cout << "  -P PASSWORD	set the admin password [default: DISABLED]" << endl;
-	cout << "  -m MAPNAME	set the map name [default: alpha1]" << endl;
 	cout << "  -d		daemonize the server (not on Windows)" << endl;
-	cout << "  -l		(local server) do not register with the meta server" << endl;
+	cout << "  -f FREQUENCY	set the frequency (in seconds) at which servers" << endl;
+	cout << "		should contact the meta server [default: " << int(DEFAULT_CONTACT_FREQUENCY) << "]" << endl;
+	cout << "  -t TIMEOUT	set the timeout (in seconds) for servers [default: " << int(DEFAULT_SERVER_TIMEOUT) << "]" << endl;
+	cout << "  -p PORTNO	set the port number to listen on [default: " << uint16_t(METASERVER_PORTNO) << "]" << endl;
 	cout << "  -?, --help	display this help, and exit" << endl;
 	cout << "      --version\tdisplay version information and exit" << endl;
 }
 
 static void display_version() {
-	cout << "Leges Motus Server " << Server::SERVER_VERSION << endl;
+	cout << "Leges Motus Meta Server" << endl;
 	cout << "A networked, 2D shooter set in zero gravity" << endl;
 	cout << endl;
 	cout << "Copyright 2009 Andrew Ayer, Nathan Partlan, Jeffrey Pfau" << endl;
@@ -61,26 +68,23 @@ static void display_version() {
 extern "C" int main(int argc, char* argv[]) try {
 	srand(time(0));
 
-	string			password;
-	string			map_name("alpha1");
-	unsigned int		portno = DEFAULT_PORTNO;
+	uint16_t		portno = METASERVER_PORTNO;
+	uint32_t		contact_frequency = DEFAULT_CONTACT_FREQUENCY;
+	uint32_t		server_timeout = DEFAULT_SERVER_TIMEOUT;
 	bool			daemonize = false;
-	bool			local_server = false;
 
 	for (int i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "-p") == 0 && argc > i+1) {
 			portno = atoi(argv[i+1]);
 			++i;
-		} else if (strcmp(argv[i], "-P") == 0 && argc > i+1) {
-			password = argv[i+1];
+		} else if (strcmp(argv[i], "-f") == 0 && argc > i+1) {
+			contact_frequency = atol(argv[i+1]);
 			++i;
-		} else if (strcmp(argv[i], "-m") == 0 && argc > i+1) {
-			map_name = argv[i+1];
+		} else if (strcmp(argv[i], "-t") == 0 && argc > i+1) {
+			server_timeout = atol(argv[i+1]);
 			++i;
 		} else if (strcmp(argv[i], "-d") == 0) {
 			daemonize = true;
-		} else if (strcmp(argv[i], "-l") == 0) {
-			local_server = true;
 		} else if (strcmp(argv[i], "--version") == 0) {
 			display_version();
 			return 0;
@@ -96,13 +100,13 @@ extern "C" int main(int argc, char* argv[]) try {
 		}
 	}
 
-	PathManager		path_manager(argv[0]);
+	MetaServer		server(contact_frequency * 1000, server_timeout * 1000);
 
-	Server			server(path_manager);
-
-	server.set_password(password.c_str());
-	server.set_register_with_metaserver(!local_server);
-	server.start(portno, map_name.c_str());
+	if (!server.start(portno)) {
+		cerr << "Failed to start server on port " << portno << endl;
+		cerr << "Please make sure that you are not already running a service on this port." << endl;
+		return 1;
+	}
 
 	if (daemonize) {
 		::daemonize();
@@ -114,7 +118,5 @@ extern "C" int main(int argc, char* argv[]) try {
 
 } catch (const LMException& e) {
 	cerr << "Error: " << e.what() << endl;
-	cerr << "1. Make sure that you are running the server from the top-level source directory, OR that your $LM_DATA_DIR environment variable is set to the directory containing the game resources." << endl;
-	cerr << "2. Make sure that you are not already running the server." << endl;
 	return 1;
 }
