@@ -36,6 +36,7 @@
 #include "common/team.hpp"
 #include "common/StringTokenizer.hpp"
 #include "common/IPAddress.hpp"
+#include "common/timer.hpp"
 
 #include <vector>
 #include <stdio.h>
@@ -402,6 +403,10 @@ void GameController::init(GameWindow* window) {
 	m_minimap->register_with_window(m_window);
 
 	m_current_scan_id = 0;
+	if (!resolve_hostname(m_metaserver_address, METASERVER_HOSTNAME, METASERVER_PORTNO)) {
+		// TODO: better error message
+		std::cerr << "Failed to resolved metaserver hostname.  Internet-wide server browsing will not be enabled." << std::endl;
+	}
 
 	// Uncomment to test local area network scanning
 	//scan_local_network();
@@ -2225,21 +2230,50 @@ void	GameController::send_ack(const PacketReader& packet) {
 
 
 void	GameController::server_info(const IPAddress& server_address, PacketReader& info_packet) {
-	// Proof of concept code for server scanning
 	uint32_t	request_packet_id;
-	int		server_protocol_version;
-	string		current_map_name;
-	int		team_count[2];
-	info_packet >> request_packet_id >> server_protocol_version >> current_map_name >> team_count[0] >> team_count[1];
+	uint64_t	scan_start_time;
+	info_packet >> request_packet_id >> scan_start_time;
 
-	if (request_packet_id == m_current_scan_id) {
-		cerr << "Received INFO packet from " << format_ip_address(server_address, true) << ": Protocol=" << server_protocol_version << "; Map=" << current_map_name << "; Blue players=" << team_count[0] << "; Red players=" << team_count[1] << "; Ping time=" << SDL_GetTicks() - m_scan_start_time << "ms" << endl;
+	if (request_packet_id != m_current_scan_id) {
+		// From an old scan - ignore it
+		return;
+	}
+	
+	if (server_address == m_metaserver_address) {
+		// A response from the meta server
+		// Now send an info packet to the server specified in this packet, to measure ping time and get the most up-to-date information
+		IPAddress	server_address;
+		info_packet >> server_address;
+		scan_server(server_address);
+	} else {
+		// A response from an actual server
+		// Get the info on the server, and present it to the user
+		int		server_protocol_version;
+		string		current_map_name;
+		int		team_count[2];
+		info_packet >> server_protocol_version >> current_map_name >> team_count[0] >> team_count[1];
+
+		cerr << "Received INFO packet from " << format_ip_address(server_address, true) << ": Protocol=" << server_protocol_version << "; Map=" << current_map_name << "; Blue players=" << team_count[0] << "; Red players=" << team_count[1] << "; Ping time=" << get_ticks() - scan_start_time << "ms" << endl;
 	}
 }
 
 void	GameController::scan_local_network() {
 	PacketWriter info_request_packet(INFO_PACKET);
 	m_current_scan_id = info_request_packet.packet_id();
-	m_scan_start_time = SDL_GetTicks();
+	info_request_packet << m_protocol_number << m_current_scan_id << get_ticks();
 	m_network.broadcast_packet(DEFAULT_PORTNO, info_request_packet);
 }
+
+void	GameController::contact_meta_server() {
+	PacketWriter info_request_packet(INFO_PACKET);
+	m_current_scan_id = info_request_packet.packet_id();
+	info_request_packet << m_protocol_number << m_current_scan_id << get_ticks() << m_client_version;
+	m_network.send_packet_to(m_metaserver_address, info_request_packet);
+}
+
+void	GameController::scan_server(const IPAddress& server_address) {
+	PacketWriter info_request_packet(INFO_PACKET);
+	info_request_packet << m_protocol_number << m_current_scan_id << get_ticks();
+	m_network.send_packet_to(server_address, info_request_packet);
+}
+

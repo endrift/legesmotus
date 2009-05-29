@@ -438,8 +438,13 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 }
 
 void	Server::info(const IPAddress& address, PacketReader& request_packet) {
+	int		client_protocol_version;
+	uint32_t	scan_id;
+	uint64_t	scan_start_time;
+	request_packet >> client_protocol_version >> scan_id >> scan_start_time;
+
 	PacketWriter	response_packet(INFO_PACKET);
-	response_packet << request_packet.packet_id() << SERVER_PROTOCOL_VERSION << m_current_map.get_name() << m_team_count[0] << m_team_count[1];
+	response_packet << scan_id << scan_start_time << SERVER_PROTOCOL_VERSION << m_current_map.get_name() << m_team_count[0] << m_team_count[1];
 	m_network.send_packet(address, response_packet);
 }
 

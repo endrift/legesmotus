@@ -53,7 +53,7 @@ class UDPPacket;
  *	// message_text is now "Cover me, I'm going for the gate!"
  */
 
-class PacketReader : private StringTokenizer {
+class PacketReader : public StringTokenizer {
 private:
 	uint32_t	m_packet_type;
 	uint32_t	m_packet_id;

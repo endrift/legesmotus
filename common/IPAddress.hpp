@@ -32,6 +32,9 @@
 #endif
 
 #include <stdint.h>
+#include <iosfwd>
+
+class StringTokenizer;
 
 class IPAddress {
 public:
@@ -41,6 +44,8 @@ public:
 	IPAddress();
 	IPAddress(uint32_t host, uint16_t port);
 	IPAddress(const struct sockaddr_in& address);
+
+	void		clear () { host = 0; port = 0; }
 
 	void		populate_sockaddr(struct sockaddr_in& address) const;
 	void		set_host(const struct in_addr& addr);
@@ -54,5 +59,8 @@ public:
 		return host == other.host ? port < other.port : host < other.host;
 	}
 };
+
+std::ostream&		operator<< (std::ostream&, const IPAddress&);
+StringTokenizer&	operator>> (StringTokenizer&, IPAddress&);
 
 #endif

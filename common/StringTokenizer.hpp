@@ -95,6 +95,9 @@ public:
 	StringTokenizer&	operator>> (long&);
 	StringTokenizer&	operator>> (unsigned long&);
 
+	StringTokenizer&	operator>> (long long&);
+	StringTokenizer&	operator>> (unsigned long long&);
+
 	StringTokenizer&	operator>> (float&);
 	StringTokenizer&	operator>> (double&);
 

@@ -36,6 +36,8 @@
 
 using namespace std;
 
+const char METASERVER_HOSTNAME[] = "meta.legesmotus.beanwood.com";
+
 string	format_ip_address(const IPAddress& addr, bool resolve) {
 	string			hostname;
 

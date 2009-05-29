@@ -40,6 +40,10 @@ enum { MAX_NAME_LENGTH = 20 };
 // The default port number of the server
 enum { DEFAULT_PORTNO = 16877 };
 
+// Meta server settings
+enum { METASERVER_PORTNO = 16878 };
+extern const char METASERVER_HOSTNAME[];
+
 // Packet types:
 enum {
 	ACK_PACKET = 0,

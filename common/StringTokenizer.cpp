@@ -155,6 +155,18 @@ StringTokenizer&	StringTokenizer::operator>> (unsigned long& i) {
 	return *this;
 }
 
+StringTokenizer&	StringTokenizer::operator>> (long long& i) {
+	const char* p = get_next();
+	i = p ? atoll(p) : 0;
+	return *this;
+}
+
+StringTokenizer&	StringTokenizer::operator>> (unsigned long long& i) {
+	const char* p = get_next();
+	i = p ? strtoull(p, NULL, 10) : 0;
+	return *this;
+}
+
 StringTokenizer&	StringTokenizer::operator>> (float& i) {
 	const char* p = get_next();
 	i = p ? strtof(p, NULL) : 0.0;

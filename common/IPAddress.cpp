@@ -23,6 +23,10 @@
  */
 
 #include "IPAddress.hpp"
+#include "network.hpp"
+#include "StringTokenizer.hpp"
+#include <ostream>
+#include <string>
 
 #ifndef __WIN32
 #include <sys/socket.h>
@@ -56,3 +60,24 @@ void IPAddress::set_host(const struct in_addr& addr) {
 bool IPAddress::is_localhost() const {
 	return ntohl(host) >> 24 == 127;
 }
+
+
+std::ostream&		operator<< (std::ostream& out, const IPAddress& addr) {
+	return out << format_ip_address(addr);
+}
+
+StringTokenizer&	operator>> (StringTokenizer& tok, IPAddress& addr) {
+	if (const char* str = tok.get_next()) {
+		std::string	host_part;
+		uint16_t	port_part;
+		StringTokenizer(str, ':') >> host_part >> port_part;
+
+		if (!resolve_hostname(addr, host_part.c_str(), port_part)) {
+			addr.clear();
+		}
+	} else {
+		addr.clear();
+	}
+	return tok;
+}
+

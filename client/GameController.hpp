@@ -167,8 +167,8 @@ private:
 	GraphicalMap*	m_map;
 
 	// Server Browsing/Scanning
+	IPAddress	m_metaserver_address;
 	uint32_t	m_current_scan_id;
-	uint32_t	m_scan_start_time;
 	
 	void		init(GameWindow* window);
 	void		process_input();
@@ -177,8 +177,14 @@ private:
 	void		send_my_player_update();
 	void		attempt_jump();
 
+	// Scan a particular server:
+	void		scan_server(const IPAddress& server_address);
+
 	// Scan the local network for servers:
 	void		scan_local_network();
+
+	// Connect to the meta server to scan the Internet
+	void		contact_meta_server();
 
 	void		send_ack(const PacketReader& packet);
 public:
