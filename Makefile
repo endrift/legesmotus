@@ -60,4 +60,4 @@ LM\ Server.app: server
 bundle: legesmotus Leges\ Motus.app LM\ Server.app
 endif
 
-.PHONY: clean common server client bundle
+.PHONY: clean common server client bundle metaserver

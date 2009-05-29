@@ -71,6 +71,5 @@
 #endif
 
 int main(int argc, char *argv[]) {
-	[LMApplication poseAsClass:[NSApplication class]];
     return NSApplicationMain(argc, (const char **)argv);
 }
