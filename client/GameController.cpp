@@ -1036,7 +1036,7 @@ void GameController::process_mouse_click(SDL_Event event) {
 		if (m_last_clicked > get_ticks() - DOUBLE_CLICK_TIME) {
 			connect_to_server(selected_item);
 			toggle_server_browser(false);
-			m_game_state = GAME_IN_PROGRESS;
+			m_game_state = SHOW_MENUS;
 		}
 	} else if (m_game_state == GAME_IN_PROGRESS) {
 		if (event.button.button == 1) {
