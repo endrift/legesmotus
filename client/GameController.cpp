@@ -59,6 +59,7 @@ const Color GameController::BLUE_COLOR(0.4, 0.4, 1);
 const Color GameController::RED_COLOR(1, 0.4, 0.4);
 const int GameController::GATE_STATUS_RECT_WIDTH = 80;
 const int GameController::FROZEN_STATUS_RECT_WIDTH = 60;
+const int GameController::DOUBLE_CLICK_TIME = 300;
 
 GameController::GameController(PathManager& path_manager) : m_path_manager(path_manager) {
 	init(GameWindow::get_optimal_instance());
@@ -150,6 +151,7 @@ void GameController::init(GameWindow* window) {
 
 	m_time_to_unfreeze = 0;
 	m_last_fired = 0;
+	m_last_clicked = 0;
 
 	m_font = new Font(m_path_manager.data_path("JuraMedium.ttf", "fonts"), 14);
 	m_text_manager = new TextManager(m_font, m_window);
@@ -232,7 +234,7 @@ void GameController::init(GameWindow* window) {
 	red_player.set_invisible(true);
 	
 	m_crosshairs = new Sprite(m_path_manager.data_path("crosshairs.png", "sprites"));
-	m_crosshairs->set_priority(-1);
+	m_crosshairs->set_priority(-5);
 	m_window->register_hud_graphic(m_crosshairs);
 	
 	m_shot = new Sprite(m_path_manager.data_path("shot.png", "sprites"));
@@ -255,17 +257,62 @@ void GameController::init(GameWindow* window) {
 	m_text_manager->set_shadow(true);
 	
 	// Initialize all of the menu items.
-	m_main_menu_items["Resume Game"] = m_text_manager->place_string("Resume Game", 50, 200, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_main_menu_items["Options"] = m_text_manager->place_string("Options", 50, 250, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_main_menu_items["Quit"] = m_text_manager->place_string("Quit", 50, 300, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_main_menu_items["Thanks"] = m_text_manager->place_string("Thanks for playing! Please visit", 50, 400, TextManager::LEFT, TextManager::LAYER_HUD);
+	
+	// Main menu
+	m_main_menu_items["Connect to Server"] = m_text_manager->place_string("Connect to Server", 50, 200, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_main_menu_items["Resume Game"] = m_text_manager->place_string("Resume Game", 50, 250, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_main_menu_items["Options"] = m_text_manager->place_string("Options", 50, 300, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_main_menu_items["Quit"] = m_text_manager->place_string("Quit", 50, 350, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_main_menu_items["Thanks"] = m_text_manager->place_string("Thanks for playing! Please visit", 50, 450, TextManager::LEFT, TextManager::LAYER_HUD);
  	m_text_manager->set_active_color(0.4, 1.0, 0.4);
- 	m_main_menu_items["Thanks2"] = m_text_manager->place_string("blug.brown.edu/legesmotus", 50, 440, TextManager::LEFT, TextManager::LAYER_HUD);
+ 	m_main_menu_items["Thanks2"] = m_text_manager->place_string("blug.brown.edu/legesmotus", 50, 490, TextManager::LEFT, TextManager::LAYER_HUD);
  	m_text_manager->set_active_color(1.0, 1.0, 1.0);
- 	m_main_menu_items["Thanks3"] = m_text_manager->place_string("to leave feedback for us!", 50, 480, TextManager::LEFT, TextManager::LAYER_HUD);
+ 	m_main_menu_items["Thanks3"] = m_text_manager->place_string("to leave feedback for us!", 50, 520, TextManager::LEFT, TextManager::LAYER_HUD);
+	
+	// Options menu
 	m_options_menu_items["Back"] = m_text_manager->place_string("Back", 50, 200, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_options_menu_items["Enter Name"] = m_text_manager->place_string("Enter Name", 50, 250, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_options_menu_items["Toggle Sound"] = m_text_manager->place_string("Toggle Sound", 50, 300, TextManager::LEFT, TextManager::LAYER_HUD);
+	
+	// Server browser
+	m_server_browser_background = new TableBackground(2, m_screen_width - 50);
+	m_server_browser_background->set_row_height(0, 43);
+	m_server_browser_background->set_row_height(1, m_screen_height - 203);
+	m_server_browser_background->set_priority(-2);
+	m_server_browser_background->set_border_color(Color(1,1,1,0.8));
+	m_server_browser_background->set_border_width(2);
+	m_server_browser_background->set_cell_color(0, Color(0.2,0.1,0.1,0.8));
+	m_server_browser_background->set_cell_color(1, Color(0.1,0.1,0.15,0.8));
+	m_server_browser_background->set_y(100);
+	m_server_browser_background->set_x(m_screen_width/2);
+	m_server_browser_background->set_border_collapse(true);
+	m_server_browser_background->set_corner_radius(20);
+	m_window->register_hud_graphic(m_server_browser_background);
+	
+	m_server_browser_selection = new TableBackground(1,  m_server_browser_background->get_image_width() - 6);
+	m_server_browser_selection->set_row_height(0, 25);
+	m_server_browser_selection->set_priority(-3);
+	m_server_browser_selection->set_cell_color(0, Color(0.0, 0.0, 0.0, 0.8));
+	m_server_browser_selection->set_x(m_server_browser_background->get_x());
+	m_server_browser_selection->set_y(145);
+	m_window->register_hud_graphic(m_server_browser_selection);
+	
+	m_text_manager->set_active_font(m_medium_font);
+	
+	m_server_browser_items["namelabel"] = m_text_manager->place_string("Name", m_server_browser_background->get_x() - m_server_browser_background->get_image_width()/2 + 10, 110, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_server_browser_items["maplabel"] = m_text_manager->place_string("Map", m_server_browser_background->get_x(), 110, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_server_browser_items["playerslabel"] = m_text_manager->place_string("Players", m_server_browser_background->get_x() + m_server_browser_background->get_image_width()/4, 110, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_server_browser_items["pinglabel"] = m_text_manager->place_string("Ping", m_server_browser_background->get_x() + m_server_browser_background->get_image_width()/2 - 80, 110, TextManager::LEFT, TextManager::LAYER_HUD);
+	
+	map<string, Graphic*>::iterator svit;
+	for ( svit=m_server_browser_items.begin() ; svit != m_server_browser_items.end(); svit++ ) {
+		Graphic* thisitem = (*svit).second;
+		thisitem->set_priority(-4);
+		m_window->unregister_graphic(thisitem);
+		m_window->register_hud_graphic(thisitem);
+	}
+	
+	m_server_list_count = 0;
 	
 	// Initialize the overlay.
 	m_overlay_background = new TableBackground(3, m_screen_width - 300);
@@ -407,12 +454,6 @@ void GameController::init(GameWindow* window) {
 		// TODO: better error message
 		std::cerr << "Unable to resolve metaserver hostname.  Internet-wide server browsing will not be enabled." << std::endl;
 	}
-
-	// Uncomment to test local area network scanning
-	//scan_local_network();
-
-	// Uncomment to test meta server browsing
-	contact_metaserver();
 }
 
 /*
@@ -587,6 +628,8 @@ void GameController::run(int lockfps) {
 					thisitem->set_invisible(true);
 				}
 				
+				toggle_server_browser(false);
+				
 				m_blue_gate_status_rect->set_invisible(true);
 				m_blue_gate_status_text->set_invisible(true);
 				m_blue_gate_status_rect_back->set_invisible(true);
@@ -615,6 +658,38 @@ void GameController::run(int lockfps) {
 					thisitem->set_invisible(false);
 				}
 				
+				toggle_server_browser(false);
+				
+				m_blue_gate_status_rect->set_invisible(true);
+				m_blue_gate_status_text->set_invisible(true);
+				m_blue_gate_status_rect_back->set_invisible(true);
+				m_red_gate_status_rect->set_invisible(true);
+				m_red_gate_status_text->set_invisible(true);
+				m_red_gate_status_rect_back->set_invisible(true);
+				m_frozen_status_rect->set_invisible(true);
+				m_frozen_status_text->set_invisible(true);
+				m_frozen_status_rect_back->set_invisible(true);
+			} else if (m_game_state == SHOW_SERVER_BROWSER) {
+				if (m_map != NULL) {
+					m_map->set_visible(false);
+				}
+				set_players_visible(false);
+				
+				m_minimap->set_invisible(true);
+				
+				m_logo->set_invisible(false);
+				map<string, Graphic*>::iterator it;
+				for ( it=m_main_menu_items.begin() ; it != m_main_menu_items.end(); it++ ) {
+					Graphic* thisitem = (*it).second;
+					thisitem->set_invisible(true);
+				}
+				for ( it=m_options_menu_items.begin() ; it != m_options_menu_items.end(); it++ ) {
+					Graphic* thisitem = (*it).second;
+					thisitem->set_invisible(true);
+				}
+				
+				toggle_server_browser(true);
+				
 				m_blue_gate_status_rect->set_invisible(true);
 				m_blue_gate_status_text->set_invisible(true);
 				m_blue_gate_status_rect_back->set_invisible(true);
@@ -642,6 +717,8 @@ void GameController::run(int lockfps) {
 					Graphic* thisitem = (*it).second;
 					thisitem->set_invisible(true);
 				}
+				
+				toggle_server_browser(false);
 				
 				m_blue_gate_status_rect->set_invisible(false);
 				m_blue_gate_status_text->set_invisible(false);
@@ -892,6 +969,8 @@ void GameController::process_mouse_click(SDL_Event event) {
 					if (!m_players.empty()) {
 						m_game_state = GAME_IN_PROGRESS;
 					}
+				} else if ((*it).first == "Connect to Server") {
+					m_game_state = SHOW_SERVER_BROWSER;
 				}
 				m_sound_controller->play_sound("click");
 			}
@@ -929,6 +1008,36 @@ void GameController::process_mouse_click(SDL_Event event) {
 				m_sound_controller->play_sound("click");
 			}
 		}
+	} else if (m_game_state == SHOW_SERVER_BROWSER) {
+		m_sound_controller->play_sound("click");
+		
+		if (m_server_list_count == 0) {
+			return;
+		}
+		
+		int left_limit = m_server_browser_background->get_x() - m_server_browser_background->get_image_width()/2;
+		int right_limit = m_server_browser_background->get_x() + m_server_browser_background->get_image_width()/2;
+		
+		if (event.button.x < left_limit || event.button.x > right_limit) {
+			m_server_browser_selection->set_invisible(true);
+			return;
+		}
+		
+		if (event.button.y < 150 || event.button.y > 145 + 25 * m_server_list_count) {
+			m_server_browser_selection->set_invisible(true);
+			return;
+		}
+		
+		m_server_browser_selection->set_y(25 * (event.button.y/25) - 5);
+		m_server_browser_selection->set_invisible(false);
+		
+		int selected_item = (event.button.y/25) - m_server_browser_items["name0"]->get_y() / 25;
+		
+		if (m_last_clicked > get_ticks() - DOUBLE_CLICK_TIME) {
+			connect_to_server(selected_item);
+			toggle_server_browser(false);
+			m_game_state = GAME_IN_PROGRESS;
+		}
 	} else if (m_game_state == GAME_IN_PROGRESS) {
 		if (event.button.button == 1) {
 			// Fire the gun if it's ready.
@@ -950,6 +1059,7 @@ void GameController::process_mouse_click(SDL_Event event) {
 			m_sound_controller->play_sound("fire");
 		}
 	}
+	m_last_clicked = get_ticks();
 }
 
 /*
@@ -1358,6 +1468,81 @@ void GameController::toggle_score_overlay(bool visible) {
 }
 
 /*
+ * Show or hide the server browser.
+ */
+void GameController::toggle_server_browser(bool visible) {
+	// If we're opening the browser, clear the list and re-scan.
+	if (m_server_browser_background->is_invisible() == visible && m_server_browser_background->is_invisible() == true) {
+		for (int i = 0; i < m_server_list_count; i++) {
+			delete_server_browser_entry(i);
+		}
+		m_server_list_count = 0;
+		scan_local_network();
+		contact_metaserver();
+	}
+
+	m_server_browser_background->set_invisible(!visible);
+	
+	if (visible == false) {
+		m_server_browser_selection->set_invisible(!visible);
+	}
+	
+	map<string, Graphic*>::iterator it;
+	for ( it=m_server_browser_items.begin() ; it != m_server_browser_items.end(); it++ ) {
+		Graphic* thisitem = (*it).second;
+		thisitem->set_invisible(!visible);
+	}
+}
+
+/*
+ * Delete an entry from the server browser.
+ * NOTE: Should be called only as part of erasing all items in the server browser, or
+ * references could be thrown off.
+ */
+void GameController::delete_server_browser_entry(int num) {
+	if (num >= m_server_list_count || num < 0) {
+		return;
+	}
+	
+	ostringstream printer;
+	printer << "name";
+	printer << num;
+	if (m_server_browser_items.find(printer.str()) == m_server_browser_items.end()) {
+		return;
+	}
+	m_text_manager->remove_string(m_server_browser_items[printer.str()]);
+	m_server_browser_items.erase(printer.str());
+	
+	printer.clear();
+	printer << "map";
+	printer << num;
+	if (m_server_browser_items.find(printer.str()) == m_server_browser_items.end()) {
+		return;
+	}
+	m_text_manager->remove_string(m_server_browser_items[printer.str()]);
+	m_server_browser_items.erase(printer.str());
+	
+	printer.clear();
+	printer << "players";
+	printer << num;
+	if (m_server_browser_items.find(printer.str()) == m_server_browser_items.end()) {
+		return;
+	}
+	m_text_manager->remove_string(m_server_browser_items[printer.str()]);
+	m_server_browser_items.erase(printer.str());
+	
+	printer.clear();
+	printer << "ping";
+	printer << num;
+	if (m_server_browser_items.find(printer.str()) == m_server_browser_items.end()) {
+		return;
+	}
+	m_text_manager->remove_string(m_server_browser_items[printer.str()]);
+	m_server_browser_items.erase(printer.str());
+	m_server_list.erase(m_server_list.begin() + num);
+}
+
+/*
  * Change team scores.
  */
 void GameController::change_team_scores(int bluescore, int redscore) {
@@ -1402,6 +1587,10 @@ void GameController::update_individual_scores() {
 	// Place all the players into one of two lists based on their team
 	list<const GraphicalPlayer*>	blue_players;
 	list<const GraphicalPlayer*>	red_players;
+
+	if (m_players.empty()) {
+		return;
+	}
 
 	for (map<int, GraphicalPlayer>::iterator it = m_players.begin(); it != m_players.end(); ++it) {
 		if (it->second.get_sprite() != NULL && it->second.get_team() == 'A') {
@@ -1515,6 +1704,17 @@ void GameController::connect_to_server(const char* host, unsigned int port, stri
 }
 
 /*
+ * Try to connect to a server from the server list by number.
+ */
+void GameController::connect_to_server(int servernum) {
+	disconnect();
+	string host;
+	uint16_t port;
+	resolve_ip_address(host, &port, m_server_list[servernum]);
+	connect_to_server(host.c_str(), (unsigned int)port, m_name, -1);
+}
+
+/*
  * Send a disconnect packet.
  */
 void GameController::disconnect() {
@@ -1524,6 +1724,8 @@ void GameController::disconnect() {
 	m_network.send_packet(leave_request);
 	
 	m_network.disconnect();
+	
+	display_message("Disconnected.");
 }
 
 /*
@@ -1540,9 +1742,25 @@ void GameController::welcome(PacketReader& reader) {
 	m_player_id = playerid;
 	m_name = playername;
 
+	ostringstream serveraddress;
+	serveraddress << "Connected to server: ";
+	serveraddress << format_ip_address(m_network.get_server_address(), true);
+	display_message(serveraddress.str());
+
 	cerr << "Received welcome packet. Version: " << serverversion << ", Player ID: " << playerid << ", Name: " << playername << ", Team: " << team << endl;
 	send_ack(reader);
 	
+	if (!m_players.empty()) {
+		map<int, GraphicalPlayer>::iterator it;
+		for ( it=m_players.begin() ; it != m_players.end(); it++ ) {
+			const GraphicalPlayer& currplayer = (*it).second;
+			m_text_manager->remove_string(m_players[currplayer.get_id()].get_name_sprite());
+			m_window->unregister_graphic(m_players[currplayer.get_id()].get_sprite());
+			m_minimap->remove_blip(currplayer.get_id());
+			delete_individual_score(m_players[currplayer.get_id()]);
+			delete m_players[currplayer.get_id()].get_sprite();
+		}
+	}
 	m_players.clear();
 	
 	// Insert different name colors and sprites depending on team.
@@ -2256,7 +2474,57 @@ void	GameController::server_info(const IPAddress& server_address, PacketReader& 
 		int		team_count[2];
 		info_packet >> server_protocol_version >> current_map_name >> team_count[0] >> team_count[1];
 
-		cerr << "Received INFO packet from " << format_ip_address(server_address, true) << ": Protocol=" << server_protocol_version << "; Map=" << current_map_name << "; Blue players=" << team_count[0] << "; Red players=" << team_count[1] << "; Ping time=" << get_ticks() - scan_start_time << "ms" << endl;
+		//cerr << "Received INFO packet from " << format_ip_address(server_address, true) << ": Protocol=" << server_protocol_version << "; Map=" << current_map_name << "; Blue players=" << team_count[0] << "; Red players=" << team_count[1] << "; Ping time=" << get_ticks() - scan_start_time << "ms" << endl;
+		
+		if (server_protocol_version != m_protocol_number) {
+			//cerr << "Server with different protocol found: " << format_ip_address(server_address, true) << ": Protocol=" << server_protocol_version << "; Map=" << current_map_name << "; Blue players=" << team_count[0] << "; Red players=" << team_count[1] << "; Ping time=" << get_ticks() - scan_start_time << "ms" << endl;
+			return;
+		}
+		
+		m_server_list.insert(m_server_list.begin() + m_server_list_count, server_address);
+		
+		m_text_manager->set_active_font(m_font);
+		m_text_manager->set_active_color(1.0, 1.0, 1.0);
+		
+		ostringstream printer;
+		printer << "name";
+		printer << m_server_list_count;
+		m_server_browser_items[printer.str()] = m_text_manager->place_string(format_ip_address(server_address, true), m_server_browser_items["namelabel"]->get_x(), 150 + 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
+		m_server_browser_items[printer.str()]->set_priority(-4);
+		m_window->unregister_graphic(m_server_browser_items[printer.str()]);
+		m_window->register_hud_graphic(m_server_browser_items[printer.str()]);
+		
+		printer.clear();
+		printer << "map";
+		printer << m_server_list_count;
+		m_server_browser_items[printer.str()] = m_text_manager->place_string(current_map_name, m_server_browser_items["maplabel"]->get_x(), 150 + 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
+		m_server_browser_items[printer.str()]->set_priority(-4);
+		m_window->unregister_graphic(m_server_browser_items[printer.str()]);
+		m_window->register_hud_graphic(m_server_browser_items[printer.str()]);
+		
+		printer.clear();
+		printer << "players";
+		printer << m_server_list_count;
+		
+		ostringstream playertotal;
+		playertotal << (team_count[0] + team_count[1]);
+		m_server_browser_items[printer.str()] = m_text_manager->place_string(playertotal.str(), m_server_browser_items["playerslabel"]->get_x(), 150 + 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
+		m_server_browser_items[printer.str()]->set_priority(-4);
+		m_window->unregister_graphic(m_server_browser_items[printer.str()]);
+		m_window->register_hud_graphic(m_server_browser_items[printer.str()]);
+		
+		printer.clear();
+		printer << "ping";
+		printer << m_server_list_count;
+		
+		ostringstream pingstr;
+		pingstr << get_ticks() - scan_start_time;
+		m_server_browser_items[printer.str()] = m_text_manager->place_string(pingstr.str(), m_server_browser_items["pinglabel"]->get_x(), 150 + 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
+		m_server_browser_items[printer.str()]->set_priority(-4);
+		m_window->unregister_graphic(m_server_browser_items[printer.str()]);
+		m_window->register_hud_graphic(m_server_browser_items[printer.str()]);
+
+		m_server_list_count++;
 	}
 }
 

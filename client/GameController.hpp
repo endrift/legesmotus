@@ -65,7 +65,8 @@ private:
 		SHOW_MENUS = 0,
 		GAME_IN_PROGRESS = 1,
 		GAME_OVER = 2,
-		SHOW_OPTIONS_MENU = 3
+		SHOW_OPTIONS_MENU = 3,
+		SHOW_SERVER_BROWSER = 4
 	};
 
 	const static int MESSAGE_DISPLAY_TIME;
@@ -78,6 +79,7 @@ private:
 	const static double MINIMAP_SCALE;
 	const static int GATE_STATUS_RECT_WIDTH;
 	const static int FROZEN_STATUS_RECT_WIDTH;
+	const static int DOUBLE_CLICK_TIME;
 	
 	PathManager& 	m_path_manager;
 
@@ -115,6 +117,7 @@ private:
 	unsigned int	m_player_id;
 	bool		m_holding_gate;
 	unsigned int	m_last_fired;
+	unsigned int	m_last_clicked;
 
 	unsigned long	m_time_to_unfreeze;
 	unsigned long	m_total_time_frozen;
@@ -140,8 +143,17 @@ private:
 	Sprite*		m_shot;
 
 	Sprite*		m_logo;
+	
 	std::map<std::string, Graphic*> m_main_menu_items;
+	
 	std::map<std::string, Graphic*> m_options_menu_items;
+	
+	TableBackground* m_server_browser_background;
+	TableBackground* m_server_browser_selection;
+	std::map<std::string, Graphic*> m_server_browser_items;
+	std::vector<IPAddress> m_server_list;
+	int		m_server_list_count;
+	
 	bool		m_show_overlay;
 	TableBackground* m_overlay_background;
 	std::map<std::string, Graphic*> m_overlay_items;
@@ -161,7 +173,7 @@ private:
 	Graphic*	m_frozen_status_text;
 	
 	// MINIMAP CODE BY JEFFREY
-	Minimap*		m_minimap;
+	Minimap*	m_minimap;
 
 	// TEMPORARY MAP CODE BY ANDREW
 	GraphicalMap*	m_map;
@@ -198,6 +210,7 @@ public:
 	void		parse_key_input();
 	void		move_objects(float timescale);
 	void		connect_to_server(const char* host, unsigned int port, std::string name, char team);
+	void		connect_to_server(int servernum);
 	void		disconnect();
 	void		player_fired(unsigned int player_id, double start_x, double start_y, double direction);
 	void		send_player_shot(unsigned int shooter_id, unsigned int hit_player_id, double angle);
@@ -212,6 +225,8 @@ public:
 	void		send_name_change_packet(const char* new_name);
 	void		send_team_change_packet(char new_team);
 	void		toggle_score_overlay(bool visible);
+	void		toggle_server_browser(bool visible);
+	void		delete_server_browser_entry(int num);
 	void		change_team_scores(int bluescore, int redscore);
 	void 		update_individual_scores();
 	void 		update_individual_score_line(int count, const GraphicalPlayer& currplayer);
