@@ -511,8 +511,15 @@ void GameController::run(int lockfps) {
 			m_total_time_frozen = 0;
 		}
 		
-		// Update movement and graphics if frame rate is correct.
+		// Update movement twice as often as graphics.
 		unsigned long currframe = SDL_GetTicks();
+		if ((currframe - lastmoveframe) >= (delay/2)) {
+			move_objects((SDL_GetTicks() - lastmoveframe) / delay); // scale all position changes to keep game speed constant. 
+			
+			lastmoveframe = SDL_GetTicks();
+		}
+		
+		// Update graphics if frame rate is correct.
 		if((currframe - startframe) >= delay) {
 			if (m_time_to_unfreeze != 0) {
 				m_frozen_status_rect->set_x(m_players[m_player_id].get_x() - m_offset_x);
@@ -578,10 +585,6 @@ void GameController::run(int lockfps) {
 			} else if (m_gate_warning_time != 0 && m_gate_warning_time < currframe - (1*GATE_WARNING_FLASH_LENGTH)/6) {
 				m_gate_warning->set_invisible(false);
 			}
-						
-			move_objects((SDL_GetTicks() - lastmoveframe) / delay); // scale all position changes to keep game speed constant. 
-			
-			lastmoveframe = SDL_GetTicks();
 			
 			// Uncomment if framerate is needed.
 			// the framerate:
