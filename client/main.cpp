@@ -69,7 +69,7 @@ extern "C" int main(int argc, char* argv[]) try {
 	int			height = 0;
 	bool			fullscreen = false;
 	char			team = 0;
-	string			server = "legesmotus.beanwood.com";
+	string			server = "";
 	unsigned int		portno = DEFAULT_PORTNO;
 	string			name = "";
 	
@@ -129,7 +129,11 @@ extern "C" int main(int argc, char* argv[]) try {
 
 	cout << "Welcome to Leges Motus." << endl;
 	
-	game_controller->connect_to_server(server.c_str(), portno, !name.empty() ? name : get_username(), team);
+	if (server != "") {
+		game_controller->connect_to_server(server.c_str(), portno, !name.empty() ? name : get_username(), team);
+	} else {
+		game_controller->set_player_name(!name.empty() ? name : get_username());
+	}
 	game_controller->run();
 	
 	cout << "Leges Motus is now exiting." << endl;

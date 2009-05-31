@@ -2548,3 +2548,10 @@ void	GameController::scan_server(const IPAddress& server_address) {
 	m_network.send_packet_to(server_address, info_request_packet);
 }
 
+void	GameController::set_player_name(string name) {
+	m_name = name;
+	
+	if (m_network.is_connected()) {
+		send_name_change_packet(m_name.c_str());
+	}
+}
