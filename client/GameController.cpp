@@ -95,6 +95,12 @@ GameController::~GameController() {
 	
 	m_text_manager->remove_all_strings();
 
+	delete m_server_browser_background;
+	delete m_server_browser_selection;
+	delete m_overlay_background;
+	
+	m_server_browser_buttons.clear();
+
 	delete m_blue_gate_status_rect;
 	delete m_blue_gate_status_rect_back;
 	delete m_red_gate_status_rect;
@@ -275,6 +281,8 @@ void GameController::init(GameWindow* window) {
 	m_options_menu_items["Toggle Sound"] = m_text_manager->place_string("Toggle Sound", 50, 300, TextManager::LEFT, TextManager::LAYER_HUD);
 	
 	// Server browser
+	m_server_browser_selected_item = -1;
+	
 	m_server_browser_background = new TableBackground(2, m_screen_width - 50);
 	m_server_browser_background->set_row_height(0, 43);
 	m_server_browser_background->set_row_height(1, m_screen_height - 203);
@@ -297,13 +305,28 @@ void GameController::init(GameWindow* window) {
 	m_server_browser_selection->set_y(145);
 	m_window->register_hud_graphic(m_server_browser_selection);
 	
+	for (int i = 0; i < 3; i++) {
+		m_server_browser_buttons.push_back(new TableBackground(1, 100));
+		m_server_browser_buttons[i]->set_row_height(0, 40);
+		m_server_browser_buttons[i]->set_priority(-1);
+		m_server_browser_buttons[i]->set_border_width(2);
+		m_server_browser_buttons[i]->set_border_color(Color(1,1,1,0.8));
+		m_server_browser_buttons[i]->set_cell_color(0, Color(0.1,0.1,0.15,0.8));
+		m_server_browser_buttons[i]->set_x(100 + 100 * i);
+		m_server_browser_buttons[i]->set_y(m_screen_height - m_server_browser_buttons[i]->get_image_height() - 22);
+		m_window->register_hud_graphic(m_server_browser_buttons[i]);
+	}
+	
 	m_text_manager->set_active_font(m_medium_font);
 	
 	m_server_browser_items["namelabel"] = m_text_manager->place_string("Name", m_server_browser_background->get_x() - m_server_browser_background->get_image_width()/2 + 10, 110, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_server_browser_items["maplabel"] = m_text_manager->place_string("Map", m_server_browser_background->get_x(), 110, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_server_browser_items["playerslabel"] = m_text_manager->place_string("Players", m_server_browser_background->get_x() + m_server_browser_background->get_image_width()/4, 110, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_server_browser_items["pinglabel"] = m_text_manager->place_string("Ping", m_server_browser_background->get_x() + m_server_browser_background->get_image_width()/2 - 80, 110, TextManager::LEFT, TextManager::LAYER_HUD);
-	
+	m_server_browser_items["backbutton"] = m_text_manager->place_string("Back", m_server_browser_buttons[0]->get_x() - m_server_browser_buttons[0]->get_image_width()/2 + 25, m_server_browser_buttons[0]->get_y() + 8, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_server_browser_items["refreshbutton"] = m_text_manager->place_string("Refresh", m_server_browser_buttons[1]->get_x() - m_server_browser_buttons[1]->get_image_width()/2 + 10, m_server_browser_buttons[1]->get_y() + 8, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_server_browser_items["connectbutton"] = m_text_manager->place_string("Connect", m_server_browser_buttons[2]->get_x() - m_server_browser_buttons[2]->get_image_width()/2 + 6, m_server_browser_buttons[2]->get_y() + 8, TextManager::LEFT, TextManager::LAYER_HUD);
+		
 	map<string, Graphic*>::iterator svit;
 	for ( svit=m_server_browser_items.begin() ; svit != m_server_browser_items.end(); svit++ ) {
 		Graphic* thisitem = (*svit).second;
@@ -1018,26 +1041,65 @@ void GameController::process_mouse_click(SDL_Event event) {
 		int left_limit = m_server_browser_background->get_x() - m_server_browser_background->get_image_width()/2;
 		int right_limit = m_server_browser_background->get_x() + m_server_browser_background->get_image_width()/2;
 		
+		for (unsigned int i = 0; i < m_server_browser_buttons.size(); i++) {
+			TableBackground button = *m_server_browser_buttons[i];
+			if (event.button.x < button.get_x() - button.get_image_width()/2 ||
+			    event.button.x > button.get_x() + button.get_image_width()/2 ||
+			    event.button.y < button.get_y() ||
+			    event.button.y > button.get_y() + button.get_image_height()) {
+				 continue;
+			}
+			
+			if (i == 0) {
+				// Back.
+				m_game_state = SHOW_MENUS;
+				m_server_browser_selected_item = -1;
+			} else if (i == 1) {
+				// Refresh.
+				for (int i = 0; i < m_server_list_count; i++) {
+					delete_server_browser_entry(i);
+				}
+				m_server_browser_selection->set_invisible(true);
+				m_server_browser_selected_item = -1;
+				m_server_list_count = 0;
+				scan_local_network();
+				contact_metaserver();
+			} else if (i == 2) {
+				// Connect.
+				if (m_server_browser_selected_item < 0 || m_server_browser_selected_item > m_server_list_count) {
+					return;
+				}
+				connect_to_server(m_server_browser_selected_item);
+				toggle_server_browser(false);
+				m_game_state = SHOW_MENUS;
+			}
+		}
+				
+		
 		if (event.button.x < left_limit || event.button.x > right_limit) {
 			m_server_browser_selection->set_invisible(true);
+			m_server_browser_selected_item = -1;
 			return;
 		}
 		
 		if (event.button.y < 150 || event.button.y > 145 + 25 * m_server_list_count) {
 			m_server_browser_selection->set_invisible(true);
+			m_server_browser_selected_item = -1;
 			return;
 		}
 		
 		m_server_browser_selection->set_y(25 * (event.button.y/25) - 5);
 		m_server_browser_selection->set_invisible(false);
 		
-		int selected_item = (event.button.y/25) - m_server_browser_items["name0"]->get_y() / 25;
+		m_server_browser_selected_item = (event.button.y/25) - m_server_browser_items["name0"]->get_y() / 25;
 		
 		if (m_last_clicked > get_ticks() - DOUBLE_CLICK_TIME) {
-			connect_to_server(selected_item);
+			connect_to_server(m_server_browser_selected_item);
 			toggle_server_browser(false);
+			m_server_browser_selected_item = -1;
 			m_game_state = SHOW_MENUS;
 		}
+		
 	} else if (m_game_state == GAME_IN_PROGRESS) {
 		if (event.button.button == 1) {
 			// Fire the gun if it's ready.
@@ -1492,6 +1554,10 @@ void GameController::toggle_server_browser(bool visible) {
 		Graphic* thisitem = (*it).second;
 		thisitem->set_invisible(!visible);
 	}
+	
+	for (unsigned int i = 0; i < m_server_browser_buttons.size(); i++ ) {
+		m_server_browser_buttons[i]->set_invisible(!visible);
+	}
 }
 
 /*
@@ -1780,6 +1846,8 @@ void GameController::welcome(PacketReader& reader) {
 	m_players[m_player_id].set_name_sprite(m_text_manager->place_string(m_players[m_player_id].get_name(), m_screen_width/2, (m_screen_height/2)-(m_players[m_player_id].get_radius()+30), TextManager::CENTER, TextManager::LAYER_MAIN));
 	
 	send_my_player_update();
+	
+	m_game_state = GAME_IN_PROGRESS;
 }
 
 /*

@@ -150,9 +150,11 @@ private:
 	
 	TableBackground* m_server_browser_background;
 	TableBackground* m_server_browser_selection;
+	std::vector<TableBackground*> m_server_browser_buttons;
 	std::map<std::string, Graphic*> m_server_browser_items;
 	std::vector<IPAddress> m_server_list;
 	int		m_server_list_count;
+	int		m_server_browser_selected_item;
 	
 	bool		m_show_overlay;
 	TableBackground* m_overlay_background;
