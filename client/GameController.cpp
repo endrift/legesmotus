@@ -978,6 +978,9 @@ void GameController::parse_key_input() {
  */
 void GameController::process_mouse_click(SDL_Event event) {
 	if (m_game_state == SHOW_MENUS) {
+		if (event.button.button != 1) {
+			return;
+		}
 		// Check each item in the menu to see if the mouse is clicking on it.
 		map<string, Graphic*>::iterator it;
 		for ( it=m_main_menu_items.begin() ; it != m_main_menu_items.end(); it++ ) {
@@ -1004,6 +1007,9 @@ void GameController::process_mouse_click(SDL_Event event) {
 			}
 		}
 	} else if (m_game_state == SHOW_OPTIONS_MENU) {
+		if (event.button.button != 1) {
+			return;
+		}
 		// Check each item in the options menu.
 		map<string, Graphic*>::iterator it;
 		for ( it=m_options_menu_items.begin() ; it != m_options_menu_items.end(); it++ ) {
@@ -1037,6 +1043,9 @@ void GameController::process_mouse_click(SDL_Event event) {
 			}
 		}
 	} else if (m_game_state == SHOW_SERVER_BROWSER) {
+		if (event.button.button != 1) {
+			return;
+		}
 		m_sound_controller->play_sound("click");
 		
 		for (unsigned int i = 0; i < m_server_browser_buttons.size(); i++) {
@@ -1131,6 +1140,12 @@ void GameController::process_mouse_click(SDL_Event event) {
  * Do the movement of objects in a certain time scale.
  */
 void GameController::move_objects(float timescale) {
+	if (timescale > 1.0) {
+		while (timescale > 1.0) {
+			timescale -= 1.0;
+			move_objects(1.0);
+		}
+	}
 	if (m_players.empty()) {
 		return;
 	}
