@@ -1039,13 +1039,6 @@ void GameController::process_mouse_click(SDL_Event event) {
 	} else if (m_game_state == SHOW_SERVER_BROWSER) {
 		m_sound_controller->play_sound("click");
 		
-		if (m_server_list_count == 0) {
-			return;
-		}
-		
-		int left_limit = int(m_server_browser_background->get_x() - m_server_browser_background->get_image_width()/2);
-		int right_limit = int(m_server_browser_background->get_x() + m_server_browser_background->get_image_width()/2);
-		
 		for (unsigned int i = 0; i < m_server_browser_buttons.size(); i++) {
 			TableBackground button = *m_server_browser_buttons[i];
 			if (event.button.x < button.get_x() - button.get_image_width()/2 ||
@@ -1079,7 +1072,13 @@ void GameController::process_mouse_click(SDL_Event event) {
 				m_game_state = SHOW_MENUS;
 			}
 		}
-				
+		
+		if (m_server_list_count == 0) {
+			return;
+		}
+		
+		int left_limit = int(m_server_browser_background->get_x() - m_server_browser_background->get_image_width()/2);
+		int right_limit = int(m_server_browser_background->get_x() + m_server_browser_background->get_image_width()/2);			
 		
 		if (event.button.x < left_limit || event.button.x > right_limit) {
 			m_server_browser_selection->set_invisible(true);
