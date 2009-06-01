@@ -51,13 +51,11 @@ Server::Server (PathManager& path_manager) : m_path_manager(path_manager), m_ack
 {
 	m_next_player_id = 1;
 	m_is_running = false;
-	m_portno = 0;
 	m_game_start_time = 0;
 	m_players_have_spawned = false;
 
 	m_register_with_metaserver = true;
 	m_last_metaserver_contact_time = 0;
-	m_metaserver_id = 0;
 	m_metaserver_token = 0;
 	m_metaserver_contact_frequency = 60000; // Initially, report every 60 seconds
 
@@ -538,15 +536,20 @@ void	Server::release_player_resources(const ServerPlayer& player) {
 	--m_team_count[player.get_team() - 'A'];
 }
 
-void	Server::start(uint16_t portno, const char* map_name)
+void	Server::start(const char* interface_address, unsigned int portno, const char* map_name)
 {
 	if (!load_map(map_name)) {
 		throw LMException("Failed to load map.");
 	}
-	if (!m_network.start(portno)) {
-		throw LMException("Failed to start server network on port.");
+
+	if (!resolve_hostname(m_listen_address, interface_address, portno)) {
+		throw LMException("Failed to resolve the interface address.  Please make sure it's correct.");
 	}
-	m_portno = portno;
+
+	if (!m_network.start(m_listen_address)) {
+		throw LMException("Failed to start server network on interface and port.");
+	}
+
 	if (m_register_with_metaserver && !resolve_hostname(m_metaserver_address, METASERVER_HOSTNAME, METASERVER_PORTNO)) {
 		// TODO: better error message
 		std::cerr << "Unable to resolve metaserver hostname.  This server will NOT be registered with the meta server." << std::endl;
@@ -1013,23 +1016,19 @@ void	Server::register_with_metaserver() {
 	m_last_metaserver_contact_time = get_ticks();
 
 	PacketWriter	packet(REGISTER_SERVER_PACKET);
-	packet << SERVER_PROTOCOL_VERSION << SERVER_VERSION << m_portno;
-	if (m_metaserver_id) {
-		packet << m_metaserver_id << m_metaserver_token;
-	}
-
+	packet << SERVER_PROTOCOL_VERSION << SERVER_VERSION << m_listen_address;
 	m_network.send_packet(m_metaserver_address, packet);
 }
 
 void	Server::unregister_with_metaserver() {
 	PacketWriter	packet(UNREGISTER_SERVER_PACKET);
-	packet << m_metaserver_id << m_metaserver_token;
+	packet << m_listen_address << m_metaserver_token;
 	m_network.send_packet(m_metaserver_address, packet);
 }
 
 void	Server::register_server_packet(const IPAddress& address, PacketReader& packet) {
 	if (m_register_with_metaserver && address == m_metaserver_address) {
-		packet >> m_metaserver_id >> m_metaserver_token >> m_metaserver_contact_frequency;
+		packet >> m_metaserver_token >> m_metaserver_contact_frequency;
 	}
 }
 

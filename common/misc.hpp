@@ -61,4 +61,7 @@ void		sanitize_player_name(std::string& str);
 // Daemonize the program (not on Windows)
 void		daemonize();
 
+// Determine whether the program has terminal output (always returns true on Windows)
+bool		has_terminal_output();
+
 #endif

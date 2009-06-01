@@ -24,6 +24,7 @@
 
 #include "common/LMException.hpp"
 #include "common/UDPPacket.hpp"
+#include "common/IPAddress.hpp"
 #include "common/network.hpp"
 #include "UDPSocket.hpp"
 
@@ -82,6 +83,20 @@ UDPSocket::UDPSocket(unsigned int portno) {
 	}
 }
 
+UDPSocket::UDPSocket(const IPAddress& bind_address) {
+	init();
+	if (!bind(bind_address)) {
+		close();
+	}
+}
+
+UDPSocket::UDPSocket(const char* interface_address, unsigned int portno) {
+	init();
+	if (!bind(interface_address, portno)) {
+		close();
+	}
+}
+
 UDPSocket::~UDPSocket() {
 	close();
 }
@@ -98,12 +113,27 @@ void	UDPSocket::close() {
 	}
 }
 
-bool	UDPSocket::bind(unsigned int portno) {
+bool	UDPSocket::bind(const char* interface_address, unsigned int portno) {
 	struct sockaddr_in	addr;
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	if (interface_address) {
+		if (!inet_aton(interface_address, &addr.sin_addr)) {
+			return false;
+		}
+	} else {
+		addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	}
 	addr.sin_port = htons(portno);
+
+	return ::bind(fd, reinterpret_cast<const sockaddr*>(&addr), sizeof(addr)) == 0;
+}
+
+
+bool	UDPSocket::bind(const IPAddress& bind_address) {
+	struct sockaddr_in	addr;
+	memset(&addr, 0, sizeof(addr));
+	bind_address.populate_sockaddr(addr);
 
 	return ::bind(fd, reinterpret_cast<const sockaddr*>(&addr), sizeof(addr)) == 0;
 }

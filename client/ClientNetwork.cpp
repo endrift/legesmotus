@@ -169,6 +169,10 @@ void	ClientNetwork::process_server_packet(GameController& controller, const UDPP
 	case TEAM_CHANGE_PACKET:
 		controller.team_change(reader);
 		break;
+
+	case INFO_PACKET:
+		controller.server_info(raw_packet.get_address(), reader);
+		break;
 	}
 }
 

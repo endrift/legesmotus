@@ -26,8 +26,10 @@
 #define LM_COMMON_UDPSOCKET_HPP
 
 #include <stdint.h>
+#include <stddef.h>
 
 class UDPPacket;
+class IPAddress;
 
 class UDPSocket {
 private:
@@ -39,9 +41,13 @@ private:
 public:
 	UDPSocket();
 	explicit UDPSocket(unsigned int portno);
+	explicit UDPSocket(const IPAddress& bind_address);
+	UDPSocket(const char* interface_address, unsigned int portno);
 	~UDPSocket();
 
-	bool	bind(unsigned int portno);
+	bool	bind(unsigned int portno) { return bind(NULL, portno); }
+	bool	bind(const IPAddress& bind_address);
+	bool	bind(const char* interface_address, unsigned int portno);
 
 	// return true as soon as a packet is ready for reading
 	// will wait for up to wait_time milliseconds for a packet, after which it will return false

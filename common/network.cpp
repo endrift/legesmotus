@@ -62,20 +62,27 @@ string	format_ip_address(const IPAddress& addr, bool resolve) {
 }
 
 bool	resolve_hostname(IPAddress& resolved_addr, const char* hostname_to_resolve, uint16_t portno) {
+	resolved_addr.clear();
+
 	resolved_addr.port = htons(portno);
 
-	struct in_addr		addr;
-	if (inet_aton(hostname_to_resolve, &addr)) {
-		// IP address specified for hostname - no need to resolve
-		resolved_addr.set_host(addr);
-		return true;
-	} else {
-		// Attempt to resolve
-		struct hostent*	host = gethostbyname(hostname_to_resolve);
-		if (host && host->h_addrtype == AF_INET && host->h_length == 4) {
-			memcpy(&resolved_addr.host, host->h_addr_list[0], 4);
+	if (hostname_to_resolve && *hostname_to_resolve) {
+		struct in_addr		addr;
+		if (inet_aton(hostname_to_resolve, &addr)) {
+			// IP address specified for hostname - no need to resolve
+			resolved_addr.set_host(addr);
 			return true;
+		} else {
+			// Attempt to resolve
+			struct hostent*	host = gethostbyname(hostname_to_resolve);
+			if (host && host->h_addrtype == AF_INET && host->h_length == 4) {
+				memcpy(&resolved_addr.host, host->h_addr_list[0], 4);
+				return true;
+			}
 		}
+	} else {
+		resolved_addr.host = htonl(INADDR_ANY);
+		return true;
 	}
 	
 	return false;

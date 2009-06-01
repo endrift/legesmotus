@@ -48,9 +48,9 @@ public:
 	ServerNetwork();
 	~ServerNetwork();
 
-	// "Listen" on given port
+	// "Listen" on given address
 	//  Returns true if successfully listened, false otherwise
-	bool		start(unsigned int portno);
+	bool		start(const IPAddress& address);
 
 	// TODO: bring back stop() and is_running() functions
 

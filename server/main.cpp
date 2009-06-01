@@ -40,9 +40,10 @@ extern "C" void clean_exit() {
 static void display_usage(const char* progname) {
 	cout << "Usage: " << progname << " [OPTION]" << endl;
 	cout << "Options:" << endl;
-	cout << "  -p PORTNO	set the port number to listen on [default: " << DEFAULT_PORTNO << "]" << endl;
-	cout << "  -P PASSWORD	set the admin password [default: DISABLED]" << endl;
 	cout << "  -m MAPNAME	set the map name [default: alpha1]" << endl;
+	cout << "  -P PASSWORD	set the admin password [default: DISABLED]" << endl;
+	cout << "  -p PORTNO	set the port number to listen on [default: " << DEFAULT_PORTNO << "]" << endl;
+	cout << "  -i PORTNO	address of interface to listen on [default: all interfaces]" << endl;
 	cout << "  -d		daemonize the server (not on Windows)" << endl;
 	cout << "  -l		(local server) do not register with the meta server" << endl;
 	cout << "  -?, --help	display this help, and exit" << endl;
@@ -63,12 +64,16 @@ extern "C" int main(int argc, char* argv[]) try {
 
 	string			password;
 	string			map_name("alpha1");
+	const char*		interface_ip_address = NULL;
 	unsigned int		portno = DEFAULT_PORTNO;
 	bool			daemonize = false;
 	bool			local_server = false;
 
 	for (int i = 1; i < argc; i++) {
-		if (strcmp(argv[i], "-p") == 0 && argc > i+1) {
+		if (strcmp(argv[i], "-i") == 0 && argc > i+1) {
+			interface_ip_address = argv[i+1];
+			++i;
+		} else if (strcmp(argv[i], "-p") == 0 && argc > i+1) {
 			portno = atoi(argv[i+1]);
 			++i;
 		} else if (strcmp(argv[i], "-P") == 0 && argc > i+1) {
@@ -102,7 +107,7 @@ extern "C" int main(int argc, char* argv[]) try {
 
 	server.set_password(password.c_str());
 	server.set_register_with_metaserver(!local_server);
-	server.start(portno, map_name.c_str());
+	server.start(interface_ip_address, portno, map_name.c_str());
 
 	if (daemonize) {
 		::daemonize();

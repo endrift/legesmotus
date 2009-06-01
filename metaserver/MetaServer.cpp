@@ -35,25 +35,20 @@
 using namespace std;
 
 
-uint32_t	MetaServer::ServerInfo::next_server_id = 1L;
-
 
 MetaServer::ServerInfo::ServerInfo() {
-	m_server_id = 0;
 	m_token = 0;
 	m_last_seen_time = 0;
 }
 
 void MetaServer::ServerInfo::init(const IPAddress& address, ServerList::iterator list_position) {
-	m_server_id = next_server_id++;
-	m_token = rand() * rand();
 	m_address = address;
+	m_token = rand() * rand();
 	m_last_seen_time = get_ticks();
 	m_list_position = list_position;
 }
 
-void MetaServer::ServerInfo::seen(const IPAddress& address, ServerList& server_list) {
-	m_address = address;
+void MetaServer::ServerInfo::seen(ServerList& server_list) {
 	m_last_seen_time = get_ticks();
 
 	// Move to the front of the list
@@ -99,47 +94,65 @@ void	MetaServer::timeout_servers() {
 	// Working from the back of the list, pop off any server which hasn't been seenf for a while
 	while (!m_servers.empty() && now - m_servers.back().get_last_seen_time() >= m_timeout_time) {
 		cerr << "Timing out " << m_servers.back().get_address() << "..." << endl;
-		m_servers_by_id.erase(m_servers.back().get_id());
+		m_servers_by_address.erase(m_servers.back().get_address());
 		m_servers.pop_back();
 	}
 }
 
-void	MetaServer::register_server(const IPAddress& address, PacketReader& request_packet) {
+void	MetaServer::register_server(const IPAddress& remote_address, PacketReader& request_packet) {
 	int		server_protocol_version;
 	string		server_version;
-	uint16_t	portno;
-	uint32_t	server_id;
-	uint32_t	token;
-	request_packet >> server_protocol_version >> server_version >> portno >> server_id >> token;
+	IPAddress	server_address;
+	request_packet >> server_protocol_version >> server_version >> server_address;
 
-	IPAddress	listening_address(address.host, htons(portno));
+	// If the server did not specify its own hostname or port, take the values from the address that it's connecting from...
+	if (!server_address.host) {
+		server_address.host = remote_address.host;
+	}
+	if (!server_address.port) {
+		server_address.port = remote_address.port;
+	}
 
-	if (ServerInfo* server = get_server(server_id, token)) {
-		server->seen(listening_address, m_servers);
+	cerr << "Packet from " << remote_address << ": ";
+
+	ServerInfo*	server = get_server(server_address);
+
+	if (server) {
+		server->seen(m_servers);
 		cerr << "Re-Registering " << server->get_address() << "..." << endl;
 	} else {
 		m_servers.push_front(ServerInfo());
-		ServerInfo&	new_server = m_servers.front();
-		new_server.init(listening_address, m_servers.begin());
-		m_servers_by_id[new_server.get_id()] = &new_server;
+		server = &m_servers.front();
+		server->init(server_address, m_servers.begin());
+		m_servers_by_address[server->get_address()] = server;
 
-		PacketWriter	response_packet(REGISTER_SERVER_PACKET);
-		response_packet << new_server.get_id() << new_server.get_token() << m_contact_frequency;
-		send_packet(response_packet, address);
-
-		cerr << "Registering " << new_server.get_address() << "..." << endl;
+		cerr << "Registering " << server->get_address() << "..." << endl;
 	}
+
+	PacketWriter	response_packet(REGISTER_SERVER_PACKET);
+	response_packet << server->get_token() << m_contact_frequency;
+	send_packet(response_packet, server->get_address());
 }
 
-void	MetaServer::unregister_server(const IPAddress& address, PacketReader& request_packet) {
-	uint32_t	server_id;
+void	MetaServer::unregister_server(const IPAddress& remote_address, PacketReader& request_packet) {
+	IPAddress	server_address;
 	uint32_t	token;
-	request_packet >> server_id >> token;
+	request_packet >> server_address >> token;
 
-	if (ServerInfo* server = get_server(server_id, token)) {
-		cerr << "Unregistering " << server->get_address() << "..." << endl;
-		m_servers.erase(server->get_list_position());
-		m_servers_by_id.erase(server_id);
+	// If the server did not specify its own hostname or port, take the values from the address that it's connecting from...
+	if (!server_address.host) {
+		server_address.host = remote_address.host;
+	}
+	if (!server_address.port) {
+		server_address.port = remote_address.port;
+	}
+
+	if (ServerInfo* server = get_server(server_address)) {
+		if (server->get_token() == token) {
+			cerr << "Unregistering " << server->get_address() << "..." << endl;
+			m_servers_by_address.erase(server->get_address());
+			m_servers.erase(server->get_list_position());
+		}
 	}
 }
 
@@ -164,7 +177,8 @@ void	MetaServer::send_packet(const PacketWriter& packet_data, const IPAddress& a
 	m_socket.send(raw_packet);
 }
 
-MetaServer::ServerInfo*	MetaServer::get_server(uint32_t server_id, uint32_t token) {
-	ServerMap::iterator it(m_servers_by_id.find(server_id));
-	return it != m_servers_by_id.end() && it->second->get_token() == token ? it->second : NULL;
+MetaServer::ServerInfo*	MetaServer::get_server(const IPAddress& server_address) {
+	ServerMap::iterator it(m_servers_by_address.find(server_address));
+	return it != m_servers_by_address.end() ? it->second : NULL;
 }
+

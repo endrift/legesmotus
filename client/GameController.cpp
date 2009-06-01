@@ -475,7 +475,7 @@ void GameController::init(GameWindow* window) {
 	m_current_scan_id = 0;
 	if (!resolve_hostname(m_metaserver_address, METASERVER_HOSTNAME, METASERVER_PORTNO)) {
 		// TODO: better error message
-		std::cerr << "Unable to resolve metaserver hostname.  Internet-wide server browsing will not be enabled." << std::endl;
+		cerr << "Unable to resolve metaserver hostname.  Internet-wide server browsing will not be enabled." << std::endl;
 	}
 }
 
@@ -994,6 +994,8 @@ void GameController::process_mouse_click(SDL_Event event) {
 				} else if ((*it).first == "Resume Game") {
 					if (!m_players.empty()) {
 						m_game_state = GAME_IN_PROGRESS;
+					} else {
+						display_message("Not connected to server.");
 					}
 				} else if ((*it).first == "Connect to Server") {
 					m_game_state = SHOW_SERVER_BROWSER;
@@ -1041,8 +1043,8 @@ void GameController::process_mouse_click(SDL_Event event) {
 			return;
 		}
 		
-		int left_limit = m_server_browser_background->get_x() - m_server_browser_background->get_image_width()/2;
-		int right_limit = m_server_browser_background->get_x() + m_server_browser_background->get_image_width()/2;
+		int left_limit = int(m_server_browser_background->get_x() - m_server_browser_background->get_image_width()/2);
+		int right_limit = int(m_server_browser_background->get_x() + m_server_browser_background->get_image_width()/2);
 		
 		for (unsigned int i = 0; i < m_server_browser_buttons.size(); i++) {
 			TableBackground button = *m_server_browser_buttons[i];
@@ -1094,7 +1096,7 @@ void GameController::process_mouse_click(SDL_Event event) {
 		m_server_browser_selection->set_y(25 * (event.button.y/25) - 5);
 		m_server_browser_selection->set_invisible(false);
 		
-		m_server_browser_selected_item = (event.button.y/25) - m_server_browser_items["name0"]->get_y() / 25;
+		m_server_browser_selected_item = int((event.button.y/25) - m_server_browser_items["name0"]->get_y() / 25);
 		
 		if (m_last_clicked > get_ticks() - DOUBLE_CLICK_TIME) {
 			connect_to_server(m_server_browser_selected_item);
@@ -1787,14 +1789,17 @@ void GameController::connect_to_server(int servernum) {
  * Send a disconnect packet.
  */
 void GameController::disconnect() {
-	PacketWriter leave_request(LEAVE_PACKET);
-	leave_request << m_player_id;
-	
-	m_network.send_packet(leave_request);
-	
-	m_network.disconnect();
-	
-	display_message("Disconnected.");
+	if (!m_players.empty()) {
+		m_players.clear();
+
+		PacketWriter leave_request(LEAVE_PACKET);
+		leave_request << m_player_id;
+		m_network.send_packet(leave_request);
+		
+		m_network.disconnect();
+		
+		display_message("Disconnected.");
+	}
 }
 
 /*

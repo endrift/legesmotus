@@ -51,6 +51,10 @@ void	daemonize() {
 	throw LMException("Sorry, daemonization not supported on Windows.");
 }
 
+bool	has_terminal_output() {
+	return true;
+}
+
 #else
 
 #include <sys/types.h>
@@ -110,6 +114,10 @@ void	daemonize() {
 
 	// Create a new session
 	setsid();
+}
+
+bool	has_terminal_output() {
+	return isatty(1);
 }
 
 #endif

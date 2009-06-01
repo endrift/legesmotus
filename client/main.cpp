@@ -53,13 +53,17 @@ static void display_usage(const char* progname) {
 	cout << "      --version\tdisplay version information and exit" << endl;
 }
 
+static void display_legalese() {
+	cout << "Copyright 2009 Andrew Ayer, Nathan Partlan, Jeffrey Pfau" << endl;
+	cout << "Leges Motus is free and open source software; see the source for copying conditions." << endl;
+	cout << "There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE." << endl;
+}
+
 static void display_version() {
 	cout << "Leges Motus" << endl;
 	cout << "A networked, 2D shooter set in zero gravity" << endl;
 	cout << endl;
-	cout << "Copyright 2009 Andrew Ayer, Nathan Partlan, Jeffrey Pfau" << endl;
-	cout << "Leges Motus is free and open source software; see the source for copying conditions." << endl;
-	cout << "There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE." << endl;
+	display_legalese();
 }
 
 extern "C" int main(int argc, char* argv[]) try {
@@ -127,7 +131,10 @@ extern "C" int main(int argc, char* argv[]) try {
 		game_controller = new GameController(pathman, 1024, 768, false);
 	}
 
-	cout << "Welcome to Leges Motus." << endl;
+	if (has_terminal_output()) {
+		cout << "Welcome to Leges Motus." << endl;
+		display_legalese();
+	}
 	
 	if (server != "") {
 		game_controller->connect_to_server(server.c_str(), portno, !name.empty() ? name : get_username(), team);
@@ -136,7 +143,9 @@ extern "C" int main(int argc, char* argv[]) try {
 	}
 	game_controller->run();
 	
-	cout << "Leges Motus is now exiting." << endl;
+	if (has_terminal_output()) {
+		cout << "Leges Motus is now exiting.  Thanks for playing!" << endl;
+	}
 	
 	delete game_controller;
 	

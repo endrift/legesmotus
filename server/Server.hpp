@@ -140,7 +140,7 @@ private:
 	//
 	std::string		m_password;		// Password for admin access
 	bool			m_is_running;		// When this is false, run() stops its main loop
-	uint16_t		m_portno;
+	IPAddress		m_listen_address;	// The address the server's listening on
 	ServerNetwork		m_network;
 	ServerAckManager	m_ack_manager;
 	uint32_t		m_next_player_id;	// Used to allocate next player ID
@@ -161,7 +161,6 @@ private:
 	bool			m_register_with_metaserver;
 	IPAddress		m_metaserver_address;
 	uint64_t		m_last_metaserver_contact_time;	// Time in ticks of the last update
-	uint32_t		m_metaserver_id;
 	uint32_t		m_metaserver_token;
 	uint32_t		m_metaserver_contact_frequency;
 
@@ -298,7 +297,7 @@ public:
 	void		team_change(const IPAddress& address, PacketReader& packet);
 	void		register_server_packet(const IPAddress& address, PacketReader& packet);
 
-	void		start(uint16_t portno, const char* map_name); // map_name is NAME of map (excluding .map)
+	void		start(const char* interface_address, unsigned int portno, const char* map_name); // map_name is NAME of map (excluding .map)
 	void		run();
 
 	void		set_password(const char* pw);

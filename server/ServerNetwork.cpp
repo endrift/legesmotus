@@ -41,10 +41,10 @@ ServerNetwork::ServerNetwork() {
 ServerNetwork::~ServerNetwork() {
 }
 
-bool	ServerNetwork::start(unsigned int portno) {
+bool	ServerNetwork::start(const IPAddress& bind_address) {
 	// TODO: check to make sure server isn't listening already
 
-	return m_socket.bind(portno);
+	return m_socket.bind(bind_address);
 }
 
 void	ServerNetwork::send_packet(const IPAddress& address, const PacketWriter& packet_data) {

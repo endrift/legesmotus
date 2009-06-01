@@ -54,12 +54,12 @@ RUNNING THE SERVER
 To run the server, type './server/lmserver' in the top-level directory.
 
 The server supports the following command-line options:
-Usage: ./server/lmserver [OPTION]
-Options:
+  -m MAPNAME	set the map name (default: alpha1)
   -p PORTNO	set the port number to listen on (default: 16877)
   -P PASSWORD	set the admin password (default: admin mode is disabled)
-  -m MAPNAME	set the map name (default: alpha1)
+  -i PORTNO	address of interface to listen on (default: listen on all interfaces)
   -d		daemonize the server (not on Windows)
+  -l		(local server) do not register with the meta server
   -?, --help	display this help, and exit
       --version	display version information and exit
 

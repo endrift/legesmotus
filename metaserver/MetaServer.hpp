@@ -38,25 +38,21 @@ class PacketWriter;
 class MetaServer {
 private:
 	class ServerInfo;
-	typedef std::list<ServerInfo>		ServerList;
-	typedef std::map<uint32_t, ServerInfo*>	ServerMap;
+	typedef std::list<ServerInfo>			ServerList;
+	typedef std::map<IPAddress, ServerInfo*>	ServerMap;
 
 	class ServerInfo {
-		static uint32_t		next_server_id;
-
-		uint32_t		m_server_id;
-		uint32_t		m_token;
 		IPAddress		m_address;
+		uint32_t		m_token;
 		uint64_t		m_last_seen_time;
 		ServerList::iterator	m_list_position;
 
 	public:
 		ServerInfo();
 		void			init(const IPAddress& address, ServerList::iterator list_position);
-		uint32_t		get_id() const { return m_server_id; }
-		uint32_t		get_token() const { return m_token; }
 		IPAddress		get_address() const { return m_address; }
-		void			seen(const IPAddress& address, ServerList& server_list);
+		uint32_t		get_token() const { return m_token; }
+		void			seen(ServerList& server_list);
 		uint64_t		get_last_seen_time() const { return m_last_seen_time; }
 		ServerList::iterator	get_list_position() const { return m_list_position; }
 	};
@@ -65,7 +61,7 @@ private:
 	uint32_t			m_timeout_time;		// Number of milliseconds until an unseen server is removed
 	UDPSocket			m_socket;		// Socket that we're listening on
 	ServerList			m_servers;		// List of severs, with the most recently seen servers at the FRONT
-	ServerMap 			m_servers_by_id;	// A map of servers from id->server
+	ServerMap 			m_servers_by_address;	// A map of servers from address->server
 
 	void				timeout_servers();	// Timeout old servers
 
@@ -76,7 +72,7 @@ private:
 
 	void				send_packet(const PacketWriter& packet, const IPAddress& address);
 
-	ServerInfo*			get_server(uint32_t server_id, uint32_t token);
+	ServerInfo*			get_server(const IPAddress& address);
 
 public:
 	MetaServer(uint32_t contact_frequency, uint32_t timeout_time);
