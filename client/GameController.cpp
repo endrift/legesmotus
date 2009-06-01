@@ -271,9 +271,9 @@ void GameController::init(GameWindow* window) {
 	m_main_menu_items["Quit"] = m_text_manager->place_string("Quit", 50, 350, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_main_menu_items["Thanks"] = m_text_manager->place_string("Thanks for playing! Please visit", 50, 450, TextManager::LEFT, TextManager::LAYER_HUD);
  	m_text_manager->set_active_color(0.4, 1.0, 0.4);
- 	m_main_menu_items["Thanks2"] = m_text_manager->place_string("blug.brown.edu/legesmotus", 50, 490, TextManager::LEFT, TextManager::LAYER_HUD);
+ 	m_main_menu_items["Thanks2"] = m_text_manager->place_string("http://legesmotus.cs.brown.edu", 50, 490, TextManager::LEFT, TextManager::LAYER_HUD);
  	m_text_manager->set_active_color(1.0, 1.0, 1.0);
- 	m_main_menu_items["Thanks3"] = m_text_manager->place_string("to leave feedback for us!", 50, 520, TextManager::LEFT, TextManager::LAYER_HUD);
+ 	m_main_menu_items["Thanks3"] = m_text_manager->place_string("to leave feedback for us!", 50, 530, TextManager::LEFT, TextManager::LAYER_HUD);
 	
 	// Options menu
 	m_options_menu_items["Back"] = m_text_manager->place_string("Back", 50, 200, TextManager::LEFT, TextManager::LAYER_HUD);
