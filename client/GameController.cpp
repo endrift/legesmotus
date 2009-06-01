@@ -1787,11 +1787,13 @@ void GameController::connect_to_server(int servernum) {
  */
 void GameController::disconnect() {
 	if (!m_players.empty()) {
-		m_players.clear();
-
+		map<int, GraphicalPlayer>::iterator it;
 		PacketWriter leave_request(LEAVE_PACKET);
 		leave_request << m_player_id;
 		m_network.send_packet(leave_request);
+		
+		clear_players();
+		m_player_id = 0;
 		
 		m_network.disconnect();
 		
@@ -1821,18 +1823,7 @@ void GameController::welcome(PacketReader& reader) {
 	cerr << "Received welcome packet. Version: " << serverversion << ", Player ID: " << playerid << ", Name: " << playername << ", Team: " << team << endl;
 	send_ack(reader);
 	
-	if (!m_players.empty()) {
-		map<int, GraphicalPlayer>::iterator it;
-		for ( it=m_players.begin() ; it != m_players.end(); it++ ) {
-			const GraphicalPlayer& currplayer = (*it).second;
-			m_text_manager->remove_string(m_players[currplayer.get_id()].get_name_sprite());
-			m_window->unregister_graphic(m_players[currplayer.get_id()].get_sprite());
-			m_minimap->remove_blip(currplayer.get_id());
-			delete_individual_score(m_players[currplayer.get_id()]);
-			delete m_players[currplayer.get_id()].get_sprite();
-		}
-	}
-	m_players.clear();
+	clear_players();
 	
 	// Insert different name colors and sprites depending on team.
 	if (team == 'A') {
@@ -2025,7 +2016,8 @@ void GameController::leave(PacketReader& reader) {
 		leavemsg.append(leave_message);
 		display_message(leavemsg);
 		cerr << "You were kicked!  Reason: " << leave_message << endl;
-		m_quit_game = true;
+		disconnect();
+		m_game_state = SHOW_MENUS;
 		return;
 	}
 	
@@ -2635,4 +2627,19 @@ void	GameController::set_player_name(string name) {
 	if (m_network.is_connected()) {
 		send_name_change_packet(m_name.c_str());
 	}
+}
+
+void	GameController::clear_players() {
+	if (!m_players.empty()) {
+		map<int, GraphicalPlayer>::iterator it;
+		for ( it=m_players.begin() ; it != m_players.end(); it++ ) {
+			const GraphicalPlayer& currplayer = (*it).second;
+			m_text_manager->remove_string(m_players[currplayer.get_id()].get_name_sprite());
+			m_window->unregister_graphic(m_players[currplayer.get_id()].get_sprite());
+			m_minimap->remove_blip(currplayer.get_id());
+			delete_individual_score(m_players[currplayer.get_id()]);
+			delete m_players[currplayer.get_id()].get_sprite();
+		}
+	}
+	m_players.clear();
 }
