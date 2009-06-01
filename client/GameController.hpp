@@ -194,6 +194,9 @@ private:
 	// Scan a particular server:
 	void		scan_server(const IPAddress& server_address);
 
+	// Scan both the local network and the meta server for servers:
+	void		scan_all();
+
 	// Scan the local network for servers:
 	void		scan_local_network();
 

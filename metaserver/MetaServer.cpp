@@ -91,7 +91,7 @@ void	MetaServer::process_packet(const UDPPacket& packet) {
 
 void	MetaServer::timeout_servers() {
 	uint64_t	now = get_ticks();
-	// Working from the back of the list, pop off any server which hasn't been seenf for a while
+	// Working from the back of the list, pop off any server which hasn't been seen for a while
 	while (!m_servers.empty() && now - m_servers.back().get_last_seen_time() >= m_timeout_time) {
 		cerr << "Timing out " << m_servers.back().get_address() << "..." << endl;
 		m_servers_by_address.erase(m_servers.back().get_address());

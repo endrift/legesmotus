@@ -1060,8 +1060,7 @@ void GameController::process_mouse_click(SDL_Event event) {
 				m_server_browser_selection->set_invisible(true);
 				m_server_browser_selected_item = -1;
 				m_server_list_count = 0;
-				scan_local_network();
-				contact_metaserver();
+				scan_all();
 			} else if (i == 2) {
 				// Connect.
 				if (m_server_browser_selected_item < 0 || m_server_browser_selected_item > m_server_list_count) {
@@ -1543,8 +1542,7 @@ void GameController::toggle_server_browser(bool visible) {
 			delete_server_browser_entry(i);
 		}
 		m_server_list_count = 0;
-		scan_local_network();
-		contact_metaserver();
+		scan_all();
 	}
 
 	m_server_browser_background->set_invisible(!visible);
@@ -2601,6 +2599,14 @@ void	GameController::server_info(const IPAddress& server_address, PacketReader& 
 
 		m_server_list_count++;
 	}
+}
+
+void	GameController::scan_all() {
+	PacketWriter info_request_packet(INFO_PACKET);
+	m_current_scan_id = info_request_packet.packet_id();
+	info_request_packet << m_protocol_number << m_current_scan_id << get_ticks() << m_client_version;
+	m_network.broadcast_packet(DEFAULT_PORTNO, info_request_packet);
+	m_network.send_packet_to(m_metaserver_address, info_request_packet);
 }
 
 void	GameController::scan_local_network() {
