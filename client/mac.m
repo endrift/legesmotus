@@ -31,10 +31,11 @@
 		if ([arg1 length] > 4 && [[arg1 substringToIndex:4] isEqualToString:@"-psn"]) {
 			//fprintf(log,"Launched from finder %s\n",[[[NSBundle mainBundle] bundlePath] UTF8String]);
 			NSString* lpath = [[NSBundle mainBundle] bundlePath];
-			lpath = [lpath stringByAppendingString:@"/.."];
-			NSString *dataPath = [lpath stringByAppendingString:@"/data"];
+			lpath = [lpath stringByAppendingString:@"/Contents"];
+			NSString *dataPath = [lpath stringByAppendingString:@"/Resources/data"];
+			NSString *execPath = [lpath stringByAppendingString:@"/MacOS"];
 			setenv("LM_DATA_DIR", [dataPath UTF8String], 0);
-			// TODO LM_EXEC_DIR
+			setenv("LM_EXEC_DIR", [execPath UTF8String], 0);
 		}
 	}
 
