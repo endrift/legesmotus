@@ -4,10 +4,6 @@ OBJS = Map.o LMException.o Player.o Polygon.o Point.o PacketReader.o PacketWrite
 	UDPSocket.o UDPPacket.o IPAddress.o \
 	PathManager.o AckManager.o #put .o filenames here (DO NOT PUT .cpp!)
 
-ifeq ($(MACHINE)$(UNIXSTYLE),Darwin)
-OBJS += mac.o
-endif
-
 all: ../liblmcommon.a
 
 ../liblmcommon.a: $(OBJS)
