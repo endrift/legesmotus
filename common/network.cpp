@@ -98,7 +98,7 @@ bool	resolve_ip_address(std::string& resolved_hostname, uint16_t* portno, const 
 	if (host && host->h_name) {
 		resolved_hostname = host->h_name;
 		return true;
-	}
+	} // TODO: if it can't resolve, format the IP address in dot notation and stick it in the resolved_hostname string
 
 	return false;
 }

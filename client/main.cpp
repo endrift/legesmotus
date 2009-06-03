@@ -76,6 +76,7 @@ extern "C" int main(int argc, char* argv[]) try {
 	string			server = "";
 	unsigned int		portno = DEFAULT_PORTNO;
 	string			name = "";
+	IPAddress		server_address;
 	
 	for (int i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "-f") == 0) {
@@ -118,6 +119,16 @@ extern "C" int main(int argc, char* argv[]) try {
 		}
 	}
 
+	if (!server.empty() && !resolve_hostname(server_address, server.c_str(), portno)) {
+		cerr << "Hostname of requested server not found: " << server << endl;
+		return 1;
+	}
+
+	if (has_terminal_output()) {
+		cout << "Welcome to Leges Motus." << endl;
+		display_legalese();
+	}
+	
 	PathManager	pathman(argv[0]);
 
 	if (width > 0 && height > 0) {
@@ -131,16 +142,11 @@ extern "C" int main(int argc, char* argv[]) try {
 		game_controller = new GameController(pathman, 1024, 768, false);
 	}
 
-	if (has_terminal_output()) {
-		cout << "Welcome to Leges Motus." << endl;
-		display_legalese();
+	game_controller->set_player_name(!name.empty() ? name : get_username());
+	if (!server.empty()) {
+		game_controller->connect_to_server(server_address, team);
 	}
-	
-	if (server != "") {
-		game_controller->connect_to_server(server.c_str(), portno, !name.empty() ? name : get_username(), team);
-	} else {
-		game_controller->set_player_name(!name.empty() ? name : get_username());
-	}
+
 	game_controller->run();
 	
 	if (has_terminal_output()) {

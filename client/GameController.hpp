@@ -214,7 +214,7 @@ public:
 	void		initialize_key_bindings();
 	void		parse_key_input();
 	void		move_objects(float timescale);
-	void		connect_to_server(const char* host, unsigned int port, std::string name, char team);
+	void		connect_to_server(const IPAddress& server_address, char team =0);
 	void		connect_to_server(int servernum);
 	void		disconnect();
 	void		player_fired(unsigned int player_id, double start_x, double start_y, double direction);

@@ -1770,15 +1770,18 @@ void GameController::send_player_shot(unsigned int shooter_id, unsigned int hit_
 /*
  * Try to connect to a server.
  */
-void GameController::connect_to_server(const char* host, unsigned int port, string name, char team) {
-	if (!m_network.connect(host, port)) {
-		cerr << "Error: Could not connect to server at " << host << ":" << port << endl;
+void GameController::connect_to_server(const IPAddress& server_address, char team) {
+	if (!m_network.connect(server_address)) {
+		ostringstream	errmsg;
+		errmsg << "Error: Could not connect to server at " << server_address;
+		display_message(errmsg.str());
+		cerr << errmsg.str() << endl;
+		return;
 	}
 	
 	PacketWriter join_request(JOIN_PACKET);
 	join_request << m_protocol_number;
-	m_name = name;
-	join_request << name;
+	join_request << m_name;
 	if (is_valid_team(team)) {
 		join_request << team;
 	}
@@ -1791,10 +1794,7 @@ void GameController::connect_to_server(const char* host, unsigned int port, stri
  */
 void GameController::connect_to_server(int servernum) {
 	disconnect();
-	string host;
-	uint16_t port;
-	resolve_ip_address(host, &port, m_server_list[servernum]);
-	connect_to_server(host.c_str(), (unsigned int)port, m_name, -1);
+	connect_to_server(m_server_list[servernum]);
 }
 
 /*

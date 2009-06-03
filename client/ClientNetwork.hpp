@@ -57,6 +57,7 @@ public:
 	//  Returns true if successfully connected, false otherwise
 	//  Does not send join packet
 	bool		connect(const char* hostname, unsigned int portno);
+	bool		connect(const IPAddress& address);
 
 	// Disconnect from server (Does not send leave packet)
 	void		disconnect();

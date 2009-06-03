@@ -53,6 +53,13 @@ bool	ClientNetwork::connect(const char* hostname, unsigned int portno) {
 	return true;
 }
 
+bool	ClientNetwork::connect(const IPAddress& address) {
+	disconnect();
+	m_server_address = address;
+	m_is_connected = true;
+	return true;
+}
+
 void	ClientNetwork::disconnect() {
 	m_is_connected = false;
 }
