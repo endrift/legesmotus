@@ -238,6 +238,7 @@ public:
 	void		delete_individual_score(const GraphicalPlayer& currplayer);
 	void		set_player_name(std::string name);
 	void		clear_players();
+	std::string	format_time_from_millis(unsigned int milliseconds);
 	
 	// Network callbacks:
 	void		welcome(PacketReader& reader);

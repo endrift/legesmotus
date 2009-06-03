@@ -321,6 +321,7 @@ void GameController::init(GameWindow* window) {
 	
 	m_server_browser_items["namelabel"] = m_text_manager->place_string("Name", m_server_browser_background->get_x() - m_server_browser_background->get_image_width()/2 + 10, 110, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_server_browser_items["maplabel"] = m_text_manager->place_string("Map", m_server_browser_background->get_x(), 110, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_server_browser_items["uptimelabel"] = m_text_manager->place_string("Uptime", m_server_browser_background->get_x() + m_server_browser_background->get_image_width()/7, 110, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_server_browser_items["playerslabel"] = m_text_manager->place_string("Players", m_server_browser_background->get_x() + m_server_browser_background->get_image_width()/4, 110, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_server_browser_items["pinglabel"] = m_text_manager->place_string("Ping", m_server_browser_background->get_x() + m_server_browser_background->get_image_width()/2 - 80, 110, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_server_browser_items["backbutton"] = m_text_manager->place_string("Back", m_server_browser_buttons[0]->get_x() - m_server_browser_buttons[0]->get_image_width()/2 + 25, m_server_browser_buttons[0]->get_y() + 8, TextManager::LEFT, TextManager::LAYER_HUD);
@@ -1606,6 +1607,15 @@ void GameController::delete_server_browser_entry(int num) {
 	m_server_browser_items.erase(printer.str());
 	
 	printer.clear();
+	printer << "uptime";
+	printer << num;
+	if (m_server_browser_items.find(printer.str()) == m_server_browser_items.end()) {
+		return;
+	}
+	m_text_manager->remove_string(m_server_browser_items[printer.str()]);
+	m_server_browser_items.erase(printer.str());
+	
+	printer.clear();
 	printer << "players";
 	printer << num;
 	if (m_server_browser_items.find(printer.str()) == m_server_browser_items.end()) {
@@ -2563,9 +2573,11 @@ void	GameController::server_info(const IPAddress& server_address, PacketReader& 
 		int		server_protocol_version;
 		string		current_map_name;
 		int		team_count[2];
-		info_packet >> server_protocol_version >> current_map_name >> team_count[0] >> team_count[1];
+		int		team_max_players[2];
+		unsigned int	uptime;
+		info_packet >> server_protocol_version >> current_map_name >> team_count[0] >> team_count[1] >> team_max_players[0] >> team_max_players[1] >> uptime;
 
-		//cerr << "Received INFO packet from " << format_ip_address(server_address, true) << ": Protocol=" << server_protocol_version << "; Map=" << current_map_name << "; Blue players=" << team_count[0] << "; Red players=" << team_count[1] << "; Ping time=" << get_ticks() - scan_start_time << "ms" << endl;
+		//cerr << "Received INFO packet from " << format_ip_address(server_address, true) << ": Protocol=" << server_protocol_version << "; Map=" << current_map_name << "; Blue players=" << team_count[0] << "; Red players=" << team_count[1] << "; Ping time=" << get_ticks() - scan_start_time << "ms"  << "; Uptime=" << uptime << endl;
 		
 		if (server_protocol_version != m_protocol_number) {
 			//cerr << "Server with different protocol found: " << format_ip_address(server_address, true) << ": Protocol=" << server_protocol_version << "; Map=" << current_map_name << "; Blue players=" << team_count[0] << "; Red players=" << team_count[1] << "; Ping time=" << get_ticks() - scan_start_time << "ms" << endl;
@@ -2594,11 +2606,24 @@ void	GameController::server_info(const IPAddress& server_address, PacketReader& 
 		m_window->register_hud_graphic(m_server_browser_items[printer.str()]);
 		
 		printer.clear();
+		printer << "uptime";
+		printer << m_server_list_count;
+		
+		string uptimestr = format_time_from_millis(uptime);
+		
+		m_server_browser_items[printer.str()] = m_text_manager->place_string(uptimestr, m_server_browser_items["uptimelabel"]->get_x(), 150 + 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
+		m_server_browser_items[printer.str()]->set_priority(-4);
+		m_window->unregister_graphic(m_server_browser_items[printer.str()]);
+		m_window->register_hud_graphic(m_server_browser_items[printer.str()]);
+		
+		printer.clear();
 		printer << "players";
 		printer << m_server_list_count;
 		
 		ostringstream playertotal;
 		playertotal << (team_count[0] + team_count[1]);
+		playertotal << "/";
+		playertotal << (team_max_players[0] + team_max_players[1]);
 		m_server_browser_items[printer.str()] = m_text_manager->place_string(playertotal.str(), m_server_browser_items["playerslabel"]->get_x(), 150 + 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
 		m_server_browser_items[printer.str()]->set_priority(-4);
 		m_window->unregister_graphic(m_server_browser_items[printer.str()]);
@@ -2668,4 +2693,28 @@ void	GameController::clear_players() {
 		}
 	}
 	m_players.clear();
+}
+
+string	GameController::format_time_from_millis(unsigned int milliseconds) {
+	unsigned int uptimesecs = (milliseconds/1000);
+	unsigned int uptimedays = uptimesecs/86400;
+	uptimesecs -= uptimedays * 86400;
+	unsigned int uptimehours = uptimesecs/3600;
+	uptimesecs -= uptimehours * 3600;
+	unsigned int uptimeminutes = uptimesecs/60;
+	uptimesecs -= uptimeminutes * 60;
+	ostringstream uptimestr;
+	if (uptimedays != 0) {
+		uptimestr << uptimedays << ":";
+	}
+	uptimestr << uptimehours << ":";
+	if (uptimeminutes < 10) {
+		uptimestr << "0";
+	}
+	uptimestr << uptimeminutes << ":";
+	if (uptimesecs < 10) {
+		uptimestr << "0";
+	}
+	uptimestr << uptimesecs;
+	return uptimestr.str();
 }
