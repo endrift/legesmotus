@@ -1819,7 +1819,7 @@ void GameController::disconnect() {
  * When we receive a welcome packet.
  */
 void GameController::welcome(PacketReader& reader) {
-	string serverversion;
+	int serverversion;
 	int playerid;
 	string playername;
 	char team;
@@ -1829,13 +1829,24 @@ void GameController::welcome(PacketReader& reader) {
 	m_player_id = playerid;
 	m_name = playername;
 
+	cerr << "Received welcome packet. Version: " << serverversion << ", Player ID: " << playerid << ", Name: " << playername << ", Team: " << team << endl;
+	send_ack(reader);
+	
+	if (serverversion != m_protocol_number) {
+		ostringstream serveraddress;
+		serveraddress << "Error: Server has a different protocol. Server: ";
+		serveraddress << serverversion;
+		serveraddress << " You: ";
+		serveraddress << m_protocol_number;
+		display_message(serveraddress.str());
+		
+		disconnect();
+	}
+	
 	ostringstream serveraddress;
 	serveraddress << "Connected to server: ";
 	serveraddress << format_ip_address(m_network.get_server_address(), true);
 	display_message(serveraddress.str());
-
-	cerr << "Received welcome packet. Version: " << serverversion << ", Player ID: " << playerid << ", Name: " << playername << ", Team: " << team << endl;
-	send_ack(reader);
 	
 	clear_players();
 	
@@ -2368,7 +2379,8 @@ void GameController::request_denied(PacketReader& reader) {
 		message.append(reason);
 		display_message(message);
 		cerr << "Join denied!  Reason: " << reason << endl;
-		m_quit_game = true;
+		disconnect();
+		m_game_state = SHOW_MENUS;
 	}
 }
 
