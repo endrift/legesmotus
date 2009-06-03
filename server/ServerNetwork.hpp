@@ -56,7 +56,7 @@ public:
 
 	// Process all packets and notify the server of their receipt
 	// Wait up to the given timeout (in ms) for packets
-	// Returns: true if packets were received, false if timeout happened first
+	// Returns: true if packets were received, false if timeout or signal happened first
 	bool		receive_packets(Server& server, uint32_t timeout);
 
 	// Send the given packet to the given address

@@ -299,6 +299,8 @@ public:
 
 	void		start(const char* interface_address, unsigned int portno, const char* map_name); // map_name is NAME of map (excluding .map)
 	void		run();
+	void		stop();
+	void		restart();
 
 	void		set_password(const char* pw);
 	void		set_register_with_metaserver(bool);

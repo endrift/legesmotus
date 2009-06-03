@@ -1802,7 +1802,6 @@ void GameController::connect_to_server(int servernum) {
  */
 void GameController::disconnect() {
 	if (!m_players.empty()) {
-		map<int, GraphicalPlayer>::iterator it;
 		PacketWriter leave_request(LEAVE_PACKET);
 		leave_request << m_player_id;
 		m_network.send_packet(leave_request);

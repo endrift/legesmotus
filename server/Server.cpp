@@ -451,7 +451,7 @@ void	Server::info(const IPAddress& address, PacketReader& request_packet) {
 	request_packet >> client_protocol_version >> scan_id >> scan_start_time;
 
 	PacketWriter	response_packet(INFO_PACKET);
-	response_packet << scan_id << scan_start_time << SERVER_PROTOCOL_VERSION << m_current_map.get_name() << m_team_count[0] << m_team_count[1];
+	response_packet << scan_id << scan_start_time << SERVER_PROTOCOL_VERSION << m_current_map.get_name() << m_team_count[0] << m_team_count[1] << m_current_map.total_teamA_capacity() << m_current_map.total_teamB_capacity() << get_ticks();
 	m_network.send_packet(address, response_packet);
 }
 
@@ -615,6 +615,13 @@ void	Server::run()
 	if (m_register_with_metaserver) {
 		unregister_with_metaserver();
 	}
+}
+
+void	Server::stop() {
+	m_is_running = false;
+}
+
+void	Server::restart() { // TODO
 }
 
 // Arguments:

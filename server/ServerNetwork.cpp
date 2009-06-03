@@ -32,6 +32,9 @@
 #include "common/IPAddress.hpp"
 #include <stdio.h>
 #include <stdlib.h>
+#ifndef __WIN32
+#include <signal.h>
+#endif
 
 using namespace std;
 
@@ -66,13 +69,24 @@ void	ServerNetwork::send_raw_packet(const UDPPacket& raw_packet) {
 }
 
 bool	ServerNetwork::receive_packets(Server& server, uint32_t timeout) {
-	if (timeout == 0) {
-		// Immediately timeout.
-		return false;
-	}
+#ifndef __WIN32
+	// Now is an ideal time to handle signals, so unblock all signals
+	sigset_t		old_sigset;
+	sigset_t		new_sigset;
+	sigemptyset(&new_sigset);
+	sigprocmask(SIG_SETMASK, &new_sigset, &old_sigset);
+#endif
 
-	if (!m_socket.has_packets(timeout)) {
-		// Socket does not have packets to receive - timeout must have elapsed
+	// Block until packets are received, timeout has elapsed, or a signal has been received.
+	bool		has_packets = m_socket.has_packets(timeout);
+
+#ifndef __WIN32
+	// Restore the old signal mask
+	sigprocmask(SIG_SETMASK, &old_sigset, NULL);
+#endif
+
+	if (!has_packets) {
+		// Socket does not have packets to receive - timeout must have elapsed, or a signal was received
 		return false;
 	}
 

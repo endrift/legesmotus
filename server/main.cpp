@@ -27,40 +27,91 @@
 #include "common/network.hpp"
 #include "common/PathManager.hpp"
 #include "common/misc.hpp"
+#include "common/timer.hpp"
 #include <iostream>
 #include <stdlib.h>
 #include <time.h>
+#include <memory>
+#ifndef __WIN32
+#include <signal.h>
+#endif
 
 using namespace std;
 
+namespace {
+	auto_ptr<Server>		server;
+
+	void display_usage(const char* progname) {
+		cout << "Usage: " << progname << " [OPTION]" << endl;
+		cout << "Options:" << endl;
+		cout << "  -m MAPNAME	set the map name [default: alpha1]" << endl;
+		cout << "  -P PASSWORD	set the admin password [default: DISABLED]" << endl;
+		cout << "  -p PORTNO	set the port number to listen on [default: " << DEFAULT_PORTNO << "]" << endl;
+		cout << "  -i PORTNO	address of interface to listen on [default: all interfaces]" << endl;
+		cout << "  -d		daemonize the server (not on Windows)" << endl;
+		cout << "  -l		(local server) do not register with the meta server" << endl;
+		cout << "  -?, --help	display this help, and exit" << endl;
+		cout << "      --version\tdisplay version information and exit" << endl;
+	}
+
+	void display_version() {
+		cout << "Leges Motus Server " << Server::SERVER_VERSION << endl;
+		cout << "A networked, 2D shooter set in zero gravity" << endl;
+		cout << endl;
+		cout << "Copyright 2009 Andrew Ayer, Nathan Partlan, Jeffrey Pfau" << endl;
+		cout << "Leges Motus is free and open source software; see the source for copying conditions." << endl;
+		cout << "There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE." << endl;
+	}
+
+	void	graceful_termination_handler (int)
+	{
+		server->stop();
+	}
+
+	void	restart_server_handler (int)
+	{
+		server->restart();
+	}
+
+	void	init_signals () {
+	#ifndef __WIN32
+		struct sigaction	siginfo;
+
+		// Block all these signals, and only unblock them when the server is ready to handle them (typically when it's waiting on a select)
+		sigemptyset(&siginfo.sa_mask);
+		sigaddset(&siginfo.sa_mask, SIGHUP);
+		sigaddset(&siginfo.sa_mask, SIGINT);
+		sigaddset(&siginfo.sa_mask, SIGTERM);
+		sigprocmask(SIG_BLOCK, &siginfo.sa_mask, NULL);
+
+		// Ignore SIGCHLD
+		siginfo.sa_flags = 0;
+		siginfo.sa_handler = SIG_IGN;
+		sigaction(SIGCHLD, &siginfo, NULL);
+
+		// Restart the server on a SIGHUP
+		siginfo.sa_flags = 0;
+		siginfo.sa_handler = restart_server_handler;
+		sigaction(SIGHUP, &siginfo, NULL);
+
+		// Gracefully terminate on a SIGINT or a SIGTERM
+		siginfo.sa_flags = 0;
+		siginfo.sa_handler = graceful_termination_handler;
+		sigaction(SIGINT, &siginfo, NULL);
+		sigaction(SIGTERM, &siginfo, NULL);
+	#endif
+	}
+}
+
 extern "C" void clean_exit() {
-	// TODO write
-}
-
-static void display_usage(const char* progname) {
-	cout << "Usage: " << progname << " [OPTION]" << endl;
-	cout << "Options:" << endl;
-	cout << "  -m MAPNAME	set the map name [default: alpha1]" << endl;
-	cout << "  -P PASSWORD	set the admin password [default: DISABLED]" << endl;
-	cout << "  -p PORTNO	set the port number to listen on [default: " << DEFAULT_PORTNO << "]" << endl;
-	cout << "  -i PORTNO	address of interface to listen on [default: all interfaces]" << endl;
-	cout << "  -d		daemonize the server (not on Windows)" << endl;
-	cout << "  -l		(local server) do not register with the meta server" << endl;
-	cout << "  -?, --help	display this help, and exit" << endl;
-	cout << "      --version\tdisplay version information and exit" << endl;
-}
-
-static void display_version() {
-	cout << "Leges Motus Server " << Server::SERVER_VERSION << endl;
-	cout << "A networked, 2D shooter set in zero gravity" << endl;
-	cout << endl;
-	cout << "Copyright 2009 Andrew Ayer, Nathan Partlan, Jeffrey Pfau" << endl;
-	cout << "Leges Motus is free and open source software; see the source for copying conditions." << endl;
-	cout << "There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE." << endl;
+	if (server.get()) {
+		server->stop();
+	}
 }
 
 extern "C" int main(int argc, char* argv[]) try {
 	srand(time(0));
+	get_ticks(); // Initialize the tick counter to 0 (needed because the INFO packet contains the server uptime)
 
 	string			password;
 	string			map_name("alpha1");
@@ -103,17 +154,19 @@ extern "C" int main(int argc, char* argv[]) try {
 
 	PathManager		path_manager(argv[0]);
 
-	Server			server(path_manager);
+	server.reset(new Server(path_manager));
 
-	server.set_password(password.c_str());
-	server.set_register_with_metaserver(!local_server);
-	server.start(interface_ip_address, portno, map_name.c_str());
+	server->set_password(password.c_str());
+	server->set_register_with_metaserver(!local_server);
+	server->start(interface_ip_address, portno, map_name.c_str());
 
 	if (daemonize) {
 		::daemonize();
 	}
 
-	server.run();
+	init_signals();
+
+	server->run();
 
 	return 0;
 
