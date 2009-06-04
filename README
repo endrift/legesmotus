@@ -5,30 +5,36 @@
   \____/\___|\__, |\___||___/ \/    \/\___/ \__|\__,_|___/
              |___/                                        
 
-Andrew Ayer | Nathan Partlan | Jeffrey Pfau | Danny Schneider
+        Andrew Ayer | Nathan Partlan | Jeffrey Pfau
+
+              http://legesmotus.cs.brown.edu
+
 
 ABOUT
 
 Leges Motus is a 2D networked, team-based shooter set in zero gravity.
 
 
-BUILDING
+BUILDING AND INSTALLING
 
-To build all components, type 'make' in the top-level directory.
+1. Run './configure' in the top level directory.
+   This script will check to make sure you have the required libraries installed.
 
-If you would like to build only the client or only the server, you may type 'make client' or 'make server' in the top-level directory.
+2. Run 'make' to build the server and client.
 
-If you change any header file, you must type 'make clean' before re-building.
+3. Run 'make install' as an administrator to install the server and client.
+
+See "ADVANCED BUILDING" below for more advanced build options.
 
 
 RUNNING THE CLIENT
 
-To run the client, type './client/legesmotus' in the top-level directory.
+To run the client, run the 'legesmotus' command.
 
 The client supports the following command-line options:
   -n NAME	set your player name (default: your user name)
   -t red|blue	set your team (default: auto-balanced)
-  -s SERVER	set the hostname of the server (default: the central development server)
+  -s SERVER	set the hostname of the server (default: use the server browser)
   -p PORTNO	set the port number of the server (default: 16877)
   -w WIDTH	set the screen width, in pixels (default: 1024)
   -h HEIGHT	set the screen height, in pixels (default: 768)
@@ -40,7 +46,7 @@ If you specify the width and height of your actual screen resolution, the game w
 
 REQUIREMENTS
 
-The following libraries must be installed in order to build and run Leges Motus:
+The following libraries must be installed in order to build and run the Leges Motus client:
 
  SDL
  SDL_image
@@ -48,10 +54,12 @@ The following libraries must be installed in order to build and run Leges Motus:
  SDL_mixer
  OpenGL
 
+No additional libraries are needed to build or run the server.
+
 
 RUNNING THE SERVER
 
-To run the server, type './server/lmserver' in the top-level directory.
+To run the server, run the 'lmserver' command.
 
 The server supports the following command-line options:
   -m MAPNAME	set the map name (default: alpha1)
@@ -66,7 +74,7 @@ The server supports the following command-line options:
 
 SPECIFYING THE DATA DIRECTORY
 
-By default, you MUST run both the client and server from the top-level source directory, so that it can find the data files.  However, if you set the $LM_DATA_DIR environment variable to the location of the data/ directory, you may run the programs from anywhere.
+By default, Leges Motus expects to find its data in /usr/local/share/games/legesmotus.  This path can be set at compile time by passing a --prefix argument to configure.  The path can be overridden at runtime by setting the $LM_DATA_DIR environment variable to the location containing the data.  The data can be found in the 'data' directory in the top-level source directory.
 
 
 CONTROLS
@@ -124,6 +132,7 @@ The code is divided into three components, located in the following directories:
 	common		Common code for both client and server
 	client		The client
 	server		The server
+	metaserver	The meta server (you should not run a meta server)
 
 The data for the program are located in the data directory, and are divided into four parts:
 
@@ -131,6 +140,26 @@ The data for the program are located in the data directory, and are divided into
 	data/maps	Maps
 	data/sounds	Sounds
 	data/sprites	Sprites
+
+
+ADVANCED BUILDING
+
+By default, Leges Motus will install to /usr/local.  You may change this by specifying a --prefix argument to configure.  To install into your home directory, you could use:
+
+	./configure --prefix=$HOME/legesmotus
+
+By default, on Mac OS X, Leges Motus will build a .app bundle, and use frameworks to find the SDL libraries.  Leges Motus will install the bundle to the system-wide /Applications directory.  To enable a traditional, Unix-style build, use:
+
+	./configure --unix-style
+
+To disable building a universal binary on Mac OS X, use:
+
+	./configure --disable-universal
+
+To build only the server or client, use one of:
+	
+	make server
+	make client
 
 
 CREDITS
@@ -152,4 +181,24 @@ Public Domain Sounds From:
 	http://www.allmusiclibrary.com/free_sound_effects.php
 	http://www.imphenzia.com/soundtrack/
 	http://www.freesound.org/samplesViewSingle.php?id=49287
+
+
+COPYRIGHT AND WARRANTY
+
+Copyright 2009 Andrew Ayer, Nathan Partlan, Jeffrey Pfau
+
+Leges Motus is free and open source software.  You may redistribute it and/or
+modify it under the terms of version 2, or (at your option) version 3, of the
+GNU General Public License (GPL), as published by the Free Software Foundation.
+
+Leges Motus is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.  See the full text of the GNU General Public License for
+further detail.
+
+For a full copy of the GNU General Public License, please see the COPYING file
+in the root of the source code tree.  You may also retrieve a copy from
+<http://www.gnu.org/licenses/gpl-2.0.txt>, or request a copy by writing to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111-1307  USA
 
