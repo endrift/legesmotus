@@ -49,6 +49,29 @@ Leges\ Motus.app: client server
 	test -d "Leges Motus.app/Contents/Frameworks/SDL_mixer.framework" || cp -Rf /Library/Frameworks/SDL_mixer.framework "Leges Motus.app/Contents/Frameworks"
 
 bundle: Leges\ Motus.app
+
+install:
+	@echo "To install, please copy 'Leges Motus.app' to your Applications directory."
+else
+
+ifneq ($(PREFIX),)
+install:
+	install -d $(DATADIR)/fonts
+	install -m 0644 $(BASEDIR)/data/fonts/* $(DATADIR)/fonts
+	install -d $(DATADIR)/maps
+	install -m 0644 $(BASEDIR)/data/maps/* $(DATADIR)/maps
+	install -d $(DATADIR)/sounds
+	install -m 0644 $(BASEDIR)/data/sounds/* $(DATADIR)/sounds
+	install -d $(DATADIR)/sprites
+	install -m 0644 $(BASEDIR)/data/sprites/* $(DATADIR)/sprites
+	install -d $(BINDIR)
+	install -s $(BASEDIR)/server/lmserver $(BASEDIR)/client/legesmotus $(BINDIR)
+
+uninstall:
+	rm -rf $(DATADIR)
+	rm -f $(BINDIR)/lmserver $(BINDIR)/legesmotus
 endif
 
-.PHONY: clean common server client bundle metaserver
+endif
+
+.PHONY: clean common server client bundle metaserver install

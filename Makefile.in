@@ -4,11 +4,13 @@ CLIENT = $(BASEDIR)/client
 SERVER = $(BASEDIR)/server
 FRAMEWORKS = /Library/Frameworks
 
-# Mac options
-# UNIX-style builds on Mac OS X (i.e. without frameworks)
-#UNIXSTYLE = 1
-# Universal Binary builds
+# These may be overridden by stuff in Makefile.opts
+DATADIR = data
 UNIVERSAL = 1
+
+-include $(BASEDIR)/Makefile.opts
+
+CFLAGS += -DDATADIR=\"$(DATADIR)\"
 
 MACHINE = $(shell uname -s)
 ifeq ($(MACHINE),)
