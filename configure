@@ -3,6 +3,7 @@
 prefix=/usr/local
 unix_style=1
 universal=1
+force=0
 
 if [ `uname -s` = Darwin ]
 then
@@ -15,6 +16,7 @@ display_help () {
 	echo "  --prefix=PREFIX	Install Leges Motus program and data at PREFIX [default: $prefix]"
 	echo "  --unix-style		(Mac OS X only) Build without frameworks or .app bundle"
 	echo "  --disable-universal	(Mac OS X only) Do not build universal binary"
+	echo "  --force		Force configure to continue even if required libraries aren't found"
 	echo "  --help		Display this help"
 }
 
@@ -24,6 +26,27 @@ format_boolean () {
 		echo "Yes"
 	else
 		echo "No"
+	fi
+}
+
+find_sdl_include () {
+	for part in `sdl-config --cflags`
+	do
+		if echo "$part" | grep "^-I" >/dev/null
+		then
+			if [ -f `echo "$part" | cut -c3-`/$1 ]
+			then
+				return 0
+			fi
+		fi
+	done
+	return 1
+}
+
+die () {
+	if [ $force -eq 0 ]
+	then
+		exit 1
 	fi
 }
 
@@ -42,6 +65,9 @@ do
 	elif [ "$arg" = "--disable-universal" ]
 	then
 		universal=0
+	elif [ "$arg" = "--force" ]
+	then
+		force=1
 	else
 		echo "$arg: Unknown argument" >&2
 		display_help
@@ -62,7 +88,46 @@ then
 		echo "You can obtain SDL from http://www.libsdl.org/"
 		echo "or install the appropriate package for your distro."
 		echo "If you install a distro package, please make sure you also install the -devel package."
-		exit 1
+		die
+	fi
+	echo -n "Checking for SDL_image... "
+	if find_sdl_include SDL_image.h
+	then
+		echo "Found"
+	else
+		echo "Not found"
+		echo
+		echo "SDL_image is required to build and run Leges Motus."
+		echo "You can obtain SDL_image from http://www.libsdl.org/projects/SDL_image/"
+		echo "or install the appropriate package for your distro."
+		echo "If you install a distro package, please make sure you also install the -devel package."
+		die
+	fi
+	echo -n "Checking for SDL_ttf... "
+	if find_sdl_include SDL_ttf.h
+	then
+		echo "Found"
+	else
+		echo "Not found"
+		echo
+		echo "SDL_ttf is required to build and run Leges Motus."
+		echo "You can obtain SDL_ttf from http://www.libsdl.org/projects/SDL_ttf/"
+		echo "or install the appropriate package for your distro."
+		echo "If you install a distro package, please make sure you also install the -devel package."
+		die
+	fi
+	echo -n "Checking for SDL_mixer... "
+	if find_sdl_include SDL_mixer.h
+	then
+		echo "Found"
+	else
+		echo "Not found"
+		echo
+		echo "SDL_mixer is required to build and run Leges Motus."
+		echo "You can obtain SDL_mixer from http://www.libsdl.org/projects/SDL_mixer/"
+		echo "or install the appropriate package for your distro."
+		echo "If you install a distro package, please make sure you also install the -devel package."
+		die
 	fi
 fi
 echo

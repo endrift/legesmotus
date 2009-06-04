@@ -79,4 +79,4 @@ endif
 
 endif
 
-.PHONY: clean common server client bundle metaserver install
+.PHONY: clean common server client bundle metaserver install uninstall
