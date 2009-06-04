@@ -51,7 +51,12 @@ Leges\ Motus.app: client server
 bundle: Leges\ Motus.app
 
 install:
-	@echo "To install, please copy 'Leges Motus.app' to your Applications directory."
+	cp -Rf Leges\ Motus.app /Applications/
+	ln -s /Applications/Leges\ Motus.app/Contents/MacOS/lmserver $(BINDIR)
+
+uninstall:
+	rm -rf /Applications/Leges\ Motus.app
+	rm -f $(BINDIR)/lmserver
 else
 
 ifneq ($(PREFIX),)

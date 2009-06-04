@@ -6,6 +6,7 @@ FRAMEWORKS = /Library/Frameworks
 
 # These may be overridden by stuff in Makefile.opts
 DATADIR = data
+UNIXSTYLE = 1
 UNIVERSAL = 1
 
 -include $(BASEDIR)/Makefile.opts
