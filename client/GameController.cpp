@@ -304,10 +304,10 @@ void GameController::init(GameWindow* window) {
 	m_server_browser_scrollbar->set_height(m_server_browser_background->get_image_height() - m_server_browser_background->get_row_height(0) - 20);
 	m_server_browser_scrollbar->set_x(m_server_browser_background->get_x() + m_server_browser_background->get_image_width()/2 - 20);
 	m_server_browser_scrollbar->set_y(m_server_browser_background->get_y() + m_server_browser_background->get_row_height(0) + 5 + m_server_browser_scrollbar->get_height()/2);
-	m_server_browser_scrollbar->set_section_color(ScrollBar::BUTTONS, Color(0.5,0.5,0.5));
-	m_server_browser_scrollbar->set_section_color(ScrollBar::TRACK, Color(0.2,0.2,0.2));
-	m_server_browser_scrollbar->set_section_color(ScrollBar::TRACKER, Color(0.4,0.4,0.4));
-	m_server_browser_scrollbar->set_scroll_speed(6);
+	m_server_browser_scrollbar->set_section_color(ScrollBar::BUTTONS, Color(0.7,0.2,0.1));
+	m_server_browser_scrollbar->set_section_color(ScrollBar::TRACK, Color(0.2,0.1,0.1));
+	m_server_browser_scrollbar->set_section_color(ScrollBar::TRACKER, Color(0.2,0.2,0.4));
+	m_server_browser_scrollbar->set_scroll_speed(3);
 	
 	m_server_browser_scrollarea = new ScrollArea(m_server_browser_background->get_image_width(),m_server_browser_background->get_image_height() - m_server_browser_background->get_row_height(0) - 30,1000,m_server_browser_scrollbar);
 	m_server_browser_scrollarea->set_priority(-4);
@@ -2762,7 +2762,7 @@ string	GameController::format_time_from_millis(unsigned int milliseconds) {
 	uptimesecs -= uptimeminutes * 60;
 	ostringstream uptimestr;
 	if (uptimedays != 0) {
-		uptimestr << uptimedays << ":";
+		uptimestr << uptimedays << "d ";
 	}
 	uptimestr << uptimehours << ":";
 	if (uptimeminutes < 10) {
