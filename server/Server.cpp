@@ -295,11 +295,15 @@ void	Server::player_shot(const IPAddress& /*address*/, PacketReader& inbound_pac
 	broadcast_packet(outbound_packet);
 	// TODO: REQUIRE ACK
 
-	if (ServerPlayer* shooter = get_player(shooter_id)) {
-		// Add 1 to the shooter's score
-		if (shooter->get_team() == get_player(shot_player_id)->get_team()) {
+	ServerPlayer*		shooter = get_player(shooter_id);
+	ServerPlayer*		shot_player = get_player(shot_player_id);
+
+	if (shooter && shot_player) {
+		if (shooter->get_team() == shot_player->get_team()) {
+			// Shooting a teammate results in a -1 penalty
 			shooter->add_score(-1);
 		} else {
+			// Add 1 to the shooter's score
 			shooter->add_score(1);
 		}
 

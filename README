@@ -38,6 +38,7 @@ The client supports the following command-line options:
   -p PORTNO	set the port number of the server (default: 16877)
   -w WIDTH	set the screen width, in pixels (default: 1024)
   -h HEIGHT	set the screen height, in pixels (default: 768)
+  -f		run the game in fullscreen
   -?, --help	display this help, and exit
       --version	display version information and exit
 
@@ -70,6 +71,10 @@ The server supports the following command-line options:
   -l		(local server) do not register with the meta server
   -?, --help	display this help, and exit
       --version	display version information and exit
+
+By default, the Leges Motus server will contact the meta server so other players on the Internet can connect to and play on the server (provided no firewalls are in the way).  If you would NOT like your server to appear in server browsers of other Internet users, pass the -l ("local") option to lmserver.
+
+If you are behind a firewall and would like to make your server accessible to the Internet at large, you must allow/forward UDP port 16877.
 
 
 SPECIFYING THE DATA DIRECTORY
