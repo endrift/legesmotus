@@ -1,6 +1,7 @@
 #include "client/ClientNetwork.hpp"
 #include "common/UDPPacket.hpp"
 #include "common/network.hpp"
+#include "SDL.h"
 #include "SDL_thread.h"
 #include "SDL_mutex.h"
 #include <iostream>

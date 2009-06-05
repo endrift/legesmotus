@@ -7,8 +7,8 @@
 
 #import <Cocoa/Cocoa.h>
 
-int SDL_main(int argc, const char** argv);
-void clean_exit();
+extern int SDL_main(int argc, const char** argv);
+extern void clean_exit(void);
 
 @interface LMMain : NSObject
 @end

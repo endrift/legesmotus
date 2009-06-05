@@ -20,7 +20,7 @@ extern "C" int main(int argc, char* argv[]) {
 	TiledGraphic tg(pman.data_path("metal_bgtile.png","sprites"));
 	GraphicGroup g;
 	Sprite mask(pman.data_path("mini_circle.png","sprites"));
-	TableBackground tb(2,48);
+	TableBackground tb(4,48);
 	s.set_center_x(32);
 	s.set_center_y(48);
 	afront.set_center_x(46);
@@ -42,8 +42,10 @@ extern "C" int main(int argc, char* argv[]) {
 	tb.set_border_width(4);
 	tb.set_cell_color(0,Color(1,0,0,0.2));
 	tb.set_cell_color(1,Color(0,0,1,0.2));
-	tb.set_row_height(0,48);
-	tb.set_row_height(1,48);
+	tb.set_row_height(0,24);
+	tb.set_row_height(1,24);
+	tb.set_row_height(2,24);
+	tb.set_row_height(3,24);
 	tb.set_center_y(48);
 	tb.set_corner_radius(16);
 	tb.set_border_collapse(true);

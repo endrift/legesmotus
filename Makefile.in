@@ -4,10 +4,10 @@ CLIENT = $(BASEDIR)/client
 SERVER = $(BASEDIR)/server
 FRAMEWORKS = /Library/Frameworks
 
-# These may be overridden by stuff in Makefile.opts
+# These may be overridden by Makefile.opts
 DATADIR = data
-UNIXSTYLE = 1
-UNIVERSAL = 1
+#UNIVERSAL = 1
+#UNIXSTYLE = 1
 
 -include $(BASEDIR)/Makefile.opts
 
@@ -29,15 +29,15 @@ FLAGS_SDL += -I$(FRAMEWORKS)/SDL_ttf.framework/Headers
 FLAGS_SDL += -I$(FRAMEWORKS)/SDL_mixer.framework/Headers
 LIBS += -framework AppKit
 LIBS_SDL = -framework SDL -framework SDL_image -framework SDL_ttf -framework SDL_mixer
-ifneq ($(UNIVERSAL),)
-CFLAGS += -arch ppc -arch i386
-endif
 else
 FLAGS_SDL = $(shell sdl-config --cflags)
 LIBS_SDL = $(shell sdl-config --libs) -lSDL_image -lSDL_ttf -lSDL_mixer
 endif
 
 ifeq ($(MACHINE),Darwin)
+ifneq ($(UNIVERSAL),)
+CFLAGS += -arch ppc -arch i386
+endif
 FLAGS_GL = -FOpenGL
 LIBS_GL = -framework OpenGL
 else
