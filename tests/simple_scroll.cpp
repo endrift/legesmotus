@@ -10,7 +10,6 @@ int main(int argc, char *argv[]) {
 	ScrollBar bar;
 	bar.set_x(280);
 	bar.set_y(150);
-	bar.register_window(window);
 	bar.set_height(280);
 	bar.set_section_color(ScrollBar::BUTTONS, Color(0.5,0.5,0.5));
 	bar.set_section_color(ScrollBar::TRACK, Color(0.2,0.2,0.2));
@@ -28,6 +27,7 @@ int main(int argc, char *argv[]) {
 	s.set_y(150);
 	ch.set_priority(-1);
 	window->register_graphic(&ch);
+	window->register_graphic(&bar);
 	window->register_graphic(&area);
 	area.get_group()->add_graphic(&s);
 

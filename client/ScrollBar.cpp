@@ -46,11 +46,25 @@ ScrollBar::ScrollBar(ScrollArea* area) : m_bg(5,SCROLL_WIDTH) {
 	m_progress = 0.0;
 	set_height(SCROLL_WIDTH*5);
 	set_scrollbar_height(SCROLL_WIDTH);
-	m_window = NULL;
 	m_pressed = NO_WIDGET;
 
 	m_scroll_speed = 1.0;
 	m_track_speed = 3.0;
+}
+
+ScrollBar::ScrollBar(const ScrollBar& other) : m_bg(other.m_bg) {
+	m_updated = false;
+	set_height(other.m_height);
+	set_scrollbar_height(other.m_scrollbar_height);
+	m_linked = NULL;
+	m_progress = other.m_progress;
+	m_pressed = NO_WIDGET;
+	m_scroll_speed = other.m_scroll_speed;
+	m_track_speed = other.m_track_speed;
+}
+
+ScrollBar* ScrollBar::clone() const {
+	return new ScrollBar(*this);
 }
 
 void ScrollBar::autoscroll(double scale) {
@@ -78,26 +92,10 @@ void ScrollBar::autoscroll(double scale) {
 	}
 }
 
-void ScrollBar::set_x(double x) {
-	m_bg.set_x(x);
-}
-
-void ScrollBar::set_y(double y) {
-	m_bg.set_y(y);
-}
-
 void ScrollBar::set_height(double height) {
 	m_height = height;
 	m_bg.set_center_y(height*0.5);
 	set_scroll_progress(m_progress);
-}
-
-double ScrollBar::get_x() const {
-	return m_bg.get_x();
-}
-
-double ScrollBar::get_y() const {
-	return m_bg.get_y();
 }
 
 double ScrollBar::get_height() const {
@@ -110,23 +108,26 @@ void ScrollBar::mouse_button_event(const SDL_MouseButtonEvent& event) {
 		return;
 	}
 
-	if (event.x < (get_x() - SCROLL_WIDTH*0.5) || event.x > (get_x() + SCROLL_WIDTH*0.5)) {
+	double x = get_x() - get_center_x();
+	double y = get_y() - get_center_y();
+
+	if (event.x < (x - SCROLL_WIDTH*0.5) || event.x > (x + SCROLL_WIDTH*0.5)) {
 		return;
-	} else if(event.y < (get_y() - m_height*0.5) || event.y > (get_y() + m_height*0.5)) {
+	} else if(event.y < (y - m_height*0.5) || event.y > (y + m_height*0.5)) {
 		return;
 	}
 
-	if(event.y < (get_y() - (m_height*0.5 - SCROLL_WIDTH))) {
+	if(event.y < (y - (m_height*0.5 - SCROLL_WIDTH))) {
 		m_pressed = TOP_BUTTON;
 		autoscroll(DEFAULT_AUTOSCROLL);
-	} else if(event.y > (get_y() + (m_height*0.5 - SCROLL_WIDTH))) {
+	} else if(event.y > (y + (m_height*0.5 - SCROLL_WIDTH))) {
 		m_pressed = BOTTOM_BUTTON;
 		autoscroll(DEFAULT_AUTOSCROLL);
-	} else if(event.y < (get_y() - (m_height*0.5 - SCROLL_WIDTH) +
+	} else if(event.y < (y - (m_height*0.5 - SCROLL_WIDTH) +
 			m_bg.get_row_height(1))) {
 		m_pressed = TOP_TRACK;
 		autoscroll(DEFAULT_AUTOSCROLL);
-	} else if(event.y > (get_y() + (m_height*0.5 - SCROLL_WIDTH) -
+	} else if(event.y > (y + (m_height*0.5 - SCROLL_WIDTH) -
 			m_bg.get_row_height(3))) {
 		m_pressed = BOTTOM_TRACK;
 		autoscroll(DEFAULT_AUTOSCROLL);
@@ -233,16 +234,6 @@ double ScrollBar::get_track_speed() const {
 	return m_track_speed;
 }
 
-void ScrollBar::register_window(GameWindow* window) {
-	if(m_window != NULL) unregister_window();
-	window->register_graphic(&m_bg);
-	m_window = window;
-}
-
-void ScrollBar::unregister_window() {
-	m_window->unregister_graphic(&m_bg);
-}
-
 void ScrollBar::relink(ScrollArea* linked) {
 	if (m_updated) {
 		return;
@@ -258,4 +249,13 @@ void ScrollBar::relink(ScrollArea* linked) {
 
 ScrollArea* ScrollBar::getLinked() {
 	return m_linked;
+}
+
+void ScrollBar::draw(const GameWindow* window) const {
+	if (!m_bg.is_invisible()) {
+		glPushMatrix();
+		transform_gl();
+		m_bg.draw(window);
+		glPopMatrix();
+	}
 }

@@ -31,7 +31,7 @@
 class ScrollBar;
 class ScrollArea : public Graphic {
 private:
-	GraphicGroup*	m_group;
+	GraphicGroup	m_group;
 	double		m_progress;
 	ScrollBar*	m_linked;
 	double		m_width;
@@ -42,7 +42,6 @@ private:
 public:
 	ScrollArea(double width, double height, double content_height, ScrollBar* bar = NULL);
 	ScrollArea(const ScrollArea& other);
-	virtual ~ScrollArea();
 	virtual ScrollArea* clone() const;
 
 	void	set_width(double width);

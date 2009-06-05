@@ -27,7 +27,6 @@
 #include <cmath>
 
 ScrollArea::ScrollArea(double width, double height, double content_height, ScrollBar* bar) {
-	m_group = new GraphicGroup;
 	m_progress = 0.0;
 	m_updated = false;
 	if (bar != NULL) {
@@ -40,18 +39,13 @@ ScrollArea::ScrollArea(double width, double height, double content_height, Scrol
 	set_content_height(content_height);
 }
 
-ScrollArea::ScrollArea(const ScrollArea& other) {
-	m_group = other.m_group->clone();
+ScrollArea::ScrollArea(const ScrollArea& other) : m_group(other.m_group) {
 	m_progress = other.m_progress;
 	m_updated = false;
 	m_linked = NULL;
 	m_width = other.m_width;
 	m_height = other.m_height;
 	m_content_height = other.m_content_height;
-}
-
-ScrollArea::~ScrollArea() {
-	delete m_group;
 }
 
 ScrollArea* ScrollArea::clone() const {
@@ -117,7 +111,7 @@ void ScrollArea::scroll_pixels(double pixels) {
 }
 
 GraphicGroup* ScrollArea::get_group() {
-	return m_group;
+	return &m_group;
 }
 
 void ScrollArea::relink(ScrollBar* linked) {
@@ -138,7 +132,7 @@ ScrollBar* ScrollArea::getLinked() {
 }
 
 void ScrollArea::draw(const GameWindow* window) const {
-	if (!m_group->is_invisible()) {
+	if (!m_group.is_invisible()) {
 		glPushMatrix();
 		transform_gl();
 		glEnable(GL_STENCIL_TEST);
@@ -158,7 +152,7 @@ void ScrollArea::draw(const GameWindow* window) const {
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 		glStencilFunc(GL_EQUAL, 1, 1);
 		glTranslated(0,-round(m_progress*(m_content_height-m_height)),0);
-		m_group->draw(window);
+		m_group.draw(window);
 		glDisable(GL_STENCIL_TEST);
 		glPopMatrix();
 	}

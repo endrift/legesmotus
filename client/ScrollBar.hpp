@@ -29,7 +29,7 @@
 #include "GameWindow.hpp"
 
 class ScrollArea;
-class ScrollBar {
+class ScrollBar : public Graphic {
 public:
 	enum ScrollWidget {
 		NO_WIDGET = 0,
@@ -50,7 +50,6 @@ private:
 	TableBackground m_bg;
 	double		m_height;
 	ScrollArea*	m_linked;
-	GameWindow*	m_window;
 	double		m_scrollbar_height;
 	double		m_progress;
 	ScrollWidget	m_pressed;
@@ -63,13 +62,11 @@ private:
 
 public:
 	ScrollBar(ScrollArea* area = NULL);
+	ScrollBar(const ScrollBar& other);
+	virtual ScrollBar* clone() const;
 
-	void	set_x(double x);
-	void	set_y(double y);
 	void	set_height(double height);
 	
-	double	get_x() const;
-	double	get_y() const;
 	double	get_height() const;
 
 	void	mouse_button_event(const SDL_MouseButtonEvent& event);
@@ -93,11 +90,15 @@ public:
 	double	get_scroll_speed() const;
 	double	get_track_speed() const;
 
-	void	register_window(GameWindow* window);
-	void	unregister_window();
-
 	void	relink(ScrollArea* linked);
 	ScrollArea* getLinked();
+
+	virtual void	set_alpha(double alpha) { (void)(alpha); }
+	virtual void	set_red_intensity(double r) { (void)(r); }
+	virtual void	set_green_intensity(double g) { (void)(g); }
+	virtual void	set_blue_intensity(double b) { (void)(b); }
+
+	virtual void draw(const GameWindow* window) const;
 };
 
 #endif
