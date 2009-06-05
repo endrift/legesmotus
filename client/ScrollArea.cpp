@@ -26,6 +26,8 @@
 #include "ScrollBar.hpp"
 #include <cmath>
 
+using namespace std;
+
 ScrollArea::ScrollArea(double width, double height, double content_height, ScrollBar* bar) {
 	m_progress = 0.0;
 	m_updated = false;
@@ -82,6 +84,10 @@ double ScrollArea::get_height() const {
 	return m_height;
 }
 
+double ScrollArea::get_content_height() const {
+	return m_content_height;
+}
+
 void ScrollArea::set_scroll_progress(double amount) {
 	if (amount < 0) {
 		amount = 0;
@@ -114,6 +120,14 @@ void ScrollArea::scroll_pixels(double pixels) {
 	if (m_content_height > m_height) {
 		scroll(pixels/(m_content_height-m_height));
 	}
+}
+
+double ScrollArea::get_scroll_progress() const {
+	return m_progress;
+}
+
+double ScrollArea::get_scroll_progress_pixels() const {
+	return max<double>(0,m_progress*(m_content_height-m_height));
 }
 
 GraphicGroup* ScrollArea::get_group() {

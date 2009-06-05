@@ -58,6 +58,9 @@ public:
 	void	set_scroll_progress_pixels(double pixels);
 	void	scroll_pixels(double pixels);
 
+	double	get_scroll_progress() const;
+	double	get_scroll_progress_pixels() const;
+
 	GraphicGroup*	get_group();
 
 	void	relink(ScrollBar* linked);
