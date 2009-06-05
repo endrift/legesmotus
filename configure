@@ -158,11 +158,13 @@ if [ $unix_style -ne 0 ]
 then
 	echo "PREFIX = $prefix" >> Makefile.opts
 	echo 'BINDIR = $(PREFIX)/bin' >> Makefile.opts
+	echo 'MANDIR = $(PREFIX)/man' >> Makefile.opts
 	echo 'DATADIR = $(PREFIX)/share/games/legesmotus' >> Makefile.opts
 	echo "UNIXSTYLE = 1" >> Makefile.opts
 else
 	echo "PREFIX = $prefix" >> Makefile.opts
 	echo 'BINDIR = $(PREFIX)/bin' >> Makefile.opts
+	echo 'MANDIR = $(PREFIX)/man' >> Makefile.opts
 	echo 'DATADIR = /Applications/Leges\ Motus.app/Contents/Resources/data' >> Makefile.opts
 	echo "UNIXSTYLE =" >> Makefile.opts
 fi

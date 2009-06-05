@@ -1,0 +1,146 @@
+.TH "lmserver" "6" "0.1" "AGWA, Greywhind, Archaemic" "Games"
+.SH "NAME"
+.LP 
+lmserver \- The server for Leges Motus, a team\-based, networked, 2D shooter set in zero\-gravity
+.SH "SYNTAX"
+.LP 
+lmserver [\-d] [\-l] [\-m \fImapname\fP] [\-P \fIpassword\fP] [\-p \fIportno\fP]
+.br 
+
+Only the most useful options are listed here; see below for the remainder.
+.SH "DESCRIPTION"
+.LP 
+Leges Motus is a networked, team\-based, 2D shooter set in zero\-gravity. Using only the force from jumping off of walls and the recoil from their guns, players must travel across the arena to lower their opponent's gate.
+.LP 
+This is the server program for Leges Motus.  It listens on a UDP port for packets from clients, and relays them to other connected clients.  In addition, the server is responsible for scorekeeping, team assignment, timing the gates, and notifying the clients of the map and rules in play.
+.SH "OPTIONS"
+.LP 
+.TP 
+\fB\-d\fR
+Daemonize (i.e. run in background) the server program (does not work on Windows).
+.TP 
+\fB\-l\fR
+(Local server) Do not register the server with the meta server.
+.TP 
+\fB\-m\fR <\fImapname\fP>\fR
+Sets the server map to <\fImapname\fP> (defaults to alpha1).
+.TP 
+\fB\-P\fR <\fIpassword\fP>\fR
+Enables operator mode and sets the operator password to <\fIpassword\fP>.
+.TP 
+\fB\-p\fR <\fIportno\fP>\fR
+Listen on port <\fIportno\fP> (defaults to 16877).
+.TP 
+\fB\-i\fR <\fIinterface\fP>\fR
+Listen only on the interface with address <\fIinterface\fP> (by default, listen on all interfaces).
+.TP 
+\fB\-?\fR, \fB\-\-help\fR
+Output help information and exit.
+.TP 
+\fB\-\-version\fR
+Output version information and exit.
+.SH "COMMANDS"
+.LP 
+These commands are entered in the client's chat bar (see \fIlegesmotus\fR\|(6)).  Some commands (marked as [op]) require operator status.
+.TP 
+\fB/server auth <\fIpassword\fP>\fR
+Become operator, if <\fIpassword\fP> matches the server operator password.
+.TP 
+\fB/server teamscore\fR
+Display the score of each team.
+.TP 
+\fB/server teamcount\fR
+Display the number of players on each team.
+.TP 
+\fB/server reset\fR
+Reset the scores.  [op]
+.TP 
+\fB/server map <\fImapname\fP>\fR
+Load the map named <\fImapname\fP> and immediately start a new game.  [op]
+.TP 
+\fB/server newgame\fR
+Declare a draw and start a new game, with the same map.  [op]
+.TP 
+\fB/server kick <\fIplayer\fP>\fR
+Kick the player named <\fIplayer\fP> from the game.  [op]
+.TP 
+\fB/server shutdown\fR
+Immediately shutdown the server.  [op]
+.TP 
+\fB/server help\fR
+Display a summary of commands supported by the server.
+.SH "NOTES"
+.LP 
+If no operator password is set on the command line, then any player connecting from the localhost (127.0.0.1) will be given operator status.  If this is undesirable behavior, then be sure to set an operator password.  (However, see \fBBUGS\fR below.)
+.LP 
+By default, the Leges Motus server will contact the meta server so other players on the Internet can connect to and play on the server (provided no firewalls are in the way).  If you would NOT like your server to appear in server browsers of other Internet users, pass the \-l ("local") option to lmserver.
+.LP 
+If you are behind a firewall and would like to make your server accessible to the Internet at large, you must allow/forward UDP port 16877.
+.SH "FILES"
+.LP 
+\fI$LM_DATA_DIR/maps\fP
+.br 
+.SH "ENVIRONMENT VARIABLES"
+.LP 
+.TP 
+\fBLM_DATA_DIR\fP
+Specifies the location of the directory containing Leges Motus data files.
+.SH "EXAMPLES"
+.LP 
+To run the server in the background:
+.LP 
+lmserver \-d
+.LP 
+If you don't want to register your server with the meta server:
+.LP 
+legesmotus \-l
+.LP 
+Run the server with the gamma3 map:
+.LP 
+legesmotus \-m gamma3
+.LP 
+To set an operator password:
+.LP 
+legesmotus \-P foobar
+.LP 
+To authenticate with your operator password:
+.LP 
+/server auth foobar
+.LP 
+To kick an unruly player:
+.LP 
+/server kick Steve
+.SH "AUTHORS"
+.LP 
+Andrew Ayer <agwadude@users.sourceforge.net>
+.br 
+Nathan Partlan <greywhind@users.sourceforge.net>
+.br 
+Jeffrey Pfau <archaemic@users.sourceforge.net>
+.br 
+.SH "COPYRIGHT"
+.LP 
+Copyright 2009 Andrew Ayer, Nathan Partlan, Jeffrey Pfau
+.LP 
+Leges Motus is free and open source software.  You may redistribute it and/or
+modify it under the terms of version 2, or (at your option) version 3, of the
+GNU General Public License (GPL), as published by the Free Software Foundation.
+.LP 
+Leges Motus is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.  See the full text of the GNU General Public License for
+further detail.
+.LP 
+For a full copy of the GNU General Public License, please see the COPYING file
+in the root of the source code tree.  You may also retrieve a copy from
+<\fBhttp://www.gnu.org/licenses/gpl\-2.0.txt\fR>, or request a copy by writing to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111\-1307  USA
+.SH "BUGS"
+.LP 
+The operator password is set on the command line, meaning it's visible to any user on the system through a call to \fIps\fR\|(1).
+.LP 
+The protocol documentation is very out\-of\-date.
+.SH "SEE ALSO"
+.LP 
+legesmotus(6)

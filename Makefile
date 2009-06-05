@@ -53,10 +53,13 @@ bundle: Leges\ Motus.app
 install:
 	cp -Rf Leges\ Motus.app /Applications/
 	ln -s /Applications/Leges\ Motus.app/Contents/MacOS/lmserver $(BINDIR)
+	install -d $(MANDIR)/man6
+	install $(BASEDIR)/man/man6/lmserver.6 $(MANDIR)/man6
 
 uninstall:
 	rm -rf /Applications/Leges\ Motus.app
 	rm -f $(BINDIR)/lmserver
+	rm -f $(MANDIR)/man6/lmserver.6
 else
 
 ifneq ($(PREFIX),)
@@ -69,12 +72,15 @@ install:
 	install -m 0644 $(BASEDIR)/data/sounds/* $(DATADIR)/sounds
 	install -d $(DATADIR)/sprites
 	install -m 0644 $(BASEDIR)/data/sprites/* $(DATADIR)/sprites
+	install -d $(MANDIR)/man6
+	install $(BASEDIR)/man/man6/* $(MANDIR)/man6
 	install -d $(BINDIR)
 	install -s $(BASEDIR)/server/lmserver $(BASEDIR)/client/legesmotus $(BINDIR)
 
 uninstall:
 	rm -rf $(DATADIR)
 	rm -f $(BINDIR)/lmserver $(BINDIR)/legesmotus
+	rm -f $(MANDIR)/man6/lmserver.6 $(MANDIR)/man6/legesmotus.6
 endif
 
 endif

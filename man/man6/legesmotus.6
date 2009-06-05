@@ -1,0 +1,158 @@
+.TH "legesmotus" "6" "0.1" "AGWA, Greywhind, Archaemic" "Games"
+.SH "NAME"
+.LP 
+legesmotus \- A team\-based, networked, 2D shooter set in zero\-gravity
+.SH "SYNTAX"
+.LP 
+legesmotus [\-f] [\-n \fIname\fP] [\-w \fIwidth\fP] [\-h \fIheight\fP]
+.br 
+
+Only the most useful options are listed here; see below for the remainder.
+.SH "DESCRIPTION"
+.LP 
+Leges Motus is a networked, team\-based, 2D shooter set in zero\-gravity. Using only the force from jumping off of walls and the recoil from their guns, players must travel across the arena to lower their opponent's gate.
+.SH "OPTIONS"
+.LP 
+.TP 
+\fB\-f\fR
+Run the game in fullscreen.
+.TP 
+\fB\-n\fR <\fIname\fP>\fR
+Sets your player name to <\fIname\fP> (defaults to your username).
+.TP 
+\fB\-w\fR <\fIwidth\fP>\fR
+Sets the width of the game window to <\fIwidth\fP>.
+.TP 
+\fB\-h\fR <\fIheight\fP>\fR
+Sets the height of the game window to <\fIheight\fP>.
+.TP 
+\fB\-s\fR <\fIhostname\fP>\fR
+Immediately connect to the server on <\fIhostname\fP>.
+.TP 
+\fB\-t\fR \fIred|blue\fP\fR
+Join the given team (only makes sense if you specify \-s too).
+.TP 
+\fB\-p\fR <\fIportno\fP>\fR
+Connect to the server running on port <\fIportno\fP> (only makes sense if you specify \-s too).
+.TP 
+\fB\-?\fR, \fB\-\-help\fR
+Output help information and exit.
+.TP 
+\fB\-\-version\fR
+Output version information and exit.
+.SH "CONTROLS"
+.LP 
+.TP 
+\fBspace\fR
+Jump in direction of mouse pointer.
+.TP 
+\fBleft click\fR
+Fire in direction of mouse pointer.
+.TP 
+\fBt\fR
+Open chat.
+.TP 
+\fBy\fR
+Open team chat.
+.TP 
+\fB~\fR
+Open console/chat.
+.TP 
+\fBESC\fR
+Return to the main menu / close chat console.
+.TP 
+\fBtab\fR
+Show the scoreboard.
+.SH "COMMANDS"
+.LP 
+These commands are entered in the client's chat bar (press ~ to show):
+.TP 
+\fB/tchat <\fImessage\fP>\fR
+Send <\fImessage\fP> privately to your teammates.
+.TP 
+\fB/name <\fIname\fP>\fR
+Change your player name to <\fIname\fP>.
+.TP 
+\fB/team \fIred|blue\fP\fR
+Change to the specified team.
+.TP 
+\fB/server <\fIcommand\fP>\fR
+Send <\fIcommand\fP> to the server (see \fIlmserver\fR\|(6) for a list of commands supported by the server).
+.TP 
+\fB<\fIname\fP>: <\fImessage\fP>\fR
+Send <\fImessage\fP> privately to the player named <\fIname\fP>.
+.SH "GAMEPLAY"
+.LP 
+The objective of the game is to reach the opposing team's gate and stay next to it until it opens fully.
+.LP 
+Shoot enemy players to freeze them. They will un\-freeze a number of seconds after they are frozen.
+.LP 
+You can move by jumping off of any obstacle, and you will jump in the direction of the mouse pointer. You will also move due to the recoil from firing your gun. When frozen, you will bounce off of obstacles. If you unfreeze away from obstacles, shoot your weapon to move back towards the nearest obstacle.
+.SH "FILES"
+.LP 
+\fI$LM_DATA_DIR/fonts\fP
+.br 
+\fI$LM_DATA_DIR/maps\fP 
+.br 
+\fI$LM_DATA_DIR/sounds\fP 
+.br 
+\fI$LM_DATA_DIR/sprites\fP 
+.SH "ENVIRONMENT VARIABLES"
+.LP 
+.TP 
+\fBLM_DATA_DIR\fP
+Specifies the location of the directory containing Leges Motus data files.
+.SH "EXAMPLES"
+.LP 
+To just run the game:
+.LP 
+legesmotus
+.LP 
+To run the game in fullscreen:
+.LP 
+legesmotus \-f
+.LP 
+To connect to the server on example.com, port 1234, on the blue team:
+.LP 
+legesmotus \-s example.com \-p 1234 \-t blue
+.LP 
+To set your name from within the game:
+.LP 
+/name Andromedus
+.LP 
+To send a message to your team:
+.LP 
+/tchat Cover me, I'm going for the gate!
+.LP 
+.SH "AUTHORS"
+.LP 
+Andrew Ayer <agwadude@users.sourceforge.net>
+.br 
+Nathan Partlan <greywhind@users.sourceforge.net>
+.br 
+Jeffrey Pfau <archaemic@users.sourceforge.net>
+.br 
+.SH "COPYRIGHT"
+.LP 
+Copyright 2009 Andrew Ayer, Nathan Partlan, Jeffrey Pfau
+.LP 
+Leges Motus is free and open source software.  You may redistribute it and/or
+modify it under the terms of version 2, or (at your option) version 3, of the
+GNU General Public License (GPL), as published by the Free Software Foundation.
+.LP 
+Leges Motus is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.  See the full text of the GNU General Public License for
+further detail.
+.LP 
+For a full copy of the GNU General Public License, please see the COPYING file
+in the root of the source code tree.  You may also retrieve a copy from
+<\fBhttp://www.gnu.org/licenses/gpl\-2.0.txt\fR>, or request a copy by writing to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111\-1307  USA
+.SH "BUGS"
+.LP 
+If the client can't contact the server, no error message is displayed.  In fact, nothing happens.
+.SH "SEE ALSO"
+.LP 
+lmserver(6)
