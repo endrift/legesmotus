@@ -1174,7 +1174,7 @@ void GameController::process_mouse_click(SDL_Event event) {
 			return;
 		}
 		
-		int offset = m_server_browser_scrollarea->get_y() - m_server_browser_scrollarea->get_scroll_progress_pixels();
+		int offset = int(m_server_browser_scrollarea->get_y() - m_server_browser_scrollarea->get_scroll_progress_pixels());
 		
 		m_server_browser_selected_item = int(((event.button.y-offset)/25) - m_server_browser_items["name0"]->get_y() / 25);
 		
