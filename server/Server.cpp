@@ -297,7 +297,11 @@ void	Server::player_shot(const IPAddress& /*address*/, PacketReader& inbound_pac
 
 	if (ServerPlayer* shooter = get_player(shooter_id)) {
 		// Add 1 to the shooter's score
-		shooter->add_score(1);
+		if (shooter->get_team() == get_player(shot_player_id)->get_team()) {
+			shooter->add_score(-1);
+		} else {
+			shooter->add_score(1);
+		}
 
 		// And inform all players of the score update
 		broadcast_score_update(*shooter);
