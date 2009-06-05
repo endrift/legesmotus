@@ -277,7 +277,11 @@ void GameController::init(GameWindow* window) {
  	m_text_manager->set_active_color(1.0, 1.0, 1.0);
  	m_main_menu_items["Thanks3"] = m_text_manager->place_string("to leave feedback for us!", 50, 530, TextManager::LEFT, TextManager::LAYER_HUD);
 	
+	m_text_manager->set_active_font(m_font);
+	m_main_menu_items["versionstr"] = m_text_manager->place_string(string("v. ").append(m_client_version), m_screen_width - 90, m_screen_height - 40, TextManager::LEFT, TextManager::LAYER_HUD);
+	
 	// Options menu
+	m_text_manager->set_active_font(m_menu_font);
 	m_options_menu_items["Back"] = m_text_manager->place_string("Back", 50, 200, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_options_menu_items["Enter Name"] = m_text_manager->place_string("Enter Name", 50, 250, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_options_menu_items["Toggle Sound"] = m_text_manager->place_string("Toggle Sound", 50, 300, TextManager::LEFT, TextManager::LAYER_HUD);
