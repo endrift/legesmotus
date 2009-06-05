@@ -141,7 +141,12 @@ void ScrollBar::mouse_motion_event(const SDL_MouseMotionEvent& event) {
 	if (m_pressed != TRACKER) {
 		return;
 	}
-	set_scroll_progress((event.y - m_grab_y)/(m_height-SCROLL_WIDTH*2-m_scrollbar_height));
+	double scroll_denominator = m_height-SCROLL_WIDTH*2-m_scrollbar_height;
+	if(scroll_denominator == 0) {
+		set_scroll_progress(0);
+	} else {
+		set_scroll_progress((event.y - m_grab_y)/scroll_denominator);
+	}
 }
 
 void ScrollBar::set_scroll_progress(double amount) {

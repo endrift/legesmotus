@@ -103,11 +103,17 @@ void ScrollArea::scroll(double amount) {
 }
 
 void ScrollArea::set_scroll_progress_pixels(double pixels) {
-	set_scroll_progress(pixels/(m_content_height-m_height));
+	if (m_content_height <= m_height) {
+		set_scroll_progress(0);
+	} else {
+		set_scroll_progress(pixels/(m_content_height-m_height));
+	}
 }
 
 void ScrollArea::scroll_pixels(double pixels) {
-	scroll(pixels/(m_content_height-m_height));
+	if (m_content_height > m_height) {
+		scroll(pixels/(m_content_height-m_height));
+	}
 }
 
 GraphicGroup* ScrollArea::get_group() {
