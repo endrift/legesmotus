@@ -97,6 +97,8 @@ GameController::~GameController() {
 
 	delete m_server_browser_background;
 	delete m_server_browser_selection;
+	delete m_server_browser_scrollbar;
+	delete m_server_browser_scrollarea;
 	delete m_overlay_background;
 	
 	m_server_browser_buttons.clear();
@@ -297,11 +299,32 @@ void GameController::init(GameWindow* window) {
 	m_server_browser_background->set_corner_radius(20);
 	m_window->register_hud_graphic(m_server_browser_background);
 	
-	m_server_browser_selection = new TableBackground(1,  m_server_browser_background->get_image_width() - 6);
+	m_server_browser_scrollbar = new ScrollBar();
+	m_server_browser_scrollbar->set_priority(-3);
+	m_server_browser_scrollbar->set_height(m_server_browser_background->get_image_height() - m_server_browser_background->get_row_height(0) - 20);
+	m_server_browser_scrollbar->set_x(m_server_browser_background->get_x() + m_server_browser_background->get_image_width()/2 - 20);
+	m_server_browser_scrollbar->set_y(m_server_browser_background->get_y() + m_server_browser_background->get_row_height(0) + 5 + m_server_browser_scrollbar->get_height()/2);
+	m_server_browser_scrollbar->set_section_color(ScrollBar::BUTTONS, Color(0.5,0.5,0.5));
+	m_server_browser_scrollbar->set_section_color(ScrollBar::TRACK, Color(0.2,0.2,0.2));
+	m_server_browser_scrollbar->set_section_color(ScrollBar::TRACKER, Color(0.4,0.4,0.4));
+	m_server_browser_scrollbar->set_scroll_speed(6);
+	
+	m_server_browser_scrollarea = new ScrollArea(m_server_browser_background->get_image_width(),m_server_browser_background->get_image_height() - m_server_browser_background->get_row_height(0) - 30,1000,m_server_browser_scrollbar);
+	m_server_browser_scrollarea->set_priority(-4);
+	m_server_browser_scrollarea->get_group()->set_priority(-4);
+	m_server_browser_scrollarea->set_x(m_server_browser_background->get_x() + 5);
+	m_server_browser_scrollarea->set_y(m_server_browser_background->get_y() + m_server_browser_background->get_row_height(0) + 15);
+	m_server_browser_scrollarea->set_center_x(m_server_browser_scrollarea->get_width()/2);
+	m_server_browser_scrollarea->set_center_y(0);
+	
+	m_window->register_hud_graphic(m_server_browser_scrollbar);
+	m_window->register_hud_graphic(m_server_browser_scrollarea);
+	
+	m_server_browser_selection = new TableBackground(1, m_server_browser_scrollbar->get_x() - (m_server_browser_background->get_x() - m_server_browser_background->get_image_width()/2) - 21);
 	m_server_browser_selection->set_row_height(0, 25);
 	m_server_browser_selection->set_priority(-3);
 	m_server_browser_selection->set_cell_color(0, Color(0.0, 0.0, 0.0, 0.8));
-	m_server_browser_selection->set_x(m_server_browser_background->get_x());
+	m_server_browser_selection->set_x(m_server_browser_background->get_x() - 15);
 	m_server_browser_selection->set_y(145);
 	m_window->register_hud_graphic(m_server_browser_selection);
 	
@@ -522,6 +545,8 @@ void GameController::run(int lockfps) {
 		
 		// Update graphics if frame rate is correct.
 		if((currframe - startframe) >= delay) {
+			m_server_browser_scrollbar->autoscroll(currframe - startframe);
+		
 			if (m_time_to_unfreeze != 0) {
 				m_frozen_status_rect->set_x(m_players[m_player_id].get_x() - m_offset_x);
 				m_frozen_status_rect->set_y(m_players[m_player_id].get_y() + m_players[m_player_id].get_radius() + 15 - m_offset_y);
@@ -898,15 +923,18 @@ void GameController::process_input() {
 				m_mouse_y = event.motion.y;
 				m_crosshairs->set_x(m_mouse_x);
 				m_crosshairs->set_y(m_mouse_y);
+				m_server_browser_scrollbar->mouse_motion_event(event.motion);
 				
 				break;
 				
 			case SDL_MOUSEBUTTONDOWN:
 				// Firing code, use event.button.button, event.button.x, event.button.y
 				process_mouse_click(event);
+				m_server_browser_scrollbar->mouse_button_event(event.button);
 				break;
 				
 			case SDL_MOUSEBUTTONUP:
+				m_server_browser_scrollbar->mouse_button_event(event.button);
 				break;
 				
 			case SDL_QUIT:
@@ -1067,9 +1095,9 @@ void GameController::process_mouse_click(SDL_Event event) {
 				for (int i = 0; i < m_server_list_count; i++) {
 					delete_server_browser_entry(i);
 				}
+				m_server_list_count = 0;
 				m_server_browser_selection->set_invisible(true);
 				m_server_browser_selected_item = -1;
-				m_server_list_count = 0;
 				scan_all();
 			} else if (i == 2) {
 				// Connect.
@@ -1087,7 +1115,7 @@ void GameController::process_mouse_click(SDL_Event event) {
 		}
 		
 		int left_limit = int(m_server_browser_background->get_x() - m_server_browser_background->get_image_width()/2);
-		int right_limit = int(m_server_browser_background->get_x() + m_server_browser_background->get_image_width()/2);			
+		int right_limit = int(m_server_browser_scrollbar->get_x() - 15);			
 		
 		if (event.button.x < left_limit || event.button.x > right_limit) {
 			m_server_browser_selection->set_invisible(true);
@@ -1095,16 +1123,35 @@ void GameController::process_mouse_click(SDL_Event event) {
 			return;
 		}
 		
-		if (event.button.y < 150 || event.button.y > 145 + 25 * m_server_list_count) {
+		if (event.button.y < m_server_browser_scrollarea->get_y() || event.button.y > m_server_browser_scrollarea->get_y() + m_server_browser_scrollarea->get_height()) {
 			m_server_browser_selection->set_invisible(true);
 			m_server_browser_selected_item = -1;
 			return;
 		}
 		
-		m_server_browser_selection->set_y(25 * (event.button.y/25) - 5);
+		int offset = m_server_browser_scrollarea->get_y() - m_server_browser_scrollarea->get_scroll_progress_pixels();
+		
+		m_server_browser_selected_item = int(((event.button.y-offset)/25) - m_server_browser_items["name0"]->get_y() / 25);
+		
+		ostringstream itemname;
+		itemname << "name" << m_server_browser_selected_item;
+		if (m_server_browser_items.find(itemname.str()) == m_server_browser_items.end()) {
+			cerr << "Error: no item " << itemname.str() << endl;
+			return;
+		}
+		
+		m_server_browser_selection->set_y(m_server_browser_items[itemname.str()]->get_y() + offset - 5);
 		m_server_browser_selection->set_invisible(false);
 		
-		m_server_browser_selected_item = int((event.button.y/25) - m_server_browser_items["name0"]->get_y() / 25);
+		// One last check to see if we're overlapping the edges too much.
+		if (m_server_browser_selection->get_y() < m_server_browser_scrollarea->get_y() - 12 || 
+			m_server_browser_selection->get_y() + m_server_browser_selection->get_image_height() >  
+			m_server_browser_scrollarea->get_y() + m_server_browser_scrollarea->get_height() + 12) {
+			
+			m_server_browser_selection->set_invisible(true);
+			m_server_browser_selected_item = -1;
+			return;
+		}
 		
 		if (m_last_clicked > get_ticks() - DOUBLE_CLICK_TIME) {
 			connect_to_server(m_server_browser_selected_item);
@@ -1562,6 +1609,8 @@ void GameController::toggle_server_browser(bool visible) {
 	}
 
 	m_server_browser_background->set_invisible(!visible);
+	m_server_browser_scrollbar->set_invisible(!visible);
+	m_server_browser_scrollarea->set_invisible(!visible);
 	
 	if (visible == false) {
 		m_server_browser_selection->set_invisible(!visible);
@@ -1595,6 +1644,7 @@ void GameController::delete_server_browser_entry(int num) {
 		return;
 	}
 	m_text_manager->remove_string(m_server_browser_items[printer.str()]);
+	m_server_browser_scrollarea->get_group()->remove_graphic(printer.str());
 	m_server_browser_items.erase(printer.str());
 	
 	printer.clear();
@@ -1604,6 +1654,7 @@ void GameController::delete_server_browser_entry(int num) {
 		return;
 	}
 	m_text_manager->remove_string(m_server_browser_items[printer.str()]);
+	m_server_browser_scrollarea->get_group()->remove_graphic(printer.str());
 	m_server_browser_items.erase(printer.str());
 	
 	printer.clear();
@@ -1613,6 +1664,7 @@ void GameController::delete_server_browser_entry(int num) {
 		return;
 	}
 	m_text_manager->remove_string(m_server_browser_items[printer.str()]);
+	m_server_browser_scrollarea->get_group()->remove_graphic(printer.str());
 	m_server_browser_items.erase(printer.str());
 	
 	printer.clear();
@@ -1622,6 +1674,7 @@ void GameController::delete_server_browser_entry(int num) {
 		return;
 	}
 	m_text_manager->remove_string(m_server_browser_items[printer.str()]);
+	m_server_browser_scrollarea->get_group()->remove_graphic(printer.str());
 	m_server_browser_items.erase(printer.str());
 	
 	printer.clear();
@@ -1631,7 +1684,9 @@ void GameController::delete_server_browser_entry(int num) {
 		return;
 	}
 	m_text_manager->remove_string(m_server_browser_items[printer.str()]);
+	m_server_browser_scrollarea->get_group()->remove_graphic(printer.str());
 	m_server_browser_items.erase(printer.str());
+	
 	m_server_list.erase(m_server_list.begin() + num);
 }
 
@@ -2592,18 +2647,18 @@ void	GameController::server_info(const IPAddress& server_address, PacketReader& 
 		ostringstream printer;
 		printer << "name";
 		printer << m_server_list_count;
-		m_server_browser_items[printer.str()] = m_text_manager->place_string(format_ip_address(server_address, true), m_server_browser_items["namelabel"]->get_x(), 150 + 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
+		m_server_browser_items[printer.str()] = m_text_manager->place_string(format_ip_address(server_address, true), m_server_browser_items["namelabel"]->get_x() - m_server_browser_scrollarea->get_x() + m_server_browser_scrollarea->get_width()/2, 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
 		m_server_browser_items[printer.str()]->set_priority(-4);
-		m_window->unregister_graphic(m_server_browser_items[printer.str()]);
-		m_window->register_hud_graphic(m_server_browser_items[printer.str()]);
+		m_window->unregister_hud_graphic(m_server_browser_items[printer.str()]);
+		m_server_browser_scrollarea->get_group()->add_graphic(m_server_browser_items[printer.str()], printer.str());
 		
 		printer.clear();
 		printer << "map";
 		printer << m_server_list_count;
-		m_server_browser_items[printer.str()] = m_text_manager->place_string(current_map_name, m_server_browser_items["maplabel"]->get_x(), 150 + 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
+		m_server_browser_items[printer.str()] = m_text_manager->place_string(current_map_name, m_server_browser_items["maplabel"]->get_x() - m_server_browser_scrollarea->get_x() + m_server_browser_scrollarea->get_width()/2, 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
 		m_server_browser_items[printer.str()]->set_priority(-4);
-		m_window->unregister_graphic(m_server_browser_items[printer.str()]);
-		m_window->register_hud_graphic(m_server_browser_items[printer.str()]);
+		m_window->unregister_hud_graphic(m_server_browser_items[printer.str()]);
+		m_server_browser_scrollarea->get_group()->add_graphic(m_server_browser_items[printer.str()], printer.str());
 		
 		printer.clear();
 		printer << "uptime";
@@ -2611,10 +2666,10 @@ void	GameController::server_info(const IPAddress& server_address, PacketReader& 
 		
 		string uptimestr = format_time_from_millis(uptime);
 		
-		m_server_browser_items[printer.str()] = m_text_manager->place_string(uptimestr, m_server_browser_items["uptimelabel"]->get_x(), 150 + 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
+		m_server_browser_items[printer.str()] = m_text_manager->place_string(uptimestr, m_server_browser_items["uptimelabel"]->get_x() - m_server_browser_scrollarea->get_x() + m_server_browser_scrollarea->get_width()/2, 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
 		m_server_browser_items[printer.str()]->set_priority(-4);
-		m_window->unregister_graphic(m_server_browser_items[printer.str()]);
-		m_window->register_hud_graphic(m_server_browser_items[printer.str()]);
+		m_window->unregister_hud_graphic(m_server_browser_items[printer.str()]);
+		m_server_browser_scrollarea->get_group()->add_graphic(m_server_browser_items[printer.str()], printer.str());
 		
 		printer.clear();
 		printer << "players";
@@ -2624,10 +2679,10 @@ void	GameController::server_info(const IPAddress& server_address, PacketReader& 
 		playertotal << (team_count[0] + team_count[1]);
 		playertotal << "/";
 		playertotal << (team_max_players[0] + team_max_players[1]);
-		m_server_browser_items[printer.str()] = m_text_manager->place_string(playertotal.str(), m_server_browser_items["playerslabel"]->get_x(), 150 + 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
+		m_server_browser_items[printer.str()] = m_text_manager->place_string(playertotal.str(), m_server_browser_items["playerslabel"]->get_x() - m_server_browser_scrollarea->get_x() + m_server_browser_scrollarea->get_width()/2, 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
 		m_server_browser_items[printer.str()]->set_priority(-4);
-		m_window->unregister_graphic(m_server_browser_items[printer.str()]);
-		m_window->register_hud_graphic(m_server_browser_items[printer.str()]);
+		m_window->unregister_hud_graphic(m_server_browser_items[printer.str()]);
+		m_server_browser_scrollarea->get_group()->add_graphic(m_server_browser_items[printer.str()], printer.str());
 		
 		printer.clear();
 		printer << "ping";
@@ -2635,10 +2690,12 @@ void	GameController::server_info(const IPAddress& server_address, PacketReader& 
 		
 		ostringstream pingstr;
 		pingstr << get_ticks() - scan_start_time;
-		m_server_browser_items[printer.str()] = m_text_manager->place_string(pingstr.str(), m_server_browser_items["pinglabel"]->get_x(), 150 + 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
+		m_server_browser_items[printer.str()] = m_text_manager->place_string(pingstr.str(), m_server_browser_items["pinglabel"]->get_x() - m_server_browser_scrollarea->get_x() + m_server_browser_scrollarea->get_width()/2, 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
 		m_server_browser_items[printer.str()]->set_priority(-4);
-		m_window->unregister_graphic(m_server_browser_items[printer.str()]);
-		m_window->register_hud_graphic(m_server_browser_items[printer.str()]);
+		m_window->unregister_hud_graphic(m_server_browser_items[printer.str()]);
+		m_server_browser_scrollarea->get_group()->add_graphic(m_server_browser_items[printer.str()], printer.str());
+
+		m_server_browser_scrollarea->set_content_height(25 * (m_server_list_count + 1));
 
 		m_server_list_count++;
 	}

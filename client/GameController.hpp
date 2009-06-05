@@ -37,6 +37,8 @@
 #include "GraphicalPlayer.hpp"
 #include "Minimap.hpp"
 #include "Font.hpp"
+#include "ScrollArea.hpp"
+#include "ScrollBar.hpp"
 
 #include <string>
 #include <vector>
@@ -155,6 +157,8 @@ private:
 	std::vector<IPAddress> m_server_list;
 	int		m_server_list_count;
 	int		m_server_browser_selected_item;
+	ScrollBar* 	m_server_browser_scrollbar;
+	ScrollArea*	m_server_browser_scrollarea;
 	
 	bool		m_show_overlay;
 	TableBackground* m_overlay_background;
