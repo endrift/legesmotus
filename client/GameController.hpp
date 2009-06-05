@@ -163,6 +163,8 @@ private:
 	bool		m_show_overlay;
 	TableBackground* m_overlay_background;
 	std::map<std::string, Graphic*> m_overlay_items;
+	ScrollBar* 	m_overlay_scrollbar;
+	ScrollArea*	m_overlay_scrollarea;
 	
 	TableBackground* m_red_gate_status_rect;
 	TableBackground* m_blue_gate_status_rect;

@@ -309,7 +309,7 @@ void GameController::init(GameWindow* window) {
 	m_server_browser_scrollbar->set_section_color(ScrollBar::TRACKER, Color(0.2,0.2,0.4));
 	m_server_browser_scrollbar->set_scroll_speed(3);
 	
-	m_server_browser_scrollarea = new ScrollArea(m_server_browser_background->get_image_width(),m_server_browser_background->get_image_height() - m_server_browser_background->get_row_height(0) - 30,1000,m_server_browser_scrollbar);
+	m_server_browser_scrollarea = new ScrollArea(m_server_browser_background->get_image_width(),m_server_browser_background->get_image_height() - m_server_browser_background->get_row_height(0) - 30,10,m_server_browser_scrollbar);
 	m_server_browser_scrollarea->set_priority(-4);
 	m_server_browser_scrollarea->get_group()->set_priority(-4);
 	m_server_browser_scrollarea->set_x(m_server_browser_background->get_x() + 5);
@@ -377,6 +377,27 @@ void GameController::init(GameWindow* window) {
 	m_overlay_background->set_border_collapse(true);
 	m_overlay_background->set_corner_radius(20);
 	m_window->register_hud_graphic(m_overlay_background);
+	
+	m_overlay_scrollbar = new ScrollBar();
+	m_overlay_scrollbar->set_priority(-3);
+	m_overlay_scrollbar->set_height(m_overlay_background->get_row_height(2) - 20);
+	m_overlay_scrollbar->set_x(m_overlay_background->get_x() + m_overlay_background->get_image_width()/2 - 20);
+	m_overlay_scrollbar->set_y(m_overlay_background->get_y() + m_overlay_background->get_row_height(0) + m_overlay_background->get_row_height(1) + 5 + m_overlay_scrollbar->get_height()/2);
+	m_overlay_scrollbar->set_section_color(ScrollBar::BUTTONS, Color(0.7,0.2,0.1));
+	m_overlay_scrollbar->set_section_color(ScrollBar::TRACK, Color(0.2,0.1,0.1));
+	m_overlay_scrollbar->set_section_color(ScrollBar::TRACKER, Color(0.2,0.2,0.4));
+	m_overlay_scrollbar->set_scroll_speed(3);
+
+	m_overlay_scrollarea = new ScrollArea(m_overlay_background->get_image_width(),m_overlay_background->get_row_height(2) - 30,10,m_overlay_scrollbar);
+	m_overlay_scrollarea->set_priority(-4);
+	m_overlay_scrollarea->get_group()->set_priority(-4);
+	m_overlay_scrollarea->set_x(m_overlay_background->get_x() + 5);
+	m_overlay_scrollarea->set_y(m_overlay_background->get_y() + m_overlay_background->get_row_height(0) + m_overlay_background->get_row_height(1) + 15);
+	m_overlay_scrollarea->set_center_x(m_overlay_scrollarea->get_width()/2);
+	m_overlay_scrollarea->set_center_y(0);
+
+	m_window->register_hud_graphic(m_overlay_scrollbar);
+	m_window->register_hud_graphic(m_overlay_scrollarea);
 	
 	m_overlay_items["red label"] = m_text_manager->place_string("Red Team:", m_overlay_background->get_x() - m_overlay_background->get_image_width()/2 + 10, 115, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_overlay_items["blue label"] = m_text_manager->place_string("Blue Team:", m_overlay_background->get_x(), 115, TextManager::LEFT, TextManager::LAYER_HUD);
@@ -545,7 +566,12 @@ void GameController::run(int lockfps) {
 		
 		// Update graphics if frame rate is correct.
 		if((currframe - startframe) >= delay) {
-			m_server_browser_scrollbar->autoscroll(currframe - startframe);
+			if (!m_server_browser_scrollbar->is_invisible()) {
+				m_server_browser_scrollbar->autoscroll(currframe - startframe);
+			}
+			if (!m_overlay_scrollbar->is_invisible()) {
+				m_overlay_scrollbar->autoscroll(currframe - startframe);
+			}
 		
 			if (m_time_to_unfreeze != 0) {
 				m_frozen_status_rect->set_x(m_players[m_player_id].get_x() - m_offset_x);
@@ -923,18 +949,33 @@ void GameController::process_input() {
 				m_mouse_y = event.motion.y;
 				m_crosshairs->set_x(m_mouse_x);
 				m_crosshairs->set_y(m_mouse_y);
-				m_server_browser_scrollbar->mouse_motion_event(event.motion);
+				if (!m_server_browser_scrollbar->is_invisible()) {
+					m_server_browser_scrollbar->mouse_motion_event(event.motion);
+				}
+				if (!m_overlay_scrollbar->is_invisible()) {
+					m_overlay_scrollbar->mouse_motion_event(event.motion);
+				}
 				
 				break;
 				
 			case SDL_MOUSEBUTTONDOWN:
 				// Firing code, use event.button.button, event.button.x, event.button.y
 				process_mouse_click(event);
-				m_server_browser_scrollbar->mouse_button_event(event.button);
+				if (!m_server_browser_scrollbar->is_invisible()) {
+					m_server_browser_scrollbar->mouse_button_event(event.button);
+				}
+				if (!m_overlay_scrollbar->is_invisible()) {
+					m_overlay_scrollbar->mouse_button_event(event.button);
+				}
 				break;
 				
 			case SDL_MOUSEBUTTONUP:
-				m_server_browser_scrollbar->mouse_button_event(event.button);
+				if (!m_server_browser_scrollbar->is_invisible()) {
+					m_server_browser_scrollbar->mouse_button_event(event.button);
+				}
+				if (!m_overlay_scrollbar->is_invisible()) {
+					m_overlay_scrollbar->mouse_button_event(event.button);
+				}
 				break;
 				
 			case SDL_QUIT:
@@ -1161,7 +1202,9 @@ void GameController::process_mouse_click(SDL_Event event) {
 		}
 		
 	} else if (m_game_state == GAME_IN_PROGRESS) {
-		if (event.button.button == 1) {
+		if (!m_overlay_background->is_invisible()) {
+			// Do nothing.
+		} else if (event.button.button == 1) {
 			// Fire the gun if it's ready.
 			if (m_last_fired != 0 && m_last_fired > SDL_GetTicks() - FIRING_DELAY) {
 				return;
@@ -1588,6 +1631,8 @@ void GameController::set_players_visible(bool visible) {
 void GameController::toggle_score_overlay(bool visible) {
 	update_individual_scores();
 	m_overlay_background->set_invisible(!visible);
+	m_overlay_scrollbar->set_invisible(!visible);
+	m_overlay_scrollarea->set_invisible(!visible);
 	map<string, Graphic*>::iterator it;
 	for ( it=m_overlay_items.begin() ; it != m_overlay_items.end(); it++ ) {
 		Graphic* thisitem = (*it).second;
@@ -1790,16 +1835,22 @@ void GameController::update_individual_score_line(int count, const GraphicalPlay
 
 	stringstream scoreprinter;
 	scoreprinter << currplayer.get_score();
-	m_overlay_items[playerid] = m_text_manager->place_string(playername, m_overlay_background->get_x() - m_overlay_background->get_image_width()/2 + 10, 230 + count*25, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_overlay_items[playerscore] = m_text_manager->place_string(scoreprinter.str(), m_overlay_background->get_x(), 230 + count*25, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_overlay_items[playerid] = m_text_manager->place_string(playername, 10, count*25, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_overlay_items[playerscore] = m_text_manager->place_string(scoreprinter.str(), m_overlay_background->get_image_width()/2, count*25, TextManager::LEFT, TextManager::LAYER_HUD);
 
 	m_overlay_items[playerid]->set_priority(-4);
-	m_window->unregister_graphic(m_overlay_items[playerid]);
-	m_window->register_hud_graphic(m_overlay_items[playerid]);
+	m_window->unregister_hud_graphic(m_overlay_items[playerid]);
+	m_overlay_scrollarea->get_group()->remove_graphic(playerid);
+	m_overlay_scrollarea->get_group()->add_graphic(m_overlay_items[playerid], playerid);
 
 	m_overlay_items[playerscore]->set_priority(-4);
-	m_window->unregister_graphic(m_overlay_items[playerscore]);
-	m_window->register_hud_graphic(m_overlay_items[playerscore]);
+	m_window->unregister_hud_graphic(m_overlay_items[playerscore]);
+	m_overlay_scrollarea->get_group()->remove_graphic(playerscore);
+	m_overlay_scrollarea->get_group()->add_graphic(m_overlay_items[playerscore], playerscore);
+	
+	if (m_overlay_items[playerid]->get_y() + m_overlay_items[playerid]->get_image_height() + 2 > m_overlay_scrollarea->get_content_height()) {
+		m_overlay_scrollarea->set_content_height(m_overlay_items[playerid]->get_y() + m_overlay_items[playerid]->get_image_height() + 2);
+	}
 }
 
 void GameController::delete_individual_score(const GraphicalPlayer& currplayer) {
@@ -1816,6 +1867,8 @@ void GameController::delete_individual_score(const GraphicalPlayer& currplayer) 
 		m_text_manager->remove_string(m_overlay_items[playerid]);
 	}
 	
+	m_overlay_scrollarea->get_group()->remove_graphic(playerid);
+	m_overlay_scrollarea->get_group()->remove_graphic(playerscore);
 	m_overlay_items.erase(playerscore);
 	m_overlay_items.erase(playerid);
 }
