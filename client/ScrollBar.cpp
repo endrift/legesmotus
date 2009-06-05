@@ -24,6 +24,7 @@
 
 #include "ScrollBar.hpp"
 #include "ScrollArea.hpp"
+#include <cmath>
 
 const double ScrollBar::DEFAULT_AUTOSCROLL = 50.0;
 
@@ -47,28 +48,31 @@ ScrollBar::ScrollBar(ScrollArea* area) : m_bg(5,SCROLL_WIDTH) {
 	set_scrollbar_height(SCROLL_WIDTH);
 	m_window = NULL;
 	m_pressed = NO_WIDGET;
+
+	m_scroll_speed = 1.0;
+	m_track_speed = 3.0;
 }
 
 void ScrollBar::autoscroll(double scale) {
 	double amount = 0;
 	switch (m_pressed) {
 	case TOP_BUTTON:
-		amount = -2;
+		amount = -m_scroll_speed;
 		break;
 	case TOP_TRACK:
-		amount = -10;
+		amount = -m_track_speed;
 		break;
 	case BOTTOM_TRACK:
-		amount = 10;
+		amount = m_track_speed;
 		break;
 	case BOTTOM_BUTTON:
-		amount = 2;
+		amount = m_scroll_speed;
 		break;
 	default: break;
 	}
 
 	if (m_linked != NULL) {
-		m_linked->scroll_pixels(amount*10*scale/m_height);
+		m_linked->scroll_pixels(amount*20*scale/m_height);
 	} else {
 		scroll(amount*scale/m_height);
 	}
@@ -211,6 +215,22 @@ void ScrollBar::set_border_color(Color color) {
 
 void ScrollBar::set_border_width(double width) {
 	m_bg.set_border_width(width);
+}
+
+void ScrollBar::set_scroll_speed(double speed) {
+	m_scroll_speed = fabs(speed);
+}
+
+void ScrollBar::set_track_speed(double speed) {
+	m_track_speed = fabs(speed);
+}
+
+double ScrollBar::get_scroll_speed() const {
+	return m_scroll_speed;
+}
+
+double ScrollBar::get_track_speed() const {
+	return m_track_speed;
 }
 
 void ScrollBar::register_window(GameWindow* window) {

@@ -56,6 +56,8 @@ private:
 	ScrollWidget	m_pressed;
 	double		m_grab_y;
 	bool		m_updated;
+	double		m_scroll_speed;
+	double		m_track_speed;
 
 	const static double DEFAULT_AUTOSCROLL;
 
@@ -84,6 +86,12 @@ public:
 	void	set_section_color(ScrollWidget section, Color color);
 	void	set_border_color(Color color);
 	void	set_border_width(double width);
+
+	void	set_scroll_speed(double speed);
+	void	set_track_speed(double speed);
+
+	double	get_scroll_speed() const;
+	double	get_track_speed() const;
 
 	void	register_window(GameWindow* window);
 	void	unregister_window();

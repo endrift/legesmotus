@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
 	bar.set_section_color(ScrollBar::BUTTONS, Color(0.5,0.5,0.5));
 	bar.set_section_color(ScrollBar::TRACK, Color(0.2,0.2,0.2));
 	bar.set_section_color(ScrollBar::TRACKER, Color(0.4,0.4,0.4));
-	ScrollArea area(250,250,1000,&bar);
+	ScrollArea area(250,250,300,&bar);
 	area.set_x(150);
 	area.set_y(150);
 	area.set_center_x(125);
@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
 	Sprite ch(pman.data_path("crosshairs.png","sprites"));
 	Sprite s(pman.data_path("blue_full.png","sprites"));
 	s.set_x(125);
-	s.set_y(500);
+	s.set_y(150);
 	ch.set_priority(-1);
 	window->register_graphic(&ch);
 	window->register_graphic(&area);

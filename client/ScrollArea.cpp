@@ -67,7 +67,7 @@ void ScrollArea::set_height(double height) {
 }
 
 void ScrollArea::set_content_height(double height) {
-	double progress_pixels = m_progress*m_content_height;
+	double progress_pixels = m_progress*(m_content_height-m_height);
 	m_content_height = height;
 	if (m_linked != NULL) {
 		double scrollbar_height = m_height/m_content_height;
@@ -109,11 +109,11 @@ void ScrollArea::scroll(double amount) {
 }
 
 void ScrollArea::set_scroll_progress_pixels(double pixels) {
-	set_scroll_progress(pixels/m_content_height);
+	set_scroll_progress(pixels/(m_content_height-m_height));
 }
 
 void ScrollArea::scroll_pixels(double pixels) {
-	scroll(pixels/m_content_height);
+	scroll(pixels/(m_content_height-m_height));
 }
 
 GraphicGroup* ScrollArea::get_group() {
@@ -157,7 +157,7 @@ void ScrollArea::draw(const GameWindow* window) const {
 		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 		glStencilFunc(GL_EQUAL, 1, 1);
-		glTranslated(0,-round(m_progress*m_content_height),0);
+		glTranslated(0,-round(m_progress*(m_content_height-m_height)),0);
 		m_group->draw(window);
 		glDisable(GL_STENCIL_TEST);
 		glPopMatrix();
