@@ -21,7 +21,7 @@ legesmotus: ../liblmclient.a ../liblmcommon.a main.o $(PLATFORM_DEP)
 	$(AR) crus ../liblmclient.a $(OBJS)
 
 clean:
-	rm -f $(OBJS) *~ main.o ../liblmclient.a legesmotus $(OBJS_PLATFORM)
+	rm -f $(OBJS) *~ main.o ../liblmclient.a legesmotus $(PLATFORM_DEP)
 
 # ==================================== #
 
