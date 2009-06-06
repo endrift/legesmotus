@@ -164,7 +164,7 @@ then
 else
 	echo "PREFIX = $prefix" >> Makefile.opts
 	echo 'BINDIR = $(PREFIX)/bin' >> Makefile.opts
-	echo 'MANDIR = $(PREFIX)/man' >> Makefile.opts
+	echo 'MANDIR = $(PREFIX)/share/man' >> Makefile.opts
 	echo 'DATADIR = /Applications/Leges\ Motus.app/Contents/Resources/data' >> Makefile.opts
 	echo "UNIXSTYLE =" >> Makefile.opts
 fi

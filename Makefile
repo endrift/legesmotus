@@ -48,7 +48,26 @@ Leges\ Motus.app: client server
 	test -d "Leges Motus.app/Contents/Frameworks/SDL_ttf.framework" || cp -Rf /Library/Frameworks/SDL_ttf.framework "Leges Motus.app/Contents/Frameworks"
 	test -d "Leges Motus.app/Contents/Frameworks/SDL_mixer.framework" || cp -Rf /Library/Frameworks/SDL_mixer.framework "Leges Motus.app/Contents/Frameworks"
 
+legesmotus$(VSHORT).pkg: client server
+	mkdir -p tmp/Leges\ Motus/Applications
+	mkdir -p tmp/Leges\ Motus/usr/bin
+	mkdir -p tmp/Leges\ Motus/usr/share/man/man6
+	mkdir -p tmp/Resources/en.lproj
+	cp -Rf Leges\ Motus.app tmp/Leges\ Motus/Applications/
+	cp -Rf man/man6/* tmp/Leges\ Motus/usr/share/man/man6/
+	cd tmp/Leges\ Motus/usr/bin && \
+		ln -sf ../../Applications/Leges\ Motus.app/Contents/MacOS/lmserver && \
+		ln -sf ../../Applications/Leges\ Motus.app/Contents/MacOS/legesmotus
+	cp -f README tmp/Resources/en.lproj/ReadMe.txt
+	cp -f COPYING tmp/Resources/en.lproj/License.txt
+	/Developer/usr/bin/packagemaker --root tmp/Leges\ Motus --id org.legesmotus.legesmotus \
+		--title "Leges Motus $(VLONG)" --version "$(VLONG)" --resources tmp/Resources \
+		--out legesmotus$(VSHORT).pkg
+	rm -Rf tmp
+
 bundle: Leges\ Motus.app
+
+package: legesmotus$(VSHORT).pkg
 
 install:
 	cp -Rf Leges\ Motus.app /Applications/
