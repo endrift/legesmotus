@@ -107,4 +107,13 @@ endif
 
 endif
 
+define all_sources_cscope
+     ( find . -follow -name SCCS -prune -o -name '*.[chS]' -print | grep -v svn > cscope.files ; \
+       find . -follow -name SCCS -prune -o -name '*.[chS][pp]*' -print | grep -v svn >> cscope.files )
+endef
+
+cscope: 
+	$(all_sources_cscope)
+	cscope -v -q
+
 .PHONY: clean common server client bundle metaserver install uninstall
