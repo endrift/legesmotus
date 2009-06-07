@@ -45,7 +45,7 @@ using namespace std;
 // This can't be an enum because we want overloading of operator<< to work OK.
 const int	Server::SERVER_PROTOCOL_VERSION = 1;
 
-const char	Server::SERVER_VERSION[] = "0.0.1";
+const char	Server::SERVER_VERSION[] = LM_VERSION;
 
 Server::Server (PathManager& path_manager) : m_path_manager(path_manager), m_ack_manager(*this)
 {

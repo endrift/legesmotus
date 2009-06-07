@@ -150,7 +150,7 @@ void GameController::init(GameWindow* window) {
 	m_input_text = "> ";
 	m_input_bar = NULL;
 	
-	m_client_version = "0.0.3";
+	m_client_version = LM_VERSION;
 	m_protocol_number = 1;
 	
 	m_pixel_depth = window->get_depth();
