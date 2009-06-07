@@ -67,7 +67,7 @@ legesmotus$(VSHORT).pkg: bundle
 	/Developer/usr/bin/packagemaker --root tmp/Leges\ Motus --id org.legesmotus.legesmotus \
 		--title "Leges Motus $(VLONG)" --version "$(VLONG)" --resources tmp/Resources \
 		--target 10.4 --root-volume-only --out legesmotus$(VSHORT).pkg
-	# The follow two lines are a hack to prevent the installer from thinking the packages are relocatable
+	# The following two lines are a hack to prevent the installer from thinking the packages are relocatable
 	rm -f legesmotus$(VSHORT).pkg/Contents/Resources/TokenDefinitions.plist
 	defaults delete "`pwd`/legesmotus$(VSHORT).pkg/Contents/Info" IFPkgPathMappings
 	rm -Rf tmp
