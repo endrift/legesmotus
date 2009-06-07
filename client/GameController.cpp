@@ -537,7 +537,7 @@ void GameController::init(GameWindow* window) {
  * The main game loop.
  */
 void GameController::run(int lockfps) {
-	cerr << "SDL window is: " << m_window->get_width() << " pixels wide and " 
+	cout << "SDL window is: " << m_window->get_width() << " pixels wide and " 
 		<< m_window->get_height() << " pixels tall." << endl;
 	
 	unsigned long startframe = SDL_GetTicks();
@@ -1957,7 +1957,7 @@ void GameController::welcome(PacketReader& reader) {
 	m_player_id = playerid;
 	m_name = playername;
 
-	cerr << "Received welcome packet. Version: " << serverversion << ", Player ID: " << playerid << ", Name: " << playername << ", Team: " << team << endl;
+	cout << "Received welcome packet. Version: " << serverversion << ", Player ID: " << playerid << ", Name: " << playername << ", Team: " << team << endl;
 	send_ack(reader);
 	
 	if (serverversion != m_protocol_number) {
@@ -2168,7 +2168,7 @@ void GameController::leave(PacketReader& reader) {
 		string leavemsg = "You were kicked!  Reason: ";
 		leavemsg.append(leave_message);
 		display_message(leavemsg);
-		cerr << "You were kicked!  Reason: " << leave_message << endl;
+		cout << "You were kicked!  Reason: " << leave_message << endl;
 		disconnect();
 		m_game_state = SHOW_MENUS;
 		return;
@@ -2506,7 +2506,7 @@ void GameController::request_denied(PacketReader& reader) {
 		string message = "Join denied! Reason: ";
 		message.append(reason);
 		display_message(message);
-		cerr << "Join denied!  Reason: " << reason << endl;
+		cout << "Join denied!  Reason: " << reason << endl;
 		disconnect();
 		m_game_state = SHOW_MENUS;
 	}
