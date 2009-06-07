@@ -2763,6 +2763,10 @@ void	GameController::scan_all() {
 	m_current_scan_id = info_request_packet.packet_id();
 	info_request_packet << m_protocol_number << m_current_scan_id << get_ticks() << m_client_version;
 	m_network.broadcast_packet(DEFAULT_PORTNO, info_request_packet);
+	IPAddress localhostip;
+	if (resolve_hostname(localhostip, "localhost", DEFAULT_PORTNO)) {
+		m_network.send_packet_to(localhostip, info_request_packet);
+	}
 	m_network.send_packet_to(m_metaserver_address, info_request_packet);
 }
 
