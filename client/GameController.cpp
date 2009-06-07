@@ -38,6 +38,8 @@
 #include "common/IPAddress.hpp"
 #include "common/timer.hpp"
 
+#include "SDL_image.h"
+
 #include <vector>
 #include <cstdio>
 #include <cstdlib>
@@ -63,10 +65,17 @@ const int GameController::FROZEN_STATUS_RECT_WIDTH = 60;
 const int GameController::DOUBLE_CLICK_TIME = 300;
 
 GameController::GameController(PathManager& path_manager) : m_path_manager(path_manager) {
+	GameWindow::init_video();
+	m_icon = IMG_Load(path_manager.data_path("head32m.png", "sprites"));
+	SDL_WM_SetIcon(m_icon, NULL);
 	init(GameWindow::get_optimal_instance());
 }
 
 GameController::GameController(PathManager& path_manager, int width, int height, bool fullscreen, int depth) : m_path_manager(path_manager) {
+	GameWindow::init_video();
+	m_icon = IMG_Load(path_manager.data_path("head32m.png", "sprites"));
+	SDL_WM_SetIcon(m_icon, NULL);
+	cerr << IMG_GetError() << endl;
 	init(GameWindow::get_instance(width, height, depth, fullscreen));
 }
 
@@ -128,6 +137,7 @@ GameController::~GameController() {
 
 	m_minimap->unregister_with_window(m_window);
 	delete m_minimap;
+	delete m_icon;
 
 	// The GameWindow instance should always be destroyed last, since other stuff may depend on it.
 	m_window->destroy_instance();

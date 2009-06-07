@@ -185,6 +185,8 @@ private:
 	// MINIMAP CODE BY JEFFREY
 	Minimap*	m_minimap;
 
+	SDL_Surface*	m_icon;
+
 	// TEMPORARY MAP CODE BY ANDREW
 	GraphicalMap*	m_map;
 
