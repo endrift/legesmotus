@@ -30,6 +30,7 @@ clean:
 	$(MAKE) -C client clean
 	$(MAKE) -C tests clean
 	rm -rf "Leges Motus.app"
+	rm -rf legesmotus$(VSHORT).pkg
 
 
 ifeq ($(MACHINE)$(UNIXSTYLE),Darwin)
@@ -58,7 +59,7 @@ legesmotus$(VSHORT).pkg: client server
 	cd tmp/Leges\ Motus/usr/bin && \
 		ln -sf ../../Applications/Leges\ Motus.app/Contents/MacOS/lmserver && \
 		ln -sf ../../Applications/Leges\ Motus.app/Contents/MacOS/legesmotus
-	cp -f README tmp/Resources/en.lproj/ReadMe.txt
+	cp -f README.rtf tmp/Resources/en.lproj/ReadMe.rtf
 	cp -f COPYING tmp/Resources/en.lproj/License.txt
 	/Developer/usr/bin/packagemaker --root tmp/Leges\ Motus --id org.legesmotus.legesmotus \
 		--title "Leges Motus $(VLONG)" --version "$(VLONG)" --resources tmp/Resources \
@@ -82,6 +83,7 @@ uninstall:
 else
 
 ifneq ($(PREFIX),)
+ifneq ($(MACHINE),Windows)
 install:
 	install -d $(DATADIR)/fonts
 	install -m 0644 $(BASEDIR)/data/fonts/* $(DATADIR)/fonts
@@ -100,6 +102,7 @@ uninstall:
 	rm -rf $(DATADIR)
 	rm -f $(BINDIR)/lmserver $(BINDIR)/legesmotus
 	rm -f $(MANDIR)/man6/lmserver.6 $(MANDIR)/man6/legesmotus.6
+endif
 endif
 
 endif

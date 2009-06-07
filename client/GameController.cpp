@@ -1311,7 +1311,7 @@ void GameController::move_objects(float timescale) {
 		if (thisobj->get_sprite() == NULL) {
 			continue;
 		}
-		const Polygon& poly(thisobj->get_bounding_polygon());
+		const LMPolygon& poly(thisobj->get_bounding_polygon());
 		double angle_of_incidence = 0;
 		double newdist = poly.intersects_circle(currpos, radius, &angle_of_incidence);
 		angle_of_incidence = get_normalized_angle(get_normalized_angle(angle_of_incidence+180));
@@ -1457,7 +1457,7 @@ void GameController::attempt_jump() {
 			// Only obstacles can be jumped from
 			continue;
 		}
-		const Polygon& poly(thisobj->get_bounding_polygon());
+		const LMPolygon& poly(thisobj->get_bounding_polygon());
 		double newdist = poly.intersects_circle(currpos, player->get_radius()+5, NULL);
 		if (newdist != -1) {
 			player->set_x_vel(x_vel);
@@ -1489,7 +1489,7 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 		if (thisobj->get_sprite() == NULL) {
 			continue;
 		}
-		const Polygon& poly(thisobj->get_bounding_polygon());
+		const LMPolygon& poly(thisobj->get_bounding_polygon());
 		double dist_to_obstacle = Point::distance(Point(start_x, start_y), Point(thisobj->get_sprite()->get_x() + thisobj->get_sprite()->get_image_width()/2, thisobj->get_sprite()->get_y() + thisobj->get_sprite()->get_image_height()/2)) + 100.0;
 		Point endpos(start_x + dist_to_obstacle * cos(direction * DEGREES_TO_RADIANS), start_y + dist_to_obstacle * sin(direction * DEGREES_TO_RADIANS));
 		

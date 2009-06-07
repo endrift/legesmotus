@@ -7,6 +7,7 @@ CXXFLAGS += $(CLIENTFLAGS)
 
 ifeq ($(MACHINE),Windows)
 PLATFORM_DEP = legesmotus-res.o
+legesmotus-res.o: legesmotus.ico
 endif
 ifeq ($(MACHINE)$(UNIXSTYLE),Darwin)
 PLATFORM_DEP = mac.o

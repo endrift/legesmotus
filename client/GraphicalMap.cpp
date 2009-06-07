@@ -83,7 +83,7 @@ void	GraphicalMap::add_object(PacketReader& object_data) {
 
 				// Bounding polygon - specified by a list of points in the map file
 				// The points are converted into a list of lines for internal representation.
-				Polygon&	bounding_polygon(map_object.get_bounding_polygon());
+				LMPolygon&	bounding_polygon(map_object.get_bounding_polygon());
 				if (object_data.has_more()) {
 					Point		first_point;
 					object_data >> first_point;

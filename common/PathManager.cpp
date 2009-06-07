@@ -38,7 +38,7 @@ PathManager::PathManager(const char* argv0) {
 	(void)(argv0); //To be used later?
 	const char* loc = getenv("LM_DATA_DIR");
 	if (loc == NULL) {
-		strcpy(m_data_directory,DATADIR);
+		strncpy(m_data_directory,LM_DATA_DIR,sizeof(m_data_directory));
 	} else {
 		strncpy(m_data_directory,loc,sizeof(m_data_directory));
 		m_data_directory[sizeof(m_data_directory)-1] = '\0';

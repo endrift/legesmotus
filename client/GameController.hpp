@@ -21,7 +21,7 @@
  * 02111-1307  USA
  * 
  */
- 
+
 #ifndef LM_CLIENT_GAMECONTROLLER_HPP
 #define LM_CLIENT_GAMECONTROLLER_HPP
 
@@ -103,7 +103,7 @@ private:
 	int 		m_screen_height;
 	int		m_map_width;
 	int		m_map_height;
-	Polygon		m_map_polygon;
+	LMPolygon		m_map_polygon;
 	int 		m_pixel_depth;
 	int		m_game_state;
 	bool 		m_fullscreen;

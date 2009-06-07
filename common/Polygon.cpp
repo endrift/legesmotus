@@ -33,11 +33,11 @@
 
 using namespace std;
 
-void	Polygon::add_line(Point a, Point b) {
+void	LMPolygon::add_line(Point a, Point b) {
 	m_lines.push_back(make_pair(a, b));
 }
 
-void	Polygon::make_rectangle(int width, int height) {
+void	LMPolygon::make_rectangle(int width, int height) {
 	clear();
 	add_line(Point(0, 0), Point(width, 0));
 	add_line(Point(width, 0), Point(width, height));
@@ -45,7 +45,7 @@ void	Polygon::make_rectangle(int width, int height) {
 	add_line(Point(0, height), Point(0, 0));
 }
 
-void	Polygon::make_rectangle(int width, int height, Point upper_left) {
+void	LMPolygon::make_rectangle(int width, int height, Point upper_left) {
 	clear();
 	add_line(upper_left, upper_left + Point(width, 0));
 	add_line(upper_left + Point(width, 0), upper_left + Point(width, height));
@@ -53,7 +53,7 @@ void	Polygon::make_rectangle(int width, int height, Point upper_left) {
 	add_line(upper_left + Point(0, height), upper_left);
 }
 
-double	Polygon::intersects_circle(Point p, double radius, double* angle) const {
+double	LMPolygon::intersects_circle(Point p, double radius, double* angle) const {
 	list<pair<Point, Point> >::const_iterator it;
 	double min_dist = numeric_limits<double>::max();
 	double x1res;
@@ -115,7 +115,7 @@ double	Polygon::intersects_circle(Point p, double radius, double* angle) const {
 	return -1;
 }
 
-Point Polygon::intersects_line(Point start, Point end) const {
+Point LMPolygon::intersects_line(Point start, Point end) const {
 	double mindist = numeric_limits<double>::max();
 	
 	Point p = start;
@@ -142,15 +142,15 @@ Point Polygon::intersects_line(Point start, Point end) const {
 	return Point(-1, -1);
 }
 
-double Polygon::cross_product(Point start, Point end) const {
+double LMPolygon::cross_product(Point start, Point end) const {
 	return start.x * end.y - start.y * end.x;
 }
 
-double Polygon::dist_from_line_to_point(double x1, double y1, double x2, double y2, double px, double py) const {
+double LMPolygon::dist_from_line_to_point(double x1, double y1, double x2, double y2, double px, double py) const {
 	return fabs(double((x2-x1)*(y1-py) - (x1-px)*(y2-y1) ) / sqrt(double((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1))));
 }
 
-Point Polygon::closest_point_on_line_to_point(Point start, Point end, Point p) const {
+Point LMPolygon::closest_point_on_line_to_point(Point start, Point end, Point p) const {
 	Point v = end - start;
 	Point w = p - start;
 	double projection = dot_product(v, w) / dot_product(v, v);
@@ -161,7 +161,7 @@ Point Polygon::closest_point_on_line_to_point(Point start, Point end, Point p) c
 	}
 }
 
-double	Polygon::dist_from_circle(Point p, double radius) const {
+double	LMPolygon::dist_from_circle(Point p, double radius) const {
 	list<pair<Point, Point> >::const_iterator it;
 	double min_dist = numeric_limits<double>::max();
 	for ( it=m_lines.begin() ; it != m_lines.end(); it++ ) {

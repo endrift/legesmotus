@@ -25,12 +25,12 @@
 #ifndef LM_COMMON_POLYGON_HPP
 #define LM_COMMON_POLYGON_HPP
 
+#include "common/Point.hpp"
 #include <list>
 #include <utility>
-#include "common/Point.hpp"
 
 // A polygon is collection of lines which should all join together to create a polygon
-class Polygon {
+class LMPolygon {
 private:
 	std::list<std::pair<Point, Point> >	m_lines;
 
