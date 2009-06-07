@@ -56,10 +56,10 @@ void	LMPolygon::make_rectangle(int width, int height, Point upper_left) {
 double	LMPolygon::intersects_circle(Point p, double radius, double* angle) const {
 	list<pair<Point, Point> >::const_iterator it;
 	double min_dist = numeric_limits<double>::max();
-	double x1res;
-	double y1res;
-	double x2res;
-	double y2res;
+	double x1res = 0;
+	double y1res = 0;
+	double x2res = 0;
+	double y2res = 0;
 	for ( it=m_lines.begin() ; it != m_lines.end(); it++ ) {
 		int x1 = it->first.x;
 		int y1 = it->first.y;
