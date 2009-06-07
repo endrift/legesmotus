@@ -75,7 +75,6 @@ GameController::GameController(PathManager& path_manager, int width, int height,
 	GameWindow::init_video();
 	m_icon = IMG_Load(path_manager.data_path("head32m.png", "sprites"));
 	SDL_WM_SetIcon(m_icon, NULL);
-	cerr << IMG_GetError() << endl;
 	init(GameWindow::get_instance(width, height, depth, fullscreen));
 }
 
