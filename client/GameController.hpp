@@ -61,6 +61,7 @@ private:
 		int open_team_chat;
 		int open_console;
 		int send_chat;
+		int bounce_mode;
 	};
 	
 	enum {
@@ -120,6 +121,7 @@ private:
 	bool		m_holding_gate;
 	unsigned int	m_last_fired;
 	unsigned int	m_last_clicked;
+	bool		m_bounce_mode;
 
 	unsigned long	m_time_to_unfreeze;
 	unsigned long	m_total_time_frozen;

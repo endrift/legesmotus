@@ -1,5 +1,5 @@
 /*
- * common/Polygon.cpp
+ * common/LMPolygon.cpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,7 +22,7 @@
  * 
  */
 
-#include "Polygon.hpp"
+#include "LMPolygon.hpp"
 #include <math.h>
 #include <cmath>
 #include <iostream>
