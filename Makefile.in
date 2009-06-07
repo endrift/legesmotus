@@ -27,6 +27,7 @@ endif
 endif
 
 ifeq ($(MACHINE)$(UNIXSTYLE),Darwin)
+export MACOSX_DEPLOYMENT_TARGET=10.4
 FLAGS_SDL  = -I$(FRAMEWORKS)/SDL.framework/Headers
 FLAGS_SDL += -I$(FRAMEWORKS)/SDL_image.framework/Headers
 FLAGS_SDL += -I$(FRAMEWORKS)/SDL_ttf.framework/Headers

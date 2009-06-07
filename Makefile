@@ -44,7 +44,7 @@ Leges\ Motus.app: client server
 	cp -f client/legesmotus.icns "Leges Motus.app/Contents/Resources/"
 	cp -Rf client/legesmotus.nib "Leges Motus.app/Contents/Resources/"
 	cp -Rf data "Leges Motus.app/Contents/Resources/"
-	rm -Rf "Leges Motus.app/Contents/Resources/data/.svn"
+	rm -Rf Leges\ Motus.app/Contents/Resources/*/.svn
 	rm -Rf Leges\ Motus.app/Contents/Resources/data/*/.svn
 	test -d "Leges Motus.app/Contents/Frameworks/SDL.framework" || cp -Rf /Library/Frameworks/SDL.framework "Leges Motus.app/Contents/Frameworks"
 	test -d "Leges Motus.app/Contents/Frameworks/SDL_net.framework" || cp -Rf /Library/Frameworks/SDL_net.framework "Leges Motus.app/Contents/Frameworks"
@@ -52,7 +52,8 @@ Leges\ Motus.app: client server
 	test -d "Leges Motus.app/Contents/Frameworks/SDL_ttf.framework" || cp -Rf /Library/Frameworks/SDL_ttf.framework "Leges Motus.app/Contents/Frameworks"
 	test -d "Leges Motus.app/Contents/Frameworks/SDL_mixer.framework" || cp -Rf /Library/Frameworks/SDL_mixer.framework "Leges Motus.app/Contents/Frameworks"
 
-legesmotus$(VSHORT).pkg: client server
+legesmotus$(VSHORT).pkg: bundle
+	rm -Rf tmp
 	mkdir -p tmp/Leges\ Motus/Applications
 	mkdir -p tmp/Leges\ Motus/usr/bin
 	mkdir -p tmp/Leges\ Motus/usr/share/man/man6
@@ -60,13 +61,12 @@ legesmotus$(VSHORT).pkg: client server
 	cp -Rf Leges\ Motus.app tmp/Leges\ Motus/Applications/
 	cp -Rf man/man6/* tmp/Leges\ Motus/usr/share/man/man6/
 	cd tmp/Leges\ Motus/usr/bin && \
-		ln -sf ../../Applications/Leges\ Motus.app/Contents/MacOS/lmserver && \
-		ln -sf ../../Applications/Leges\ Motus.app/Contents/MacOS/legesmotus
+		ln -sf ../../Applications/Leges\ Motus.app/Contents/MacOS/lmserver
 	cp -f README.rtf tmp/Resources/en.lproj/ReadMe.rtf
 	cp -f COPYING tmp/Resources/en.lproj/License.txt
 	/Developer/usr/bin/packagemaker --root tmp/Leges\ Motus --id org.legesmotus.legesmotus \
 		--title "Leges Motus $(VLONG)" --version "$(VLONG)" --resources tmp/Resources \
-		--out legesmotus$(VSHORT).pkg
+		--target 10.4 --root-volume-only --out legesmotus$(VSHORT).pkg
 	rm -Rf tmp
 
 bundle: Leges\ Motus.app
