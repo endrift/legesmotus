@@ -531,8 +531,6 @@ void GameController::init(GameWindow* window) {
 		// TODO: better error message
 		cerr << "Unable to resolve metaserver hostname.  Internet-wide server browsing will not be enabled." << std::endl;
 	}
-
-	m_bounce_mode = false;
 }
 
 /*
@@ -947,16 +945,11 @@ void GameController::process_input() {
 						} else {
 							m_game_state = SHOW_MENUS;
 						}
-					} else if (event.key.keysym.sym == m_key_bindings.bounce_mode || event.key.keysym.sym == m_alt_key_bindings.bounce_mode) {
-						m_bounce_mode = true;
 					}
 				}
 				break;
 
 			case SDL_KEYUP:
-				if (event.key.keysym.sym == m_key_bindings.bounce_mode || event.key.keysym.sym == m_alt_key_bindings.bounce_mode) {
-					m_bounce_mode = false;
-				}
 				break;
 				
 			case SDL_MOUSEMOTION:
@@ -1018,7 +1011,6 @@ void GameController::initialize_key_bindings() {
 	m_key_bindings.open_team_chat = SDLK_y;
 	m_key_bindings.open_console = SDLK_BACKQUOTE;
 	m_key_bindings.send_chat = SDLK_RETURN;
-	m_key_bindings.bounce_mode = SDLK_LSHIFT;
 
 	m_alt_key_bindings.quit = -1;
 	m_alt_key_bindings.jump = -1;
@@ -1028,7 +1020,6 @@ void GameController::initialize_key_bindings() {
 	m_alt_key_bindings.open_team_chat = -1;
 	m_alt_key_bindings.open_console = -1;
 	m_alt_key_bindings.send_chat = SDLK_KP_ENTER;
-	m_alt_key_bindings.bounce_mode = -1;
 }
 
 /*
@@ -1272,10 +1263,7 @@ void GameController::move_objects(float timescale) {
 	if (new_x - half_width < 0) {
 		new_x = half_width;
 		new_y = m_players[m_player_id].get_y();
-		if (m_bounce_mode) {
-			m_players[m_player_id].set_x_vel(-m_players[m_player_id].get_x_vel() *.9);
-			m_players[m_player_id].set_y_vel(m_players[m_player_id].get_y_vel() *.9);
-		} else if (m_players[m_player_id].is_frozen() && !m_players[m_player_id].is_invisible()) {
+		if (m_players[m_player_id].is_frozen() && !m_players[m_player_id].is_invisible()) {
 			m_players[m_player_id].set_x_vel(-m_players[m_player_id].get_x_vel() * .9);
 			m_players[m_player_id].set_y_vel(m_players[m_player_id].get_y_vel() * .9);
 		} else {
@@ -1285,10 +1273,7 @@ void GameController::move_objects(float timescale) {
 	} else if (new_x + half_width > m_map_width) {
 		new_x = m_map_width - half_width;
 		new_y = m_players[m_player_id].get_y();
-		if (m_bounce_mode) {
-			m_players[m_player_id].set_x_vel(-m_players[m_player_id].get_x_vel() *.9);
-			m_players[m_player_id].set_y_vel(m_players[m_player_id].get_y_vel() *.9);
-		} else if (m_players[m_player_id].is_frozen() && !m_players[m_player_id].is_invisible()) {
+		if (m_players[m_player_id].is_frozen() && !m_players[m_player_id].is_invisible()) {
 			m_players[m_player_id].set_x_vel(-m_players[m_player_id].get_x_vel() * .9);
 			m_players[m_player_id].set_y_vel(m_players[m_player_id].get_y_vel() * .9);
 		} else {
@@ -1300,10 +1285,7 @@ void GameController::move_objects(float timescale) {
 	if (new_y - half_height < 0) {
 		new_y = half_height;
 		new_x = m_players[m_player_id].get_x();
-		if (m_bounce_mode) {
-			m_players[m_player_id].set_x_vel(m_players[m_player_id].get_x_vel() *.9);
-			m_players[m_player_id].set_y_vel(-m_players[m_player_id].get_y_vel() *.9);
-		} else if (m_players[m_player_id].is_frozen() && !m_players[m_player_id].is_invisible()) {
+		if (m_players[m_player_id].is_frozen() && !m_players[m_player_id].is_invisible()) {
 			m_players[m_player_id].set_x_vel(m_players[m_player_id].get_x_vel() * .9);
 			m_players[m_player_id].set_y_vel(-m_players[m_player_id].get_y_vel() * .9);
 		} else {
@@ -1313,10 +1295,7 @@ void GameController::move_objects(float timescale) {
 	} else if (new_y + half_height > m_map_height) {
 		new_y = m_map_height - half_height;
 		new_x = m_players[m_player_id].get_x();
-		if (m_bounce_mode) {
-			m_players[m_player_id].set_x_vel(m_players[m_player_id].get_x_vel() *.9);
-			m_players[m_player_id].set_y_vel(-m_players[m_player_id].get_y_vel() *.9);
-		} else if (m_players[m_player_id].is_frozen() && !m_players[m_player_id].is_invisible()) {
+		if (m_players[m_player_id].is_frozen() && !m_players[m_player_id].is_invisible()) {
 			m_players[m_player_id].set_x_vel(m_players[m_player_id].get_x_vel() * .9);
 			m_players[m_player_id].set_y_vel(-m_players[m_player_id].get_y_vel() * .9);
 		} else {
@@ -1361,18 +1340,7 @@ void GameController::move_objects(float timescale) {
 			if (newdist < olddist) {
 				if (thisobj->get_type() == Map::OBSTACLE) {
 					// If we're frozen, bounce off the wall.
-					if (m_bounce_mode) {
-						double xvel = m_players[m_player_id].get_x_vel();
-						double yvel = m_players[m_player_id].get_y_vel();
-						double my_angle = get_normalized_angle(atan2(yvel, xvel) * RADIANS_TO_DEGREES);
-						double new_angle = get_normalized_angle(angle_of_incidence + (angle_of_incidence - my_angle) - 180);
-						double vel_magnitude = sqrt(xvel * xvel + yvel * yvel);
-						m_players[m_player_id].set_velocity(vel_magnitude * cos(new_angle * DEGREES_TO_RADIANS) *.9, vel_magnitude * sin(new_angle * DEGREES_TO_RADIANS) *.9);
-						//new_x = m_players[m_player_id].get_x() + m_players[m_player_id].get_x_vel() * timescale;
-						//new_y = m_players[m_player_id].get_y() + m_players[m_player_id].get_y_vel() * timescale;
-						new_x = m_players[m_player_id].get_x();
-						new_y = m_players[m_player_id].get_y();
-					} else if (m_players[m_player_id].is_frozen() && !m_players[m_player_id].is_invisible()) {
+					if (m_players[m_player_id].is_frozen() && !m_players[m_player_id].is_invisible()) {
 						double xvel = m_players[m_player_id].get_x_vel();
 						double yvel = m_players[m_player_id].get_y_vel();
 						double my_angle = get_normalized_angle(atan2(yvel, xvel) * RADIANS_TO_DEGREES);

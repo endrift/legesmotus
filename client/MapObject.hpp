@@ -26,7 +26,7 @@
 #define LM_CLIENT_MAPOBJECT_HPP
 
 #include "common/Point.hpp"
-#include "common/LMPolygon.hpp"
+#include "common/Polygon.hpp"
 #include "client/Graphic.hpp"
 #include "client/Sprite.hpp"
 
