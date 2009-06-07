@@ -31,6 +31,7 @@
 using namespace std;
 
 GameWindow* GameWindow::m_instance = NULL;
+SDL_Surface* GameWindow::m_icon = NULL;
 
 GameWindow::GameWindow(int width, int height, int depth, bool fullscreen) {
 	m_width = width;
@@ -110,6 +111,19 @@ bool GameWindow::init_video() {
 
 void GameWindow::deinit_video() {
 	SDL_QuitSubSystem(SDL_INIT_VIDEO);
+	delete m_icon;
+	m_icon = NULL;
+}
+
+void GameWindow::set_icon(SDL_Surface* icon) {
+	if (icon == NULL) {
+		return;
+	}
+	if (!init_video()) {
+		throw LMException(SDL_GetError());
+	}
+	m_icon = icon;
+	SDL_WM_SetIcon(icon, NULL);
 }
 
 GameWindow* GameWindow::get_instance(int width, int height, int depth, bool fullscreen) {

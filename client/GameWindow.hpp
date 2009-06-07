@@ -40,6 +40,8 @@ private:
 	std::list<Graphic*>		m_graphics;
 	std::list<Graphic*>		m_hud_graphics;
 
+	static SDL_Surface*	m_icon;
+
 	double			m_offset_x;
 	double			m_offset_y;
 
@@ -52,6 +54,8 @@ public:
 	// NB: It will return true if the system was already initialized
 	static bool		init_video();
 	static void		deinit_video();
+	// This must be called before an instance is obtained
+	static void		set_icon(SDL_Surface* icon);
 
 	// Will get the current GameWindow, adjusted to these dimensions, if one exists
 	// If it doesn't exist, it will construct it
