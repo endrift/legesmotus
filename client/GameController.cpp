@@ -1191,7 +1191,8 @@ void GameController::process_mouse_click(SDL_Event event) {
 		ostringstream itemname;
 		itemname << "name" << m_server_browser_selected_item;
 		if (m_server_browser_items.find(itemname.str()) == m_server_browser_items.end()) {
-			cerr << "Error: no item " << itemname.str() << endl;
+			m_server_browser_selection->set_invisible(true);
+			m_server_browser_selected_item = -1;
 			return;
 		}
 		
