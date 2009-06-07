@@ -15,7 +15,7 @@ DATADIR = data
 
 -include $(BASEDIR)/Makefile.opts
 
-CFLAGS += -DLM_DATA_DIR="\"$(DATADIR)\"" -DLM_VERSION="\"$(VLONG)\""
+CFLAGS += -DLM_DATA_DIR=\"$(DATADIR)\" -DLM_VERSION="\"$(VLONG)\""
 
 MACHINE = $(shell uname -s)
 ifeq ($(MACHINE),)

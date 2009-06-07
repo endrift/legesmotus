@@ -75,7 +75,7 @@ package: legesmotus$(VSHORT).pkg
 
 install:
 	cp -Rf Leges\ Motus.app /Applications/
-	ln -s /Applications/Leges\ Motus.app/Contents/MacOS/lmserver $(BINDIR)
+	ln -sf /Applications/Leges\ Motus.app/Contents/MacOS/lmserver $(BINDIR)
 	install -d $(MANDIR)/man6
 	install -m 0644 $(BASEDIR)/man/man6/lmserver.6 $(MANDIR)/man6
 

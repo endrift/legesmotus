@@ -29,7 +29,7 @@ See "ADVANCED BUILDING" below for more advanced build options.
 
 RUNNING THE CLIENT
 
-To run the client, run the 'legesmotus' command.
+To run the client, if Leges Motus is in your path, run the 'legesmotus' command.  You can also double click on legesmotus.exe on Windows and the Leges Motus application on Mac, but you cannot specify command line options in this manner.
 
 The client supports the following command-line options:
   -n NAME	set your player name (default: your user name)
@@ -42,8 +42,6 @@ The client supports the following command-line options:
   -?, --help	display this help, and exit
       --version	display version information and exit
 
-If you specify the width and height of your actual screen resolution, the game will run in fullscreen.
-
 
 REQUIREMENTS
 
@@ -55,12 +53,12 @@ The following libraries must be installed in order to build and run the Leges Mo
  SDL_mixer
  OpenGL
 
-No additional libraries are needed to build or run the server.
+All of these are bundled in Windows and Mac OS X, except for OpenGL, which should already be installed on the system. No additional libraries are needed to build or run the server.
 
 
 RUNNING THE SERVER
 
-To run the server, run the 'lmserver' command.
+To run the server, run the 'lmserver' command, or double click on lmserver.exe on Windows.
 
 The server supports the following command-line options:
   -m MAPNAME	set the map name (default: alpha1)
@@ -157,12 +155,14 @@ By default, on Mac OS X, Leges Motus will build a .app bundle, and use framework
 
 	./configure --unix-style
 
+Note that this requires sdl-config to be installed on your system, which it generally is not unless SDL is installed through a system such as MacPorts.
+
 To disable building a universal binary on Mac OS X, use:
 
 	./configure --disable-universal
 
 To build only the server or client, use one of:
-	
+
 	make server
 	make client
 
