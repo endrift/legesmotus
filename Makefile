@@ -44,6 +44,8 @@ Leges\ Motus.app: client server
 	cp -f client/legesmotus.icns "Leges Motus.app/Contents/Resources/"
 	cp -Rf client/legesmotus.nib "Leges Motus.app/Contents/Resources/"
 	cp -Rf data "Leges Motus.app/Contents/Resources/"
+	rm -Rf "Leges Motus.app/Contents/Resources/data/.svn"
+	rm -Rf Leges\ Motus.app/Contents/Resources/data/*/.svn
 	test -d "Leges Motus.app/Contents/Frameworks/SDL.framework" || cp -Rf /Library/Frameworks/SDL.framework "Leges Motus.app/Contents/Frameworks"
 	test -d "Leges Motus.app/Contents/Frameworks/SDL_net.framework" || cp -Rf /Library/Frameworks/SDL_net.framework "Leges Motus.app/Contents/Frameworks"
 	test -d "Leges Motus.app/Contents/Frameworks/SDL_image.framework" || cp -Rf /Library/Frameworks/SDL_image.framework "Leges Motus.app/Contents/Frameworks"
