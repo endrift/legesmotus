@@ -41,6 +41,7 @@ Leges\ Motus.app: client server
 	cp -f client/legesmotus "Leges Motus.app/Contents/MacOS/"
 	cp -f server/lmserver "Leges Motus.app/Contents/MacOS"
 	cp -f client/Info.plist "Leges Motus.app/Contents/"
+	cp -f client/legesmotus.icns "Leges Motus.app/Contents/Resources/"
 	cp -Rf client/legesmotus.nib "Leges Motus.app/Contents/Resources/"
 	cp -Rf data "Leges Motus.app/Contents/Resources/"
 	test -d "Leges Motus.app/Contents/Frameworks/SDL.framework" || cp -Rf /Library/Frameworks/SDL.framework "Leges Motus.app/Contents/Frameworks"
