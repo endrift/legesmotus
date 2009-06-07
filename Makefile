@@ -77,7 +77,7 @@ install:
 	cp -Rf Leges\ Motus.app /Applications/
 	ln -s /Applications/Leges\ Motus.app/Contents/MacOS/lmserver $(BINDIR)
 	install -d $(MANDIR)/man6
-	install $(BASEDIR)/man/man6/lmserver.6 $(MANDIR)/man6
+	install -m 0644 $(BASEDIR)/man/man6/lmserver.6 $(MANDIR)/man6
 
 uninstall:
 	rm -rf /Applications/Leges\ Motus.app
@@ -97,7 +97,7 @@ install:
 	install -d $(DATADIR)/sprites
 	install -m 0644 $(BASEDIR)/data/sprites/* $(DATADIR)/sprites
 	install -d $(MANDIR)/man6
-	install $(BASEDIR)/man/man6/* $(MANDIR)/man6
+	install -m 0644 $(BASEDIR)/man/man6/* $(MANDIR)/man6
 	install -d $(BINDIR)
 	install -s $(BASEDIR)/server/lmserver $(BASEDIR)/client/legesmotus $(BINDIR)
 
