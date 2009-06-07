@@ -2737,7 +2737,16 @@ void	GameController::server_info(const IPAddress& server_address, PacketReader& 
 		ostringstream printer;
 		printer << "name";
 		printer << m_server_list_count;
-		m_server_browser_items[printer.str()] = m_text_manager->place_string(format_ip_address(server_address, true), m_server_browser_items["namelabel"]->get_x() - m_server_browser_scrollarea->get_x() + m_server_browser_scrollarea->get_width()/2, 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
+		if (server_address.is_localhost()) {
+			string hostname = "";
+			uint16_t portno = 0;
+			resolve_ip_address(hostname, &portno, server_address);
+			ostringstream ipprinter;
+			ipprinter << "localhost:" << portno;
+			m_server_browser_items[printer.str()] = m_text_manager->place_string(ipprinter.str(), m_server_browser_items["namelabel"]->get_x() - m_server_browser_scrollarea->get_x() + m_server_browser_scrollarea->get_width()/2, 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
+		} else {
+			m_server_browser_items[printer.str()] = m_text_manager->place_string(format_ip_address(server_address, true), m_server_browser_items["namelabel"]->get_x() - m_server_browser_scrollarea->get_x() + m_server_browser_scrollarea->get_width()/2, 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
+		}
 		m_server_browser_items[printer.str()]->set_priority(-4);
 		m_window->unregister_hud_graphic(m_server_browser_items[printer.str()]);
 		m_server_browser_scrollarea->get_group()->add_graphic(m_server_browser_items[printer.str()], printer.str());
