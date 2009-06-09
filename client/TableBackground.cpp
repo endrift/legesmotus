@@ -50,7 +50,6 @@ void TableBackground::draw_row(int row) const {
 	double side_offset = m_border_width;
 	double diff = max<double>(0, m_corner_radius - m_border_width);
 
-
 	if (row == 0) {
 		if (m_corner_radius > 0) {
 			top_offset = max<double>(top_offset, m_corner_radius);
@@ -106,36 +105,38 @@ void TableBackground::draw_row(int row) const {
 		bottom_offset *= 0.5;
 	}
 
-	glColor4d(m_cell_colors[row].r, m_cell_colors[row].g, m_cell_colors[row].b, m_cell_colors[row].a);
-	glBegin(GL_QUADS);
-	glVertex3d(side_offset, top_offset, 1);
-	glVertex3d(m_image_width - side_offset, top_offset, 1);
-	glVertex3d(m_image_width - side_offset, height - bottom_offset, 1);
-	glVertex3d(side_offset, height - bottom_offset, 1);
-	if (top_offset > m_border_width) {
-		glVertex3d(side_offset, m_border_width, 1);
-		glVertex3d(m_image_width - side_offset, m_border_width, 1);
-		glVertex3d(m_image_width - side_offset, top_offset, 1);
+	if (top_offset + bottom_offset < height) {
+		glColor4d(m_cell_colors[row].r, m_cell_colors[row].g, m_cell_colors[row].b, m_cell_colors[row].a);
+		glBegin(GL_QUADS);
 		glVertex3d(side_offset, top_offset, 1);
-	}
-	if (bottom_offset > m_border_width) {
-		glVertex3d(side_offset, height - bottom_offset, 1);
-		glVertex3d(m_image_width - side_offset, height - bottom_offset, 1);
-		glVertex3d(m_image_width - side_offset, height - m_border_width, 1);
-		glVertex3d(side_offset, height - m_border_width, 1);
-	}
-	if (side_offset > m_border_width) {
-		glVertex3d(m_border_width, top_offset, 1);
-		glVertex3d(side_offset, top_offset, 1);
-		glVertex3d(side_offset, height - bottom_offset, 1);
-		glVertex3d(m_border_width, height - bottom_offset, 1);
-
 		glVertex3d(m_image_width - side_offset, top_offset, 1);
-		glVertex3d(m_image_width - m_border_width, top_offset, 1);
-		glVertex3d(m_image_width - m_border_width, height - bottom_offset, 1);
 		glVertex3d(m_image_width - side_offset, height - bottom_offset, 1);
+		glVertex3d(side_offset, height - bottom_offset, 1);
+		if (top_offset > m_border_width) {
+			glVertex3d(side_offset, m_border_width, 1);
+			glVertex3d(m_image_width - side_offset, m_border_width, 1);
+			glVertex3d(m_image_width - side_offset, top_offset, 1);
+			glVertex3d(side_offset, top_offset, 1);
+		}
+		if (bottom_offset > m_border_width) {
+			glVertex3d(side_offset, height - bottom_offset, 1);
+			glVertex3d(m_image_width - side_offset, height - bottom_offset, 1);
+			glVertex3d(m_image_width - side_offset, height - m_border_width, 1);
+			glVertex3d(side_offset, height - m_border_width, 1);
+		}
+		if (side_offset > m_border_width) {
+			glVertex3d(m_border_width, top_offset, 1);
+			glVertex3d(side_offset, top_offset, 1);
+			glVertex3d(side_offset, height - bottom_offset, 1);
+			glVertex3d(m_border_width, height - bottom_offset, 1);
+	
+			glVertex3d(m_image_width - side_offset, top_offset, 1);
+			glVertex3d(m_image_width - m_border_width, top_offset, 1);
+			glVertex3d(m_image_width - m_border_width, height - bottom_offset, 1);
+			glVertex3d(m_image_width - side_offset, height - bottom_offset, 1);
+		}
+		glEnd();
 	}
-	glEnd();
 
 	glColor4d(m_border_color.r, m_border_color.g, m_border_color.b, m_border_color.a);
 	if (row == 0) {
