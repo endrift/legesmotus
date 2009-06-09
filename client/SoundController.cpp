@@ -81,17 +81,24 @@ SoundController::SoundController(PathManager& path_manager) : m_path_manager(pat
 	if(!m_click_sound) {
 		fprintf(stderr, "Mix_LoadWAV: %s\n", Mix_GetError());
 	}
+	
+	m_hit_sound = Mix_LoadWAV(m_path_manager.data_path("laserhit.ogg", "sounds"));
+	if(!m_hit_sound) {
+		fprintf(stderr, "Mix_LoadWAV: %s\n", Mix_GetError());
+	}
 }
 
 SoundController::~SoundController() {
 	Mix_FreeChunk(m_gunshot_sound);
 	Mix_FreeChunk(m_freeze_sound);
 	Mix_FreeChunk(m_unfreeze_sound);
+	Mix_FreeChunk(m_positive_gate_siren_sound);
 	Mix_FreeChunk(m_gate_siren_sound);
 	Mix_FreeChunk(m_victory_sound);
 	Mix_FreeChunk(m_defeat_sound);
 	Mix_FreeChunk(m_begin_sound);
 	Mix_FreeChunk(m_click_sound);
+	Mix_FreeChunk(m_hit_sound);
 }
 
 int SoundController::play_sound (string sound) {
@@ -143,6 +150,11 @@ int SoundController::play_sound (string sound) {
 		}
 	} else if(sound == "click") {
 		result = Mix_PlayChannel(-1, m_click_sound, 0);
+		if(result == -1) {
+			fprintf(stderr, "Mix_PlayChannel: %s\n", Mix_GetError());
+		}
+	} else if(sound == "hit") {
+		result = Mix_PlayChannel(-1, m_hit_sound, 0);
 		if(result == -1) {
 			fprintf(stderr, "Mix_PlayChannel: %s\n", Mix_GetError());
 		}

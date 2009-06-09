@@ -1639,6 +1639,7 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 		m_network.send_packet(gun_fired);
 		
 		if (hit_player != NULL && !hit_player->is_frozen()) {
+			m_sound_controller->play_sound("hit");
 			send_player_shot(player_id, hit_player->get_id(), direction-180);
 		}
 	}

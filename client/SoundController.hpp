@@ -42,6 +42,7 @@ private:
 	Mix_Chunk* 	m_begin_sound;
 	Mix_Chunk*	m_defeat_sound;
 	Mix_Chunk*	m_click_sound;
+	Mix_Chunk*	m_hit_sound;
 	bool		m_sound_on;
 
 public:
