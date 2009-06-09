@@ -174,6 +174,8 @@ void GameController::init(GameWindow* window) {
 	
 	m_sound_controller = new SoundController(m_path_manager);
 	m_holding_gate = false;
+	m_gate_lower_sounds[0] = -1;
+	m_gate_lower_sounds[1] = -1;
 
 	m_map = new GraphicalMap(m_path_manager, m_window);
 	m_map_width = 0;
@@ -2322,12 +2324,27 @@ void GameController::gate_update(PacketReader& reader) {
 	reader >> lowering_player_id >> team >> progress >> change_in_status;
 	
 	// If it just started opening, play a sound and set the warning visible.
+	GraphicalPlayer* myplayer = get_player_by_id(m_player_id);
+	if (myplayer == NULL) {
+		return;
+	}
+	
 	if (change_in_status > 0) {
-		m_sound_controller->play_sound("gatelower");
+		string soundname = "";
+		if (team == myplayer->get_team()) {
+			soundname = "gatelower";
+		} else {
+			soundname = "positivegatelower";
+		}
+		m_gate_lower_sounds[team - 'A'] = m_sound_controller->play_sound(soundname);
 		if (team == m_players[m_player_id].get_team()) {
 			m_gate_warning->set_invisible(false);
 			m_gate_warning_time = SDL_GetTicks();
 		}
+	} else if (change_in_status < 0) {
+	 	if (m_gate_lower_sounds[team - 'A'] != -1) {
+	 		m_sound_controller->halt_sound(m_gate_lower_sounds[team - 'A']);
+	 	}
 	}
 	
 	m_map->set_gate_progress(team, progress);

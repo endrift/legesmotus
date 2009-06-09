@@ -118,6 +118,7 @@ private:
 	std::map<int, GraphicalPlayer> m_players;
 	unsigned int	m_player_id;
 	bool		m_holding_gate;
+	int		m_gate_lower_sounds[2];
 	unsigned int	m_last_fired;
 	unsigned int	m_last_clicked;
 

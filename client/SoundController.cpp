@@ -56,7 +56,12 @@ SoundController::SoundController(PathManager& path_manager) : m_path_manager(pat
 	if(!m_gate_siren_sound) {
 		fprintf(stderr, "Mix_LoadWAV: %s\n", Mix_GetError());
 	}
-
+	
+	m_positive_gate_siren_sound = Mix_LoadWAV(m_path_manager.data_path("positive_gate_siren.ogg", "sounds"));
+	if(!m_positive_gate_siren_sound) {
+		fprintf(stderr, "Mix_LoadWAV: %s\n", Mix_GetError());
+	}
+	
 	m_victory_sound = Mix_LoadWAV(m_path_manager.data_path("victory_fanfare.ogg", "sounds"));
 	if(!m_victory_sound) {
 		fprintf(stderr, "Mix_LoadWAV: %s\n", Mix_GetError());
@@ -89,44 +94,65 @@ SoundController::~SoundController() {
 	Mix_FreeChunk(m_click_sound);
 }
 
-void SoundController::play_sound (string sound) {
+int SoundController::play_sound (string sound) {
 	if (!m_sound_on) {
-		return;
+		return -1;
 	}
 	
+	int result = -1;
+	
 	if(sound == "fire") {
-		if(Mix_PlayChannel(-1, m_gunshot_sound, 0) == -1) {
+		result = Mix_PlayChannel(-1, m_gunshot_sound, 0);
+		if(result == -1) {
 			fprintf(stderr, "Mix_PlayChannel: %s\n", Mix_GetError());
 		}
 	} else if(sound == "freeze") {
-		if(Mix_PlayChannel(-1, m_freeze_sound, 0) == -1) {
+		result = Mix_PlayChannel(-1, m_freeze_sound, 0);
+		if(result == -1) {
 			fprintf(stderr, "Mix_PlayChannel: %s\n", Mix_GetError());
 		}
 	} else if(sound == "unfreeze") {
-		if(Mix_PlayChannel(-1, m_unfreeze_sound, 0) == -1) {
+		result = Mix_PlayChannel(-1, m_unfreeze_sound, 0);
+		if(result == -1) {
 			fprintf(stderr, "Mix_PlayChannel: %s\n", Mix_GetError());
 		}
 	} else if(sound == "gatelower") {
-		if(Mix_PlayChannel(-1, m_gate_siren_sound, 0) == -1) {
+		result = Mix_PlayChannel(-1, m_gate_siren_sound, 0);
+		if(result == -1) {
+			fprintf(stderr, "Mix_PlayChannel: %s\n", Mix_GetError());
+		}
+	} else if(sound == "positivegatelower") {
+		result = Mix_PlayChannel(-1, m_positive_gate_siren_sound, 0);
+		if(result == -1) {
 			fprintf(stderr, "Mix_PlayChannel: %s\n", Mix_GetError());
 		}
 	} else if(sound == "victory") {
-		if(Mix_PlayChannel(-1, m_victory_sound, 0) == -1) {
+		result = Mix_PlayChannel(-1, m_victory_sound, 0);
+		if(result == -1) {
 			fprintf(stderr, "Mix_PlayChannel: %s\n", Mix_GetError());
 		}
 	} else if(sound == "begin") {
-		if(Mix_PlayChannel(-1, m_begin_sound, 0) == -1) {
+		result = Mix_PlayChannel(-1, m_begin_sound, 0);
+		if(result == -1) {
 			fprintf(stderr, "Mix_PlayChannel: %s\n", Mix_GetError());
 		}
 	} else if(sound == "defeat") {
-		if(Mix_PlayChannel(-1, m_defeat_sound, 0) == -1) {
+		result = Mix_PlayChannel(-1, m_defeat_sound, 0);
+		if(result == -1) {
 			fprintf(stderr, "Mix_PlayChannel: %s\n", Mix_GetError());
 		}
 	} else if(sound == "click") {
-		if(Mix_PlayChannel(-1, m_click_sound, 0) == -1) {
+		result = Mix_PlayChannel(-1, m_click_sound, 0);
+		if(result == -1) {
 			fprintf(stderr, "Mix_PlayChannel: %s\n", Mix_GetError());
 		}
 	}
+	
+	return result;
+}
+
+void SoundController::halt_sound(int channel) {
+	Mix_HaltChannel(channel);
 }
 
 void SoundController::set_sound_on(bool on) {

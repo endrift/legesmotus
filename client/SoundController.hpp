@@ -37,6 +37,7 @@ private:
 	Mix_Chunk* 	m_freeze_sound;
 	Mix_Chunk* 	m_unfreeze_sound;
 	Mix_Chunk* 	m_gate_siren_sound;
+	Mix_Chunk*	m_positive_gate_siren_sound;
 	Mix_Chunk* 	m_victory_sound;
 	Mix_Chunk* 	m_begin_sound;
 	Mix_Chunk*	m_defeat_sound;
@@ -47,7 +48,8 @@ public:
 	explicit SoundController(PathManager&);
 	~SoundController();
 	
-	void		play_sound(std::string sound);
+	int		play_sound(std::string sound);
+	void		halt_sound(int channel);
 	bool		is_sound_on() const { return m_sound_on; }
 	void		set_sound_on(bool on);
 	
