@@ -143,6 +143,8 @@ GameController::~GameController() {
 void GameController::init(GameWindow* window) {
 	srand ( time(NULL) );
 	
+	get_ticks();
+	
 	initialize_key_bindings();
 	
 	// Initial game state will be showing the main menu.
@@ -153,6 +155,8 @@ void GameController::init(GameWindow* window) {
 	
 	m_input_text = "> ";
 	m_input_bar = NULL;
+	
+	m_join_sent_time = 0;
 	
 	m_client_version = LM_VERSION;
 	m_protocol_number = 1;
@@ -557,6 +561,11 @@ void GameController::run(int lockfps) {
 		
 		if (m_quit_game == true) {
 			break;
+		}
+		
+		if (m_join_sent_time != 0 && m_join_sent_time + 5000 < get_ticks()) {
+			display_message("Error: Could not connect to server.", RED_COLOR);
+			m_join_sent_time = 0;
 		}
 		
 		// Check if my player is set to unfreeze.
@@ -1940,6 +1949,8 @@ void GameController::connect_to_server(const IPAddress& server_address, char tea
 		join_request << team;
 	}
 	
+	m_join_sent_time = get_ticks();
+	
 	m_network.send_packet(join_request);
 }
 
@@ -2001,6 +2012,8 @@ void GameController::welcome(PacketReader& reader) {
 	serveraddress << "Connected to server: ";
 	serveraddress << format_ip_address(m_network.get_server_address(), true);
 	display_message(serveraddress.str());
+	
+	m_join_sent_time = 0;
 	
 	clear_players();
 	

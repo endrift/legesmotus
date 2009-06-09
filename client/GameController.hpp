@@ -121,6 +121,7 @@ private:
 	int		m_gate_lower_sounds[2];
 	unsigned int	m_last_fired;
 	unsigned int	m_last_clicked;
+	unsigned int	m_join_sent_time;
 
 	unsigned long	m_time_to_unfreeze;
 	unsigned long	m_total_time_frozen;
