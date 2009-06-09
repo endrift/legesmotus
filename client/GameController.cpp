@@ -702,10 +702,16 @@ void GameController::run(int lockfps) {
 				}
 				set_players_visible(false);
 				
+				map<string, Graphic*>::iterator it;
+				
+				for ( unsigned int i = 0; i < m_shots.size(); i++ ) {
+					m_shots[i].first->set_invisible(true);
+				}
+				
 				m_minimap->set_invisible(true);
 				
 				m_logo->set_invisible(false);
-				map<string, Graphic*>::iterator it;
+				
 				for ( it=m_main_menu_items.begin() ; it != m_main_menu_items.end(); it++ ) {
 					Graphic* thisitem = (*it).second;
 					thisitem->set_invisible(false);
@@ -732,10 +738,16 @@ void GameController::run(int lockfps) {
 				}
 				set_players_visible(false);
 				
+				map<string, Graphic*>::iterator it;
+				
+				for ( unsigned int i = 0; i < m_shots.size(); i++ ) {
+					m_shots[i].first->set_invisible(true);
+				}
+				
 				m_minimap->set_invisible(true);
 				
 				m_logo->set_invisible(false);
-				map<string, Graphic*>::iterator it;
+				
 				for ( it=m_main_menu_items.begin() ; it != m_main_menu_items.end(); it++ ) {
 					Graphic* thisitem = (*it).second;
 					thisitem->set_invisible(true);
@@ -762,10 +774,16 @@ void GameController::run(int lockfps) {
 				}
 				set_players_visible(false);
 				
+				map<string, Graphic*>::iterator it;
+				
+				for ( unsigned int i = 0; i < m_shots.size(); i++ ) {
+					m_shots[i].first->set_invisible(true);
+				}
+				
 				m_minimap->set_invisible(true);
 				
 				m_logo->set_invisible(false);
-				map<string, Graphic*>::iterator it;
+				
 				for ( it=m_main_menu_items.begin() ; it != m_main_menu_items.end(); it++ ) {
 					Graphic* thisitem = (*it).second;
 					thisitem->set_invisible(true);
@@ -792,10 +810,16 @@ void GameController::run(int lockfps) {
 				}
 				set_players_visible(true);
 				
+				map<string, Graphic*>::iterator it;
+				
+				for ( unsigned int i = 0; i < m_shots.size(); i++ ) {
+					m_shots[i].first->set_invisible(false);
+				}
+				
 				m_minimap->set_invisible(false);
 				
 				m_logo->set_invisible(true);
-				map<string, Graphic*>::iterator it;
+				
 				for ( it=m_main_menu_items.begin() ; it != m_main_menu_items.end(); it++ ) {
 					Graphic* thisitem = (*it).second;
 					thisitem->set_invisible(true);
@@ -2491,6 +2515,7 @@ void GameController::animation_packet(PacketReader& reader) {
 		the_sprite->set_center_y(value);
 	} else if (field == "invisible") {
 		the_sprite->set_invisible(value);
+		m_players[player_id].get_sprite()->set_invisible(m_players[player_id].get_sprite()->is_invisible());
 	}
 }
 
