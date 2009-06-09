@@ -581,6 +581,15 @@ void GameController::run(int lockfps) {
 		if ((currframe - lastmoveframe) >= (delay/2)) {
 			move_objects((SDL_GetTicks() - lastmoveframe) / delay); // scale all position changes to keep game speed constant. 
 			
+			if (m_time_to_unfreeze != 0) {
+				m_frozen_status_rect->set_x(m_players[m_player_id].get_x() - m_offset_x);
+				m_frozen_status_rect->set_y(m_players[m_player_id].get_y() + m_players[m_player_id].get_radius() + 15 - m_offset_y);
+				m_frozen_status_rect_back->set_x(m_frozen_status_rect->get_x());
+				m_frozen_status_rect_back->set_y(m_frozen_status_rect->get_y());
+				m_text_manager->reposition_string(m_frozen_status_text, m_frozen_status_rect_back->get_x() - m_frozen_status_rect_back->get_image_width()/2.0 + 3, m_frozen_status_rect_back->get_y() + 2);
+				m_frozen_status_rect->set_image_width(((m_time_to_unfreeze - SDL_GetTicks())/(double)m_total_time_frozen) * FROZEN_STATUS_RECT_WIDTH);
+			}
+			
 			lastmoveframe = SDL_GetTicks();
 		}
 		
@@ -591,15 +600,6 @@ void GameController::run(int lockfps) {
 			}
 			if (!m_overlay_scrollbar->is_invisible()) {
 				m_overlay_scrollbar->autoscroll(currframe - startframe);
-			}
-		
-			if (m_time_to_unfreeze != 0) {
-				m_frozen_status_rect->set_x(m_players[m_player_id].get_x() - m_offset_x);
-				m_frozen_status_rect->set_y(m_players[m_player_id].get_y() + m_players[m_player_id].get_radius() + 15 - m_offset_y);
-				m_frozen_status_rect_back->set_x(m_frozen_status_rect->get_x());
-				m_frozen_status_rect_back->set_y(m_frozen_status_rect->get_y());
-				m_text_manager->reposition_string(m_frozen_status_text, m_frozen_status_rect_back->get_x() - m_frozen_status_rect_back->get_image_width()/2 + 3, m_frozen_status_rect_back->get_y() + 2);
-				m_frozen_status_rect->set_image_width(((m_time_to_unfreeze - SDL_GetTicks())/(double)m_total_time_frozen) * FROZEN_STATUS_RECT_WIDTH);
 			}
 		
 			bool erasedone = false;
@@ -2363,10 +2363,11 @@ void GameController::gate_update(PacketReader& reader) {
 	
 	m_map->set_gate_progress(team, progress);
 	
+	double width = ((1-progress) * (GATE_STATUS_RECT_WIDTH-2)) + 2;
 	if (team == 'A') {
-		m_blue_gate_status_rect->set_image_width((1-progress) * GATE_STATUS_RECT_WIDTH);
+		m_blue_gate_status_rect->set_image_width(width);
 	} else if (team == 'B') {
-		m_red_gate_status_rect->set_image_width((1-progress) * GATE_STATUS_RECT_WIDTH);
+		m_red_gate_status_rect->set_image_width(width);
 	}
 }
 
