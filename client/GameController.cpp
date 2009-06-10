@@ -2409,7 +2409,7 @@ void GameController::game_start(PacketReader& reader) {
 		}
 		message << "Game started!";
 		if (timeleft > 0) {
-			message << " Time until spawn: " << timeleft;
+			message << ' ' << timeleft / 1000 << " seconds until spawn.";
 		}
 		m_sound_controller->play_sound("begin");
 			
