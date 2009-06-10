@@ -557,7 +557,7 @@ void GameController::run(int lockfps) {
 	cout << "SDL window is: " << m_window->get_width() << " pixels wide and " 
 		<< m_window->get_height() << " pixels tall." << endl;
 	
-	unsigned long startframe = SDL_GetTicks();
+	unsigned long startframe = get_ticks();
 	unsigned long lastmoveframe = startframe;
 	
 	/* 1 second / FPS = milliseconds per frame */
@@ -581,7 +581,7 @@ void GameController::run(int lockfps) {
 		}
 		
 		// Check if my player is set to unfreeze.
-		if (!m_players.empty() && m_time_to_unfreeze < SDL_GetTicks() && m_time_to_unfreeze != 0) {
+		if (!m_players.empty() && m_time_to_unfreeze < get_ticks() && m_time_to_unfreeze != 0) {
 			m_sound_controller->play_sound("unfreeze");
 			m_players[m_player_id].set_is_frozen(false);
 			m_time_to_unfreeze = 0;
@@ -589,9 +589,9 @@ void GameController::run(int lockfps) {
 		}
 		
 		// Update movement twice as often as graphics.
-		unsigned long currframe = SDL_GetTicks();
+		unsigned long currframe = get_ticks();
 		if ((currframe - lastmoveframe) >= (delay/2)) {
-			move_objects((SDL_GetTicks() - lastmoveframe) / delay); // scale all position changes to keep game speed constant. 
+			move_objects((get_ticks() - lastmoveframe) / delay); // scale all position changes to keep game speed constant. 
 			
 			if (m_time_to_unfreeze != 0) {
 				m_frozen_status_rect->set_x(m_players[m_player_id].get_x() - m_offset_x);
@@ -599,10 +599,10 @@ void GameController::run(int lockfps) {
 				m_frozen_status_rect_back->set_x(m_frozen_status_rect->get_x());
 				m_frozen_status_rect_back->set_y(m_frozen_status_rect->get_y());
 				m_text_manager->reposition_string(m_frozen_status_text, m_frozen_status_rect_back->get_x() - m_frozen_status_rect_back->get_image_width()/2.0 + 3, m_frozen_status_rect_back->get_y() + 2);
-				m_frozen_status_rect->set_image_width(((m_time_to_unfreeze - SDL_GetTicks())/(double)m_total_time_frozen) * FROZEN_STATUS_RECT_WIDTH);
+				m_frozen_status_rect->set_image_width(((m_time_to_unfreeze - get_ticks())/(double)m_total_time_frozen) * FROZEN_STATUS_RECT_WIDTH);
 			}
 			
-			lastmoveframe = SDL_GetTicks();
+			lastmoveframe = get_ticks();
 		}
 		
 		// Update graphics if frame rate is correct.
@@ -677,7 +677,7 @@ void GameController::run(int lockfps) {
 			if (!m_players.empty()) {
 				// Change gun sprite if muzzle flash is done.
 				Graphic* frontarm = m_players[m_player_id].get_sprite()->get_graphic("frontarm");
-				if (m_last_fired < SDL_GetTicks() - MUZZLE_FLASH_LENGTH && frontarm->get_graphic("gun")->is_invisible()) {
+				if (m_last_fired < get_ticks() - MUZZLE_FLASH_LENGTH && frontarm->get_graphic("gun")->is_invisible()) {
 					frontarm->get_graphic("gun")->set_invisible(false);
 					send_animation_packet("frontarm/gun", "invisible", false);
 					frontarm->get_graphic("gun_fired")->set_invisible(true);
@@ -880,7 +880,7 @@ void GameController::run(int lockfps) {
 			}
 			
 			m_window->redraw();
-			startframe = SDL_GetTicks();
+			startframe = get_ticks();
 		}
 	}
 	
@@ -1283,7 +1283,7 @@ void GameController::process_mouse_click(SDL_Event event) {
 			// Do nothing.
 		} else if (event.button.button == 1) {
 			// Fire the gun if it's ready.
-			if (m_last_fired != 0 && m_last_fired > SDL_GetTicks() - FIRING_DELAY) {
+			if (m_last_fired != 0 && m_last_fired > get_ticks() - FIRING_DELAY) {
 				return;
 			}
 			if (m_players.empty() || m_players[m_player_id].is_frozen()) {
@@ -1296,7 +1296,7 @@ void GameController::process_mouse_click(SDL_Event event) {
 			if (m_players[m_player_id].get_x_vel() != 0 || m_players[m_player_id].get_y_vel() != 0) {
 				m_players[m_player_id].set_velocity(m_players[m_player_id].get_x_vel() - FIRING_RECOIL * cos((direction) * DEGREES_TO_RADIANS), m_players[m_player_id].get_y_vel() - FIRING_RECOIL * sin((direction) * DEGREES_TO_RADIANS));
 			}
-			m_last_fired = SDL_GetTicks();
+			m_last_fired = get_ticks();
 			player_fired(m_player_id, m_players[m_player_id].get_x(), m_players[m_player_id].get_y(), direction);
 			m_sound_controller->play_sound("fire");
 		}
@@ -1656,7 +1656,7 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 			this_shot->set_scale_x(.1);
 			this_shot->set_scale_y(.1);
 			this_shot->set_invisible(false);
-			pair<Graphic*, unsigned int> new_shot(this_shot, SDL_GetTicks() + SHOT_DISPLAY_TIME);
+			pair<Graphic*, unsigned int> new_shot(this_shot, get_ticks() + SHOT_DISPLAY_TIME);
 			m_shots.push_back(new_shot);
 			m_window->register_graphic(this_shot);
 		}
@@ -2291,7 +2291,7 @@ void GameController::gun_fired(PacketReader& reader) {
 	this_shot->set_invisible(false);
 	this_shot->set_scale_x(.1);
 	this_shot->set_scale_y(.1);
-	pair<Graphic*, unsigned int> new_shot(this_shot, SDL_GetTicks() + SHOT_DISPLAY_TIME);
+	pair<Graphic*, unsigned int> new_shot(this_shot, get_ticks() + SHOT_DISPLAY_TIME);
 	m_shots.push_back(new_shot);
 	m_window->register_graphic(this_shot);
 	
@@ -2315,7 +2315,7 @@ void GameController::player_shot(PacketReader& reader) {
 	if (shot_id == m_player_id) {
 		m_sound_controller->play_sound("freeze");
 		m_players[m_player_id].set_is_frozen(true);
-		m_time_to_unfreeze = SDL_GetTicks() + time_to_unfreeze;
+		m_time_to_unfreeze = get_ticks() + time_to_unfreeze;
 		m_total_time_frozen = time_to_unfreeze;
 		if (shot_angle != 0) {
 			m_players[m_player_id].set_velocity(m_players[m_player_id].get_x_vel() - FIRING_RECOIL * cos((shot_angle) * DEGREES_TO_RADIANS), m_players[m_player_id].get_y_vel() - FIRING_RECOIL * sin((shot_angle) * DEGREES_TO_RADIANS));
@@ -2384,7 +2384,7 @@ void GameController::gate_update(PacketReader& reader) {
 		m_gate_lower_sounds[team - 'A'] = m_sound_controller->play_sound(soundname);
 		if (team == m_players[m_player_id].get_team()) {
 			m_gate_warning->set_invisible(false);
-			m_gate_warning_time = SDL_GetTicks();
+			m_gate_warning_time = get_ticks();
 		}
 	} else if (change_in_status < 0) {
 	 	if (m_gate_lower_sounds[team - 'A'] != -1) {
@@ -2720,7 +2720,7 @@ void GameController::display_message(string message, Color color) {
 	m_text_manager->set_active_font(m_font);
 	int y = 20 + (m_font->ascent() + m_font->descent() + 5) * m_messages.size();
 	Graphic* message_sprite = m_text_manager->place_string(message, 20, y, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_messages.push_back(pair<Graphic*, int>(message_sprite, SDL_GetTicks() + MESSAGE_DISPLAY_TIME));
+	m_messages.push_back(pair<Graphic*, int>(message_sprite, get_ticks() + MESSAGE_DISPLAY_TIME));
 	m_chat_window_back->set_row_height(0, y + message_sprite->get_image_height() + 6 - m_chat_window_back->get_y());
 	if (m_chat_window_back->get_image_width() < message_sprite->get_image_width() + 6) {
 		m_chat_window_back->set_image_width(message_sprite->get_image_width() + 6);
@@ -2917,7 +2917,7 @@ void	GameController::clear_players() {
 	m_players.clear();
 }
 
-string	GameController::format_time_from_millis(unsigned int milliseconds) {
+string	GameController::format_time_from_millis(uint64_t milliseconds) {
 	unsigned int uptimesecs = (milliseconds/1000);
 	unsigned int uptimedays = uptimesecs/86400;
 	uptimesecs -= uptimedays * 86400;

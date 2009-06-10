@@ -121,12 +121,12 @@ private:
 	unsigned int	m_player_id;
 	bool		m_holding_gate;
 	int		m_gate_lower_sounds[2];
-	unsigned int	m_last_fired;
-	unsigned int	m_last_clicked;
-	unsigned int	m_join_sent_time;
+	uint64_t	m_last_fired;
+	uint64_t	m_last_clicked;
+	uint64_t	m_join_sent_time;
 
-	unsigned long	m_time_to_unfreeze;
-	unsigned long	m_total_time_frozen;
+	uint64_t	m_time_to_unfreeze;
+	uint64_t	m_total_time_frozen;
 	
 	// TEMPORARY SPRITE CODE
 	Sprite*		gun_normal;
@@ -178,7 +178,7 @@ private:
 	Graphic*	m_blue_gate_status_text;
 	
 	Graphic*	m_gate_warning;
-	unsigned int	m_gate_warning_time;
+	uint64_t	m_gate_warning_time;
 	
 	TableBackground* m_frozen_status_rect;
 	TableBackground* m_frozen_status_rect_back;
@@ -248,7 +248,7 @@ public:
 	void		delete_individual_score(const GraphicalPlayer& currplayer);
 	void		set_player_name(std::string name);
 	void		clear_players();
-	std::string	format_time_from_millis(unsigned int milliseconds);
+	std::string	format_time_from_millis(uint64_t milliseconds);
 	
 	// Network callbacks:
 	void		welcome(PacketReader& reader);
