@@ -267,6 +267,9 @@ public:
 	void		name_change(PacketReader& reader);
 	void		team_change(PacketReader& reader);
 	void		server_info(const IPAddress& server_address, PacketReader& reader);
+
+	// Sound callbacks:
+	void		sound_finished(int channel);
 };
 
 #endif

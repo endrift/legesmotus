@@ -23,6 +23,7 @@
  */
 
 #include "SoundController.hpp"
+#include "GameController.hpp"
 #include "SDL_mixer.h"
 #include "common/PathManager.hpp"
 #include <stdio.h>
@@ -30,12 +31,16 @@
 
 using namespace std;
 
-SoundController::SoundController(PathManager& path_manager) : m_path_manager(path_manager) {
+SoundController* SoundController::m_instance = NULL;
+
+SoundController::SoundController(GameController& parent, PathManager& path_manager) : m_path_manager(path_manager), m_parent(parent) {
 	m_sound_on = true;
 	
 	if(Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 1024) == -1) {
 		cerr << "Error calling Mix_OpenAudio" << endl;
 	}
+	
+	Mix_ChannelFinished(&channel_finished);
 
 	m_gunshot_sound = Mix_LoadWAV(m_path_manager.data_path("LMGunshot.ogg", "sounds"));
 	if(!m_gunshot_sound) {
@@ -99,6 +104,25 @@ SoundController::~SoundController() {
 	Mix_FreeChunk(m_begin_sound);
 	Mix_FreeChunk(m_click_sound);
 	Mix_FreeChunk(m_hit_sound);
+}
+
+SoundController* SoundController::get_instance(GameController& parent, PathManager& path_manager) {
+	if (m_instance == NULL) {
+		m_instance = new SoundController(parent, path_manager);
+	}
+	return m_instance;
+}
+
+SoundController* SoundController::get_instance() {
+	return m_instance;
+}
+
+void SoundController::destroy_instance() {
+	if (m_instance == NULL) {
+		return;
+	}
+	delete m_instance;
+	m_instance = NULL;
 }
 
 int SoundController::play_sound (string sound) {
@@ -169,4 +193,12 @@ void SoundController::halt_sound(int channel) {
 
 void SoundController::set_sound_on(bool on) {
 	m_sound_on = on;
+}
+
+void SoundController::channel_done(int channel) {
+	m_parent.sound_finished(channel);
+}
+
+void SoundController::channel_finished(int channel) {
+	m_instance->channel_done(channel);
 }

@@ -124,7 +124,7 @@ GameController::~GameController() {
 	delete m_map;
 
 	delete m_text_manager;
-	delete m_sound_controller;
+	m_sound_controller->destroy_instance();
 	delete m_font;
 	delete m_menu_font;
 	delete m_medium_font;
@@ -178,7 +178,7 @@ void GameController::init(GameWindow* window) {
 	m_menu_font = new Font(m_path_manager.data_path("JuraDemiBold.ttf", "fonts"), 34);
 	m_medium_font = new Font(m_path_manager.data_path("JuraMedium.ttf", "fonts"), 20);
 	
-	m_sound_controller = new SoundController(m_path_manager);
+	m_sound_controller = SoundController::get_instance(*this, m_path_manager);
 	m_holding_gate = false;
 	m_gate_lower_sounds[0] = -1;
 	m_gate_lower_sounds[1] = -1;
@@ -2388,6 +2388,10 @@ void GameController::gate_update(PacketReader& reader) {
 		}
 	} else if (change_in_status < 0) {
 	 	if (m_gate_lower_sounds[team - 'A'] != -1) {
+	 		if (team == myplayer->get_team()) {
+		 		m_gate_warning_time = 0;
+		 		m_gate_warning->set_invisible(true);
+		 	}
 	 		m_sound_controller->halt_sound(m_gate_lower_sounds[team - 'A']);
 	 	}
 	}
@@ -2915,6 +2919,14 @@ void	GameController::clear_players() {
 		}
 	}
 	m_players.clear();
+}
+
+void	GameController::sound_finished(int channel) {
+	for (unsigned int i = 0; i < (sizeof(m_gate_lower_sounds)/sizeof(m_gate_lower_sounds[0])); i++) {
+		if (m_gate_lower_sounds[i] == channel) {
+			m_gate_lower_sounds[i] = -1;
+		}
+	}
 }
 
 string	GameController::format_time_from_millis(uint64_t milliseconds) {
