@@ -35,7 +35,7 @@ Sprite::Sprite(const char* filename) : Graphic(filename) {
 }
 
 Sprite::Sprite(const Graphic& other) : Graphic(other) {
-	// Nothing to do
+	init();
 }
 
 Sprite::Sprite(const Sprite& other) : Graphic(other) {
