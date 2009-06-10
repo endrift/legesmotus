@@ -167,9 +167,6 @@ GameWindow* GameWindow::get_optimal_instance() {
 }
 
 void GameWindow::destroy_instance() {
-	if (m_instance == NULL) {
-		return;
-	}
 	delete m_instance;
 	m_instance = NULL;
 }

@@ -118,9 +118,6 @@ SoundController* SoundController::get_instance() {
 }
 
 void SoundController::destroy_instance() {
-	if (m_instance == NULL) {
-		return;
-	}
 	delete m_instance;
 	m_instance = NULL;
 }
