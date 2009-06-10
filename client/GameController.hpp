@@ -51,6 +51,8 @@ class GameController {
 public:
 	static const Color		BLUE_COLOR;
 	static const Color		RED_COLOR;
+	static const Color		GREYED_OUT;
+	static const Color		WHITE_COLOR;
 private:
 	struct KeyBindings {
 		int quit;

@@ -60,6 +60,8 @@ const double GameController::RANDOM_ROTATION_SCALE = 1.0;
 const double GameController::MINIMAP_SCALE = 0.1;
 const Color GameController::BLUE_COLOR(0.4, 0.4, 1);
 const Color GameController::RED_COLOR(1, 0.4, 0.4);
+const Color GameController::GREYED_OUT(0.5, 0.5, 0.5);
+const Color GameController::WHITE_COLOR(1, 1, 1);
 const int GameController::GATE_STATUS_RECT_WIDTH = 80;
 const int GameController::FROZEN_STATUS_RECT_WIDTH = 60;
 const int GameController::DOUBLE_CLICK_TIME = 300;
@@ -280,16 +282,25 @@ void GameController::init(GameWindow* window) {
 	// Main menu
 	m_main_menu_items["Connect to Server"] = m_text_manager->place_string("Connect to Server", 50, 200, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_main_menu_items["Resume Game"] = m_text_manager->place_string("Resume Game", 50, 250, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_main_menu_items["Options"] = m_text_manager->place_string("Options", 50, 300, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_main_menu_items["Quit"] = m_text_manager->place_string("Quit", 50, 350, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_main_menu_items["Thanks"] = m_text_manager->place_string("Thanks for playing! Please visit", 50, 450, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_main_menu_items["Disconnect"] = m_text_manager->place_string("Disconnect", 50, 300, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_main_menu_items["Options"] = m_text_manager->place_string("Options", 50, 350, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_main_menu_items["Quit"] = m_text_manager->place_string("Quit", 50, 400, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_main_menu_items["Thanks"] = m_text_manager->place_string("Thanks for playing! Please visit", 50, 500, TextManager::LEFT, TextManager::LAYER_HUD);
  	m_text_manager->set_active_color(0.4, 1.0, 0.4);
- 	m_main_menu_items["Thanks2"] = m_text_manager->place_string("http://legesmotus.cs.brown.edu", 50, 490, TextManager::LEFT, TextManager::LAYER_HUD);
+ 	m_main_menu_items["Thanks2"] = m_text_manager->place_string("http://legesmotus.cs.brown.edu", 50, 540, TextManager::LEFT, TextManager::LAYER_HUD);
  	m_text_manager->set_active_color(1.0, 1.0, 1.0);
- 	m_main_menu_items["Thanks3"] = m_text_manager->place_string("to leave feedback for us!", 50, 530, TextManager::LEFT, TextManager::LAYER_HUD);
+ 	m_main_menu_items["Thanks3"] = m_text_manager->place_string("to leave feedback for us!", 50, 580, TextManager::LEFT, TextManager::LAYER_HUD);
 	
 	m_text_manager->set_active_font(m_font);
 	m_main_menu_items["versionstr"] = m_text_manager->place_string(string("v. ").append(m_client_version), m_screen_width - 90, m_screen_height - 40, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_text_manager->set_active_font(m_menu_font);
+	
+	m_text_manager->set_active_color(GREYED_OUT);
+	m_main_menu_items["Resume Game-Grey"] = m_text_manager->place_string("Resume Game", 50, 250, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_main_menu_items["Resume Game"]->set_invisible(true);
+	m_main_menu_items["Disconnect-Grey"] = m_text_manager->place_string("Disconnect", 50, 300, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_main_menu_items["Disconnect"]->set_invisible(true);
+	m_text_manager->set_active_color(WHITE_COLOR);
 	
 	// Options menu
 	m_text_manager->set_active_font(m_menu_font);
@@ -565,6 +576,7 @@ void GameController::run(int lockfps) {
 		
 		if (m_join_sent_time != 0 && m_join_sent_time + 5000 < get_ticks()) {
 			display_message("Error: Could not connect to server.", RED_COLOR);
+			disconnect();
 			m_join_sent_time = 0;
 		}
 		
@@ -697,7 +709,7 @@ void GameController::run(int lockfps) {
 					m_players[m_player_id].get_sprite()->get_graphic("frontarm")->set_rotation(angle);
 					send_animation_packet("frontarm", "rotation", int(round(angle))); // XXX: going double->int here
 				}
-				send_my_player_update();
+				send_my_player_update();	m_text_manager->set_active_font(m_menu_font);
 				
 				// Set the new offset of the window so that the player is centered.
 				m_offset_x = m_players[m_player_id].get_x() - (m_screen_width/2.0);
@@ -727,6 +739,14 @@ void GameController::run(int lockfps) {
 					Graphic* thisitem = (*it).second;
 					thisitem->set_invisible(false);
 				}
+				if (m_network.is_connected() && m_join_sent_time == 0) {
+					m_main_menu_items["Resume Game-Grey"]->set_invisible(true);
+					m_main_menu_items["Disconnect-Grey"]->set_invisible(true);
+				} else {
+					m_main_menu_items["Resume Game"]->set_invisible(true);
+					m_main_menu_items["Disconnect"]->set_invisible(true);
+				}
+				
 				for ( it=m_options_menu_items.begin() ; it != m_options_menu_items.end(); it++ ) {
 					Graphic* thisitem = (*it).second;
 					thisitem->set_invisible(true);
@@ -935,6 +955,8 @@ void GameController::process_input() {
 						}
 						m_input_text.erase(m_input_text.length() - 1);
 						m_text_manager->remove_string(m_input_bar);
+						m_text_manager->set_active_color(Color::WHITE);
+						m_text_manager->set_active_font(m_font);
 						m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
 						m_input_bar_back->set_image_width(m_input_bar->get_image_width() + 6);
 						m_input_bar_back->set_invisible(false);
@@ -947,6 +969,8 @@ void GameController::process_input() {
 						}
 						// Replace the text display with the new one.
 						m_text_manager->remove_string(m_input_bar);
+						m_text_manager->set_active_color(Color::WHITE);
+						m_text_manager->set_active_font(m_font);
 						m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
 						m_input_bar_back->set_image_width(m_input_bar->get_image_width() + 6);
 						m_input_bar_back->set_invisible(false);
@@ -960,6 +984,7 @@ void GameController::process_input() {
 						SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 						m_text_manager->set_active_color(Color::WHITE);
 						if (m_input_bar == NULL) {
+							m_text_manager->set_active_font(m_font);
 							m_input_bar = m_text_manager->place_string("> ", 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
 							m_input_bar_back->set_image_width(m_input_bar->get_image_width() + 6);
 							m_input_bar_back->set_invisible(false);
@@ -968,6 +993,7 @@ void GameController::process_input() {
 						SDL_EnableUNICODE(1);
 						SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 						m_text_manager->set_active_color(Color::WHITE);
+						m_text_manager->set_active_font(m_font);
 						m_input_text = "> /tchat ";
 						if (m_input_bar == NULL) {
 							m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
@@ -1111,6 +1137,12 @@ void GameController::process_mouse_click(SDL_Event event) {
 				} else if ((*it).first == "Resume Game") {
 					if (!m_players.empty()) {
 						m_game_state = GAME_IN_PROGRESS;
+					} else {
+						display_message("Not connected to server.");
+					}
+				} else if ((*it).first == "Disconnect") {
+					if (!m_players.empty()) {
+						disconnect();
 					} else {
 						display_message("Not connected to server.");
 					}
@@ -1975,10 +2007,9 @@ void GameController::disconnect() {
 		clear_players();
 		m_player_id = 0;
 		
-		m_network.disconnect();
-		
 		display_message("Disconnected.");
 	}
+	m_network.disconnect();
 }
 
 /*
@@ -2686,6 +2717,7 @@ void GameController::send_team_change_packet(char new_team) {
  */
 void GameController::display_message(string message, Color color) {
 	m_text_manager->set_active_color(color);
+	m_text_manager->set_active_font(m_font);
 	int y = 20 + (m_font->ascent() + m_font->descent() + 5) * m_messages.size();
 	Graphic* message_sprite = m_text_manager->place_string(message, 20, y, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_messages.push_back(pair<Graphic*, int>(message_sprite, SDL_GetTicks() + MESSAGE_DISPLAY_TIME));
