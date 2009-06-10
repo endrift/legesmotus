@@ -42,6 +42,7 @@ private:
 public:
 	Sprite(SDL_Surface* image);
 	Sprite(const char* filename);
+	explicit Sprite(const Graphic& texture);
 	Sprite(const Sprite& other);
 	virtual Sprite* clone() const;
 

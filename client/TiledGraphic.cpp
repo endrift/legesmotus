@@ -34,6 +34,10 @@ TiledGraphic::TiledGraphic(const char* filename) : Graphic(filename) {
 	init();
 }
 
+TiledGraphic::TiledGraphic(const Graphic& other) : Graphic(other) {
+	// Nothing to do
+}
+
 TiledGraphic::TiledGraphic(const TiledGraphic& other) : Graphic(other) {
 	m_start_x = other.m_start_x;
 	m_start_y = other.m_start_y;

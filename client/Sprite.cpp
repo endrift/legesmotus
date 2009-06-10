@@ -34,6 +34,10 @@ Sprite::Sprite(const char* filename) : Graphic(filename) {
 	init();
 }
 
+Sprite::Sprite(const Graphic& other) : Graphic(other) {
+	// Nothing to do
+}
+
 Sprite::Sprite(const Sprite& other) : Graphic(other) {
 	m_alpha = other.m_alpha;
 	m_red = other.m_red;

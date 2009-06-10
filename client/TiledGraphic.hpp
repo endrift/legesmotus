@@ -46,6 +46,7 @@ private:
 public:
 	TiledGraphic(SDL_Surface* image);
 	TiledGraphic(const char* filename);
+	explicit TiledGraphic(const Graphic& texture);
 	TiledGraphic(const TiledGraphic& other);
 	virtual TiledGraphic* clone() const;
 
