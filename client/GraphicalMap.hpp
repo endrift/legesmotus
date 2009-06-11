@@ -28,9 +28,11 @@
 #include "common/Map.hpp"
 #include "client/MapObject.hpp"
 #include <list>
+#include <map>
 
 class GameWindow;
 class PathManager;
+class Graphic;
 
 /*
  * Derives from Map, and adds graphics stuff.
@@ -41,6 +43,7 @@ private:
 	GameWindow* 			m_window;
 	std::list<MapObject>		m_objects;
 	MapObject*			m_gates[2];
+	std::map<std::string, Graphic*>	m_cached_graphics;
 
 	enum {
 		GATE_HEIGHT = 109,	// Height of the gate bar
@@ -49,12 +52,17 @@ private:
 
 	MapObject*			get_gate_object(char team);
 
+	template<class T> T*		load_graphic(const std::string& sprite_name);
+
 public:
 	GraphicalMap(PathManager&, GameWindow* window);
 	virtual ~GraphicalMap();
 
 	const std::list<MapObject>&	get_objects() const { return m_objects; }
 	virtual void			clear(); // Remove all objects
+
+	// Read and parse the given input stream and load into the current map
+	bool				load(std::istream& in);
 
 	virtual void			set_visible(bool visible);
 	virtual void			add_object(PacketReader& data);

@@ -45,6 +45,7 @@ GraphicalMap::~GraphicalMap() {
 }
 
 void	GraphicalMap::clear() {
+	m_cached_graphics.clear();
 	for (list<MapObject>::iterator it(m_objects.begin()); it != m_objects.end(); ++it) {
 		if (it->has_sprite()) {
 			m_window->unregister_graphic(it->get_sprite());
@@ -54,6 +55,23 @@ void	GraphicalMap::clear() {
 	m_objects.clear();
 	m_gates[0] = m_gates[1] = NULL;
 	Map::clear();
+}
+
+template<class T> T* GraphicalMap::load_graphic(const std::string& sprite_name) {
+	Graphic*&	graphic = m_cached_graphics[sprite_name];
+
+	if (!graphic) {
+		// Graphic not cached yet.
+		string	filename(sprite_name);
+		filename += ".png";
+
+		T*	new_graphic = new T(m_path_manager.data_path(filename.c_str(), "sprites"));
+		graphic = new_graphic;
+		return new_graphic;
+	}
+
+	// Create this new graphic from the cached graphic.
+	return new T(*graphic);
 }
 
 void	GraphicalMap::add_object(PacketReader& object_data) {
@@ -73,12 +91,9 @@ void	GraphicalMap::add_object(PacketReader& object_data) {
 		{
 			string	sprite_name;
 			object_data >> sprite_name;
-			sprite_name += ".png";
-
-			string	sprite_path(m_path_manager.data_path(sprite_name.c_str(), "sprites"));
 
 			if (type == OBSTACLE) {
-				Sprite*		sprite = new Sprite(sprite_path.c_str());
+				Sprite*		sprite = load_graphic<Sprite>(sprite_name);
 				map_object.set_sprite(sprite);
 
 				// Bounding polygon - specified by a list of points in the map file
@@ -105,12 +120,12 @@ void	GraphicalMap::add_object(PacketReader& object_data) {
 				sprite->set_priority(Graphic::OBSTACLE);
 
 			} else if (type == DECORATION) {
-				Sprite*		sprite = new Sprite(sprite_path.c_str());
+				Sprite*		sprite = load_graphic<Sprite>(sprite_name);
 				sprite->set_priority(Graphic::BACKGROUND);
 				map_object.set_sprite(sprite);
 
 			} else if (type == BACKGROUND) {
-				TiledGraphic*	background = new TiledGraphic(sprite_path.c_str());
+				TiledGraphic*	background = load_graphic<TiledGraphic>(sprite_name);
 				map_object.set_sprite(background);
 
 				int		width;
@@ -138,17 +153,17 @@ void	GraphicalMap::add_object(PacketReader& object_data) {
 
 			map_object.set_team(team);
 
-			string	sprite_path;
+			string	sprite_name;
 			if (team == 'B') {
-				sprite_path = m_path_manager.data_path("red_gate.png", "sprites");
+				sprite_name = "red_gate";
 				m_gates[1] = &map_object;
 			} else if (team == 'A') {
-				sprite_path = m_path_manager.data_path("blue_gate.png", "sprites");
+				sprite_name = "blue_gate";
 				m_gates[0] = &map_object;
 			}
 
 			// XXX: This assumes the height of the sprite is 1 pixel.
-			Sprite*	sprite = new Sprite(sprite_path.c_str());
+			Sprite*	sprite = load_graphic<Sprite>(sprite_name);
 			sprite->set_priority(Graphic::BACKGROUND);
 			sprite->set_scale_y(double(GATE_HEIGHT));
 			sprite->set_antialiasing(false);
@@ -165,6 +180,16 @@ void	GraphicalMap::add_object(PacketReader& object_data) {
 		m_window->register_graphic(map_object.get_sprite());
 	}
 
+}
+
+bool	GraphicalMap::load(istream& in) {
+	// Clear the graphics cache before and after loading the map.
+	// This is to avoid possible memory management issues where a map object is removed after loading, but a dangling pointer to the graphic is left in m_cached_graphics.
+	// Graphics caching is really only needed during initial map loading to make a significant difference anyways.
+	m_cached_graphics.clear();
+	bool	result = Map::load(in);
+	m_cached_graphics.clear();
+	return result;
 }
 
 // progress is in [0.0,1.0], where 0 == closed .. 1 == fully open

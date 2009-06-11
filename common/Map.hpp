@@ -60,11 +60,11 @@ public:
 	int		get_height() const { return m_height; }
 	
 	// Read and parse the given input stream and load into the current map
-	bool		load(std::istream& in);
+	virtual bool	load(std::istream& in);
 
 	// load_file will preserve the current map if it can't open the new map
 	// (and return false to indicate error)
-	bool		load_file(const char* path);
+	virtual bool	load_file(const char* path);
 
 	// Remove all objects from the map:
 	virtual void	clear();
