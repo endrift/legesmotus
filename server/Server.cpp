@@ -206,6 +206,23 @@ void	Server::send_system_message(const ServerPlayer& recipient_player, const cha
 	m_network.send_packet(recipient_player.get_address(), outbound_packet);
 }
 
+void	Server::send_map_list(const ServerPlayer& player) {
+	list<string>			files;
+	scan_directory(files, m_path_manager.data_path("", "maps"));
+
+	send_system_message(player, "Installed maps:");
+
+	for (list<string>::const_iterator file(files.begin()); file != files.end(); ++file) {
+		string::size_type	pos = file->rfind(".map");
+		if (pos != string::npos) {
+			ostringstream	msg;
+			msg << ' ';
+			msg.write(file->c_str(), pos);
+			send_system_message(player, msg.str().c_str());
+		}
+	}
+}
+
 void	Server::command_server(uint32_t player_id, const char* command) {
 	ServerPlayer*		player = get_player(player_id);
 	if (player == NULL) {
@@ -216,6 +233,7 @@ void	Server::command_server(uint32_t player_id, const char* command) {
 		send_system_message(*player, "/server auth <password> - Authenticate with given password");
 		send_system_message(*player, "/server teamscore - Return the score for each team");
 		send_system_message(*player, "/server teamcount - Return the number of players on each team");
+		send_system_message(*player, "/server maps - Display the maps installed on the server");
 		if (player->is_op()) {
 			send_system_message(*player, "/server reset - Reset the scores [op]");
 			send_system_message(*player, "/server map <mapname> - Load the given map [op]");
@@ -244,6 +262,9 @@ void	Server::command_server(uint32_t player_id, const char* command) {
 		ostringstream	msg;
 		msg << "Blue Players: " << m_team_count[0] << " / Red Players: " << m_team_count[1];
 		send_system_message(*player, msg.str().c_str());
+
+	} else if (strcmp(command, "maps") == 0) {
+		send_map_list(*player);
 
 	} else if (strcmp(command, "reset") == 0 && player->is_op()) {
 		m_team_score[0] = m_team_score[1] = 0;

@@ -218,6 +218,7 @@ private:
 
 	// Server command support
 	void			send_system_message(const ServerPlayer& recipient, const char* message);
+	void			send_map_list(const ServerPlayer& recipient);
 	void			command_server(uint32_t player_id, const char* command);
 
 	// Timeout all old players

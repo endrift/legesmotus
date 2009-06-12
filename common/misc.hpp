@@ -26,6 +26,7 @@
 #define LM_COMMON_MISC_H
 
 #include <string>
+#include <list>
 
 
 // Return the username of the current user.
@@ -71,5 +72,8 @@ void		drop_privileges(const char* username, const char* groupname);
 
 // Determine whether the program has terminal output (always returns true on Windows)
 bool		has_terminal_output();
+
+// Scan the given directory and populate the given list with the name of every file and directory in the given directory
+bool		scan_directory(std::list<std::string>& filenames, const char* directory);
 
 #endif

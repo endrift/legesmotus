@@ -60,6 +60,32 @@ bool	has_terminal_output() {
 	return true;
 }
 
+bool	scan_directory(list<string>& filenames, const char* directory) {
+	string			full_directory(directory);
+	if (full_directory[full_directory.size() - 1] != '\\') {
+		full_directory += "\\";
+	}
+	full_directory += "*";
+
+	WIN32_FIND_DATA		file_data;
+	HANDLE			find_handle = FindFirstFile(full_directory.c_str(), &file_data);
+	if (find_handle == INVALID_HANDLE_VALUE) {
+		return GetLastError() == ERROR_FILE_NOT_FOUND;
+	}
+
+	do {
+		const char*	filename = file_data.cFileName;
+		if (strcmp(filename, ".") != 0 && strcmp(filename, "..") != 0) {
+			filenames.push_back(filename);
+		}
+	} while (FindNextFile(find_handle, &file_data));
+
+	bool			success = GetLastError() == ERROR_NO_MORE_FILES;
+	FindClose(find_handle);
+	return success;
+}
+
+
 #else
 
 #include <sys/types.h>
@@ -70,6 +96,7 @@ bool	has_terminal_output() {
 #include <unistd.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <dirent.h>
 
 string	get_username() {
 	if (struct passwd* pw = getpwuid(getuid())) {
@@ -166,6 +193,25 @@ void	drop_privileges(const char* username, const char* groupname) {
 
 bool	has_terminal_output() {
 	return isatty(1);
+}
+
+bool	scan_directory(list<string>& filenames, const char* directory) {
+	struct dirent**	files;
+	int		nfiles = scandir(directory, &files, NULL, NULL);
+	if (nfiles < 0) {
+		return false;
+	}
+
+	for (int i = 0; i < nfiles; ++i) {
+		const char*	filename = files[i]->d_name;
+		if (strcmp(filename, ".") != 0 && strcmp(filename, "..") != 0) {
+			filenames.push_back(filename);
+		}
+		free(files[i]);
+	}
+	free(files);
+
+	return true;
 }
 
 #endif
