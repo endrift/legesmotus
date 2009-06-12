@@ -50,8 +50,8 @@ bool	Map::load(istream& in) {
 	// read each line one-by-one
 	string			line;
 	while (getline(in, line)) {
-		// Strip any trailing white space
-		strip_trailing_spaces(line);
+		// Strip any leading or trailing white space
+		strip_leading_trailing_spaces(line);
 
 		// Ignore blank lines and lines starting with # (for comments)
 		// Not ignoring blank lines does cause problems, even if the map file doesn't appear to have blank lines in it.

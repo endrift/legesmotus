@@ -37,6 +37,7 @@
 #include "common/StringTokenizer.hpp"
 #include "common/IPAddress.hpp"
 #include "common/timer.hpp"
+#include "common/misc.hpp"
 
 #include "SDL_image.h"
 
@@ -2197,14 +2198,23 @@ void GameController::send_my_player_update() {
  * Send a message packet.
  */
 void GameController::send_message(string message) {
+	strip_leading_trailing_spaces(message);
+	if (message.empty()) {
+		return;
+	}
 
-	string::size_type		colon_pos = message.find_first_of(':');
-	if (colon_pos != string::npos) {
+	if (message.find_first_of(':') != string::npos) {
 		// Message to individual player
-		string			recipient_name = message.substr(0, colon_pos);
-		if (const GraphicalPlayer* player = get_player_by_name(recipient_name.c_str())) {
+		string			recipient_name;
+		string			message_part;
+		StringTokenizer(message, ':', 2) >> recipient_name >> message_part;
+
+		const GraphicalPlayer*	player = get_player_by_name(recipient_name.c_str());
+		strip_leading_trailing_spaces(message_part);
+
+		if (player && !message_part.empty()) {
 			PacketWriter	message_writer(MESSAGE_PACKET);
-			message_writer << m_player_id << player->get_id() << message.substr(colon_pos + 1);
+			message_writer << m_player_id << player->get_id() << message_part;
 			m_network.send_packet(message_writer);
 			return;
 		}
@@ -2220,6 +2230,11 @@ void GameController::send_message(string message) {
  * Send a team message packet.
  */
 void GameController::send_team_message(string message) {
+	strip_leading_trailing_spaces(message);
+	if (message.empty()) {
+		return;
+	}
+
 	PacketWriter	message_writer(MESSAGE_PACKET);
 	message_writer << m_player_id << m_players[m_player_id].get_team() << message;
 	m_network.send_packet(message_writer);

@@ -233,10 +233,13 @@ Color::Color(double r, double g, double b, double a) {
 const Color Color::WHITE(1.0, 1.0, 1.0);
 const Color Color::BLACK(0.0, 0.0, 0.0);
 
-void	strip_trailing_spaces(string& str) {
+void	strip_leading_trailing_spaces(string& str) {
+	string::size_type startpos = str.find_first_not_of(" \t");
 	string::size_type endpos = str.find_last_not_of(" \t");
-	if (endpos != string::npos) {
-		str = str.substr(0, endpos + 1);
+	if (startpos != string::npos && endpos != string::npos) {
+		str = str.substr(startpos, endpos - startpos + 1);
+	} else {
+		str.clear();
 	}
 }
 

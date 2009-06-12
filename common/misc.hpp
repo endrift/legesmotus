@@ -48,8 +48,8 @@ struct Color {
 	static const Color BLACK;
 };
 
-// remove all trailing spaces of given string
-void		strip_trailing_spaces(std::string& str);
+// remove all leading and trailing spaces of given string
+void		strip_leading_trailing_spaces(std::string& str);
 
 // condense all whitespace in the string to a single space character
 // (leading and trailing whitespace is removed)
