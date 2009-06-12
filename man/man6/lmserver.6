@@ -28,6 +28,12 @@ Sets the server map to <\fImapname\fP> (defaults to alpha1).
 \fB\-P\fR <\fIpassword\fP>\fR
 Enables operator mode and sets the operator password to <\fIpassword\fP>.
 .TP 
+\fB\-u\fR <\fIuser\fP>\fR
+Drop privileges to <\fIuser\fP> (e.g. nobody).  By default, privileges are not dropped.  Only the super user may use this option.  Not supported on Windows.
+.TP 
+\fB\-g\fR <\fIgroup\fP>\fR
+Drop group privileges to <\fIgroup\fP> (e.g. nogroup).  By default, privileges are not dropped.  Only the super user may use this option.  Not supported on Windows.
+.TP 
 \fB\-p\fR <\fIportno\fP>\fR
 Listen on port <\fIportno\fP> (defaults to 16877).
 .TP 
@@ -90,6 +96,10 @@ Specifies the location of the directory containing Leges Motus data files.
 To run the server in the background:
 .LP 
 lmserver \-d
+.LP 
+To run Leges Motus every time you start your computer, you could put this in a system startup script (e.g. /etc/rc.local):
+.LP 
+lmserver \-d \-u nobody
 .LP 
 If you don't want to register your server with the meta server:
 .LP 

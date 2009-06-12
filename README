@@ -66,6 +66,8 @@ The server supports the following command-line options:
   -P PASSWORD	set the admin password (default: admin mode is disabled)
   -i PORTNO	address of interface to listen on (default: listen on all interfaces)
   -d		daemonize the server (not on Windows)
+  -u USERNAME	drop privileges to given user (only super user may use) (not on Windows)
+  -g GROUPNAME	drop privileges to given group (only super user may use) (not on Windows)
   -l		(local server) do not register with the meta server
   -?, --help	display this help, and exit
       --version	display version information and exit

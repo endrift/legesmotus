@@ -28,6 +28,7 @@
 #include <string>
 #include <cstring>
 #include <cctype>
+#include <sstream>
 
 // See .hpp file for extensive comments.
 
@@ -51,6 +52,10 @@ void	daemonize() {
 	throw LMException("Sorry, daemonization not supported on Windows.");
 }
 
+void	drop_privileges(const char* username, const char* groupname) {
+	throw LMException("Sorry, privilege dropping is not supported on Windows.");
+}
+
 bool	has_terminal_output() {
 	return true;
 }
@@ -61,6 +66,7 @@ bool	has_terminal_output() {
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <pwd.h>
+#include <grp.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -116,6 +122,48 @@ void	daemonize() {
 	setsid();
 }
 
+void	drop_privileges(const char* username, const char* groupname) {
+	if (!username && !groupname) {
+		return;
+	}
+
+	struct passwd*		usr = NULL;
+	struct group*		grp = NULL;
+	if (username) {
+		errno = 0;
+		if (!(usr = getpwnam(username))) {
+			ostringstream	errmsg;
+			errmsg << username << ": " << (errno ? strerror(errno) : "No such user");
+			throw LMException(errmsg.str().c_str());
+		}
+	}
+
+	if (groupname) {
+		errno = 0;
+		if (!(grp = getgrnam(groupname))) {
+			ostringstream	errmsg;
+			errmsg << groupname << ": " << (errno ? strerror(errno) : "No such group");
+			throw LMException(errmsg.str().c_str());
+		}
+	}
+
+	// If no group is specified, but a user is specified, drop to the primary GID of that user
+	if (setgid(grp ? grp->gr_gid : usr->pw_gid) < 0) {
+		ostringstream	errmsg;
+		errmsg << "Failed to drop privileges: " << strerror(errno);
+		throw LMException(errmsg.str().c_str());
+	}
+
+	if (usr) {
+		initgroups(usr->pw_name, usr->pw_gid);
+		if (setuid(usr->pw_uid) < 0) {
+			ostringstream	errmsg;
+			errmsg << "Failed to drop privileges: " << strerror(errno);
+			throw LMException(errmsg.str().c_str());
+		}
+	}
+}
+
 bool	has_terminal_output() {
 	return isatty(1);
 }
@@ -144,6 +192,34 @@ void	strip_trailing_spaces(string& str) {
 	if (endpos != string::npos) {
 		str = str.substr(0, endpos + 1);
 	}
+}
+
+void	condense_whitespace(string& str) {
+	const char*	p = str.c_str();
+
+	// Skip leading whitespace
+	while (isspace(*p)) {
+		++p;
+	}
+
+	string		new_str;
+	bool		is_in_whitespace = false;
+	while (*p) {
+		char	c = *p++;
+		if (isspace(c)) {
+			// Whitespace - skip it for now
+			is_in_whitespace = true;
+		} else {
+			if (is_in_whitespace) {
+				// End of an all-whitespace region.  Lay down a single space.
+				is_in_whitespace = false;
+				new_str += ' ';
+			}
+			new_str += c;
+		}
+	}
+
+	str.swap(new_str);
 }
 
 void	sanitize_player_name(string& name) {

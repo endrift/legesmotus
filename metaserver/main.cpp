@@ -48,6 +48,8 @@ static void display_usage(const char* progname) {
 	cout << "Usage: " << progname << " [OPTION]" << endl;
 	cout << "Options:" << endl;
 	cout << "  -d		daemonize the server (not on Windows)" << endl;
+	cout << "  -u USERNAME	drop privileges to given user (not on Windows)" << endl;
+	cout << "  -g GROUPNAME	drop privileges to given group (not on Windows)" << endl;
 	cout << "  -f FREQUENCY	set the frequency (in seconds) at which servers" << endl;
 	cout << "		should contact the meta server [default: " << int(DEFAULT_CONTACT_FREQUENCY) << "]" << endl;
 	cout << "  -t TIMEOUT	set the timeout (in seconds) for servers [default: " << int(DEFAULT_SERVER_TIMEOUT) << "]" << endl;
@@ -72,6 +74,8 @@ extern "C" int main(int argc, char* argv[]) try {
 	uint32_t		contact_frequency = DEFAULT_CONTACT_FREQUENCY;
 	uint32_t		server_timeout = DEFAULT_SERVER_TIMEOUT;
 	bool			daemonize = false;
+	const char*		username = NULL;
+	const char*		groupname = NULL;
 
 	for (int i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "-p") == 0 && argc > i+1) {
@@ -82,6 +86,12 @@ extern "C" int main(int argc, char* argv[]) try {
 			++i;
 		} else if (strcmp(argv[i], "-t") == 0 && argc > i+1) {
 			server_timeout = atol(argv[i+1]);
+			++i;
+		} else if (strcmp(argv[i], "-u") == 0 && argc > i+1) {
+			username = argv[i+1];
+			++i;
+		} else if (strcmp(argv[i], "-g") == 0 && argc > i+1) {
+			groupname = argv[i+1];
 			++i;
 		} else if (strcmp(argv[i], "-d") == 0) {
 			daemonize = true;
@@ -106,6 +116,10 @@ extern "C" int main(int argc, char* argv[]) try {
 		cerr << "Failed to start server on port " << portno << endl;
 		cerr << "Please make sure that you are not already running a service on this port." << endl;
 		return 1;
+	}
+
+	if (username || groupname) {
+		drop_privileges(username, groupname);
 	}
 
 	if (daemonize) {

@@ -50,6 +50,10 @@ struct Color {
 // remove all trailing spaces of given string
 void		strip_trailing_spaces(std::string& str);
 
+// condense all whitespace in the string to a single space character
+// (leading and trailing whitespace is removed)
+void		condense_whitespace(std::string& str);
+
 // Sanitize/canonicalize a player name
 // Does the following things:
 //  Remove all leading and trailing whitespace
@@ -60,6 +64,10 @@ void		sanitize_player_name(std::string& str);
 
 // Daemonize the program (not on Windows)
 void		daemonize();
+
+// Drop privileges to the given user/group (not on Windows)
+// Either username or groupname may be NULL
+void		drop_privileges(const char* username, const char* groupname);
 
 // Determine whether the program has terminal output (always returns true on Windows)
 bool		has_terminal_output();

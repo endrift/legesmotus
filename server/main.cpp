@@ -49,6 +49,8 @@ namespace {
 		cout << "  -p PORTNO	set the port number to listen on [default: " << DEFAULT_PORTNO << "]" << endl;
 		cout << "  -i PORTNO	address of interface to listen on [default: all interfaces]" << endl;
 		cout << "  -d		daemonize the server (not on Windows)" << endl;
+		cout << "  -u USERNAME	drop privileges to given user (only super user may use) (not on Windows)" << endl;
+		cout << "  -g GROUPNAME	drop privileges to given group (only super user may use) (not on Windows)" << endl;
 		cout << "  -l		(local server) do not register with the meta server" << endl;
 		cout << "  -?, --help	display this help, and exit" << endl;
 		cout << "      --version\tdisplay version information and exit" << endl;
@@ -116,6 +118,8 @@ extern "C" int main(int argc, char* argv[]) try {
 	string			password;
 	string			map_name("alpha1");
 	const char*		interface_ip_address = NULL;
+	const char*		username = NULL;
+	const char*		groupname = NULL;
 	unsigned int		portno = DEFAULT_PORTNO;
 	bool			daemonize = false;
 	bool			local_server = false;
@@ -132,6 +136,12 @@ extern "C" int main(int argc, char* argv[]) try {
 			++i;
 		} else if (strcmp(argv[i], "-m") == 0 && argc > i+1) {
 			map_name = argv[i+1];
+			++i;
+		} else if (strcmp(argv[i], "-u") == 0 && argc > i+1) {
+			username = argv[i+1];
+			++i;
+		} else if (strcmp(argv[i], "-g") == 0 && argc > i+1) {
+			groupname = argv[i+1];
 			++i;
 		} else if (strcmp(argv[i], "-d") == 0) {
 			daemonize = true;
@@ -159,6 +169,10 @@ extern "C" int main(int argc, char* argv[]) try {
 	server->set_password(password.c_str());
 	server->set_register_with_metaserver(!local_server);
 	server->start(interface_ip_address, portno, map_name.c_str());
+
+	if (username || groupname) {
+		drop_privileges(username, groupname);
+	}
 
 	if (daemonize) {
 		::daemonize();
