@@ -91,9 +91,13 @@ public:
 	// Check to see if a particular option has been set:
 	bool			has(const char* option_name) const { return m_options.count(option_name); }
 
-	// Get the value for a particular option in the given type
+	// Unset (remove) the given option:
+	void			unset(const char* option_name) { m_options.erase(option_name); }
+
+	// Get the value for a particular option in the given type:
 	template<class T> T	get(const char* option_name) const;
-	// Set the value for a particular option
+
+	// Set the value for a particular option:
 	template<class T> void	set(const char* option_name, const T& option_value);
 };
 
