@@ -110,7 +110,7 @@ install:
 	install -d $(MANDIR)/man6
 	install -m 0644 $(BASEDIR)/man/man6/* $(MANDIR)/man6
 	install -d $(BINDIR)
-	install -s $(BASEDIR)/server/lmserver $(BASEDIR)/client/legesmotus $(BINDIR)
+	install $(BASEDIR)/server/lmserver $(BASEDIR)/client/legesmotus $(BINDIR)
 
 uninstall:
 	rm -rf $(DATADIR)

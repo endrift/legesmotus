@@ -35,6 +35,9 @@ FLAGS_SDL += -I$(FRAMEWORKS)/SDL_mixer.framework/Headers
 LIBS += -framework AppKit
 LIBS_SDL = -framework SDL -framework SDL_image -framework SDL_ttf -framework SDL_mixer
 else
+ifeq ($(MACHINE),SunOS)
+LIBS += -lnsl -lsocket -lresolv
+endif
 FLAGS_SDL = $(shell sdl-config --cflags)
 LIBS_SDL = $(shell sdl-config --libs) -lSDL_image -lSDL_ttf -lSDL_mixer
 endif
@@ -60,7 +63,7 @@ CFLAGS += -Wall
 ifeq ($(DEBUG),1)
 CFLAGS += -g -O0
 else
-CFLAGS += -O2
+CFLAGS += -s -O2
 endif
 
 LDFLAGS += $(CFLAGS)
