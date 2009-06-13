@@ -33,13 +33,19 @@ FLAGS_SDL += -I$(FRAMEWORKS)/SDL_image.framework/Headers
 FLAGS_SDL += -I$(FRAMEWORKS)/SDL_ttf.framework/Headers
 FLAGS_SDL += -I$(FRAMEWORKS)/SDL_mixer.framework/Headers
 LIBS += -framework AppKit
-LIBS_SDL = -framework SDL -framework SDL_image -framework SDL_ttf -framework SDL_mixer
+LIBS_SDL = -framework SDL -framework SDL_image -framework SDL_ttf
+ifeq ($(NOSOUND),)
+LIBS_SDL += -framework SDL_mixer
+endif
 else
 ifeq ($(MACHINE),SunOS)
 LIBS += -lnsl -lsocket -lresolv
 endif
 FLAGS_SDL = $(shell sdl-config --cflags)
-LIBS_SDL = $(shell sdl-config --libs) -lSDL_image -lSDL_ttf -lSDL_mixer
+LIBS_SDL = $(shell sdl-config --libs) -lSDL_image -lSDL_ttf
+ifeq ($(NOSOUND),)
+LIBS_SDL += -lSDL_mixer
+endif
 endif
 
 ifeq ($(MACHINE),Darwin)

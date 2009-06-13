@@ -1,9 +1,15 @@
 BASEDIR = ..
 include ../Makefile.in
 OBJS = ClientNetwork.o ClientSDL.o GameController.o GameWindow.o MapObject.o Sprite.o GraphicalPlayer.o \
-	Graphic.o TiledGraphic.o GraphicGroup.o GraphicalMap.o Font.o TextManager.o SoundController.o Text.o \
+	Graphic.o TiledGraphic.o GraphicGroup.o GraphicalMap.o Font.o TextManager.o Text.o \
 	Mask.o Minimap.o TableBackground.o ScrollArea.o ScrollBar.o #put .o filenames here (DO NOT PUT .cpp!)
 CXXFLAGS += $(CLIENTFLAGS)
+
+ifeq ($(NOSOUND),)
+OBJS += SoundController.o
+else
+OBJS += SoundController_dummy.o
+endif
 
 ifeq ($(MACHINE),Windows)
 PLATFORM_DEP = legesmotus-res.o
