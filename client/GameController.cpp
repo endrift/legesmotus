@@ -68,12 +68,20 @@ const int GameController::FROZEN_STATUS_RECT_WIDTH = 60;
 const int GameController::DOUBLE_CLICK_TIME = 300;
 
 GameController::GameController(PathManager& path_manager) : m_path_manager(path_manager) {
-	GameWindow::set_icon(IMG_Load(path_manager.data_path("head32m.png", "sprites")));
+#ifndef __WIN32
+	GameWindow::set_icon(IMG_Load(path_manager.data_path("blue_head512.png", "sprites")));
+#else
+	GameWindow::set_icon(IMG_Load(path_manager.data_path("blue_head32.png", "sprites")));
+#endif
 	init(GameWindow::get_optimal_instance());
 }
 
 GameController::GameController(PathManager& path_manager, int width, int height, bool fullscreen, int depth) : m_path_manager(path_manager) {
-	GameWindow::set_icon(IMG_Load(path_manager.data_path("head32m.png", "sprites")));
+#ifndef __WIN32
+	GameWindow::set_icon(IMG_Load(path_manager.data_path("blue_head512.png", "sprites")));
+#else
+	GameWindow::set_icon(IMG_Load(path_manager.data_path("blue_head32.png", "sprites")));
+#endif
 	init(GameWindow::get_instance(width, height, depth, fullscreen));
 }
 
