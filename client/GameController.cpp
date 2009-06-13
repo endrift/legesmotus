@@ -507,15 +507,15 @@ void GameController::init(GameWindow* window) {
 	m_frozen_status_rect->set_row_height(0, 20);
 	m_frozen_status_rect->set_priority(-1);
 	m_frozen_status_rect->set_cell_color(0, Color(0.0, 0.5, 1.0, 0.5));
-	m_frozen_status_rect->set_x(m_screen_width - m_frozen_status_rect->get_image_width() - 10);
-	m_frozen_status_rect->set_y(m_screen_height - m_frozen_status_rect->get_image_height() - 20);
+	m_frozen_status_rect->set_x(m_screen_width/2);
+	m_frozen_status_rect->set_y(m_screen_height/2 + 50);
 	m_window->register_hud_graphic(m_frozen_status_rect);
 	m_frozen_status_rect_back = new TableBackground(1, FROZEN_STATUS_RECT_WIDTH);
 	m_frozen_status_rect_back->set_row_height(0, 20);
 	m_frozen_status_rect_back->set_priority(0);
 	m_frozen_status_rect_back->set_cell_color(0, Color(0.1, 0.1, 0.1, 0.5));
-	m_frozen_status_rect_back->set_x(m_screen_width - m_frozen_status_rect->get_image_width() - 10);
-	m_frozen_status_rect_back->set_y(m_screen_height - m_frozen_status_rect->get_image_height() - 20);
+	m_frozen_status_rect_back->set_x(m_frozen_status_rect->get_x());
+	m_frozen_status_rect_back->set_y(m_frozen_status_rect->get_y());
 	m_window->register_hud_graphic(m_frozen_status_rect_back);
 	
 	// Initialize the frozen status bar label.
@@ -603,11 +603,11 @@ void GameController::run(int lockfps) {
 			move_objects((get_ticks() - lastmoveframe) / delay); // scale all position changes to keep game speed constant. 
 			
 			if (m_time_to_unfreeze != 0) {
-				m_frozen_status_rect->set_x(m_players[m_player_id].get_x() - m_offset_x);
-				m_frozen_status_rect->set_y(m_players[m_player_id].get_y() + m_players[m_player_id].get_radius() + 15 - m_offset_y);
-				m_frozen_status_rect_back->set_x(m_frozen_status_rect->get_x());
-				m_frozen_status_rect_back->set_y(m_frozen_status_rect->get_y());
-				m_text_manager->reposition_string(m_frozen_status_text, m_frozen_status_rect_back->get_x() - m_frozen_status_rect_back->get_image_width()/2.0 + 3, m_frozen_status_rect_back->get_y() + 2);
+				//m_frozen_status_rect->set_x(m_players[m_player_id].get_x() - m_offset_x);
+				//m_frozen_status_rect->set_y(m_players[m_player_id].get_y() + m_players[m_player_id].get_radius() + 15 - m_offset_y);
+				//m_frozen_status_rect_back->set_x(m_frozen_status_rect->get_x());
+				//m_frozen_status_rect_back->set_y(m_frozen_status_rect->get_y());
+				//m_text_manager->reposition_string(m_frozen_status_text, m_frozen_status_rect_back->get_x() - m_frozen_status_rect_back->get_image_width()/2.0 + 3, m_frozen_status_rect_back->get_y() + 2);
 				m_frozen_status_rect->set_image_width(((m_time_to_unfreeze - get_ticks())/(double)m_total_time_frozen) * FROZEN_STATUS_RECT_WIDTH);
 			}
 			
@@ -718,7 +718,7 @@ void GameController::run(int lockfps) {
 					m_players[m_player_id].get_sprite()->get_graphic("frontarm")->set_rotation(angle);
 					send_animation_packet("frontarm", "rotation", int(round(angle))); // XXX: going double->int here
 				}
-				send_my_player_update();	m_text_manager->set_active_font(m_menu_font);
+				send_my_player_update();
 				
 				// Set the new offset of the window so that the player is centered.
 				m_offset_x = m_players[m_player_id].get_x() - (m_screen_width/2.0);
@@ -2336,6 +2336,9 @@ void GameController::player_shot(PacketReader& reader) {
 	
 	// If we were frozen, add to our velocity based on the shot, and freeze.
 	if (shot_id == m_player_id) {
+		m_frozen_status_rect->set_y(m_screen_height/2 + m_players[m_player_id].get_radius() + 15);
+		m_frozen_status_rect_back->set_y(m_frozen_status_rect->get_y());
+		m_frozen_status_text->set_y(m_frozen_status_rect->get_y());
 		m_sound_controller->play_sound("freeze");
 		m_players[m_player_id].set_is_frozen(true);
 		m_time_to_unfreeze = get_ticks() + time_to_unfreeze;

@@ -105,7 +105,7 @@ private:
 	int 		m_screen_height;
 	int		m_map_width;
 	int		m_map_height;
-	LMPolygon		m_map_polygon;
+	LMPolygon	m_map_polygon;
 	int 		m_pixel_depth;
 	int		m_game_state;
 	bool 		m_fullscreen;
