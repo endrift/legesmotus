@@ -5,8 +5,7 @@ SERVER = $(BASEDIR)/server
 FRAMEWORKS = /Library/Frameworks
 
 # Version strings
-VSHORT = 010
-VLONG = 0.1.0
+VERSION = 0.1.1-svn
 
 # These may be overridden by Makefile.opts
 DATADIR = data
@@ -15,7 +14,7 @@ DATADIR = data
 
 -include $(BASEDIR)/Makefile.opts
 
-CFLAGS += -DLM_DATA_DIR=\"$(DATADIR)\" -DLM_VERSION="\"$(VLONG)\""
+CFLAGS += -DLM_DATA_DIR=\"$(DATADIR)\" -DLM_VERSION="\"$(VERSION)\""
 
 MACHINE = $(shell uname -s)
 ifeq ($(MACHINE),)

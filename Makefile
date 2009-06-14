@@ -30,7 +30,7 @@ clean:
 	$(MAKE) -C client clean
 	$(MAKE) -C tests clean
 	rm -rf "Leges Motus.app"
-	rm -rf legesmotus$(VSHORT).pkg
+	rm -rf legesmotus*.pkg
 	rm -f README.rtf
 
 README.rtf: README
@@ -52,15 +52,14 @@ Leges\ Motus.app: client server
 	cp -f client/legesmotus.icns "Leges Motus.app/Contents/Resources/"
 	cp -Rf client/legesmotus.nib "Leges Motus.app/Contents/Resources/"
 	cp -Rf data "Leges Motus.app/Contents/Resources/"
-	rm -Rf Leges\ Motus.app/Contents/Resources/*/.svn
-	rm -Rf Leges\ Motus.app/Contents/Resources/data/*/.svn
+	find "Leges Motus.app" -name .svn -print0 | xargs -0  rm -rf
 	test -d "Leges Motus.app/Contents/Frameworks/SDL.framework" || cp -Rf /Library/Frameworks/SDL.framework "Leges Motus.app/Contents/Frameworks"
 	test -d "Leges Motus.app/Contents/Frameworks/SDL_net.framework" || cp -Rf /Library/Frameworks/SDL_net.framework "Leges Motus.app/Contents/Frameworks"
 	test -d "Leges Motus.app/Contents/Frameworks/SDL_image.framework" || cp -Rf /Library/Frameworks/SDL_image.framework "Leges Motus.app/Contents/Frameworks"
 	test -d "Leges Motus.app/Contents/Frameworks/SDL_ttf.framework" || cp -Rf /Library/Frameworks/SDL_ttf.framework "Leges Motus.app/Contents/Frameworks"
 	test -d "Leges Motus.app/Contents/Frameworks/SDL_mixer.framework" || cp -Rf /Library/Frameworks/SDL_mixer.framework "Leges Motus.app/Contents/Frameworks"
 
-legesmotus$(VSHORT).pkg: bundle README.rtf
+legesmotus$(VERSION).pkg: bundle README.rtf
 	rm -Rf tmp
 	mkdir -p tmp/Leges\ Motus/Applications
 	mkdir -p tmp/Leges\ Motus/usr/bin
@@ -73,16 +72,16 @@ legesmotus$(VSHORT).pkg: bundle README.rtf
 	cp -f README.rtf tmp/Resources/en.lproj/ReadMe.rtf
 	cp -f COPYING tmp/Resources/en.lproj/License.txt
 	/Developer/usr/bin/packagemaker --root tmp/Leges\ Motus --id org.legesmotus.legesmotus \
-		--title "Leges Motus $(VLONG)" --version "$(VLONG)" --resources tmp/Resources \
-		--target 10.4 --root-volume-only --out legesmotus$(VSHORT).pkg
+		--title "Leges Motus $(VERSION)" --version "$(VERSION)" --resources tmp/Resources \
+		--target 10.4 --root-volume-only --out legesmotus$(VERSION).pkg
 	# The following two lines are a hack to prevent the installer from thinking the packages are relocatable
-	rm -f legesmotus$(VSHORT).pkg/Contents/Resources/TokenDefinitions.plist
-	defaults delete "`pwd`/legesmotus$(VSHORT).pkg/Contents/Info" IFPkgPathMappings
+	rm -f legesmotus$(VERSION).pkg/Contents/Resources/TokenDefinitions.plist
+	defaults delete "`pwd`/legesmotus$(VERSION).pkg/Contents/Info" IFPkgPathMappings
 	rm -Rf tmp
 
 bundle: Leges\ Motus.app
 
-package: legesmotus$(VSHORT).pkg
+package: legesmotus$(VERSION).pkg
 
 install:
 	cp -Rf Leges\ Motus.app /Applications/
