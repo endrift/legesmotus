@@ -31,12 +31,14 @@
 #include "common/UDPPacket.hpp"
 #include "common/UDPSocket.hpp"
 #include "common/IPAddress.hpp"
+#include "common/timer.hpp"
 #include <iostream>
 
 using namespace std;
 
 ClientNetwork::ClientNetwork() {
 	m_is_connected = false;
+	m_last_packet_time = 0;
 }
 
 ClientNetwork::~ClientNetwork() {
@@ -107,6 +109,8 @@ void	ClientNetwork::receive_packets(GameController& controller) {
 
 void	ClientNetwork::process_server_packet(GameController& controller, const UDPPacket& raw_packet) {
 	PacketReader	reader(raw_packet);
+
+	m_last_packet_time = get_ticks();
 
 	switch (reader.packet_type()) {
 	case PLAYER_UPDATE_PACKET:
@@ -191,5 +195,9 @@ void	ClientNetwork::process_unbound_packet(GameController& controller, const UDP
 		controller.server_info(raw_packet.get_address(), reader);
 		break;
 	}
+}
+
+uint64_t ClientNetwork::get_last_packet_time() {
+	return m_last_packet_time;
 }
 

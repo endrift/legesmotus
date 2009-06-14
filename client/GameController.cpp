@@ -66,6 +66,7 @@ const Color GameController::WHITE_COLOR(1, 1, 1);
 const int GameController::GATE_STATUS_RECT_WIDTH = 80;
 const int GameController::FROZEN_STATUS_RECT_WIDTH = 60;
 const int GameController::DOUBLE_CLICK_TIME = 300;
+const int GameController::NETWORK_TIMEOUT_LIMIT = 6000;
 
 GameController::GameController(PathManager& path_manager) : m_path_manager(path_manager) {
 #ifndef __WIN32
@@ -616,6 +617,14 @@ void GameController::run(int lockfps) {
 		
 		// Update graphics if frame rate is correct.
 		if((currframe - startframe) >= delay) {
+			if (m_network.is_connected() && m_join_sent_time == 0) {
+				if (m_network.get_last_packet_time() + NETWORK_TIMEOUT_LIMIT < currframe) {
+					display_message("Connection to the server has timed out.", RED_COLOR);
+					disconnect();
+					continue;
+				}
+			}
+		
 			if (!m_server_browser_scrollbar->is_invisible()) {
 				m_server_browser_scrollbar->autoscroll(currframe - startframe);
 			}
@@ -2014,6 +2023,7 @@ void GameController::disconnect() {
 		m_network.send_packet(leave_request);
 		
 		clear_players();
+		m_game_state = SHOW_MENUS;
 		m_player_id = 0;
 		
 		display_message("Disconnected.");

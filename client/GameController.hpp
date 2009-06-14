@@ -84,6 +84,7 @@ private:
 	const static int GATE_STATUS_RECT_WIDTH;
 	const static int FROZEN_STATUS_RECT_WIDTH;
 	const static int DOUBLE_CLICK_TIME;
+	const static int NETWORK_TIMEOUT_LIMIT;
 	
 	PathManager& 	m_path_manager;
 

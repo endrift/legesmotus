@@ -38,6 +38,7 @@ private:
 	UDPSocket	m_socket;		// The socket we use for UDP communication
 	IPAddress	m_server_address;	// The resolved address of the server (host & port)
 	bool		m_is_connected;		// Are we currently connected to the server?
+	uint64_t	m_last_packet_time;	// The time we last received a packet.
 
 	// Process the individual packet which has been received.
 	// Packets from our bound server
@@ -102,6 +103,8 @@ public:
 	// Send a packet, in raw form.  You should not use this function; use send_packet instead.
 	void		send_raw_packet(const UDPPacket& raw_packet);
 
+	// Return the last tick on which a packet was received from the server.
+	uint64_t	get_last_packet_time();
 };
 
 #endif
