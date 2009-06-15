@@ -1,8 +1,8 @@
 BASEDIR = ..
 include ../Makefile.in
 OBJS = ClientNetwork.o ClientSDL.o GameController.o GameWindow.o MapObject.o Sprite.o GraphicalPlayer.o \
-	Graphic.o TiledGraphic.o GraphicGroup.o GraphicalMap.o Font.o TextManager.o Text.o \
-	Mask.o Minimap.o TableBackground.o ScrollArea.o ScrollBar.o #put .o filenames here (DO NOT PUT .cpp!)
+	Graphic.o TiledGraphic.o GraphicGroup.o GraphicalMap.o Font.o TextManager.o Text.o Mask.o \
+	Minimap.o TableBackground.o ScrollArea.o ScrollBar.o Transition.o Curve.o #put .o filenames here (DO NOT PUT .cpp!)
 CXXFLAGS += $(CLIENTFLAGS)
 
 ifeq ($(NOSOUND),)

@@ -1,7 +1,7 @@
 BASEDIR = ..
 UNIXSTYLE = 1
 include ../Makefile.in
-OBJS = client_network config_test simple_sprite simple_text simple_scroll
+OBJS = client_network config_test simple_sprite simple_text simple_scroll simple_transition
 
 all: $(OBJS)
 
