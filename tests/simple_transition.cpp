@@ -1,4 +1,5 @@
 #include "client/Transition.hpp"
+#include "client/TransitionManager.hpp"
 #include "client/GameWindow.hpp"
 #include "client/ClientSDL.hpp"
 #include "client/Sprite.hpp"
@@ -22,6 +23,12 @@ extern "C" int main(int argc, char* argv[]) {
 	Transition tsx(&g,&Graphic::set_scale_x,&cs,start,2000);
 	Transition tsy(&g,&Graphic::set_scale_y,&cs,start,2000);
 	Transition tr(&g,&Graphic::set_rotation,&cr,start,2000);
+	TransitionManager tm;
+	tm.add_transition(&tx,true);
+	tm.add_transition(&ty,true);
+	tm.add_transition(&tsx,true);
+	tm.add_transition(&tsy,true);
+	tm.add_transition(&tr,true);
 	while(running) {
 		SDL_Event e;
 		while(SDL_PollEvent(&e) != 0) {
@@ -35,12 +42,7 @@ extern "C" int main(int argc, char* argv[]) {
 				} break;
 			}
 		}
-		uint64_t current = get_ticks();
-		if(tx.update(current)) tx.set_start(current);
-		if(ty.update(current)) ty.set_start(current);
-		if(tsx.update(current)) tsx.set_start(current);
-		if(tsy.update(current)) tsy.set_start(current);
-		if(tr.update(current)) tr.set_start(current);
+		tm.update(get_ticks());
 		window->redraw();
 	}
 	

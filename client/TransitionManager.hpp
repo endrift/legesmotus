@@ -1,5 +1,5 @@
 /*
- * client/Transition.cpp
+ * client/TransitionManager.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,42 +22,28 @@
  * 
  */
 
+#ifndef LM_CLIENT_TRANSITIONMANAGER_HPP
+#define LM_CLIENT_TRANSITIONMANAGER_HPP
+
 #include "Transition.hpp"
+#include <list>
 
-Transition::Transition(Graphic* transitioned, Property property, Curve* curve, uint64_t start, uint64_t duration) {
-	m_transed = transitioned;
-	m_prop = property;
-	m_curve = curve;
-	m_start = start;
-	m_duration = duration;
-}
+class TransitionManager {
+private:
+	struct State {
+		Transition*	transition;
+		bool		loop;
+		bool		autodelete;
+	};
+	std::list<State>	m_transitions;
+public:
+	TransitionManager();
+	~TransitionManager();
 
-void Transition::set_start(uint64_t start) {
-	m_start = start;
-}
+	void add_transition(Transition* transition, bool loop = false, bool autodelete = false);
+	void remove_transition(Transition* transition);
 
-void Transition::set_duration(uint64_t duration) {
-	m_duration = duration;
-}
+	void update(uint64_t time);
+};
 
-uint64_t Transition::get_start() const {
-	return m_start;
-}
-
-uint64_t Transition::get_duration() const {
-	return m_duration;
-}
-
-bool Transition::update(uint64_t current) {
-	if(m_duration == 0) return true;
-	bool passed = false;
-	uint64_t progress = current - m_start;
-	if (progress >= m_duration) {
-		progress = m_duration;
-		passed = true;
-	} else if (current < m_start) {
-		progress = 0;
-	}
-	(m_transed->*m_prop)((*m_curve)(double(progress)/double(m_duration)));
-	return passed;
-}
+#endif
