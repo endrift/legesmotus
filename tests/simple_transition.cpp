@@ -36,11 +36,11 @@ extern "C" int main(int argc, char* argv[]) {
 			}
 		}
 		uint64_t current = get_ticks();
-		if(tx.update(current)) tx = Transition(&g,&Graphic::set_x,&cp,current,2000);
-		if(ty.update(current)) ty = Transition(&g,&Graphic::set_y,&cp,current,2000);
-		if(tsx.update(current)) tsx = Transition(&g,&Graphic::set_scale_x,&cs,current,2000);
-		if(tsy.update(current)) tsy = Transition(&g,&Graphic::set_scale_y,&cs,current,2000);
-		if(tr.update(current)) tr = Transition(&g,&Graphic::set_rotation,&cr,current,2000);
+		if(tx.update(current)) tx.set_start(current);
+		if(ty.update(current)) ty.set_start(current);
+		if(tsx.update(current)) tsx.set_start(current);
+		if(tsy.update(current)) tsy.set_start(current);
+		if(tr.update(current)) tr.set_start(current);
 		window->redraw();
 	}
 	

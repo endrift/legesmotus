@@ -42,6 +42,12 @@ private:
 public:
 	Transition(Graphic* transitioned, Property property, Curve* curve, uint64_t start, uint64_t duration);
 
+	void set_start(uint64_t start);
+	void set_duration(uint64_t duration);
+
+	uint64_t get_start() const;
+	uint64_t get_duration() const;
+
 	// Returns true if current >= end
 	bool update(uint64_t current);
 };

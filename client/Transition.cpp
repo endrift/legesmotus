@@ -32,12 +32,30 @@ Transition::Transition(Graphic* transitioned, Property property, Curve* curve, u
 	m_duration = duration;
 }
 
+void Transition::set_start(uint64_t start) {
+	m_start = start;
+}
+
+void Transition::set_duration(uint64_t duration) {
+	m_duration = duration;
+}
+
+uint64_t Transition::get_start() const {
+	return m_start;
+}
+
+uint64_t Transition::get_duration() const {
+	return m_duration;
+}
+
 bool Transition::update(uint64_t current) {
 	bool passed = false;
 	uint64_t progress = current - m_start;
-	if(progress >= m_duration) {
+	if (progress >= m_duration) {
 		progress = m_duration;
 		passed = true;
+	} else if (current < m_start) {
+		progress = 0;
 	}
 	(m_transed->*m_prop)((*m_curve)(double(progress)/double(m_duration)));
 	return passed;
