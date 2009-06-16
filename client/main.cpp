@@ -24,6 +24,7 @@
 
 #include "GameController.hpp"
 #include "ClientSDL.hpp"
+#include "ClientConfiguration.hpp"
 #include "common/LMException.hpp"
 #include "common/PathManager.hpp"
 #include "common/misc.hpp"
@@ -130,16 +131,35 @@ extern "C" int main(int argc, char* argv[]) try {
 	}
 	
 	PathManager	pathman(argv[0]);
+	ClientConfiguration config;
 
 	if (width > 0 && height > 0) {
 		// Use the specified width and height
-		game_controller = new GameController(pathman, width, height, fullscreen);
+		game_controller = new GameController(pathman, &config, width, height, fullscreen);
 	} else if (fullscreen) {
 		// Use optimal settings
-		game_controller = new GameController(pathman);
+		game_controller = new GameController(pathman, &config);
 	} else {
-		// Use 1024x768 in non-fullscreen mode
-		game_controller = new GameController(pathman, 1024, 768, false);
+		width = config.get_int_value("screen_width");
+		height = config.get_int_value("screen_height");
+		fullscreen = config.get_bool_value("fullscreen");
+		if (width == -1) {
+			width = 1024;
+		}
+		if (height == -1) {
+			height = 768;
+		}
+		// Use the default from the config
+		game_controller = new GameController(pathman, &config, width, height, fullscreen);
+	}
+
+	if (!name.empty()) {
+		config.set_string_value("name", name);
+	} else {
+		if (config.get_string_value("name") == "" || config.get_string_value("name") == "Unnamed") {
+			config.set_string_value("name", get_username());
+		}
+		name = config.get_string_value("name");
 	}
 
 	game_controller->set_player_name(!name.empty() ? name : get_username());

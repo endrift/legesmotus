@@ -31,6 +31,7 @@
 #include "TextManager.hpp"
 #include "SoundController.hpp"
 #include "TableBackground.hpp"
+#include "ClientConfiguration.hpp"
 #include "common/PathManager.hpp"
 #include "common/PacketReader.hpp"
 #include "common/misc.hpp"
@@ -87,6 +88,7 @@ private:
 	const static int NETWORK_TIMEOUT_LIMIT;
 	
 	PathManager& 	m_path_manager;
+	ClientConfiguration* m_configuration;
 
 	GameWindow* 	m_window;
 	ClientNetwork	m_network;
@@ -216,8 +218,8 @@ private:
 
 	void		send_ack(const PacketReader& packet);
 public:
-	explicit GameController(PathManager& pathman);
-	GameController(PathManager& pathman, int width, int height, bool fullscreen =false, int depth =24);
+	explicit GameController(PathManager& pathman, ClientConfiguration* config);
+	GameController(PathManager& pathman, ClientConfiguration* config, int width, int height, bool fullscreen =false, int depth =24);
 	~GameController();
 	
 	void		run(int lockfps=60);

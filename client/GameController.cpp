@@ -29,6 +29,7 @@
 #include "Sprite.hpp"
 #include "TiledGraphic.hpp"
 #include "TableBackground.hpp"
+#include "ClientConfiguration.hpp"
 #include "common/PacketReader.hpp"
 #include "common/PacketWriter.hpp"
 #include "common/network.hpp"
@@ -68,21 +69,23 @@ const int GameController::FROZEN_STATUS_RECT_WIDTH = 60;
 const int GameController::DOUBLE_CLICK_TIME = 300;
 const int GameController::NETWORK_TIMEOUT_LIMIT = 6000;
 
-GameController::GameController(PathManager& path_manager) : m_path_manager(path_manager) {
+GameController::GameController(PathManager& path_manager, ClientConfiguration* config) : m_path_manager(path_manager) {
 #ifndef __WIN32
 	GameWindow::set_icon(IMG_Load(path_manager.data_path("blue_head512.png", "sprites")));
 #else
 	GameWindow::set_icon(IMG_Load(path_manager.data_path("blue_head32.png", "sprites")));
 #endif
+	m_configuration = config;
 	init(GameWindow::get_optimal_instance());
 }
 
-GameController::GameController(PathManager& path_manager, int width, int height, bool fullscreen, int depth) : m_path_manager(path_manager) {
+GameController::GameController(PathManager& path_manager, ClientConfiguration* config, int width, int height, bool fullscreen, int depth) : m_path_manager(path_manager) {
 #ifndef __WIN32
 	GameWindow::set_icon(IMG_Load(path_manager.data_path("blue_head512.png", "sprites")));
 #else
 	GameWindow::set_icon(IMG_Load(path_manager.data_path("blue_head32.png", "sprites")));
 #endif
+	m_configuration = config;
 	init(GameWindow::get_instance(width, height, depth, fullscreen));
 }
 
@@ -192,6 +195,7 @@ void GameController::init(GameWindow* window) {
 	m_holding_gate = false;
 	m_gate_lower_sounds[0] = -1;
 	m_gate_lower_sounds[1] = -1;
+	m_sound_controller->set_sound_on(m_configuration->get_bool_value("sound"));
 
 	m_map = new GraphicalMap(m_path_manager, m_window);
 	m_map_width = 0;
@@ -944,7 +948,14 @@ void GameController::process_input() {
 						// Check message for commands.
 						if (message.find("/name ") == 0) {
 							string new_name(message.substr(6));
-							send_name_change_packet(new_name.c_str());
+							if (m_network.is_connected()) {
+								send_name_change_packet(new_name.c_str());
+							} else {
+								ostringstream	msg;
+								msg << "You are now known as " << new_name;
+								display_message(msg.str(), Color::WHITE);
+								set_player_name(new_name);
+							}
 						} else if (message.find("/team ") == 0) {
 							string	new_team_string(message.substr(6));
 							char	new_team = parse_team_string(new_team_string.c_str());
@@ -1197,9 +1208,11 @@ void GameController::process_mouse_click(SDL_Event event) {
 				} else if ((*it).first == "Toggle Sound") {
 					if (m_sound_controller->is_sound_on()) {
 						m_sound_controller->set_sound_on(false);
+						m_configuration->set_bool_value("sound", false);
 						display_message("Sound is now OFF.");
 					} else {
 						m_sound_controller->set_sound_on(true);
+						m_configuration->set_bool_value("sound", true);
 						display_message("Sound is now ON.");
 					}
 				}
@@ -2938,7 +2951,7 @@ void	GameController::scan_server(const IPAddress& server_address) {
 
 void	GameController::set_player_name(string name) {
 	m_name = name;
-	
+	m_configuration->set_string_value("name", name);
 	if (m_network.is_connected()) {
 		send_name_change_packet(m_name.c_str());
 	}
