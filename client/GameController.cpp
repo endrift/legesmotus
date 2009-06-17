@@ -2669,6 +2669,7 @@ void GameController::name_change(PacketReader& reader) {
 
 		player->set_name(new_name.c_str());
 		if (player_id == m_player_id) {
+			m_configuration->set_string_value("name", new_name);
 			m_name = new_name;
 		}
 
