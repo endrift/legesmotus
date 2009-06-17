@@ -5,24 +5,26 @@
 #include "client/Sprite.hpp"
 #include "common/timer.hpp"
 #include "common/PathManager.hpp"
+#include "common/math.hpp"
 
 extern "C" int main(int argc, char* argv[]) {
 	ClientSDL sdl;
 	(void)(sdl);
 	GameWindow *window = GameWindow::get_instance(300, 300, 24, false);
 	PathManager pman(argv[0]);
-	Sprite g(pman.data_path("shot.png","sprites"));
+	Sprite g(pman.data_path("shot.png", "sprites"));
 	window->register_graphic(&g);
 	bool running = true;
 	uint64_t start = get_ticks();
-	LinearCurve cp(5.0,280.0);
-	LinearCurve cs(0.5,2.0);
-	LinearCurve cr(0,180);
-	Transition tx(&g,&Graphic::set_x,&cp,start,2000);
-	Transition ty(&g,&Graphic::set_y,&cp,start,2000);
-	Transition tsx(&g,&Graphic::set_scale_x,&cs,start,2000);
-	Transition tsy(&g,&Graphic::set_scale_y,&cs,start,2000);
-	Transition tr(&g,&Graphic::set_rotation,&cr,start,2000);
+	SinusoidalCurve cx(10.0, 290.0, 1.0, M_PI*0.5);
+	SinusoidalCurve cy(10.0, 290.0, 1.0, 0.0);
+	SinusoidalCurve cs(1.0, 2.0, 2.0, 0.0);
+	LinearCurve cr(0, 360);
+	Transition tx(&g, &Graphic::set_x, &cx,start,2000);
+	Transition ty(&g, &Graphic::set_y, &cy,start,2000);
+	Transition tsx(&g, &Graphic::set_scale_x, &cs,start,2000);
+	Transition tsy(&g, &Graphic::set_scale_y, &cs,start,2000);
+	Transition tr(&g, &Graphic::set_rotation, &cr,start,2000);
 	TransitionManager tm;
 	tm.add_transition(&tx,true);
 	tm.add_transition(&ty,true);

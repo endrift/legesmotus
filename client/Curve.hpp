@@ -30,6 +30,7 @@ private:
 	double	m_startMapping;
 	double	m_endMapping;
 protected:
+	// Must return a value in [0, 1]
 	virtual double	mapProgress(double t) const = 0;
 	Curve(double start, double end);
 public:
@@ -42,6 +43,16 @@ protected:
 	virtual double	mapProgress(double t) const;
 public:
 	LinearCurve(double start, double end);
+};
+
+class SinusoidalCurve : public Curve {
+private:
+	double m_frequency;
+	double m_phase;
+protected:
+	virtual double	mapProgress(double t) const;
+public:
+	SinusoidalCurve(double start, double end, double frequency, double phase);
 };
 
 #endif

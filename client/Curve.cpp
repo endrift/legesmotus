@@ -23,6 +23,7 @@
  */
 
 #include "Curve.hpp"
+#include "common/math.hpp"
 
 Curve::Curve(double start, double end) {
 	m_startMapping = start;
@@ -39,4 +40,13 @@ LinearCurve::LinearCurve(double start, double end) : Curve(start, end) {
 
 double LinearCurve::mapProgress(double t) const {
 	return t;
+}
+
+SinusoidalCurve::SinusoidalCurve(double start, double end, double frequency, double phase) : Curve(start, end) {
+	m_frequency = frequency;
+	m_phase = phase;
+}
+
+double SinusoidalCurve::mapProgress(double t) const {
+	return (sin(m_frequency*2.0*M_PI*t + m_phase) + 1.0)*0.5;
 }
