@@ -264,6 +264,11 @@ void GameWindow::unregister_graphic(Graphic* graphic) {
 	m_graphics.remove(graphic);
 }
 
+void GameWindow::reprioritize_graphic(Graphic* graphic, int priority) {
+	unregister_graphic(graphic);
+	graphic->set_priority(priority);
+	register_graphic(graphic);
+}
 
 void GameWindow::register_hud_graphic(Graphic* graphic) {
 	for (list<Graphic*>::iterator iter = m_hud_graphics.begin(); iter != m_hud_graphics.end(); ++iter) {
@@ -277,6 +282,12 @@ void GameWindow::register_hud_graphic(Graphic* graphic) {
 
 void GameWindow::unregister_hud_graphic(Graphic* graphic) {
 	m_hud_graphics.remove(graphic);
+}
+
+void GameWindow::reprioritize_hud_graphic(Graphic* graphic, int priority) {
+	unregister_hud_graphic(graphic);
+	graphic->set_priority(priority);
+	register_hud_graphic(graphic);
 }
 
 void GameWindow::redraw() const {

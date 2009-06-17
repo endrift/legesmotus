@@ -53,7 +53,7 @@ public:
 	static const Color		BLUE_COLOR;
 	static const Color		RED_COLOR;
 	static const Color		GREYED_OUT;
-	static const Color		WHITE_COLOR;
+	static const Color		TEXT_BG_COLOR;
 private:
 	struct KeyBindings {
 		int quit;
@@ -86,6 +86,7 @@ private:
 	const static int FROZEN_STATUS_RECT_WIDTH;
 	const static int DOUBLE_CLICK_TIME;
 	const static int NETWORK_TIMEOUT_LIMIT;
+	const static int TEXT_LAYER;
 	
 	PathManager& 	m_path_manager;
 	ClientConfiguration* m_configuration;

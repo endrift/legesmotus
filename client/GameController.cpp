@@ -60,14 +60,15 @@ const int GameController::GATE_WARNING_FLASH_LENGTH = 3000;
 const double GameController::FIRING_RECOIL = 1.5;
 const double GameController::RANDOM_ROTATION_SCALE = 1.0;
 const double GameController::MINIMAP_SCALE = 0.1;
-const Color GameController::BLUE_COLOR(0.4, 0.4, 1);
-const Color GameController::RED_COLOR(1, 0.4, 0.4);
+const Color GameController::BLUE_COLOR(0.4, 0.4, 1.0);
+const Color GameController::RED_COLOR(1.0, 0.4, 0.4);
 const Color GameController::GREYED_OUT(0.5, 0.5, 0.5);
-const Color GameController::WHITE_COLOR(1, 1, 1);
+const Color GameController::TEXT_BG_COLOR(0.0, 0.0, 0.0, 0.7);
 const int GameController::GATE_STATUS_RECT_WIDTH = 80;
 const int GameController::FROZEN_STATUS_RECT_WIDTH = 60;
 const int GameController::DOUBLE_CLICK_TIME = 300;
 const int GameController::NETWORK_TIMEOUT_LIMIT = 6000;
+const int GameController::TEXT_LAYER = -4;
 
 GameController::GameController(PathManager& path_manager, ClientConfiguration* config) : m_path_manager(path_manager) {
 #ifndef __WIN32
@@ -286,7 +287,7 @@ void GameController::init(GameWindow* window) {
 	
 	// Set the text manager to draw a shadow behind everything.
 	m_text_manager->set_active_font(m_menu_font);
-	m_text_manager->set_shadow_color(0.0, 0.0, 0.0);
+	m_text_manager->set_shadow_color(Color::BLACK);
 	m_text_manager->set_shadow_alpha(0.7);
 	m_text_manager->set_shadow_offset(1.0, 1.0);
 	m_text_manager->set_shadow(true);
@@ -302,19 +303,12 @@ void GameController::init(GameWindow* window) {
 	m_main_menu_items["Thanks"] = m_text_manager->place_string("Thanks for playing! Please visit", 50, 500, TextManager::LEFT, TextManager::LAYER_HUD);
  	m_text_manager->set_active_color(0.4, 1.0, 0.4);
  	m_main_menu_items["Thanks2"] = m_text_manager->place_string("http://legesmotus.cs.brown.edu", 50, 540, TextManager::LEFT, TextManager::LAYER_HUD);
- 	m_text_manager->set_active_color(1.0, 1.0, 1.0);
+ 	m_text_manager->set_active_color(Color::WHITE);
  	m_main_menu_items["Thanks3"] = m_text_manager->place_string("to leave feedback for us!", 50, 580, TextManager::LEFT, TextManager::LAYER_HUD);
 	
 	m_text_manager->set_active_font(m_font);
 	m_main_menu_items["versionstr"] = m_text_manager->place_string(string("v. ").append(m_client_version), m_screen_width - 90, m_screen_height - 40, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_text_manager->set_active_font(m_menu_font);
-	
-	m_text_manager->set_active_color(GREYED_OUT);
-	m_main_menu_items["Resume Game-Grey"] = m_text_manager->place_string("Resume Game", 50, 250, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_main_menu_items["Resume Game"]->set_invisible(true);
-	m_main_menu_items["Disconnect-Grey"] = m_text_manager->place_string("Disconnect", 50, 300, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_main_menu_items["Disconnect"]->set_invisible(true);
-	m_text_manager->set_active_color(WHITE_COLOR);
 	
 	// Options menu
 	m_text_manager->set_active_font(m_menu_font);
@@ -350,8 +344,8 @@ void GameController::init(GameWindow* window) {
 	m_server_browser_scrollbar->set_scroll_speed(3);
 	
 	m_server_browser_scrollarea = new ScrollArea(m_server_browser_background->get_image_width(),m_server_browser_background->get_image_height() - m_server_browser_background->get_row_height(0) - 30,10,m_server_browser_scrollbar);
-	m_server_browser_scrollarea->set_priority(-4);
-	m_server_browser_scrollarea->get_group()->set_priority(-4);
+	m_server_browser_scrollarea->set_priority(TEXT_LAYER);
+	m_server_browser_scrollarea->get_group()->set_priority(TEXT_LAYER);
 	m_server_browser_scrollarea->set_x(m_server_browser_background->get_x() + 5);
 	m_server_browser_scrollarea->set_y(m_server_browser_background->get_y() + m_server_browser_background->get_row_height(0) + 15);
 	m_server_browser_scrollarea->set_center_x(m_server_browser_scrollarea->get_width()/2);
@@ -382,22 +376,14 @@ void GameController::init(GameWindow* window) {
 	
 	m_text_manager->set_active_font(m_medium_font);
 	
-	m_server_browser_items["namelabel"] = m_text_manager->place_string("Name", m_server_browser_background->get_x() - m_server_browser_background->get_image_width()/2 + 10, 110, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_server_browser_items["maplabel"] = m_text_manager->place_string("Map", m_server_browser_background->get_x(), 110, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_server_browser_items["uptimelabel"] = m_text_manager->place_string("Uptime", m_server_browser_background->get_x() + m_server_browser_background->get_image_width()/7, 110, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_server_browser_items["playerslabel"] = m_text_manager->place_string("Players", m_server_browser_background->get_x() + m_server_browser_background->get_image_width()/4, 110, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_server_browser_items["pinglabel"] = m_text_manager->place_string("Ping", m_server_browser_background->get_x() + m_server_browser_background->get_image_width()/2 - 80, 110, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_server_browser_items["backbutton"] = m_text_manager->place_string("Back", m_server_browser_buttons[0]->get_x() - m_server_browser_buttons[0]->get_image_width()/2 + 25, m_server_browser_buttons[0]->get_y() + 8, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_server_browser_items["refreshbutton"] = m_text_manager->place_string("Refresh", m_server_browser_buttons[1]->get_x() - m_server_browser_buttons[1]->get_image_width()/2 + 10, m_server_browser_buttons[1]->get_y() + 8, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_server_browser_items["connectbutton"] = m_text_manager->place_string("Connect", m_server_browser_buttons[2]->get_x() - m_server_browser_buttons[2]->get_image_width()/2 + 6, m_server_browser_buttons[2]->get_y() + 8, TextManager::LEFT, TextManager::LAYER_HUD);
-		
-	map<string, Graphic*>::iterator svit;
-	for ( svit=m_server_browser_items.begin() ; svit != m_server_browser_items.end(); svit++ ) {
-		Graphic* thisitem = (*svit).second;
-		thisitem->set_priority(-4);
-		m_window->unregister_graphic(thisitem);
-		m_window->register_hud_graphic(thisitem);
-	}
+	m_server_browser_items["namelabel"] = m_text_manager->place_string("Name", m_server_browser_background->get_x() - m_server_browser_background->get_image_width()/2 + 10, 110, TextManager::LEFT, TextManager::LAYER_HUD, TEXT_LAYER);
+	m_server_browser_items["maplabel"] = m_text_manager->place_string("Map", m_server_browser_background->get_x(), 110, TextManager::LEFT, TextManager::LAYER_HUD, TEXT_LAYER);
+	m_server_browser_items["uptimelabel"] = m_text_manager->place_string("Uptime", m_server_browser_background->get_x() + m_server_browser_background->get_image_width()/7, 110, TextManager::LEFT, TextManager::LAYER_HUD, TEXT_LAYER);
+	m_server_browser_items["playerslabel"] = m_text_manager->place_string("Players", m_server_browser_background->get_x() + m_server_browser_background->get_image_width()/4, 110, TextManager::LEFT, TextManager::LAYER_HUD, TEXT_LAYER);
+	m_server_browser_items["pinglabel"] = m_text_manager->place_string("Ping", m_server_browser_background->get_x() + m_server_browser_background->get_image_width()/2 - 80, 110, TextManager::LEFT, TextManager::LAYER_HUD, TEXT_LAYER);
+	m_server_browser_items["backbutton"] = m_text_manager->place_string("Back", m_server_browser_buttons[0]->get_x() - m_server_browser_buttons[0]->get_image_width()/2 + 25, m_server_browser_buttons[0]->get_y() + 8, TextManager::LEFT, TextManager::LAYER_HUD, TEXT_LAYER);
+	m_server_browser_items["refreshbutton"] = m_text_manager->place_string("Refresh", m_server_browser_buttons[1]->get_x() - m_server_browser_buttons[1]->get_image_width()/2 + 10, m_server_browser_buttons[1]->get_y() + 8, TextManager::LEFT, TextManager::LAYER_HUD, TEXT_LAYER);
+	m_server_browser_items["connectbutton"] = m_text_manager->place_string("Connect", m_server_browser_buttons[2]->get_x() - m_server_browser_buttons[2]->get_image_width()/2 + 6, m_server_browser_buttons[2]->get_y() + 8, TextManager::LEFT, TextManager::LAYER_HUD, TEXT_LAYER);
 	
 	m_server_list_count = 0;
 	
@@ -429,8 +415,8 @@ void GameController::init(GameWindow* window) {
 	m_overlay_scrollbar->set_scroll_speed(3);
 
 	m_overlay_scrollarea = new ScrollArea(m_overlay_background->get_image_width(),m_overlay_background->get_row_height(2) - 30,10,m_overlay_scrollbar);
-	m_overlay_scrollarea->set_priority(-4);
-	m_overlay_scrollarea->get_group()->set_priority(-4);
+	m_overlay_scrollarea->set_priority(TEXT_LAYER);
+	m_overlay_scrollarea->get_group()->set_priority(TEXT_LAYER);
 	m_overlay_scrollarea->set_x(m_overlay_background->get_x() + 5);
 	m_overlay_scrollarea->set_y(m_overlay_background->get_y() + m_overlay_background->get_row_height(0) + m_overlay_background->get_row_height(1) + 15);
 	m_overlay_scrollarea->set_center_x(m_overlay_scrollarea->get_width()/2);
@@ -439,23 +425,15 @@ void GameController::init(GameWindow* window) {
 	m_window->register_hud_graphic(m_overlay_scrollbar);
 	m_window->register_hud_graphic(m_overlay_scrollarea);
 	
-	m_overlay_items["red label"] = m_text_manager->place_string("Red Team:", m_overlay_background->get_x() - m_overlay_background->get_image_width()/2 + 10, 115, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_overlay_items["blue label"] = m_text_manager->place_string("Blue Team:", m_overlay_background->get_x(), 115, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_overlay_items["red label"] = m_text_manager->place_string("Red Team:", m_overlay_background->get_x() - m_overlay_background->get_image_width()/2 + 10, 115, TextManager::LEFT, TextManager::LAYER_HUD, TEXT_LAYER);
+	m_overlay_items["blue label"] = m_text_manager->place_string("Blue Team:", m_overlay_background->get_x(), 115, TextManager::LEFT, TextManager::LAYER_HUD, TEXT_LAYER);
 	
 	m_text_manager->set_active_font(m_medium_font);
-	m_overlay_items["name label"] = m_text_manager->place_string("Name", m_overlay_background->get_x() - m_overlay_background->get_image_width()/2 + 10, 190, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_overlay_items["score label"] = m_text_manager->place_string("Score", m_overlay_background->get_x(), 190, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_overlay_items["name label"] = m_text_manager->place_string("Name", m_overlay_background->get_x() - m_overlay_background->get_image_width()/2 + 10, 190, TextManager::LEFT, TextManager::LAYER_HUD, TEXT_LAYER);
+	m_overlay_items["score label"] = m_text_manager->place_string("Score", m_overlay_background->get_x(), 190, TextManager::LEFT, TextManager::LAYER_HUD, TEXT_LAYER);
 	
 	change_team_scores(0, 0);
 	update_individual_scores();
-	
-	map<string, Graphic*>::iterator it;
-	for ( it=m_overlay_items.begin() ; it != m_overlay_items.end(); it++ ) {
-		Graphic* thisitem = (*it).second;
-		thisitem->set_priority(-4);
-		m_window->unregister_graphic(thisitem);
-		m_window->register_hud_graphic(thisitem);
-	}
 	
 	// Initialize the gate warning.
 	m_text_manager->set_active_font(m_menu_font);
@@ -498,14 +476,8 @@ void GameController::init(GameWindow* window) {
 	// Initialize the gate status bar labels.
 	m_text_manager->set_active_color(1.0, 1.0, 1.0);
 	m_text_manager->set_active_font(m_font);
-	m_blue_gate_status_text = m_text_manager->place_string("Blue Gate", m_blue_gate_status_rect->get_x() + 1, m_blue_gate_status_rect->get_y() + m_blue_gate_status_rect->get_image_height()/4, TextManager::CENTER, TextManager::LAYER_HUD);
-	m_blue_gate_status_text->set_priority(-4);
-	m_window->unregister_graphic(m_blue_gate_status_text);
-	m_window->register_hud_graphic(m_blue_gate_status_text);
-	m_red_gate_status_text = m_text_manager->place_string("Red Gate", m_red_gate_status_rect->get_x() + 2, m_red_gate_status_rect->get_y() + m_red_gate_status_rect->get_image_height()/4, TextManager::CENTER, TextManager::LAYER_HUD);
-	m_red_gate_status_text->set_priority(-4);
-	m_window->unregister_graphic(m_red_gate_status_text);
-	m_window->register_hud_graphic(m_red_gate_status_text);
+	m_blue_gate_status_text = m_text_manager->place_string("Blue Gate", m_blue_gate_status_rect->get_x() + 1, m_blue_gate_status_rect->get_y() + m_blue_gate_status_rect->get_image_height()/4, TextManager::CENTER, TextManager::LAYER_HUD, TEXT_LAYER);
+	m_red_gate_status_text = m_text_manager->place_string("Red Gate", m_red_gate_status_rect->get_x() + 2, m_red_gate_status_rect->get_y() + m_red_gate_status_rect->get_image_height()/4, TextManager::CENTER, TextManager::LAYER_HUD, TEXT_LAYER);
 	
 	// Initialize the frozen status bar.
 	m_frozen_status_rect = new TableBackground(1, FROZEN_STATUS_RECT_WIDTH);
@@ -526,26 +498,23 @@ void GameController::init(GameWindow* window) {
 	// Initialize the frozen status bar label.
 	m_text_manager->set_active_color(1.0, 1.0, 1.0);
 	m_text_manager->set_active_font(m_font);
-	m_frozen_status_text = m_text_manager->place_string("Frozen", m_frozen_status_rect->get_x() + 1, m_frozen_status_rect->get_y() + 2, TextManager::CENTER, TextManager::LAYER_HUD);
-	m_frozen_status_text->set_priority(-4);
-	m_window->unregister_graphic(m_frozen_status_text);
-	m_window->register_hud_graphic(m_frozen_status_text);
-	
-	// Initiialize the input bar background
+	m_frozen_status_text = m_text_manager->place_string("Frozen", m_frozen_status_rect->get_x() + 1, m_frozen_status_rect->get_y() + 2, TextManager::CENTER, TextManager::LAYER_HUD, TEXT_LAYER);
+
+	// Initialize the input bar background
 	m_input_bar_back = new TableBackground(1, 0);
 	m_input_bar_back->set_row_height(0, 20);
 	m_input_bar_back->set_priority(0);
-	m_input_bar_back->set_cell_color(0, Color(0.0, 0.0, 0.0, 0.7));
+	m_input_bar_back->set_cell_color(0, TEXT_BG_COLOR);
 	m_input_bar_back->set_x(17);
 	m_input_bar_back->set_y(m_screen_height - 102);
 	m_input_bar_back->set_invisible(true);
 	m_window->register_hud_graphic(m_input_bar_back);
 	
-	// Initiialize the chat window background
+	// Initialize the chat window background
 	m_chat_window_back = new TableBackground(1, 0);
 	m_chat_window_back->set_row_height(0, 20);
 	m_chat_window_back->set_priority(0);
-	m_chat_window_back->set_cell_color(0, Color(0.0, 0.0, 0.0, 0.7));
+	m_chat_window_back->set_cell_color(0, TEXT_BG_COLOR);
 	m_chat_window_back->set_x(17);
 	m_chat_window_back->set_y(17);
 	m_chat_window_back->set_invisible(true);
@@ -762,11 +731,11 @@ void GameController::run(int lockfps) {
 					thisitem->set_invisible(false);
 				}
 				if (m_network.is_connected() && m_join_sent_time == 0) {
-					m_main_menu_items["Resume Game-Grey"]->set_invisible(true);
-					m_main_menu_items["Disconnect-Grey"]->set_invisible(true);
+					static_cast<Text*>(m_main_menu_items["Resume Game"])->set_color(Color::WHITE);
+					static_cast<Text*>(m_main_menu_items["Disconnect"])->set_color(Color::WHITE);
 				} else {
-					m_main_menu_items["Resume Game"]->set_invisible(true);
-					m_main_menu_items["Disconnect"]->set_invisible(true);
+					static_cast<Text*>(m_main_menu_items["Resume Game"])->set_color(GREYED_OUT);
+					static_cast<Text*>(m_main_menu_items["Disconnect"])->set_color(GREYED_OUT);
 				}
 				
 				for ( it=m_options_menu_items.begin() ; it != m_options_menu_items.end(); it++ ) {
@@ -1858,11 +1827,7 @@ void GameController::change_team_scores(int bluescore, int redscore) {
 		
 		stringstream redscoreprinter;
 		redscoreprinter << redscore;
-	 	m_overlay_items["red score"] = m_text_manager->place_string(redscoreprinter.str(), m_overlay_items["red label"]->get_x() + m_overlay_items["red label"]->get_image_width() + 10, 115, TextManager::LEFT, TextManager::LAYER_HUD);
-	
-		m_overlay_items["red score"]->set_priority(-4);
-		m_window->unregister_graphic(m_overlay_items["red score"]);
-		m_window->register_hud_graphic(m_overlay_items["red score"]);
+	 	m_overlay_items["red score"] = m_text_manager->place_string(redscoreprinter.str(), m_overlay_items["red label"]->get_x() + m_overlay_items["red label"]->get_image_width() + 10, 115, TextManager::LEFT, TextManager::LAYER_HUD, TEXT_LAYER);
 	}
 	
 	if (bluescore != -1) {
@@ -1872,11 +1837,7 @@ void GameController::change_team_scores(int bluescore, int redscore) {
 		
 		stringstream bluescoreprinter;
 		bluescoreprinter << bluescore;
-		m_overlay_items["blue score"] = m_text_manager->place_string(bluescoreprinter.str(), m_overlay_items["blue label"]->get_x() + m_overlay_items["blue label"]->get_image_width() + 10, 115, TextManager::LEFT, TextManager::LAYER_HUD);
-	
-		m_overlay_items["blue score"]->set_priority(-4);
-		m_window->unregister_graphic(m_overlay_items["blue score"]);
-		m_window->register_hud_graphic(m_overlay_items["blue score"]);
+		m_overlay_items["blue score"] = m_text_manager->place_string(bluescoreprinter.str(), m_overlay_items["blue label"]->get_x() + m_overlay_items["blue label"]->get_image_width() + 10, 115, TextManager::LEFT, TextManager::LAYER_HUD, TEXT_LAYER);
 	}
 
 	m_text_manager->set_active_font(m_font);
@@ -1947,12 +1908,12 @@ void GameController::update_individual_score_line(int count, const GraphicalPlay
 	m_overlay_items[playerid] = m_text_manager->place_string(playername, 10, count*25, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_overlay_items[playerscore] = m_text_manager->place_string(scoreprinter.str(), m_overlay_background->get_image_width()/2, count*25, TextManager::LEFT, TextManager::LAYER_HUD);
 
-	m_overlay_items[playerid]->set_priority(-4);
+	m_overlay_items[playerid]->set_priority(TEXT_LAYER);
 	m_window->unregister_hud_graphic(m_overlay_items[playerid]);
 	m_overlay_scrollarea->get_group()->remove_graphic(playerid);
 	m_overlay_scrollarea->get_group()->add_graphic(m_overlay_items[playerid], playerid);
 
-	m_overlay_items[playerscore]->set_priority(-4);
+	m_overlay_items[playerscore]->set_priority(TEXT_LAYER);
 	m_window->unregister_hud_graphic(m_overlay_items[playerscore]);
 	m_overlay_scrollarea->get_group()->remove_graphic(playerscore);
 	m_overlay_scrollarea->get_group()->add_graphic(m_overlay_items[playerscore], playerscore);
@@ -2865,7 +2826,7 @@ void	GameController::server_info(const IPAddress& server_address, PacketReader& 
 		} else {
 			m_server_browser_items[printer.str()] = m_text_manager->place_string(format_ip_address(server_address, true), m_server_browser_items["namelabel"]->get_x() - m_server_browser_scrollarea->get_x() + m_server_browser_scrollarea->get_width()/2, 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
 		}
-		m_server_browser_items[printer.str()]->set_priority(-4);
+		m_server_browser_items[printer.str()]->set_priority(TEXT_LAYER);
 		m_window->unregister_hud_graphic(m_server_browser_items[printer.str()]);
 		m_server_browser_scrollarea->get_group()->add_graphic(m_server_browser_items[printer.str()], printer.str());
 		
@@ -2873,7 +2834,7 @@ void	GameController::server_info(const IPAddress& server_address, PacketReader& 
 		printer << "map";
 		printer << m_server_list_count;
 		m_server_browser_items[printer.str()] = m_text_manager->place_string(current_map_name, m_server_browser_items["maplabel"]->get_x() - m_server_browser_scrollarea->get_x() + m_server_browser_scrollarea->get_width()/2, 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
-		m_server_browser_items[printer.str()]->set_priority(-4);
+		m_server_browser_items[printer.str()]->set_priority(TEXT_LAYER);
 		m_window->unregister_hud_graphic(m_server_browser_items[printer.str()]);
 		m_server_browser_scrollarea->get_group()->add_graphic(m_server_browser_items[printer.str()], printer.str());
 		
@@ -2884,7 +2845,7 @@ void	GameController::server_info(const IPAddress& server_address, PacketReader& 
 		string uptimestr = format_time_from_millis(uptime);
 		
 		m_server_browser_items[printer.str()] = m_text_manager->place_string(uptimestr, m_server_browser_items["uptimelabel"]->get_x() - m_server_browser_scrollarea->get_x() + m_server_browser_scrollarea->get_width()/2, 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
-		m_server_browser_items[printer.str()]->set_priority(-4);
+		m_server_browser_items[printer.str()]->set_priority(TEXT_LAYER);
 		m_window->unregister_hud_graphic(m_server_browser_items[printer.str()]);
 		m_server_browser_scrollarea->get_group()->add_graphic(m_server_browser_items[printer.str()], printer.str());
 		
@@ -2897,7 +2858,7 @@ void	GameController::server_info(const IPAddress& server_address, PacketReader& 
 		playertotal << "/";
 		playertotal << (team_max_players[0] + team_max_players[1]);
 		m_server_browser_items[printer.str()] = m_text_manager->place_string(playertotal.str(), m_server_browser_items["playerslabel"]->get_x() - m_server_browser_scrollarea->get_x() + m_server_browser_scrollarea->get_width()/2, 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
-		m_server_browser_items[printer.str()]->set_priority(-4);
+		m_server_browser_items[printer.str()]->set_priority(TEXT_LAYER);
 		m_window->unregister_hud_graphic(m_server_browser_items[printer.str()]);
 		m_server_browser_scrollarea->get_group()->add_graphic(m_server_browser_items[printer.str()], printer.str());
 		
@@ -2908,7 +2869,7 @@ void	GameController::server_info(const IPAddress& server_address, PacketReader& 
 		ostringstream pingstr;
 		pingstr << get_ticks() - scan_start_time;
 		m_server_browser_items[printer.str()] = m_text_manager->place_string(pingstr.str(), m_server_browser_items["pinglabel"]->get_x() - m_server_browser_scrollarea->get_x() + m_server_browser_scrollarea->get_width()/2, 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
-		m_server_browser_items[printer.str()]->set_priority(-4);
+		m_server_browser_items[printer.str()]->set_priority(TEXT_LAYER);
 		m_window->unregister_hud_graphic(m_server_browser_items[printer.str()]);
 		m_server_browser_scrollarea->get_group()->add_graphic(m_server_browser_items[printer.str()], printer.str());
 

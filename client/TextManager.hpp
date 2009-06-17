@@ -61,7 +61,7 @@ public:
 	TextManager(Font* font, GameWindow* window = NULL);
 	~TextManager();
 
-	Text*	place_string(const std::string& text, double x, double y, Align = LEFT, Layer layer = LAYER_HUD);
+	Text*	place_string(const std::string& text, double x, double y, Align = LEFT, Layer layer = LAYER_HUD, int priority = 0);
 	void	reposition_string(Graphic* text, double x, double y, Align = LEFT);
 	void	remove_string(Graphic* text);
 	void	remove_all_strings();
@@ -71,6 +71,7 @@ public:
 	void	set_active_alpha(double a);
 	void	set_active_font(Font* font);
 	void	set_shadow_color(double r, double g, double b);
+	void	set_shadow_color(Color c);
 	void	set_shadow_alpha(double a);
 	void	set_shadow_offset(double x, double y);
 	void	set_shadow(bool enable);

@@ -88,9 +88,11 @@ public:
 
 	void			register_graphic(Graphic* graphic);
 	void			unregister_graphic(Graphic* graphic);
+	void			reprioritize_graphic(Graphic* graphic, int priority);
 	
 	void			register_hud_graphic(Graphic* graphic);
 	void			unregister_hud_graphic(Graphic* graphic);
+	void			reprioritize_hud_graphic(Graphic* graphic, int priority);
 
 	void			redraw() const;
 };

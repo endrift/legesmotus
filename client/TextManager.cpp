@@ -50,7 +50,7 @@ TextManager::~TextManager() {
 	remove_all_strings();
 }
 
-Text* TextManager::place_string(const std::string& text, double x, double y, Align align, Layer layer) {
+Text* TextManager::place_string(const std::string& text, double x, double y, Align align, Layer layer, int priority) {
 	Text *rendered;
 	try {
 		rendered = new Text(text, m_font);
@@ -60,6 +60,7 @@ Text* TextManager::place_string(const std::string& text, double x, double y, Ali
 	}
 	rendered->set_color(m_active_red, m_active_green, m_active_blue);
 	rendered->set_alpha(m_active_alpha);
+	rendered->set_priority(priority);
 	if (m_shadow) {
 		rendered->set_shadow(true);
 		rendered->set_shadow_color(m_shadow_red, m_shadow_green, m_shadow_blue);
@@ -147,6 +148,12 @@ void TextManager::set_shadow_color(double r, double g, double b) {
 	m_shadow_red = r;
 	m_shadow_green = g;
 	m_shadow_blue = b;
+}
+
+void TextManager::set_shadow_color(Color c) {
+	m_shadow_red = c.r;
+	m_shadow_green = c.g;
+	m_shadow_blue = c.b;
 }
 
 void TextManager::set_shadow_alpha(double a) {
