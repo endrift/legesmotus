@@ -24,13 +24,18 @@
 
 #include "MapReader.hpp"
 #include <string>
+#include <string.h>
 
 using namespace std;
 
 MapReader::MapReader(const char* map_object_data) : StringTokenizer(map_object_data, '\t') {
-	if (has_next()) {
-		StringTokenizer	tok(get_next(), ':');
-		tok >> m_type >> m_id;
+	if (const char* object_header = get_next()) {
+		if (strchr(object_header, ':')) {
+			StringTokenizer	tok(object_header, ':');
+			tok >> m_id >> m_type;
+		} else {
+			m_type = Map::parse_object_type(object_header);
+		}
 	}
 }
 
