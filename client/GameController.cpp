@@ -474,7 +474,7 @@ void GameController::init(GameWindow* window) {
 	m_window->register_hud_graphic(m_red_gate_status_rect_back);
 	
 	// Initialize the gate status bar labels.
-	m_text_manager->set_active_color(1.0, 1.0, 1.0);
+	m_text_manager->set_active_color(Color::WHITE);
 	m_text_manager->set_active_font(m_font);
 	m_blue_gate_status_text = m_text_manager->place_string("Blue Gate", m_blue_gate_status_rect->get_x() + 1, m_blue_gate_status_rect->get_y() + m_blue_gate_status_rect->get_image_height()/4, TextManager::CENTER, TextManager::LAYER_HUD, TEXT_LAYER);
 	m_red_gate_status_text = m_text_manager->place_string("Red Gate", m_red_gate_status_rect->get_x() + 2, m_red_gate_status_rect->get_y() + m_red_gate_status_rect->get_image_height()/4, TextManager::CENTER, TextManager::LAYER_HUD, TEXT_LAYER);
