@@ -50,56 +50,56 @@ print "$width $height"
 # Background
 cat <<-EOF
 # Background
-5~1~0,0~${style}_bgtile~${width}~${height}~0,0
-5~1~-64,${gate_start_y}~${style}_bgtile~64~${GATEHEIGHT}~0,0
-5~1~${width},${gate_start_y}~${style}_bgtile~64~${GATEHEIGHT}~0,0
+SPRITE	0,0	TB	${style}_bgtile	${width}	${height}
+SPRITE	-64,${gate_start_y}	TB	${style}_bgtile	64	${GATEHEIGHT}
+SPRITE	${width},${gate_start_y}	TB	${style}_bgtile	64	${GATEHEIGHT}
 
 EOF
 
 # Walls
 cat <<-EOF
 # Walls
-5~1~0,${height}~${style}_wall_s32~${width}~32~0,0
-5~1~0,-32~${style}_wall_n32~${width}~32~0,0
-5~1~${width},0~${style}_wall_e32~32~${gate_start_y}~0,0
-4~1~${width},${gate_start_y}~${style}_gate_e
-5~1~${width},${gate_end_y}~${style}_wall_e32~32~${gate_start_y}~0,0
-5~1~-32,0~${style}_wall_w32~32~${gate_start_y}~0,0
-4~1~-64,${gate_start_y}~${style}_gate_w
-5~1~-32,${gate_end_y}~${style}_wall_w32~32~${gate_start_y}~0,0
+SPRITE	0,${height}	TB	${style}_wall_s32	${width}	32
+SPRITE	0,-32	TB	${style}_wall_n32	${width}	32
+SPRITE	${width},0	TB	${style}_wall_e32	32	${gate_start_y}
+SPRITE	${width},${gate_start_y}	B	${style}_gate_e
+SPRITE	${width},${gate_end_y}	TB	${style}_wall_e32	32	${gate_start_y}
+SPRITE	-32,0	TB	${style}_wall_w32	32	${gate_start_y}
+SPRITE	-64,${gate_start_y}	B	${style}_gate_w
+SPRITE	-32,${gate_end_y}	TB	${style}_wall_w32	32	${gate_start_y}
 
 # Wall Corners
-4~1~${width},-32~${style}_wall_ne32
-4~1~-32,-32~${style}_wall_nw32
-4~1~-32,${height}~${style}_wall_sw32
-4~1~${width},${height}~${style}_wall_se32
+SPRITE	${width},-32	B	${style}_wall_ne32
+SPRITE	-32,-32	B	${style}_wall_nw32
+SPRITE	-32,${height}	B	${style}_wall_sw32
+SPRITE	${width},${height}	B	${style}_wall_se32
 EOF
 
 # Gates
 cat <<-EOF
 # Gates
-2~1~-15,$((gate_start_y + 8))~A
-2~1~$((width + 7)),$((gate_start_y + 8))~B
+GATE	-15,$((gate_start_y + 8))	A
+GATE	$((width + 7)),$((gate_start_y + 8))	B
 
 EOF
 
 # Sample Objects
 cat <<-EOF
 # SAMPLE Spawnpoints (make your own, each team should have 8)
-#3~1~0,50~A
-#3~1~${width},50~B
+#SPAWN	0,50	A
+#SPAWN	${width},50	B
 
 # SAMPLE obstacles (make your own)
 # Look in data/sprites to see what sprites are available
 # This is a 64x64 obstacle:
-#1~1~64,256~${style}_obstacle64
+#SPRITE	64,256	O	${style}_obstacle64
 # This is a 128x128 obstacle:
-#1~1~128,256~${style}_obstacle128
+#SPRITE	128,256	O	${style}_obstacle128
 EOF
 
 exec >&-
 
-svn add $mapfile >/dev/null
+#svn add $mapfile >/dev/null
 
 print -u2 "Done writing map file to ${mapfile}"
 print -u2 "The background, wall, and gate sprites have been laid out."

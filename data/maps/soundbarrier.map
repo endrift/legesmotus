@@ -1,59 +1,59 @@
 soundbarrier
 131072 512
 # Background
-5~1~0,0~metal_bgtile~16384~512~0,0
-5~1~-64,192~metal_bgtile~64~128~0,0
-5~1~16384,192~metal_bgtile~64~128~0,0
+SPRITE	0,0	TB	metal_bgtile	16384	512	0,0
+SPRITE	-64,192	TB	metal_bgtile	64	128	0,0
+SPRITE	16384,192	TB	metal_bgtile	64	128	0,0
 
 # Walls
-5~1~0,512~metal_wall_s32~16384~32~0,0
-5~1~0,-32~metal_wall_n32~16384~32~0,0
-5~1~16384,0~metal_wall_e32~32~192~0,0
-4~1~16384,192~metal_gate_e
-5~1~16384,320~metal_wall_e32~32~192~0,0
-5~1~-32,0~metal_wall_w32~32~192~0,0
-4~1~-64,192~metal_gate_w
-5~1~-32,320~metal_wall_w32~32~192~0,0
+SPRITE	0,512	TB	metal_wall_s32	16384	32	0,0
+SPRITE	0,-32	TB	metal_wall_n32	16384	32	0,0
+SPRITE	16384,0	TB	metal_wall_e32	32	192	0,0
+SPRITE	16384,192	B	metal_gate_e
+SPRITE	16384,320	TB	metal_wall_e32	32	192	0,0
+SPRITE	-32,0	TB	metal_wall_w32	32	192	0,0
+SPRITE	-64,192	B	metal_gate_w
+SPRITE	-32,320	TB	metal_wall_w32	32	192	0,0
 
 # Wall Corners
-4~1~16384,-32~metal_wall_ne32
-4~1~-32,-32~metal_wall_nw32
-4~1~-32,512~metal_wall_sw32
-4~1~16384,512~metal_wall_se32
+SPRITE	16384,-32	B	metal_wall_ne32
+SPRITE	-32,-32	B	metal_wall_nw32
+SPRITE	-32,512	B	metal_wall_sw32
+SPRITE	16384,512	B	metal_wall_se32
 # Gates
-2~1~-15,200~A
-2~1~16391,200~B
+GATE	-15,200	A
+GATE	16391,200	B
 
 # SAMPLE Spawnpoints (make your own, each team should have 8)
-3~1~0,512~A
-3~1~0,513~A
-3~1~0,514~A
-3~1~0,515~A
-3~1~0,516~A
-3~1~0,517~A
-3~1~0,518~A
-3~1~0,519~A
+SPAWN	0,512	A
+SPAWN	0,513	A
+SPAWN	0,514	A
+SPAWN	0,515	A
+SPAWN	0,516	A
+SPAWN	0,517	A
+SPAWN	0,518	A
+SPAWN	0,519	A
 
-3~1~131072,512~B
-3~1~131072,513~B
-3~1~131072,514~B
-3~1~131072,515~B
-3~1~131072,516~B
-3~1~131072,517~B
-3~1~131072,518~B
-3~1~131072,519~B
+SPAWN	131072,512	B
+SPAWN	131072,513	B
+SPAWN	131072,514	B
+SPAWN	131072,515	B
+SPAWN	131072,516	B
+SPAWN	131072,517	B
+SPAWN	131072,518	B
+SPAWN	131072,519	B
 
 # SAMPLE obstacles (make your own)
 # Look in data/sprites to see what sprites are available
 # This is a 64x64 obstacle:
 
-1~1~128,128~metal_obstacle64
-1~1~128,192~metal_obstacle64
-1~1~128,256~metal_obstacle64
-1~1~128,320~metal_obstacle64
+SPRITE	128,128	O	metal_obstacle64	
+SPRITE	128,192	O	metal_obstacle64	
+SPRITE	128,256	O	metal_obstacle64	
+SPRITE	128,320	O	metal_obstacle64	
 
-1~1~130880,128~metal_obstacle64
-1~1~130880,192~metal_obstacle64
-1~1~130880,256~metal_obstacle64
-1~1~130880,320~metal_obstacle64
+SPRITE	130880,128	O	metal_obstacle64	
+SPRITE	130880,192	O	metal_obstacle64	
+SPRITE	130880,256	O	metal_obstacle64	
+SPRITE	130880,320	O	metal_obstacle64	
 

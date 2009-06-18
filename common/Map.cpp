@@ -23,7 +23,7 @@
  */
 
 #include "Map.hpp"
-#include "PacketReader.hpp"
+#include "MapReader.hpp"
 #include "misc.hpp"
 #include <iostream>
 #include <fstream>
@@ -56,7 +56,9 @@ bool	Map::load(istream& in) {
 		// Ignore blank lines and lines starting with # (for comments)
 		// Not ignoring blank lines does cause problems, even if the map file doesn't appear to have blank lines in it.
 		if (!line.empty() && line[0] != '#') {
-			PacketReader	reader(line.c_str(), '~');
+			condense_whitespace(line, istab, '\t');
+
+			MapReader	reader(line.c_str());
 			add_object(reader);
 		}
 	}
@@ -73,3 +75,24 @@ void	Map::clear() {
 	m_name.clear();
 	m_width = m_height = 0;
 }
+
+Map::ObjectType	Map::parse_object_type(const char* type_string) {
+	if (strcasecmp(type_string, "SPRITE") == 0)
+		return SPRITE;
+	if (strcasecmp(type_string, "GATE") == 0)
+		return GATE;
+	if (strcasecmp(type_string, "SPAWN") == 0)
+		return SPAWN_POINT;
+	
+	return INVALID_OBJECT_TYPE;
+}
+
+StringTokenizer&	operator>> (StringTokenizer& tok, Map::ObjectType& object_type) {
+	if (const char* str = tok.get_next()) {
+		object_type = Map::parse_object_type(str);
+	} else {
+		object_type = Map::INVALID_OBJECT_TYPE;
+	}
+	return tok;
+}
+

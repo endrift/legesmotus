@@ -27,6 +27,7 @@
 
 #include <string>
 #include <list>
+#include <ctype.h>
 
 
 // Return the username of the current user.
@@ -53,7 +54,9 @@ void		strip_leading_trailing_spaces(std::string& str);
 
 // condense all whitespace in the string to a single space character
 // (leading and trailing whitespace is removed)
-void		condense_whitespace(std::string& str);
+void		condense_whitespace(std::string& str, int (*my_isspace)(int) =isspace, char replacement =' ');
+
+inline int	istab(int c) { return c == '\t'; }
 
 // Sanitize/canonicalize a player name
 // Does the following things:

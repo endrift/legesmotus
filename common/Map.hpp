@@ -28,7 +28,8 @@
 #include <string>
 #include <iosfwd>
 
-class PacketReader;
+class MapReader;
+class StringTokenizer;
 
 /*
  * A Map keeps track of things like the map name, dimensions, and spawn points
@@ -37,13 +38,13 @@ class PacketReader;
  */
 class Map {
 public:
-	enum {
-		OBSTACLE = 1,
+	enum ObjectType {
+		INVALID_OBJECT_TYPE = 0,
+		SPRITE = 1,
 		GATE = 2,
-		SPAWN_POINT = 3,
-		DECORATION = 4,
-		BACKGROUND = 5		// Basically a tiled decoration
+		SPAWN_POINT = 3
 	};
+	static ObjectType	parse_object_type(const char* type_string);
 
 protected:
 	std::string	m_name;		// Should be unique
@@ -69,7 +70,10 @@ public:
 	// Remove all objects from the map:
 	virtual void	clear();
 	// Parse the given packet representation of a map object and add it to the map
-	virtual void	add_object(PacketReader& data) = 0;
+	virtual void	add_object(MapReader& data) = 0;
 };
+
+StringTokenizer&	operator>> (StringTokenizer&, Map::ObjectType&);
+
 
 #endif

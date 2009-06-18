@@ -65,7 +65,7 @@ public:
 	bool				load(std::istream& in);
 
 	virtual void			set_visible(bool visible);
-	virtual void			add_object(PacketReader& data);
+	virtual void			add_object(MapReader& data);
 
 	// progress is in [0.0,1.0], where 0 == closed .. 1 == fully open
 	void				set_gate_progress(char team, double progress);

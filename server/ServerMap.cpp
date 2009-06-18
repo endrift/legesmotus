@@ -23,7 +23,7 @@
  */
 
 #include "ServerMap.hpp"
-#include "common/PacketReader.hpp"
+#include "common/MapReader.hpp"
 #include "common/team.hpp"
 #include <algorithm>
 #include <iterator>
@@ -77,8 +77,8 @@ bool	ServerMap::has_capacity(char team) const {
 	return is_valid_team(team) && !m_available_spawnpoints[team - 'A'].empty();
 }
 
-void	ServerMap::add_object(PacketReader& object_data) {
-	if (object_data.packet_type() == SPAWN_POINT) {
+void	ServerMap::add_object(MapReader& object_data) {
+	if (object_data.get_type() == SPAWN_POINT) {
 		Point		point;
 		char		team;
 		object_data >> point >> team;

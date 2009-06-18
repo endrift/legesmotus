@@ -1,142 +1,104 @@
 alpha1
 2048 1024
+
 # Background
-5~1~0,0~metal_bgtile~2048~1024~0,0
-5~1~-64,448~metal_bgtile~64~128~0,0
-5~1~2048,448~metal_bgtile~64~128~0,0
+SPRITE	0,0		TB	metal_bgtile	2048	1024	0,0
+SPRITE	-64,448		TB	metal_bgtile	64	128	0,0
+SPRITE	2048,448	TB	metal_bgtile	64	128	0,0
 
 # Walls
-5~1~0,1024~metal_wall_s32~2048~32~0,0
-5~1~0,-32~metal_wall_n32~2048~32~0,0
-5~1~2048,0~metal_wall_e32~32~448~0,0
-4~1~2048,448~metal_gate_e
-5~1~2048,576~metal_wall_e32~32~448~0,0
-5~1~-32,0~metal_wall_w32~32~448~0,0
-4~1~-64,448~metal_gate_w
-5~1~-32,576~metal_wall_w32~32~448~0,0
+SPRITE	0,1024		TB	metal_wall_s32	2048	32	0,0
+SPRITE	0,-32		TB	metal_wall_n32	2048	32	0,0
+SPRITE	2048,0		TB	metal_wall_e32	32	448	0,0
+SPRITE	2048,448	B	metal_gate_e
+SPRITE	2048,576	TB	metal_wall_e32	32	448	0,0
+SPRITE	-32,0		TB	metal_wall_w32	32	448	0,0
+SPRITE	-64,448		B	metal_gate_w
+SPRITE	-32,576		TB	metal_wall_w32	32	448	0,0
 
 # Wall Corners
-4~1~2048,-32~metal_wall_ne32
-4~1~-32,-32~metal_wall_nw32
-4~1~-32,1024~metal_wall_sw32
-4~1~2048,1024~metal_wall_se32
+SPRITE	2048,-32	B	metal_wall_ne32
+SPRITE	-32,-32		B	metal_wall_nw32
+SPRITE	-32,1024	B	metal_wall_sw32
+SPRITE	2048,1024	B	metal_wall_se32
+
 # Gates
-2~1~-15,456~A
-2~1~2055,456~B
+GATE	-15,456		A
+GATE	2055,456	B
 
-# SAMPLE Spawnpoints (make your own, each team should have 8)
-3~1~0,512~A
-3~1~0,513~A
-3~1~0,514~A
-3~1~0,515~A
-3~1~0,516~A
-3~1~0,517~A
-3~1~0,518~A
-3~1~0,519~A
+# Spawnpoints
+SPAWN	0,512		A
+SPAWN	0,513		A
+SPAWN	0,514		A
+SPAWN	0,515		A
+SPAWN	0,516		A
+SPAWN	0,517		A
+SPAWN	0,518		A
+SPAWN	0,519		A
 
-3~1~1,512~A
-3~1~1,513~A
-3~1~1,514~A
-3~1~1,515~A
-3~1~1,516~A
-3~1~1,517~A
-3~1~1,518~A
-3~1~1,519~A
+SPAWN	1,512		A
+SPAWN	1,513		A
+SPAWN	1,514		A
+SPAWN	1,515		A
+SPAWN	1,516		A
+SPAWN	1,517		A
+SPAWN	1,518		A
+SPAWN	1,519		A
 
 
-3~1~2048,512~B
-3~1~2048,513~B
-3~1~2048,514~B
-3~1~2048,515~B
-3~1~2048,516~B
-3~1~2048,517~B
-3~1~2048,518~B
-3~1~2048,519~B
+SPAWN	2048,512	B
+SPAWN	2048,513	B
+SPAWN	2048,514	B
+SPAWN	2048,515	B
+SPAWN	2048,516	B
+SPAWN	2048,517	B
+SPAWN	2048,518	B
+SPAWN	2048,519	B
 
-3~1~2047,512~B
-3~1~2047,513~B
-3~1~2047,514~B
-3~1~2047,515~B
-3~1~2047,516~B
-3~1~2047,517~B
-3~1~2047,518~B
-3~1~2047,519~B
+SPAWN	2047,512	B
+SPAWN	2047,513	B
+SPAWN	2047,514	B
+SPAWN	2047,515	B
+SPAWN	2047,516	B
+SPAWN	2047,517	B
+SPAWN	2047,518	B
+SPAWN	2047,519	B
 
-# SAMPLE obstacles (make your own)
-# Look in data/sprites to see what sprites are available
+# Blocks in front of blue gate
+SPRITE	192,256		O	metal_obstacle128	
+SPRITE	192,640		O	metal_obstacle128	
 
-#Wall in front of blue gate
-# This is a 64x64 obstacle:
-#1~1~128,256~metal_obstacle64
-#1~1~256,384~metal_obstacle64
-#1~1~256,448~metal_obstacle64
-#1~1~256,512~metal_obstacle64
-#1~1~256,576~metal_obstacle64
-#1~1~128,704~metal_obstacle64
-# This is a 128x128 obstacle:
-1~1~192,256~metal_obstacle128
-1~1~192,640~metal_obstacle128
+# Upper wall by blue gate
+SPRITE	512,0		TO	metal_obstacle64	64	256
 
-#Wall 1 by blue gate
-1~1~512,0~metal_obstacle64
-1~1~512,64~metal_obstacle64
-1~1~512,128~metal_obstacle64
-1~1~512,192~metal_obstacle64
+# Lower wall by blue gate
+SPRITE	512,768		TO	metal_obstacle64	64	256
 
-#Wall 2 by blue gate
-1~1~512,768~metal_obstacle64
-1~1~512,832~metal_obstacle64
-1~1~512,896~metal_obstacle64
-1~1~512,960~metal_obstacle64
+# Blocks in front of red gate
+SPRITE	1728,256	O	metal_obstacle128	
+SPRITE	1728,640	O	metal_obstacle128	
 
-#Wall in front of red gate
-# This is a 64x64 obstacle:
-#1~1~1856,256~metal_obstacle64
-#1~1~1728,384~metal_obstacle64
-#1~1~1728,448~metal_obstacle64
-#1~1~1728,512~metal_obstacle64
-#1~1~1728,576~metal_obstacle64
-#1~1~1856,708~metal_obstacle64
-# This is a 128x128 obstacle:
-1~1~1728,256~metal_obstacle128
-1~1~1728,640~metal_obstacle128
+# Upper wall by red gate
+SPRITE	1472,0		TO	metal_obstacle64	64	256
 
-#Wall 1 by red gate
-1~1~1472,0~metal_obstacle64
-1~1~1472,64~metal_obstacle64
-1~1~1472,128~metal_obstacle64
-1~1~1472,192~metal_obstacle641472-256
+# Lower wall by red gate
+SPRITE	1472,768	TO	metal_obstacle64	64	256
 
-#Wall 2 by red gate
-1~1~1472,768~metal_obstacle64
-1~1~1472,832~metal_obstacle64
-1~1~1472,896~metal_obstacle64
-1~1~1472,960~metal_obstacle64
+# Horizontal Dividing Wall
+SPRITE	512,448		TO	metal_obstacle128	1024	128
 
-#Dividing Wall
-1~1~512,448~metal_obstacle128
-1~1~640,448~metal_obstacle128
-1~1~768,448~metal_obstacle128
-1~1~896,448~metal_obstacle128
-1~1~1024,448~metal_obstacle128
-1~1~1152,448~metal_obstacle128
-1~1~1280,448~metal_obstacle128
-1~1~1408,448~metal_obstacle128
+# Extras
+SPRITE	960,320		O	metal_obstacle128	
+SPRITE	960,576		O	metal_obstacle128	
+SPRITE	992,704		TO	metal_obstacle64	64	128
+SPRITE	992,192		TO	metal_obstacle64	64	128
 
-#extras
-1~1~960,320~metal_obstacle128
-1~1~960,576~metal_obstacle128
-1~1~992,704~metal_obstacle64
-1~1~992,768~metal_obstacle64
-1~1~992,256~metal_obstacle64
-1~1~992,192~metal_obstacle64
+SPRITE	768,0		O	metal_obstacle64	
+SPRITE	768,960		O	metal_obstacle64	
+SPRITE	1216,0		O	metal_obstacle64	
+SPRITE	1216,960	O	metal_obstacle64	
 
-1~1~768,0~metal_obstacle64
-1~1~768,960~metal_obstacle64
-1~1~1216,0~metal_obstacle64
-1~1~1216,960~metal_obstacle64
-
-1~1~768,192~metal_obstacle64
-1~1~768,768~metal_obstacle64
-1~1~1216,192~metal_obstacle64
-1~1~1216,768~metal_obstacle64
+SPRITE	768,192		O	metal_obstacle64	
+SPRITE	768,768		O	metal_obstacle64	
+SPRITE	1216,192	O	metal_obstacle64	
+SPRITE	1216,768	O	metal_obstacle64	

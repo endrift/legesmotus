@@ -1405,7 +1405,7 @@ void GameController::move_objects(float timescale) {
 		if (newdist != -1) {
 			// If we're moving closer to the object, we need to stop.
 			if (newdist < olddist) {
-				if (thisobj->get_type() == Map::OBSTACLE) {
+				if (thisobj->is_obstacle()) {
 					// If we're frozen, bounce off the wall.
 					if (m_players[m_player_id].is_frozen() && !m_players[m_player_id].is_invisible()) {
 						double xvel = m_players[m_player_id].get_x_vel();
@@ -1526,7 +1526,7 @@ void GameController::attempt_jump() {
 		if (thisobj->get_sprite() == NULL) {
 			continue;
 		}
-		if (thisobj->get_type() != Map::OBSTACLE) {
+		if (!thisobj->is_obstacle()) {
 			// Only obstacles can be jumped from
 			continue;
 		}

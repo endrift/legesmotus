@@ -243,11 +243,11 @@ void	strip_leading_trailing_spaces(string& str) {
 	}
 }
 
-void	condense_whitespace(string& str) {
+void	condense_whitespace(string& str, int (*my_isspace)(int), char replacement) {
 	const char*	p = str.c_str();
 
 	// Skip leading whitespace
-	while (isspace(*p)) {
+	while (my_isspace(*p)) {
 		++p;
 	}
 
@@ -255,14 +255,14 @@ void	condense_whitespace(string& str) {
 	bool		is_in_whitespace = false;
 	while (*p) {
 		char	c = *p++;
-		if (isspace(c)) {
+		if (my_isspace(c)) {
 			// Whitespace - skip it for now
 			is_in_whitespace = true;
 		} else {
 			if (is_in_whitespace) {
 				// End of an all-whitespace region.  Lay down a single space.
 				is_in_whitespace = false;
-				new_str += ' ';
+				new_str += replacement;
 			}
 			new_str += c;
 		}

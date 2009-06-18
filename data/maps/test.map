@@ -1,48 +1,48 @@
 test
 800 512
 # Background
-5~1~0,0~metal_bgtile~800~512~0,0
-5~1~-64,192~metal_bgtile~64~128~0,0
-5~1~800,192~metal_bgtile~64~128~0,0
+SPRITE	0,0	TB	metal_bgtile	800	512	0,0
+SPRITE	-64,192	TB	metal_bgtile	64	128	0,0
+SPRITE	800,192	TB	metal_bgtile	64	128	0,0
 # Walls
-5~1~0,512~metal_wall_s32~800~32~0,0
-5~1~0,-32~metal_wall_n32~800~32~0,0
-5~1~800,0~metal_wall_e32~32~192~0,0
-4~1~800,192~metal_gate_e
-5~1~800,320~metal_wall_e32~32~192~0,0
-5~1~-32,0~metal_wall_w32~32~192~0,0
-4~1~-64,192~metal_gate_w
-5~1~-32,320~metal_wall_w32~32~192~0,0
+SPRITE	0,512	TB	metal_wall_s32	800	32	0,0
+SPRITE	0,-32	TB	metal_wall_n32	800	32	0,0
+SPRITE	800,0	TB	metal_wall_e32	32	192	0,0
+SPRITE	800,192	B	metal_gate_e
+SPRITE	800,320	TB	metal_wall_e32	32	192	0,0
+SPRITE	-32,0	TB	metal_wall_w32	32	192	0,0
+SPRITE	-64,192	B	metal_gate_w
+SPRITE	-32,320	TB	metal_wall_w32	32	192	0,0
 # Wall Corners
-4~1~800,-32~metal_wall_ne32
-4~1~-32,-32~metal_wall_nw32
-4~1~-32,512~metal_wall_sw32
-4~1~800,512~metal_wall_se32
+SPRITE	800,-32	B	metal_wall_ne32
+SPRITE	-32,-32	B	metal_wall_nw32
+SPRITE	-32,512	B	metal_wall_sw32
+SPRITE	800,512	B	metal_wall_se32
 # Gates
-2~1~-15,200~A
-2~1~807,200~B
+GATE	-15,200	A
+GATE	807,200	B
 # Spawnpoints
-3~1~0,50~A
-3~1~0,100~A
-3~1~0,150~A
-3~1~0,200~A
-3~1~0,250~A
-3~1~0,300~A
-3~1~0,350~A
-3~1~0,400~A
-3~1~800,50~B
-3~1~800,100~B
-3~1~800,150~B
-3~1~800,200~B
-3~1~800,250~B
-3~1~800,300~B
-3~1~800,350~B
-3~1~800,400~B
+SPAWN	0,50	A
+SPAWN	0,100	A
+SPAWN	0,150	A
+SPAWN	0,200	A
+SPAWN	0,250	A
+SPAWN	0,300	A
+SPAWN	0,350	A
+SPAWN	0,400	A
+SPAWN	800,50	B
+SPAWN	800,100	B
+SPAWN	800,150	B
+SPAWN	800,200	B
+SPAWN	800,250	B
+SPAWN	800,300	B
+SPAWN	800,350	B
+SPAWN	800,400	B
 # Obstacles
-1~1~64,256~metal_obstacle64
-1~1~128,256~metal_obstacle128
-1~1~320,320~metal_obstacle64
-1~1~512,96~metal_obstacle64
-1~1~512,416~metal_obstacle64
-1~1~608,192~metal_obstacle64
-1~1~608,256~metal_obstacle64
+SPRITE	64,256	O	metal_obstacle64	
+SPRITE	128,256	O	metal_obstacle128	
+SPRITE	320,320	O	metal_obstacle64	
+SPRITE	512,96	O	metal_obstacle64	
+SPRITE	512,416	O	metal_obstacle64	
+SPRITE	608,192	O	metal_obstacle64	
+SPRITE	608,256	O	metal_obstacle64	

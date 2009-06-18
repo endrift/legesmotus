@@ -37,7 +37,7 @@ class ServerMap : public Map {
 	std::list<Point>	m_spawnpoints[2];
 	std::list<const Point*>	m_available_spawnpoints[2];
 
-	virtual void		add_object(PacketReader& object_data);
+	virtual void		add_object(MapReader& object_data);
 
 public:
 	ServerMap();

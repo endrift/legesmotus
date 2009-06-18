@@ -1,5 +1,5 @@
 /*
- * client/MapObject.cpp
+ * common/MapReader.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,29 +22,24 @@
  * 
  */
 
-#include "MapObject.hpp"
+#ifndef LM_COMMON_MAPREADER_HPP
+#define LM_COMMON_MAPREADER_HPP
 
-MapObject::MapObject(Map::ObjectType type, Point upper_left) {
-	m_type = type;
-	m_upper_left = upper_left;
-	m_sprite = NULL;
-	m_team = 0;
-}
+#include "StringTokenizer.hpp"
+#include "Map.hpp"
+#include <string>
 
-void MapObject::set_sprite(Graphic* s) {
-	m_sprite = s;
-	if (m_sprite != NULL) {
-		m_sprite->set_x(m_upper_left.x);
-		m_sprite->set_y(m_upper_left.y);
-	}
-}
+class MapReader : public StringTokenizer {
+private:
+	Map::ObjectType		m_type;
+	std::string		m_id;
 
-void MapObject::set_sprite(Sprite* s) {
-	// Make the sprite draw from the upper left, not the center
-	s->set_center_x(0.0);
-	s->set_center_y(0.0);
+public:
+	explicit MapReader(const char* map_object_data);
 
-	Graphic* g = s;
-	set_sprite(g);
-}
+	Map::ObjectType		get_type() const { return m_type; }
+	const char*		get_id() const { return m_id.c_str(); }
+	bool			has_id() const { return !m_id.empty(); }
+};
 
+#endif

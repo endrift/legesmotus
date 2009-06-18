@@ -27,7 +27,7 @@
 #include "MapObject.hpp"
 #include "Sprite.hpp"
 #include "TiledGraphic.hpp"
-#include "common/PacketReader.hpp"
+#include "common/MapReader.hpp"
 #include "common/PathManager.hpp"
 #include "common/team.hpp"
 #include <memory>
@@ -74,62 +74,34 @@ template<class T> T* GraphicalMap::load_graphic(const std::string& sprite_name) 
 	return new T(*graphic);
 }
 
-void	GraphicalMap::add_object(PacketReader& object_data) {
-	int			type = object_data.packet_type();
-	Point			upper_left;
+void	GraphicalMap::add_object(MapReader& object_data) {
+	ObjectType			type(object_data.get_type());
+	Point				upper_left;
 	object_data >> upper_left;
 
 	// Append it to the list of objects.
 	m_objects.push_back(MapObject(type, upper_left));
 	// Use this reference to do more stuff (i.e. set the sprite and bounding polygon) with the new object.
-	MapObject&		map_object(m_objects.back());
+	MapObject&			map_object(m_objects.back());
 
 	switch (type) {
-	case OBSTACLE:
-	case DECORATION:
-	case BACKGROUND:
+	case SPRITE:
 		{
-			string	sprite_name;
-			object_data >> sprite_name;
+			string		flags;
+			string		sprite_name;
+			object_data >> flags >> sprite_name;
 
-			if (type == OBSTACLE) {
-				Sprite*		sprite = load_graphic<Sprite>(sprite_name);
-				map_object.set_sprite(sprite);
+			bool		is_tiled = flags.find('T') != string::npos;
+			bool		is_obstacle = flags.find('O') != string::npos;
+			int		width = 0;
+			int		height = 0;
 
-				// Bounding polygon - specified by a list of points in the map file
-				// The points are converted into a list of lines for internal representation.
-				LMPolygon&	bounding_polygon(map_object.get_bounding_polygon());
-				if (object_data.has_more()) {
-					Point		first_point;
-					object_data >> first_point;
-
-					Point		previous_point(first_point);
-					while (object_data.has_more()) {
-						Point	next_point;
-						object_data >> next_point;
-						bounding_polygon.add_line(upper_left + previous_point, upper_left + next_point); // Translate to be relative to the upper left of the map
-
-						previous_point = next_point;
-					}
-					bounding_polygon.add_line(upper_left + previous_point, upper_left + first_point); // Translate to be relative to the upper left of the map
-				} else {
-					// If no points were specified in the file, assume it's a rectangle representing the width and height of the sprite.
-					bounding_polygon.make_rectangle(int(sprite->get_image_width()), int(sprite->get_image_height()), upper_left); // XXX: casting double to int here
-				}
-
-				sprite->set_priority(Graphic::OBSTACLE);
-
-			} else if (type == DECORATION) {
-				Sprite*		sprite = load_graphic<Sprite>(sprite_name);
-				sprite->set_priority(Graphic::BACKGROUND);
-				map_object.set_sprite(sprite);
-
-			} else if (type == BACKGROUND) {
-				TiledGraphic*	background = load_graphic<TiledGraphic>(sprite_name);
+			if (is_tiled) {
+				// Tiled graphic
+				TiledGraphic* background = load_graphic<TiledGraphic>(sprite_name);
 				map_object.set_sprite(background);
 
-				int		width;
-				int		height;
+				// Also have to parse out tile width, tile height, and (optionally) tile start point
 				object_data >> width >> height;
 				background->set_width(width);
 				background->set_height(height);
@@ -141,8 +113,42 @@ void	GraphicalMap::add_object(PacketReader& object_data) {
 					background->set_start_x(start_point.x);
 					background->set_start_y(start_point.y);
 				}
+			} else {
+				Sprite*	sprite = load_graphic<Sprite>(sprite_name);
+				width = int(sprite->get_image_width());
+				height = int(sprite->get_image_height());
+				map_object.set_sprite(sprite);
+			}
 
-				background->set_priority(Graphic::BACKGROUND);
+			Graphic*	sprite = map_object.get_sprite();
+
+			if (is_obstacle) {
+				// Bounding polygon - specified by a list of points in the map file
+				// The points are converted into a list of lines for internal representation.
+				LMPolygon&	bounding_polygon(map_object.get_bounding_polygon());
+				if (object_data.has_more()) {
+					StringTokenizer	tokenizer(object_data.get_next(), ';');
+
+					Point		first_point;
+					tokenizer >> first_point;
+
+					Point		previous_point(first_point);
+					while (tokenizer.has_more()) {
+						Point	next_point;
+						tokenizer >> next_point;
+						bounding_polygon.add_line(upper_left + previous_point, upper_left + next_point); // Translate to be relative to the upper left of the map
+
+						previous_point = next_point;
+					}
+					bounding_polygon.add_line(upper_left + previous_point, upper_left + first_point); // Translate to be relative to the upper left of the map
+				} else {
+					// If no points were specified in the file, assume it's a rectangle representing the width and height of the sprite.
+					bounding_polygon.make_rectangle(width, height, upper_left);
+				}
+
+				sprite->set_priority(Graphic::OBSTACLE);
+			} else {
+				sprite->set_priority(Graphic::BACKGROUND);
 			}
 		}
 		break;
@@ -154,12 +160,12 @@ void	GraphicalMap::add_object(PacketReader& object_data) {
 			map_object.set_team(team);
 
 			string	sprite_name;
-			if (team == 'B') {
-				sprite_name = "red_gate";
-				m_gates[1] = &map_object;
-			} else if (team == 'A') {
+			if (team == 'A') {
 				sprite_name = "blue_gate";
 				m_gates[0] = &map_object;
+			} else if (team == 'B') {
+				sprite_name = "red_gate";
+				m_gates[1] = &map_object;
 			}
 
 			// XXX: This assumes the height of the sprite is 1 pixel.
@@ -172,6 +178,8 @@ void	GraphicalMap::add_object(PacketReader& object_data) {
 			map_object.get_bounding_polygon().make_rectangle(int(sprite->get_image_width()) + GATE_EXTENT * 2, GATE_HEIGHT, upper_left - Point(GATE_EXTENT, 0)); // XXX: casting double to int here
 		}
 
+		break;
+	default:
 		break;
 	}
 
