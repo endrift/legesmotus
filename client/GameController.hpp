@@ -32,6 +32,7 @@
 #include "SoundController.hpp"
 #include "TableBackground.hpp"
 #include "ClientConfiguration.hpp"
+#include "TransitionManager.hpp"
 #include "common/PathManager.hpp"
 #include "common/PacketReader.hpp"
 #include "common/misc.hpp"
@@ -95,6 +96,7 @@ private:
 	ClientNetwork	m_network;
 	TextManager*	m_text_manager;
 	SoundController* m_sound_controller;
+	TransitionManager m_transition_manager;
 	Font*		m_font;
 	Font*		m_medium_font;
 	Font*		m_menu_font;

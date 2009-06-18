@@ -30,6 +30,7 @@
 #include "TiledGraphic.hpp"
 #include "TableBackground.hpp"
 #include "ClientConfiguration.hpp"
+#include "TransitionManager.hpp"
 #include "common/PacketReader.hpp"
 #include "common/PacketWriter.hpp"
 #include "common/network.hpp"
@@ -577,11 +578,6 @@ void GameController::run(int lockfps) {
 			move_objects((get_ticks() - lastmoveframe) / delay); // scale all position changes to keep game speed constant. 
 			
 			if (m_time_to_unfreeze != 0) {
-				//m_frozen_status_rect->set_x(m_players[m_player_id].get_x() - m_offset_x);
-				//m_frozen_status_rect->set_y(m_players[m_player_id].get_y() + m_players[m_player_id].get_radius() + 15 - m_offset_y);
-				//m_frozen_status_rect_back->set_x(m_frozen_status_rect->get_x());
-				//m_frozen_status_rect_back->set_y(m_frozen_status_rect->get_y());
-				//m_text_manager->reposition_string(m_frozen_status_text, m_frozen_status_rect_back->get_x() - m_frozen_status_rect_back->get_image_width()/2.0 + 3, m_frozen_status_rect_back->get_y() + 2);
 				m_frozen_status_rect->set_image_width(((m_time_to_unfreeze - get_ticks())/(double)m_total_time_frozen) * FROZEN_STATUS_RECT_WIDTH);
 			}
 			
@@ -666,6 +662,8 @@ void GameController::run(int lockfps) {
 			//int framerate = (1000/(currframe - startframe));
 			
 			if (!m_players.empty()) {
+				m_transition_manager.update(currframe);
+			
 				// Change gun sprite if muzzle flash is done.
 				Graphic* frontarm = m_players[m_player_id].get_sprite()->get_graphic("frontarm");
 				if (m_last_fired < get_ticks() - MUZZLE_FLASH_LENGTH && frontarm->get_graphic("gun")->is_invisible()) {
