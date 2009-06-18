@@ -111,6 +111,17 @@ const string&	ConfigManager::operator[](const char* option_name) const {
 }
 
 
+template<> string	ConfigManager::get(const char* option_name) const {
+	const string* raw_value = lookup(option_name);
+	return raw_value ? *raw_value : string();
+}
+
+template<> const char*	ConfigManager::get(const char* option_name) const {
+	const string* raw_value = lookup(option_name);
+	return raw_value ? raw_value->c_str() : "";
+}
+
+
 template<> bool ConfigManager::get(const char* option_name) const {
 	const string* raw_value = lookup(option_name);
 
@@ -123,6 +134,10 @@ template<> bool ConfigManager::get(const char* option_name) const {
 
 template<> void ConfigManager::set(const char* option_name, const bool& option_value) {
 	m_options[option_name] = option_value ? "yes" : "no";
+}
+
+template<> void ConfigManager::set(const char* option_name, const char* const& option_value) {
+	m_options[option_name] = option_value;
 }
 
 const char*	ConfigManager::personal_config_path() { // TODO: make cross platform

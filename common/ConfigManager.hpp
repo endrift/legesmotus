@@ -101,6 +101,10 @@ public:
 	template<class T> void	set(const char* option_name, const T& option_value);
 };
 
+template<> std::string	ConfigManager::get(const char* option_name) const;
+template<> const char*	ConfigManager::get(const char* option_name) const;
+template<> void	ConfigManager::set(const char* option_name, const char* const& option_value);
+
 template<> bool	ConfigManager::get(const char* option_name) const;
 template<> void	ConfigManager::set(const char* option_name, const bool& option_value);
 
