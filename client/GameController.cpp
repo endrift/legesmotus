@@ -175,7 +175,7 @@ void GameController::init(GameWindow* window) {
 	m_join_sent_time = 0;
 	
 	m_client_version = LM_VERSION;
-	m_protocol_number = 1;
+	m_protocol_number = 2;
 	
 	m_pixel_depth = window->get_depth();
 	m_fullscreen = window->is_fullscreen();
@@ -1670,8 +1670,10 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 		
 		m_network.send_packet(gun_fired);
 		
-		if (hit_player != NULL && !hit_player->is_frozen()) {
-			m_sound_controller->play_sound("hit");
+		if (hit_player != NULL) {
+			if (!hit_player->is_frozen()) {
+				m_sound_controller->play_sound("hit");
+			}
 			send_player_shot(player_id, hit_player->get_id(), direction-180);
 		}
 	}
@@ -2320,13 +2322,15 @@ void GameController::player_shot(PacketReader& reader) {
 	
 	// If we were frozen, add to our velocity based on the shot, and freeze.
 	if (shot_id == m_player_id) {
-		m_frozen_status_rect->set_y(m_screen_height/2 + m_players[m_player_id].get_radius() + 15);
-		m_frozen_status_rect_back->set_y(m_frozen_status_rect->get_y());
-		m_frozen_status_text->set_y(m_frozen_status_rect->get_y());
-		m_sound_controller->play_sound("freeze");
-		m_players[m_player_id].set_is_frozen(true);
-		m_time_to_unfreeze = get_ticks() + time_to_unfreeze;
-		m_total_time_frozen = time_to_unfreeze;
+		if (!m_players[m_player_id].is_frozen()) {
+			m_frozen_status_rect->set_y(m_screen_height/2 + m_players[m_player_id].get_radius() + 15);
+			m_frozen_status_rect_back->set_y(m_frozen_status_rect->get_y());
+			m_frozen_status_text->set_y(m_frozen_status_rect->get_y());
+			m_sound_controller->play_sound("freeze");
+			m_players[m_player_id].set_is_frozen(true);
+			m_time_to_unfreeze = get_ticks() + time_to_unfreeze;
+			m_total_time_frozen = time_to_unfreeze;
+		}
 		if (shot_angle != 0) {
 			m_players[m_player_id].set_velocity(m_players[m_player_id].get_x_vel() - FIRING_RECOIL * cos((shot_angle) * DEGREES_TO_RADIANS), m_players[m_player_id].get_y_vel() - FIRING_RECOIL * sin((shot_angle) * DEGREES_TO_RADIANS));
 		}
