@@ -44,8 +44,8 @@ public:
 	ScrollArea(const ScrollArea& other);
 	virtual ScrollArea* clone() const;
 
-	void	set_width(double width);
-	void	set_height(double height);
+	virtual void	set_width(double width);
+	virtual void	set_height(double height);
 	void	set_content_height(double height);
 
 	double	get_width() const;

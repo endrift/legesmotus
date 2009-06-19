@@ -256,6 +256,16 @@ void TableBackground::set_border_collapse(bool collapse) {
 	m_border_collapse = collapse;
 }
 
+void TableBackground::set_height(double height) {
+	double total_height = 0;
+	for (int i = 0; i < m_num_rows; ++i) {
+		total_height += get_row_height(i);
+	}
+	for (int i = 0; i < m_num_rows; ++i) {
+		set_row_height(i, get_row_height(i)/total_height*height);
+	}
+}
+
 void TableBackground::draw(const GameWindow* window) const {
 	(void)(window); // Unused
 	glDisable(GL_TEXTURE_2D);

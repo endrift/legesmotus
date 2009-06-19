@@ -32,30 +32,47 @@ TransitionManager::TransitionManager() {
 
 TransitionManager::~TransitionManager() {
 	for (list<State>::iterator iter = m_transitions.begin(); iter != m_transitions.end(); ++iter) {
-		if (iter->autodelete) {
+		if (iter->removal == DELETE) {
 			delete iter->transition;
 		}
 	}
 }
 
-void TransitionManager::add_transition(Transition* transition, bool loop, bool autodelete) {
+void TransitionManager::add_transition(Transition* transition, bool loop, RemovePolicy removal) {
 	State state;
 	state.transition = transition;
 	state.loop = loop;
-	state.autodelete = autodelete;
+	state.removal = removal;
 	m_transitions.push_back(state);
+}
+
+void TransitionManager::add_transition(Transition* transition, const string& name, bool loop, RemovePolicy removal) {
+	State state;
+	state.transition = transition;
+	state.loop = loop;
+	state.removal = removal;
+	m_transitions.push_back(state);
+	m_statemap[name] = &m_transitions.back();
 }
 
 void TransitionManager::remove_transition(Transition* transition) {
 	for (list<State>::iterator iter = m_transitions.begin(); iter != m_transitions.end();) {
 		if (iter->transition == transition) {
-			if (iter->autodelete) {
+			if (iter->removal == DELETE) {
 				delete iter->transition;
 			} 
 			iter = m_transitions.erase(iter);
 		} else {
 			++iter;
 		}
+	}
+}
+
+Transition* TransitionManager::get_transition(const string& name) {
+	if (m_statemap.find(name) != m_statemap.end()) {
+		return m_statemap[name]->transition;
+	} else {
+		return NULL;
 	}
 }
 
@@ -67,11 +84,15 @@ void TransitionManager::update(uint64_t time) {
 					iter->transition->set_start(iter->transition->get_start() + iter->transition->get_duration());
 				} while (iter->transition->update(time));
 			} else {
-				if (iter->autodelete) {
+				switch (iter->removal) {
+				case DELETE:
 					delete iter->transition;
+				case REMOVE:
+					iter = m_transitions.erase(iter);
+					continue;
+				case KEEP:
+					break;
 				}
-				iter = m_transitions.erase(iter);
-				continue;
 			}
 		}
 		++iter;

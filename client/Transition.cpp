@@ -23,6 +23,7 @@
  */
 
 #include "Transition.hpp"
+#include "Graphic.hpp"
 
 Transition::Transition(Graphic* transitioned, Property property, Curve* curve, uint64_t start, uint64_t duration) {
 	m_transed = transitioned;
@@ -30,6 +31,18 @@ Transition::Transition(Graphic* transitioned, Property property, Curve* curve, u
 	m_curve = curve;
 	m_start = start;
 	m_duration = duration;
+	m_curve_owned = false;
+	m_graphic_owned = false;
+}
+
+Transition::~Transition() {
+	if (m_curve_owned) {
+		delete m_curve;
+	}
+	
+	if (m_graphic_owned) {
+		delete m_transed;
+	}
 }
 
 void Transition::set_start(uint64_t start) {
@@ -40,6 +53,21 @@ void Transition::set_duration(uint64_t duration) {
 	m_duration = duration;
 }
 
+void Transition::set_curve(Curve* curve) {
+	if (m_curve_owned) {
+		delete m_curve;
+	}
+	m_curve = curve;
+}
+
+void Transition::set_curve_ownership(bool owned) {
+	m_curve_owned = owned;
+}
+
+void Transition::set_graphic_ownership(bool owned) {
+	m_graphic_owned = owned;
+}
+
 uint64_t Transition::get_start() const {
 	return m_start;
 }
@@ -48,8 +76,26 @@ uint64_t Transition::get_duration() const {
 	return m_duration;
 }
 
+Curve* Transition::get_curve() {
+	return m_curve;
+}
+
+Graphic* Transition::get_graphic() {
+	return m_transed;
+}
+
+bool Transition::get_curve_ownership() const {
+	return m_curve_owned;
+}
+
+bool Transition::get_graphic_ownership() const {
+	return m_graphic_owned;
+}
+
 bool Transition::update(uint64_t current) {
-	if(m_duration == 0) return true;
+	if (m_duration == 0) {
+		return true;
+	}
 	bool passed = false;
 	uint64_t progress = current - m_start;
 	if (progress >= m_duration) {
@@ -60,4 +106,24 @@ bool Transition::update(uint64_t current) {
 	}
 	(m_transed->*m_prop)((*m_curve)(double(progress)/double(m_duration)));
 	return passed;
+}
+
+void Transition::change_curve(uint64_t current, Curve* curve, uint64_t duration) {
+	if (m_duration != 0) {
+		uint64_t progress = current - m_start;
+		if (progress >= m_duration) {
+			progress = m_duration;
+		} else if (current < m_start) {
+			progress = 0;
+		}
+		curve->set_start((*m_curve)(double(progress)/double(m_duration)));
+	}
+	if (m_curve_owned) {
+		delete m_curve;
+	}
+	m_curve = curve;
+	m_start = current;
+	if (duration != 0) {
+		m_duration = duration;
+	}
 }

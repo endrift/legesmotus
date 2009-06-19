@@ -62,6 +62,9 @@ public:
 	virtual void	set_green_intensity(double g) { (void)(g); }
 	virtual void	set_blue_intensity(double b) { (void)(b); }
 
+	virtual void	set_width(double width) { set_image_width(width); }
+	virtual void	set_height(double height);
+
 	virtual void	draw(const GameWindow* window) const;
 };
 

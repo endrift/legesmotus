@@ -65,7 +65,7 @@ public:
 	ScrollBar(const ScrollBar& other);
 	virtual ScrollBar* clone() const;
 
-	void	set_height(double height);
+	virtual void	set_height(double height);
 	
 	double	get_height() const;
 

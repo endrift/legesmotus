@@ -76,7 +76,11 @@ void GraphicGroup::add_graphic(Graphic* graphic, const string& name) {
 }
 
 Graphic* GraphicGroup::get_graphic(const string& name) {
-	return m_names[name];
+	if (m_names.find(name) != m_names.end()) {
+		return m_names[name];
+	} else {
+		return NULL;
+	}
 }
 
 void GraphicGroup::remove_graphic(const string& name) {

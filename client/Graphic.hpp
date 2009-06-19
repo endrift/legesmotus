@@ -107,6 +107,9 @@ public:
 	virtual void	set_blue_intensity(double b) = 0;
 	virtual void	set_alpha(double alpha) = 0;
 
+	virtual void	set_width(double w) { (void)(w); }
+	virtual void	set_height(double h) { (void)(h); }
+
 	virtual Graphic*	get_graphic(const std::string&) { return NULL; }
 
 	virtual void	draw(const GameWindow* window) const = 0;
