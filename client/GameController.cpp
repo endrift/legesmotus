@@ -65,6 +65,7 @@ const Color GameController::BLUE_COLOR(0.4, 0.4, 1.0);
 const Color GameController::RED_COLOR(1.0, 0.4, 0.4);
 const Color GameController::GREYED_OUT(0.5, 0.5, 0.5);
 const Color GameController::TEXT_BG_COLOR(0.0, 0.0, 0.0, 0.7);
+const Color GameController::BUTTON_HOVER_COLOR(0.5, 0.5, 1.0);
 const int GameController::GATE_STATUS_RECT_WIDTH = 80;
 const int GameController::FROZEN_STATUS_RECT_WIDTH = 60;
 const int GameController::DOUBLE_CLICK_TIME = 300;
@@ -1041,6 +1042,35 @@ void GameController::process_input() {
 					m_overlay_scrollbar->mouse_motion_event(event.motion);
 				}
 				
+				if (m_game_state == SHOW_MENUS) {
+					map<string, Graphic*>::iterator it;
+					for ( it=m_main_menu_items.begin() ; it != m_main_menu_items.end(); it++ ) {
+						Graphic* thisitem = (*it).second;
+						double x = thisitem->get_x();
+						double y = thisitem->get_y();
+						if (event.button.x >= x && event.button.x <= x + thisitem->get_image_width()
+						    && event.button.y >= y && event.button.y <= y + thisitem->get_image_height()) {
+							// We're hovering over this menu item.
+							static_cast<Text*>(thisitem)->set_color(BUTTON_HOVER_COLOR);
+						} else {
+							static_cast<Text*>(thisitem)->set_color(Color::WHITE);
+						}
+					}
+				} else if (m_game_state == SHOW_OPTIONS_MENU) {
+					map<string, Graphic*>::iterator it;
+					for ( it=m_options_menu_items.begin() ; it != m_options_menu_items.end(); it++ ) {
+						Graphic* thisitem = (*it).second;
+						double x = thisitem->get_x();
+						double y = thisitem->get_y();
+						if (m_mouse_x >= x && m_mouse_x <= x + thisitem->get_image_width()
+						    && m_mouse_y >= y && m_mouse_y <= y + thisitem->get_image_height()) {
+							// We're hovering over this menu item.
+							static_cast<Text*>(thisitem)->set_color(BUTTON_HOVER_COLOR);
+						} else {
+							static_cast<Text*>(thisitem)->set_color(Color::WHITE);
+						}
+					}
+				}
 				break;
 				
 			case SDL_MOUSEBUTTONDOWN:

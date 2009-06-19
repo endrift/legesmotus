@@ -55,6 +55,7 @@ public:
 	static const Color		RED_COLOR;
 	static const Color		GREYED_OUT;
 	static const Color		TEXT_BG_COLOR;
+	static const Color		BUTTON_HOVER_COLOR;
 private:
 	struct KeyBindings {
 		int quit;
