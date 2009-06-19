@@ -522,6 +522,14 @@ void GameController::init(GameWindow* window) {
 	m_chat_window_back->set_y(17);
 	m_chat_window_back->set_invisible(true);
 	m_window->register_hud_graphic(m_chat_window_back);
+
+	m_chat_window_transition_x = new Transition(m_chat_window_back, &Graphic::set_width, new LinearCurve(0,0));
+	m_chat_window_transition_x->set_curve_ownership(true);
+	m_transition_manager.add_transition(m_chat_window_transition_x);
+
+	m_chat_window_transition_y = new Transition(m_chat_window_back, &Graphic::set_height, new LinearCurve(0,0));
+	m_chat_window_transition_y->set_curve_ownership(true);
+	m_transition_manager.add_transition(m_chat_window_transition_y);
 	
 	// Set up the minimap.
 	m_minimap = new Minimap(m_path_manager, MINIMAP_SCALE);
@@ -611,25 +619,28 @@ void GameController::run(int lockfps) {
 		
 			bool erasedone = false;
 			// Erase messages that are too old.
+			double height = m_chat_window_transition_y->get_curve()->get_end();
 			for (unsigned int i = 0; i < m_messages.size(); i++) {
 				if (m_messages[i].second < currframe) {
-					m_chat_window_back->set_row_height(0, m_chat_window_back->get_row_height(0) - m_messages[i].first->get_image_height());
+					height -= m_messages[i].first->get_image_height();
 					m_text_manager->remove_string(m_messages[i].first);
 					m_messages.erase(m_messages.begin() + i);
 					erasedone = true;
 				}
 			}
+
 			
 			if (erasedone) {
+				m_chat_window_transition_y->change_curve(currframe, new LinearCurve(0, height), 100);
 				m_chat_window_back->set_image_width(0);
 				// Reposition messages that remain after removing.
+				double max_w = 0;
 				for (unsigned int i = 0; i < m_messages.size(); i++) {
 					int y = 20 + (m_font->ascent() + m_font->descent() + 5) * i;
 					m_text_manager->reposition_string(m_messages[i].first, 20, y, TextManager::LEFT);
-					if (m_chat_window_back->get_image_width() < m_messages[i].first->get_image_width() + 6) {
-						m_chat_window_back->set_image_width(m_messages[i].first->get_image_width() + 6);
-					}
+					max_w = max<double>(m_messages[i].first->get_image_width() + 6, max_w);
 				}
+				m_chat_window_transition_x->change_curve(currframe, new LinearCurve(0, max_w), 100);
 				if (m_messages.size() == 0) {
 					m_chat_window_back->set_invisible(true);
 				}
@@ -668,9 +679,9 @@ void GameController::run(int lockfps) {
 			// Uncomment if framerate is needed.
 			// the framerate:
 			m_framerate = (1000/(currframe - startframe));
+			m_transition_manager.update(currframe);
 			
 			if (!m_players.empty()) {
-				m_transition_manager.update(currframe);
 			
 				// Change gun sprite if muzzle flash is done.
 				Graphic* frontarm = m_players[m_player_id].get_sprite()->get_graphic("frontarm");
@@ -2748,9 +2759,13 @@ void GameController::display_message(string message, Color color) {
 	int y = 20 + (m_font->ascent() + m_font->descent() + 5) * m_messages.size();
 	Graphic* message_sprite = m_text_manager->place_string(message, 20, y, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_messages.push_back(pair<Graphic*, int>(message_sprite, get_ticks() + MESSAGE_DISPLAY_TIME));
-	m_chat_window_back->set_row_height(0, y + message_sprite->get_image_height() + 6 - m_chat_window_back->get_y());
-	if (m_chat_window_back->get_image_width() < message_sprite->get_image_width() + 6) {
-		m_chat_window_back->set_image_width(message_sprite->get_image_width() + 6);
+	uint64_t currframe = get_ticks();
+	m_chat_window_transition_y->change_curve(currframe, new LinearCurve(0, y + message_sprite->get_image_height() + 6 - m_chat_window_back->get_y()), 100);
+	//m_chat_window_back->set_row_height(0, y + message_sprite->get_image_height() + 6 - m_chat_window_back->get_y());
+	double max_w = m_chat_window_transition_x->get_curve()->get_end();
+	if (max_w < message_sprite->get_image_width() + 6) {
+		m_chat_window_transition_x->change_curve(currframe, new LinearCurve(0, message_sprite->get_image_width() + 6), 100);
+		//m_chat_window_back->set_image_width(message_sprite->get_image_width() + 6);
 	}
 	m_chat_window_back->set_invisible(false);
 }

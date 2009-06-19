@@ -157,6 +157,8 @@ private:
 	Graphic*	m_input_bar;
 	TableBackground* m_input_bar_back;
 	TableBackground* m_chat_window_back;
+	Transition* m_chat_window_transition_x;
+	Transition* m_chat_window_transition_y;
 	
 	Sprite*		m_shot;
 
