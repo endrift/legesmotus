@@ -314,6 +314,9 @@ void GameController::init(GameWindow* window) {
 	m_main_menu_items["versionstr"] = m_text_manager->place_string(string("v. ").append(m_client_version), m_screen_width - 90, m_screen_height - 40, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_text_manager->set_active_font(m_menu_font);
 	
+	static_cast<Text*>(m_main_menu_items["Resume Game"])->set_color(GREYED_OUT);
+	static_cast<Text*>(m_main_menu_items["Disconnect"])->set_color(GREYED_OUT);
+	
 	// Options menu
 	m_text_manager->set_active_font(m_menu_font);
 	m_options_menu_items["Back"] = m_text_manager->place_string("Back", 50, 200, TextManager::LEFT, TextManager::LAYER_HUD);
@@ -748,13 +751,6 @@ void GameController::run(int lockfps) {
 					Graphic* thisitem = (*it).second;
 					thisitem->set_invisible(false);
 				}
-				if (m_network.is_connected() && m_join_sent_time == 0) {
-					static_cast<Text*>(m_main_menu_items["Resume Game"])->set_color(Color::WHITE);
-					static_cast<Text*>(m_main_menu_items["Disconnect"])->set_color(Color::WHITE);
-				} else {
-					static_cast<Text*>(m_main_menu_items["Resume Game"])->set_color(GREYED_OUT);
-					static_cast<Text*>(m_main_menu_items["Disconnect"])->set_color(GREYED_OUT);
-				}
 				
 				for ( it=m_options_menu_items.begin() ; it != m_options_menu_items.end(); it++ ) {
 					Graphic* thisitem = (*it).second;
@@ -1055,6 +1051,10 @@ void GameController::process_input() {
 						} else {
 							static_cast<Text*>(thisitem)->set_color(Color::WHITE);
 						}
+					}
+					if (!m_network.is_connected() || !m_join_sent_time == 0) {
+						static_cast<Text*>(m_main_menu_items["Resume Game"])->set_color(GREYED_OUT);
+						static_cast<Text*>(m_main_menu_items["Disconnect"])->set_color(GREYED_OUT);
 					}
 				} else if (m_game_state == SHOW_OPTIONS_MENU) {
 					map<string, Graphic*>::iterator it;
@@ -2040,6 +2040,8 @@ void GameController::connect_to_server(int servernum) {
  * Send a disconnect packet.
  */
 void GameController::disconnect() {
+	static_cast<Text*>(m_main_menu_items["Resume Game"])->set_color(GREYED_OUT);
+	static_cast<Text*>(m_main_menu_items["Disconnect"])->set_color(GREYED_OUT);
 	if (!m_players.empty()) {
 		PacketWriter leave_request(LEAVE_PACKET);
 		leave_request << m_player_id;
@@ -2088,6 +2090,9 @@ void GameController::welcome(PacketReader& reader) {
 	display_message(serveraddress.str());
 	
 	m_join_sent_time = 0;
+	
+	static_cast<Text*>(m_main_menu_items["Resume Game"])->set_color(Color::WHITE);
+	static_cast<Text*>(m_main_menu_items["Disconnect"])->set_color(Color::WHITE);
 	
 	clear_players();
 	
