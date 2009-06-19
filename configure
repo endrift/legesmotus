@@ -69,6 +69,9 @@ do
 	elif [ "$arg" = "--unix-style" ]
 	then
 		unix_style=1
+	elif [ "$arg" = "--disable-sound" ]
+	then
+		sound=0
 	elif [ "$arg" = "--disable-universal" ]
 	then
 		universal=0
@@ -81,6 +84,19 @@ do
 		exit 2
 	fi
 done
+
+echo -n "Checking for g++... "
+if which g++ >/dev/null 2>/dev/null
+then
+	echo "Found"
+else
+	echo "Not found"
+	echo
+	echo "g++ (the C++ compiler from the GNU Compiler Connection (gcc)) is required to build Leges Motus."
+	echo "Please install the appropriate g++ package for your distro."
+	echo "It will typically be categorized as a development package."
+	die
+fi
 
 if [ $unix_style -eq 1 ]
 then
@@ -134,6 +150,8 @@ then
 		echo "You can obtain SDL_mixer from http://www.libsdl.org/projects/SDL_mixer/"
 		echo "or install the appropriate package for your distro."
 		echo "If you install a distro package, please make sure you also install the -devel package."
+		echo
+		echo "If you don't feel like installing SDL_mixer, you can compile without sound support by passing the --disable-sound option to configure."
 		die
 	fi
 fi
