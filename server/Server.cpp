@@ -87,10 +87,18 @@ void	Server::player_update(const IPAddress& address, PacketReader& inbound_packe
 	}
 }
 
-void	Server::player_animation(const IPAddress& address, PacketReader& packet)
+void	Server::player_animation(const IPAddress& address, PacketReader& inbound_packet)
 {
-	// Just broadcast this packet to all other players (TODO: actually exclude other players...)
-	rebroadcast_packet(packet);
+	// Just broadcast this packet to all other players
+	uint32_t		player_id;
+	inbound_packet >> player_id;
+
+	if (is_authorized(address, player_id)) {
+		// Re-broadcast the packet to all _other_ players
+		PacketWriter	outbound_packet(PLAYER_ANIMATION_PACKET);
+		outbound_packet << player_id << inbound_packet;
+		broadcast_packet_except(outbound_packet, player_id);
+	}
 }
 
 void	Server::name_change(const IPAddress& address, PacketReader& packet)
@@ -302,13 +310,17 @@ void	Server::command_server(uint32_t player_id, const char* command) {
 	}
 }
 
-void	Server::player_shot(const IPAddress& /*address*/, PacketReader& inbound_packet)
+void	Server::player_shot(const IPAddress& address, PacketReader& inbound_packet)
 {
 	uint32_t		shooter_id;
 	uint32_t		shot_player_id;
 	double			angle;
 
 	inbound_packet >> shooter_id >> shot_player_id >> angle;
+
+	if (!is_authorized(address, shooter_id)) {
+		return;
+	}
 
 	// Inform all players that this player has been shot
 	PacketWriter		outbound_packet(PLAYER_SHOT_PACKET);
@@ -333,11 +345,20 @@ void	Server::player_shot(const IPAddress& /*address*/, PacketReader& inbound_pac
 	}
 }
 
-void	Server::gun_fired(const IPAddress& address, PacketReader& packet)
+void	Server::gun_fired(const IPAddress& address, PacketReader& inbound_packet)
 {
-	// Just broadcast this packet to all other players (TODO: actually exclude other players...)
-	rebroadcast_packet(packet);
-	// TODO: REQUIRE ACK
+	// Just broadcast this packet to all other players
+	uint32_t		shooter_id;
+	inbound_packet >> shooter_id;
+
+	if (is_authorized(address, shooter_id)) {
+		// Re-broadcast the packet to all _other_ players
+		PacketWriter	outbound_packet(GUN_FIRED_PACKET);
+		outbound_packet << shooter_id << inbound_packet;
+		broadcast_packet_except(outbound_packet, shooter_id);
+
+		// TODO: REQUIRE ACK
+	}
 }
 
 
