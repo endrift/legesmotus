@@ -68,7 +68,8 @@ const Color GameController::TEXT_BG_COLOR(0.0, 0.0, 0.0, 0.7);
 const int GameController::GATE_STATUS_RECT_WIDTH = 80;
 const int GameController::FROZEN_STATUS_RECT_WIDTH = 60;
 const int GameController::DOUBLE_CLICK_TIME = 300;
-const int GameController::NETWORK_TIMEOUT_LIMIT = 6000;
+const int GameController::NETWORK_TIMEOUT_LIMIT = 10000;
+const unsigned int GameController::PING_FREQUENCY = 2000;
 const int GameController::TEXT_LAYER = -4;
 
 GameController::GameController(PathManager& path_manager, ClientConfiguration* config) : m_path_manager(path_manager) {
@@ -174,6 +175,7 @@ void GameController::init(GameWindow* window) {
 	m_input_bar = NULL;
 	
 	m_join_sent_time = 0;
+	m_last_ping_sent = 0;
 	
 	m_client_version = LM_VERSION;
 	m_protocol_number = 2;
@@ -584,9 +586,15 @@ void GameController::run(int lockfps) {
 			lastmoveframe = get_ticks();
 		}
 		
+		
 		// Update graphics if frame rate is correct.
 		if((currframe - startframe) >= delay) {
 			if (m_network.is_connected() && m_join_sent_time == 0) {
+				if ((currframe - m_last_ping_sent) >= PING_FREQUENCY) {
+					ping_server(m_network.get_server_address());
+					m_last_ping_sent = currframe;
+				}
+				
 				if (m_network.get_last_packet_time() + NETWORK_TIMEOUT_LIMIT < currframe) {
 					display_message("Connection to the server has timed out.", RED_COLOR);
 					disconnect();
@@ -659,7 +667,7 @@ void GameController::run(int lockfps) {
 			
 			// Uncomment if framerate is needed.
 			// the framerate:
-			//int framerate = (1000/(currframe - startframe));
+			m_framerate = (1000/(currframe - startframe));
 			
 			if (!m_players.empty()) {
 				m_transition_manager.update(currframe);
@@ -2782,7 +2790,7 @@ void	GameController::server_info(const IPAddress& server_address, PacketReader& 
 	uint64_t	scan_start_time;
 	info_packet >> request_packet_id >> scan_start_time;
 
-	if (request_packet_id != m_current_scan_id) {
+	if (request_packet_id != m_current_scan_id && request_packet_id != m_current_ping_id) {
 		// From an old scan - ignore it
 		return;
 	}
@@ -2802,11 +2810,21 @@ void	GameController::server_info(const IPAddress& server_address, PacketReader& 
 		int		team_max_players[2];
 		unsigned int	uptime;
 		info_packet >> server_protocol_version >> current_map_name >> team_count[0] >> team_count[1] >> team_max_players[0] >> team_max_players[1] >> uptime;
-
+		
+		m_ping = get_ticks() - scan_start_time;
+		if (request_packet_id == m_current_ping_id) {
+			//cerr << "Ping: " << m_ping << " Framerate: " << m_framerate << endl;
+			return;
+		}
+		
 		//cerr << "Received INFO packet from " << format_ip_address(server_address, true) << ": Protocol=" << server_protocol_version << "; Map=" << current_map_name << "; Blue players=" << team_count[0] << "; Red players=" << team_count[1] << "; Ping time=" << get_ticks() - scan_start_time << "ms"  << "; Uptime=" << uptime << endl;
 		
 		if (server_protocol_version != m_protocol_number) {
 			//cerr << "Server with different protocol found: " << format_ip_address(server_address, true) << ": Protocol=" << server_protocol_version << "; Map=" << current_map_name << "; Blue players=" << team_count[0] << "; Red players=" << team_count[1] << "; Ping time=" << get_ticks() - scan_start_time << "ms" << endl;
+			return;
+		}
+		
+		if (m_server_browser_background->is_invisible()) {
 			return;
 		}
 		
@@ -2869,7 +2887,8 @@ void	GameController::server_info(const IPAddress& server_address, PacketReader& 
 		printer << m_server_list_count;
 		
 		ostringstream pingstr;
-		pingstr << get_ticks() - scan_start_time;
+		
+		pingstr << m_ping;
 		m_server_browser_items[printer.str()] = m_text_manager->place_string(pingstr.str(), m_server_browser_items["pinglabel"]->get_x() - m_server_browser_scrollarea->get_x() + m_server_browser_scrollarea->get_width()/2, 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
 		m_server_browser_items[printer.str()]->set_priority(TEXT_LAYER);
 		m_window->unregister_hud_graphic(m_server_browser_items[printer.str()]);
@@ -2912,6 +2931,13 @@ void	GameController::contact_metaserver() {
 	m_current_scan_id = info_request_packet.packet_id();
 	info_request_packet << m_protocol_number << m_current_scan_id << get_ticks() << m_client_version;
 	m_network.send_packet_to(m_metaserver_address, info_request_packet);
+}
+
+void	GameController::ping_server(const IPAddress& server_address) {
+	PacketWriter info_request_packet(INFO_PACKET);
+	m_current_ping_id = info_request_packet.packet_id();
+	info_request_packet << m_protocol_number << m_current_ping_id << get_ticks();
+	m_network.send_packet_to(server_address, info_request_packet);
 }
 
 void	GameController::scan_server(const IPAddress& server_address) {

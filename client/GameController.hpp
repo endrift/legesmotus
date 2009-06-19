@@ -88,6 +88,7 @@ private:
 	const static int DOUBLE_CLICK_TIME;
 	const static int NETWORK_TIMEOUT_LIMIT;
 	const static int TEXT_LAYER;
+	const static unsigned int PING_FREQUENCY;
 	
 	PathManager& 	m_path_manager;
 	ClientConfiguration* m_configuration;
@@ -133,6 +134,11 @@ private:
 
 	uint64_t	m_time_to_unfreeze;
 	uint64_t	m_total_time_frozen;
+	
+	uint64_t	m_last_ping_sent;
+	uint32_t	m_current_ping_id;
+	uint64_t	m_ping;
+	uint64_t	m_framerate;
 	
 	// TEMPORARY SPRITE CODE
 	Sprite*		gun_normal;
@@ -209,6 +215,7 @@ private:
 
 	// Scan a particular server:
 	void		scan_server(const IPAddress& server_address);
+	void		ping_server(const IPAddress& server_address);
 
 	// Scan both the local network and the meta server for servers:
 	void		scan_all();
