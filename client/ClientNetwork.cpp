@@ -194,6 +194,9 @@ void	ClientNetwork::process_unbound_packet(GameController& controller, const UDP
 	case INFO_PACKET:
 		controller.server_info(raw_packet.get_address(), reader);
 		break;
+	case UPGRADE_AVAILABLE_PACKET:
+		controller.upgrade_available(raw_packet.get_address(), reader);
+		break;
 	}
 }
 

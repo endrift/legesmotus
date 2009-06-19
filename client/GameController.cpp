@@ -2881,6 +2881,13 @@ void	GameController::server_info(const IPAddress& server_address, PacketReader& 
 	}
 }
 
+
+void	GameController::upgrade_available(const IPAddress& server_address, PacketReader& packet) {
+	string		latest_version;
+	packet >> latest_version;
+	cerr << "There is an upgrade available!  Version: " << latest_version << '\n';
+}
+
 void	GameController::scan_all() {
 	PacketWriter info_request_packet(INFO_PACKET);
 	m_current_scan_id = info_request_packet.packet_id();

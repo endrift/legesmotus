@@ -28,6 +28,7 @@
 #include "common/UDPPacket.hpp"
 #include "common/PacketReader.hpp"
 #include "common/PacketWriter.hpp"
+#include "common/Version.hpp"
 #include <stdlib.h>
 #include <string>
 #include <iostream>
@@ -56,7 +57,7 @@ void MetaServer::ServerInfo::seen(ServerList& server_list) {
 	m_list_position = server_list.begin();
 }
 
-MetaServer::MetaServer(uint32_t contact_frequency, uint32_t timeout_time) {
+MetaServer::MetaServer(uint32_t contact_frequency, uint32_t timeout_time) : m_latest_server_version(LM_VERSION), m_latest_client_version(LM_VERSION) {
 	m_contact_frequency = contact_frequency;
 	m_timeout_time = timeout_time;
 }
@@ -101,9 +102,15 @@ void	MetaServer::timeout_servers() {
 
 void	MetaServer::register_server(const IPAddress& remote_address, PacketReader& request_packet) {
 	int		server_protocol_version;
-	string		server_version;
+	LMVersion	server_version;
 	IPAddress	server_address;
 	request_packet >> server_protocol_version >> server_version >> server_address;
+
+	if (server_version < m_latest_server_version) {
+		PacketWriter	upgrade_packet(UPGRADE_AVAILABLE_PACKET);
+		upgrade_packet << m_latest_server_version;
+		send_packet(upgrade_packet, remote_address);
+	}
 
 	// If the server did not specify its own hostname or port, take the values from the address that it's connecting from...
 	if (!server_address.host) {
@@ -160,8 +167,14 @@ void	MetaServer::request_info(const IPAddress& address, PacketReader& request_pa
 	int		client_protocol_version;
 	uint32_t	scan_id;
 	uint64_t	scan_start_time;
-	string		client_version;
+	LMVersion	client_version;
 	request_packet >> client_protocol_version >> scan_id >> scan_start_time >> client_version;
+
+	if (client_version < m_latest_client_version) {
+		PacketWriter	upgrade_packet(UPGRADE_AVAILABLE_PACKET);
+		upgrade_packet << m_latest_client_version;
+		send_packet(upgrade_packet, address);
+	}
 
 	for (ServerList::const_iterator it(m_servers.begin()); it != m_servers.end(); ++it) {
 		PacketWriter	response_packet(INFO_PACKET);

@@ -27,6 +27,7 @@
 
 #include "common/UDPSocket.hpp"
 #include "common/IPAddress.hpp"
+#include "common/Version.hpp"
 #include <stdint.h>
 #include <map>
 #include <list>
@@ -57,6 +58,8 @@ private:
 		ServerList::iterator	get_list_position() const { return m_list_position; }
 	};
 
+	LMVersion			m_latest_server_version;
+	LMVersion			m_latest_client_version;
 	uint32_t			m_contact_frequency;	// Servers should contact the meta server this often (in milliseconds)
 	uint32_t			m_timeout_time;		// Number of milliseconds until an unseen server is removed
 	UDPSocket			m_socket;		// Socket that we're listening on

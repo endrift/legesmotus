@@ -67,6 +67,7 @@ enum {
 	TEAM_CHANGE_PACKET = 18,
 	REGISTER_SERVER_PACKET = 19,
 	UNREGISTER_SERVER_PACKET = 20,
+	UPGRADE_AVAILABLE_PACKET = 21
 };
 
 bool		resolve_hostname(IPAddress& resolved_addr, const char* hostname_to_resolve, uint16_t portno); // portno must be in host-byte order
