@@ -1,5 +1,5 @@
 /*
- * LMException.cpp
+ * Exception.cpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,7 +22,7 @@
  * 
  */
  
-#include "LMException.hpp"
+#include "Exception.hpp"
 
 // See .hpp file for comments.
 

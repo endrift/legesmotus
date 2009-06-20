@@ -24,7 +24,7 @@
 
 #include "ServerNetwork.hpp"
 #include "Server.hpp"
-#include "common/LMException.hpp"
+#include "common/Exception.hpp"
 #include "common/network.hpp"
 #include "common/PacketWriter.hpp"
 #include "common/PacketReader.hpp"

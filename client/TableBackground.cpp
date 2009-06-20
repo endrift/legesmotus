@@ -23,7 +23,7 @@
  */
 
 #include "TableBackground.hpp"
-#include "common/LMException.hpp"
+#include "common/Exception.hpp"
 #include <algorithm>
 #include "common/math.hpp"
 

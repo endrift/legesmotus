@@ -25,7 +25,7 @@
 #include "TextManager.hpp"
 #include "GameWindow.hpp"
 #include "GraphicGroup.hpp"
-#include "common/LMException.hpp"
+#include "common/Exception.hpp"
 #include <iostream>
 
 using namespace std;

@@ -23,7 +23,7 @@
  */
 
 #include "Font.hpp"
-#include "common/LMException.hpp"
+#include "common/Exception.hpp"
 
 using namespace std;
 

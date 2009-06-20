@@ -22,7 +22,7 @@
  * 
  */
 
-#include "common/LMException.hpp"
+#include "common/Exception.hpp"
 #include "common/UDPPacket.hpp"
 #include "common/IPAddress.hpp"
 #include "common/network.hpp"

@@ -22,7 +22,7 @@
  * 
  */
 
-#include "common/LMException.hpp"
+#include "common/Exception.hpp"
 #include "GameWindow.hpp"
 #include "compat_gl.h"
 #include <cmath>

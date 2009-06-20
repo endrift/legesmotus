@@ -23,7 +23,7 @@
  */
 
 #include "MetaServer.hpp"
-#include "common/LMException.hpp"
+#include "common/Exception.hpp"
 #include "common/network.hpp"
 #include "common/misc.hpp"
 #include <iostream>

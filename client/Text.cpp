@@ -23,7 +23,7 @@
  */
 
 #include "Text.hpp"
-#include "common/LMException.hpp"
+#include "common/Exception.hpp"
 #include "compat_gl.h"
 
 using namespace std;

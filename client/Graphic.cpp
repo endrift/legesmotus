@@ -24,7 +24,7 @@
 
 #include "Graphic.hpp"
 #include "SDL_image.h"
-#include "common/LMException.hpp"
+#include "common/Exception.hpp"
 #include "common/math.hpp"
 
 Graphic::Graphic() {

@@ -25,7 +25,7 @@
 #include "GameController.hpp"
 #include "ClientSDL.hpp"
 #include "ClientConfiguration.hpp"
-#include "common/LMException.hpp"
+#include "common/Exception.hpp"
 #include "common/PathManager.hpp"
 #include "common/misc.hpp"
 #include "common/network.hpp"

@@ -23,7 +23,7 @@
  */
 
 #include "ClientSDL.hpp"
-#include "common/LMException.hpp"
+#include "common/Exception.hpp"
 #include "SDL.h"
 
 // See ClientSDL.hpp for a description of this class's purpose.

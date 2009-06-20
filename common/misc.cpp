@@ -24,7 +24,7 @@
 
 #include "misc.hpp"
 #include "network.hpp"
-#include "LMException.hpp"
+#include "Exception.hpp"
 #include <string>
 #include <cstring>
 #include <cctype>

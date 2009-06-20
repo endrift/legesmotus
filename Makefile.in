@@ -83,7 +83,7 @@ CXXFLAGS += $(CFLAGS) -fno-rtti
 
 H_GL	= $(CLIENT)/compat_gl.h
 
-H_LMEXCEPTION	= $(COMMON)/LMException.hpp
+H_LMEXCEPTION	= $(COMMON)/Exception.hpp
 
 H_CLIENTNETWORK		= $(CLIENT)/ClientNetwork.hpp
 H_CLIENTSDL		= $(CLIENT)/ClientSDL.hpp
