@@ -28,6 +28,7 @@
 #include "common/Exception.hpp"
 #include <iostream>
 
+using namespace LM;
 using namespace std;
 
 TextManager::TextManager(Font* font, GameWindow* window) {
@@ -54,7 +55,7 @@ Text* TextManager::place_string(const std::string& text, double x, double y, Ali
 	Text *rendered;
 	try {
 		rendered = new Text(text, m_font);
-	} catch(LMException e) {
+	} catch(Exception e) {
 		cerr << "Error placing string: " << e.what() << endl;
 		return NULL;
 	}

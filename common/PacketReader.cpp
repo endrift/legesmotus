@@ -31,6 +31,7 @@
 
 // See .hpp file for extensive comments.
 
+using namespace LM;
 using namespace std;
 
 PacketReader::PacketReader(const char* packet_data, char separator) : StringTokenizer(packet_data, separator) {
@@ -44,7 +45,7 @@ PacketReader::PacketReader(const UDPPacket& packet) {
 	*this >> m_packet_type >> m_packet_id;
 }
 
-std::ostream&   operator<<(std::ostream& out, const PacketReader& packet_reader) {
+std::ostream&   LM::operator<<(std::ostream& out, const PacketReader& packet_reader) {
 	return out << packet_reader.get_rest();
 }
 

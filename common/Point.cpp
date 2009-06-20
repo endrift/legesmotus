@@ -28,6 +28,7 @@
 #include <math.h>
 #include <ostream>
 
+using namespace LM;
 using namespace std;
 
 // See .hpp file for extensive comments.
@@ -47,13 +48,13 @@ double	Point::distance(Point a, Point b) {
 	return sqrt(double((b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y)));
 }
 
-ostream&	operator<<(ostream& out, Point point) {
+ostream&	LM::operator<<(ostream& out, Point point) {
 	return out << point.x << ',' << point.y;
 }
 
-Point	operator+(Point a, Point b) {
+Point	LM::operator+(Point a, Point b) {
 	return Point(a.x + b.x, a.y + b.y);
 }
-Point	operator-(Point a, Point b) {
+Point	LM::operator-(Point a, Point b) {
 	return Point(a.x - b.x, a.y - b.y);
 }

@@ -33,6 +33,7 @@
 #include <string>
 #include <iostream>
 
+using namespace LM;
 using namespace std;
 
 
@@ -102,7 +103,7 @@ void	MetaServer::timeout_servers() {
 
 void	MetaServer::register_server(const IPAddress& remote_address, PacketReader& request_packet) {
 	int		server_protocol_version;
-	LMVersion	server_version;
+	Version	server_version;
 	IPAddress	server_address;
 	request_packet >> server_protocol_version >> server_version >> server_address;
 
@@ -167,7 +168,7 @@ void	MetaServer::request_info(const IPAddress& address, PacketReader& request_pa
 	int		client_protocol_version;
 	uint32_t	scan_id;
 	uint64_t	scan_start_time;
-	LMVersion	client_version;
+	Version	client_version;
 	request_packet >> client_protocol_version >> scan_id >> scan_start_time >> client_version;
 
 	if (client_version < m_latest_client_version) {

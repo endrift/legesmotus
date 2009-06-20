@@ -28,52 +28,55 @@
 #include <string>
 #include <iosfwd>
 
-class MapReader;
-class StringTokenizer;
-
-/*
- * A Map keeps track of things like the map name, dimensions, and spawn points
- * The client should derive a class called GraphicalMap which handles graphics and stuff
- * The server should derive a class called ServerMap which handles spawning
- */
-class Map {
-public:
-	enum ObjectType {
-		INVALID_OBJECT_TYPE = 0,
-		SPRITE = 1,
-		GATE = 2,
-		SPAWN_POINT = 3
-	};
-	static ObjectType	parse_object_type(const char* type_string);
-
-protected:
-	std::string	m_name;		// Should be unique
-	int		m_width;
-	int		m_height;
-
-public:
-	Map();
-	virtual ~Map();
-
-	// Standard getters
-	const char*	get_name() const { return m_name.c_str(); }
-	int		get_width() const { return m_width; }
-	int		get_height() const { return m_height; }
+namespace LM {
+	class MapReader;
+	class StringTokenizer;
 	
-	// Read and parse the given input stream and load into the current map
-	virtual bool	load(std::istream& in);
-
-	// load_file will preserve the current map if it can't open the new map
-	// (and return false to indicate error)
-	virtual bool	load_file(const char* path);
-
-	// Remove all objects from the map:
-	virtual void	clear();
-	// Parse the given packet representation of a map object and add it to the map
-	virtual void	add_object(MapReader& data) = 0;
-};
-
-StringTokenizer&	operator>> (StringTokenizer&, Map::ObjectType&);
-
+	/*
+	 * A Map keeps track of things like the map name, dimensions, and spawn points
+	 * The client should derive a class called GraphicalMap which handles graphics and stuff
+	 * The server should derive a class called ServerMap which handles spawning
+	 */
+	class Map {
+	public:
+		enum ObjectType {
+			INVALID_OBJECT_TYPE = 0,
+			SPRITE = 1,
+			GATE = 2,
+			SPAWN_POINT = 3
+		};
+		static ObjectType	parse_object_type(const char* type_string);
+	
+	protected:
+		std::string	m_name;		// Should be unique
+		int		m_width;
+		int		m_height;
+	
+	public:
+		Map();
+		virtual ~Map();
+	
+		// Standard getters
+		const char*	get_name() const { return m_name.c_str(); }
+		int		get_width() const { return m_width; }
+		int		get_height() const { return m_height; }
+		
+		// Read and parse the given input stream and load into the current map
+		virtual bool	load(std::istream& in);
+	
+		// load_file will preserve the current map if it can't open the new map
+		// (and return false to indicate error)
+		virtual bool	load_file(const char* path);
+	
+		// Remove all objects from the map:
+		virtual void	clear();
+		// Parse the given packet representation of a map object and add it to the map
+		virtual void	add_object(MapReader& data) = 0;
+	};
+	
+	StringTokenizer&	operator>> (StringTokenizer&, Map::ObjectType&);
+	
+	
+}
 
 #endif

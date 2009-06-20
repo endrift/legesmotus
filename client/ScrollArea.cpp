@@ -26,6 +26,7 @@
 #include "ScrollBar.hpp"
 #include <cmath>
 
+using namespace LM;
 using namespace std;
 
 ScrollArea::ScrollArea(double width, double height, double content_height, ScrollBar* bar) {

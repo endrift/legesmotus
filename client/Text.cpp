@@ -26,12 +26,13 @@
 #include "common/Exception.hpp"
 #include "compat_gl.h"
 
+using namespace LM;
 using namespace std;
 
 Text::Text(const string& text, Font* font) : Graphic() {
 	m_fg = font->render_string(text);
 	if (m_fg == NULL) {
-		throw LMException("Cannot render text");
+		throw Exception("Cannot render text");
 	}
 	m_shadow = NULL;
 	m_fg->set_center_x(0);

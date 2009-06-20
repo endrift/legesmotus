@@ -32,6 +32,7 @@
 #include <stddef.h>
 #include <string.h>
 
+using namespace LM;
 using namespace std;
 
 void	ConfigManager::write_option(ostream& out, const ConfigManager::map_type::value_type& option) {

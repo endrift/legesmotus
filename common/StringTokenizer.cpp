@@ -31,6 +31,7 @@
 
 // See .hpp file for extensive comments.
 
+using namespace LM;
 using namespace std;
 
 StringTokenizer::StringTokenizer() {

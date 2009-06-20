@@ -27,6 +27,7 @@
 #include <string>
 #include "PacketWriter.hpp"
 
+using namespace LM;
 using namespace std;
 
 UDPPacket::UDPPacket(size_t max_length) {

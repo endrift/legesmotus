@@ -28,6 +28,7 @@
 #include <cmath>
 #include <iostream>
 
+using namespace LM;
 using namespace std;
 
 GameWindow* GameWindow::m_instance = NULL;
@@ -59,7 +60,7 @@ GameWindow::GameWindow(int width, int height, int depth, bool fullscreen) {
 		SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
 		break;
 	default:
-		throw LMException("Bad depth");
+		throw Exception("Bad depth");
 		return;
 	}
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
@@ -76,7 +77,7 @@ GameWindow::GameWindow(int width, int height, int depth, bool fullscreen) {
 	}
 	m_context = SDL_SetVideoMode(width, height, depth, flags);
 	if (m_context == NULL) {
-		throw LMException(SDL_GetError());
+		throw Exception(SDL_GetError());
 	}
 	glEnable(GL_BLEND);
 	glEnable(GL_TEXTURE_2D);
@@ -120,7 +121,7 @@ void GameWindow::set_icon(SDL_Surface* icon) {
 		return;
 	}
 	if (!init_video()) {
-		throw LMException(SDL_GetError());
+		throw Exception(SDL_GetError());
 	}
 	m_icon = icon;
 	SDL_WM_SetIcon(icon, NULL);
@@ -129,7 +130,7 @@ void GameWindow::set_icon(SDL_Surface* icon) {
 GameWindow* GameWindow::get_instance(int width, int height, int depth, bool fullscreen) {
 	if (m_instance == NULL) {
 		if (!init_video()) {
-			throw LMException(SDL_GetError());
+			throw Exception(SDL_GetError());
 		}
 		m_instance = new GameWindow(width, height, depth, fullscreen);
 	} else {
@@ -147,7 +148,7 @@ GameWindow* GameWindow::get_optimal_instance() {
 	int depth;
 	size_t num_modes;
 	if (!init_video()) {
-		throw LMException(SDL_GetError());
+		throw Exception(SDL_GetError());
 	}
 	supported_resolutions(NULL, NULL, &depth, &num_modes);
 	int *w = new int[num_modes];

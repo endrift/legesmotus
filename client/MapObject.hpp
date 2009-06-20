@@ -32,34 +32,37 @@
 #include "client/Sprite.hpp"
 
 /* Represents an object on the map */
-class MapObject {
-private:
-	Map::ObjectType		m_type;			// As defined in the enum in the Map class.
-	Point			m_upper_left;
-	Graphic*		m_sprite;
-	char			m_team;			// 'A', 'B', or 0
-	LMPolygon		m_bounding_polygon;	// Note: coordinates in this polygon are relative to upper left corner of MAP
-
-public:
-	MapObject(Map::ObjectType type, Point upper_left);
-
-	Map::ObjectType		get_type() const { return m_type; }
-	Point			get_upper_left() const { return m_upper_left; }
-
-	Graphic*		get_sprite() const { return m_sprite; }
-	void			set_sprite(Sprite* sprite);
-	void			set_sprite(Graphic* sprite);
-	bool			has_sprite() const { return m_sprite != NULL; }
-
-	char			get_team() const { return m_team; }
-	void			set_team(char team) { m_team = team; }
-
-	LMPolygon&		get_bounding_polygon() { return m_bounding_polygon; }
-	const LMPolygon&	get_bounding_polygon() const { return m_bounding_polygon; }
-
-	bool			is_intersectable() const { return m_bounding_polygon.is_filled(); }
-	bool			is_obstacle() const { return m_type == Map::SPRITE && is_intersectable(); }
-
-};
+namespace LM {
+	class MapObject {
+	private:
+		Map::ObjectType		m_type;			// As defined in the enum in the Map class.
+		Point			m_upper_left;
+		Graphic*		m_sprite;
+		char			m_team;			// 'A', 'B', or 0
+		Polygon		m_bounding_polygon;	// Note: coordinates in this polygon are relative to upper left corner of MAP
+	
+	public:
+		MapObject(Map::ObjectType type, Point upper_left);
+	
+		Map::ObjectType		get_type() const { return m_type; }
+		Point			get_upper_left() const { return m_upper_left; }
+	
+		Graphic*		get_sprite() const { return m_sprite; }
+		void			set_sprite(Sprite* sprite);
+		void			set_sprite(Graphic* sprite);
+		bool			has_sprite() const { return m_sprite != NULL; }
+	
+		char			get_team() const { return m_team; }
+		void			set_team(char team) { m_team = team; }
+	
+		Polygon&		get_bounding_polygon() { return m_bounding_polygon; }
+		const Polygon&	get_bounding_polygon() const { return m_bounding_polygon; }
+	
+		bool			is_intersectable() const { return m_bounding_polygon.is_filled(); }
+		bool			is_obstacle() const { return m_type == Map::SPRITE && is_intersectable(); }
+	
+	};
+	
+}
 
 #endif

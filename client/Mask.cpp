@@ -25,6 +25,7 @@
 #include "Mask.hpp"
 #include <iostream>
 
+using namespace LM;
 using namespace std;
 
 Mask::Mask(Graphic* mask, Graphic* masked) : Graphic() {

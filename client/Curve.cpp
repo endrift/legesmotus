@@ -25,6 +25,8 @@
 #include "Curve.hpp"
 #include "common/math.hpp"
 
+using namespace LM;
+
 Curve::Curve(double start, double end) {
 	m_start_mapping = start;
 	m_end_mapping = end;

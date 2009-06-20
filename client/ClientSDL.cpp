@@ -26,11 +26,13 @@
 #include "common/Exception.hpp"
 #include "SDL.h"
 
+using namespace LM;
+
 // See ClientSDL.hpp for a description of this class's purpose.
 
 ClientSDL::ClientSDL() {
 	if (SDL_Init(0) == -1) {
-		throw LMException("Failed to initialize SDL.");
+		throw Exception("Failed to initialize SDL.");
 	}
 }
 

@@ -30,32 +30,35 @@
 #include <map>
 #include <string>
 
-class TransitionManager {
-public:
-	enum RemovePolicy {
-		KEEP,
-		REMOVE,
-		DELETE
+namespace LM {
+	class TransitionManager {
+	public:
+		enum RemovePolicy {
+			KEEP,
+			REMOVE,
+			DELETE
+		};
+	private:
+		struct State {
+			Transition*	transition;
+			bool		loop;
+			RemovePolicy	removal;
+		};
+		std::list<State>	m_transitions;
+		std::map<std::string, State*> m_statemap;
+	public:
+		TransitionManager();
+		~TransitionManager();
+	
+		void add_transition(Transition* transition, bool loop = false, RemovePolicy autodelete = KEEP);
+		void add_transition(Transition* transition, const std::string& name, bool loop = false, RemovePolicy autodelete = KEEP);
+		void remove_transition(Transition* transition);
+	
+		Transition* get_transition(const std::string& name);
+	
+		void update(uint64_t time);
 	};
-private:
-	struct State {
-		Transition*	transition;
-		bool		loop;
-		RemovePolicy	removal;
-	};
-	std::list<State>	m_transitions;
-	std::map<std::string, State*> m_statemap;
-public:
-	TransitionManager();
-	~TransitionManager();
-
-	void add_transition(Transition* transition, bool loop = false, RemovePolicy autodelete = KEEP);
-	void add_transition(Transition* transition, const std::string& name, bool loop = false, RemovePolicy autodelete = KEEP);
-	void remove_transition(Transition* transition);
-
-	Transition* get_transition(const std::string& name);
-
-	void update(uint64_t time);
-};
+	
+}
 
 #endif

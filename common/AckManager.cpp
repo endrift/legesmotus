@@ -28,6 +28,7 @@
 #include "timer.hpp"
 #include <limits>
 
+using namespace LM;
 using namespace std;
 
 AckManager::SentPacket::SentPacket(uint32_t arg_peer_id, const PacketWriter& arg_packet) : data(arg_packet.packet_data()) {

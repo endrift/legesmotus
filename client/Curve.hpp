@@ -25,47 +25,50 @@
 #ifndef LM_CLIENT_CURVE_HPP
 #define LM_CLIENT_CURVE_HPP
 
-class Curve {
-private:
-	double	m_start_mapping;
-	double	m_end_mapping;
-protected:
-	// Must return a value in [0, 1]
-	virtual double	map_progress(double t) const = 0;
-	Curve(double start, double end);
-public:
-	virtual ~Curve() {}
-	double operator()(double t) const;
-
-	void set_start(double start);
-	void set_end(double end);
-
-	double get_start() const;
-	double get_end() const;
-};
-
-class ConstantCurve : public Curve {
-protected:
-	virtual double	map_progress(double t) const;
-public:
-	ConstantCurve(double start, double end);
-};
-
-class LinearCurve : public Curve {
-protected:
-	virtual double	map_progress(double t) const;
-public:
-	LinearCurve(double start, double end);
-};
-
-class SinusoidalCurve : public Curve {
-private:
-	double m_frequency;
-	double m_phase;
-protected:
-	virtual double	map_progress(double t) const;
-public:
-	SinusoidalCurve(double start, double end, double frequency, double phase);
-};
+namespace LM {
+	class Curve {
+	private:
+		double	m_start_mapping;
+		double	m_end_mapping;
+	protected:
+		// Must return a value in [0, 1]
+		virtual double	map_progress(double t) const = 0;
+		Curve(double start, double end);
+	public:
+		virtual ~Curve() {}
+		double operator()(double t) const;
+	
+		void set_start(double start);
+		void set_end(double end);
+	
+		double get_start() const;
+		double get_end() const;
+	};
+	
+	class ConstantCurve : public Curve {
+	protected:
+		virtual double	map_progress(double t) const;
+	public:
+		ConstantCurve(double start, double end);
+	};
+	
+	class LinearCurve : public Curve {
+	protected:
+		virtual double	map_progress(double t) const;
+	public:
+		LinearCurve(double start, double end);
+	};
+	
+	class SinusoidalCurve : public Curve {
+	private:
+		double m_frequency;
+		double m_phase;
+	protected:
+		virtual double	map_progress(double t) const;
+	public:
+		SinusoidalCurve(double start, double end, double frequency, double phase);
+	};
+	
+}
 
 #endif

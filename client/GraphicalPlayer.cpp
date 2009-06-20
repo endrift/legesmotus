@@ -28,6 +28,7 @@
 
 #include <iostream>
 
+using namespace LM;
 using namespace std;
 
 GraphicalPlayer::GraphicalPlayer() : Player::Player() {

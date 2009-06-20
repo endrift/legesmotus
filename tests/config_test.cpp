@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 
+using namespace LM;
 using namespace std;
 
 int main () {

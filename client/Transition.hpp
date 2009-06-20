@@ -29,38 +29,41 @@
 #include <stdint.h>
 
 // TODO template?
-class Graphic;
-class Transition {
-public:
-	typedef void (Graphic::*Property)(double param);
-private:
-	Graphic*	m_transed;
-	Property	m_prop;
-	Curve*		m_curve;
-	uint64_t	m_start;
-	uint64_t	m_duration;
-	bool		m_curve_owned;
-	bool		m_graphic_owned;
-public:
-	Transition(Graphic* transitioned, Property property, Curve* curve = 0, uint64_t start = 0, uint64_t duration = 0);
-	~Transition();
-
-	void	set_start(uint64_t start);
-	void	set_duration(uint64_t duration);
-	void	set_curve(Curve* curve);
-	void	set_curve_ownership(bool owned);
-	void	set_graphic_ownership(bool owned);
-
-	uint64_t get_start() const;
-	uint64_t get_duration() const;
-	Curve*	get_curve();
-	Graphic* get_graphic();
-	bool	get_curve_ownership() const;
-	bool	get_graphic_ownership() const;
-
-	// Returns true if current >= end
-	bool update(uint64_t current);
-	void change_curve(uint64_t current, Curve* curve, uint64_t duration = 0);
-};
+namespace LM {
+	class Graphic;
+	class Transition {
+	public:
+		typedef void (Graphic::*Property)(double param);
+	private:
+		Graphic*	m_transed;
+		Property	m_prop;
+		Curve*		m_curve;
+		uint64_t	m_start;
+		uint64_t	m_duration;
+		bool		m_curve_owned;
+		bool		m_graphic_owned;
+	public:
+		Transition(Graphic* transitioned, Property property, Curve* curve = 0, uint64_t start = 0, uint64_t duration = 0);
+		~Transition();
+	
+		void	set_start(uint64_t start);
+		void	set_duration(uint64_t duration);
+		void	set_curve(Curve* curve);
+		void	set_curve_ownership(bool owned);
+		void	set_graphic_ownership(bool owned);
+	
+		uint64_t get_start() const;
+		uint64_t get_duration() const;
+		Curve*	get_curve();
+		Graphic* get_graphic();
+		bool	get_curve_ownership() const;
+		bool	get_graphic_ownership() const;
+	
+		// Returns true if current >= end
+		bool update(uint64_t current);
+		void change_curve(uint64_t current, Curve* curve, uint64_t duration = 0);
+	};
+	
+}
 
 #endif

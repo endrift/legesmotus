@@ -25,6 +25,7 @@
 #include "timer.hpp"
 #include <stddef.h>
 
+using namespace LM;
 using namespace std;
 
 #ifdef __WIN32
@@ -44,7 +45,7 @@ namespace {
 	}
 }
 
-uint64_t get_ticks() {
+uint64_t LM::get_ticks() {
 	static const uint64_t	frequency(get_performance_frequency());
 	static const uint64_t	start(get_performance_counter());
 	const uint64_t		now(get_performance_counter());
@@ -65,7 +66,7 @@ namespace {
 	};
 }
 
-uint64_t get_ticks() {
+uint64_t LM::get_ticks() {
 	static const TimeOfDay	start;
 	const TimeOfDay		now;
 

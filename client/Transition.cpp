@@ -25,6 +25,8 @@
 #include "Transition.hpp"
 #include "Graphic.hpp"
 
+using namespace LM;
+
 Transition::Transition(Graphic* transitioned, Property property, Curve* curve, uint64_t start, uint64_t duration) {
 	m_transed = transitioned;
 	m_prop = property;

@@ -28,6 +28,7 @@
 #include <algorithm>
 #include <iterator>
 
+using namespace LM;
 using namespace std;
 
 struct address_of {

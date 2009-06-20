@@ -35,11 +35,12 @@
 #include <string.h>
 #include <sstream>
 
+using namespace LM;
 using namespace std;
 
-const char METASERVER_HOSTNAME[] = "meta.legesmotus.beanwood.com";
+const char LM::METASERVER_HOSTNAME[] = "meta.legesmotus.beanwood.com";
 
-string	format_ip_address(const IPAddress& addr, bool resolve) {
+string	LM::format_ip_address(const IPAddress& addr, bool resolve) {
 	string			hostname;
 
 	if (resolve && resolve_ip_address(hostname, NULL, addr)) {
@@ -61,7 +62,7 @@ string	format_ip_address(const IPAddress& addr, bool resolve) {
 	return buffer;
 }
 
-bool	resolve_hostname(IPAddress& resolved_addr, const char* hostname_to_resolve, uint16_t portno) {
+bool	LM::resolve_hostname(IPAddress& resolved_addr, const char* hostname_to_resolve, uint16_t portno) {
 	resolved_addr.clear();
 
 	resolved_addr.port = htons(portno);
@@ -88,7 +89,7 @@ bool	resolve_hostname(IPAddress& resolved_addr, const char* hostname_to_resolve,
 	return false;
 }
 
-bool	resolve_ip_address(std::string& resolved_hostname, uint16_t* portno, const IPAddress& address_to_resolve) {
+bool	LM::resolve_ip_address(std::string& resolved_hostname, uint16_t* portno, const IPAddress& address_to_resolve) {
 	if (portno) {
 		*portno = ntohs(address_to_resolve.port);
 	}

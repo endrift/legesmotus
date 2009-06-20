@@ -27,29 +27,32 @@
 #ifndef LM_CLIENT_CLIENTCONFIGURATION_HPP
 #define LM_CLIENT_CLIENTCONFIGURATION_HPP
 
-class ClientConfiguration {
-private:
-	ConfigManager m_config_manager;
-	std::map<std::string, std::string> m_string_vals;
-	std::map<std::string, std::string> m_string_defaults;
-	std::map<std::string, int> m_int_vals;
-	std::map<std::string, int> m_int_defaults;
-	std::map<std::string, bool> m_bool_vals;
-	std::map<std::string, bool> m_bool_defaults;
-
-public:
-	ClientConfiguration();
-	~ClientConfiguration();
+namespace LM {
+	class ClientConfiguration {
+	private:
+		ConfigManager m_config_manager;
+		std::map<std::string, std::string> m_string_vals;
+		std::map<std::string, std::string> m_string_defaults;
+		std::map<std::string, int> m_int_vals;
+		std::map<std::string, int> m_int_defaults;
+		std::map<std::string, bool> m_bool_vals;
+		std::map<std::string, bool> m_bool_defaults;
 	
-	void		reload_config();
-	void		save_config();
-	void		reset_to_defaults();
-	std::string	get_string_value(std::string name);
-	int		get_int_value(std::string name);
-	bool		get_bool_value(std::string name);
-	void		set_string_value(std::string name, std::string value);
-	void		set_int_value(std::string name, int value);
-	void		set_bool_value(std::string name, bool value);
-};
+	public:
+		ClientConfiguration();
+		~ClientConfiguration();
+		
+		void		reload_config();
+		void		save_config();
+		void		reset_to_defaults();
+		std::string	get_string_value(std::string name);
+		int		get_int_value(std::string name);
+		bool		get_bool_value(std::string name);
+		void		set_string_value(std::string name, std::string value);
+		void		set_int_value(std::string name, int value);
+		void		set_bool_value(std::string name, bool value);
+	};
+	
+}
 
 #endif

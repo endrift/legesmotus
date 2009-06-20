@@ -28,77 +28,80 @@
 #include "TableBackground.hpp"
 #include "GameWindow.hpp"
 
-class ScrollArea;
-class ScrollBar : public Graphic {
-public:
-	enum ScrollWidget {
-		NO_WIDGET = 0,
-		TOP_BUTTON,
-		TOP_TRACK,
-		TRACKER,
-		BOTTOM_TRACK,
-		BOTTOM_BUTTON,
-
-		BUTTONS,
-		TRACK
-	};
-	enum {
-		SCROLL_WIDTH = 15
-	};
-
-private:
-	TableBackground m_bg;
-	double		m_height;
-	ScrollArea*	m_linked;
-	double		m_scrollbar_height;
-	double		m_progress;
-	ScrollWidget	m_pressed;
-	double		m_grab_y;
-	bool		m_updated;
-	double		m_scroll_speed;
-	double		m_track_speed;
-
-	const static double DEFAULT_AUTOSCROLL;
-
-public:
-	ScrollBar(ScrollArea* area = NULL);
-	ScrollBar(const ScrollBar& other);
-	virtual ScrollBar* clone() const;
-
-	virtual void	set_height(double height);
+namespace LM {
+	class ScrollArea;
+	class ScrollBar : public Graphic {
+	public:
+		enum ScrollWidget {
+			NO_WIDGET = 0,
+			TOP_BUTTON,
+			TOP_TRACK,
+			TRACKER,
+			BOTTOM_TRACK,
+			BOTTOM_BUTTON,
 	
-	double	get_height() const;
-
-	void	mouse_button_event(const SDL_MouseButtonEvent& event);
-	void	mouse_motion_event(const SDL_MouseMotionEvent& event);
-
-	// Scroll based on what's pressed down--use with mouse being held
-	void	autoscroll(double scale);
-
-	void	set_scroll_progress(double amount);
-	void	scroll(double amount);
-	double	get_scroll_progress() const;
-
-	void	set_scrollbar_height(double height);
-	void	set_section_color(ScrollWidget section, Color color);
-	void	set_border_color(Color color);
-	void	set_border_width(double width);
-
-	void	set_scroll_speed(double speed);
-	void	set_track_speed(double speed);
-
-	double	get_scroll_speed() const;
-	double	get_track_speed() const;
-
-	void	relink(ScrollArea* linked);
-	ScrollArea* getLinked();
-
-	virtual void	set_alpha(double alpha) { (void)(alpha); }
-	virtual void	set_red_intensity(double r) { (void)(r); }
-	virtual void	set_green_intensity(double g) { (void)(g); }
-	virtual void	set_blue_intensity(double b) { (void)(b); }
-
-	virtual void draw(const GameWindow* window) const;
-};
+			BUTTONS,
+			TRACK
+		};
+		enum {
+			SCROLL_WIDTH = 15
+		};
+	
+	private:
+		TableBackground m_bg;
+		double		m_height;
+		ScrollArea*	m_linked;
+		double		m_scrollbar_height;
+		double		m_progress;
+		ScrollWidget	m_pressed;
+		double		m_grab_y;
+		bool		m_updated;
+		double		m_scroll_speed;
+		double		m_track_speed;
+	
+		const static double DEFAULT_AUTOSCROLL;
+	
+	public:
+		ScrollBar(ScrollArea* area = NULL);
+		ScrollBar(const ScrollBar& other);
+		virtual ScrollBar* clone() const;
+	
+		virtual void	set_height(double height);
+		
+		double	get_height() const;
+	
+		void	mouse_button_event(const SDL_MouseButtonEvent& event);
+		void	mouse_motion_event(const SDL_MouseMotionEvent& event);
+	
+		// Scroll based on what's pressed down--use with mouse being held
+		void	autoscroll(double scale);
+	
+		void	set_scroll_progress(double amount);
+		void	scroll(double amount);
+		double	get_scroll_progress() const;
+	
+		void	set_scrollbar_height(double height);
+		void	set_section_color(ScrollWidget section, Color color);
+		void	set_border_color(Color color);
+		void	set_border_width(double width);
+	
+		void	set_scroll_speed(double speed);
+		void	set_track_speed(double speed);
+	
+		double	get_scroll_speed() const;
+		double	get_track_speed() const;
+	
+		void	relink(ScrollArea* linked);
+		ScrollArea* getLinked();
+	
+		virtual void	set_alpha(double alpha) { (void)(alpha); }
+		virtual void	set_red_intensity(double r) { (void)(r); }
+		virtual void	set_green_intensity(double g) { (void)(g); }
+		virtual void	set_blue_intensity(double b) { (void)(b); }
+	
+		virtual void draw(const GameWindow* window) const;
+	};
+	
+}
 
 #endif

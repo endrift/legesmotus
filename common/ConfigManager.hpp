@@ -61,66 +61,69 @@
  *  fullscreen yes
  */
 
-class ConfigManager {
-private:
-	typedef std::map<std::string, std::string> map_type;
-
-	map_type		m_options;
-
-	static void		write_option(std::ostream& out, const map_type::value_type& option);
-	const std::string*	lookup(const char* option_name) const;
-public:
-
-	// Load and save the configuration
-	bool			load(const char* filename);
-	bool			load(std::istream& in);
-	bool			save(const char* filename) const;
-	bool			save(std::ostream& out) const;
-
-	bool			load_system_config();
-	bool			load_personal_config();
-	bool			save_personal_config() const;
-
-	static const char*	personal_config_path();
-	static const char*	system_config_path();
-
-	// Get the raw string value using the subscript operator:
-	std::string&		operator[](const char* option_name) { return m_options[option_name]; }
-	const std::string&	operator[](const char* option_name) const;
-
-	// Check to see if a particular option has been set:
-	bool			has(const char* option_name) const { return m_options.count(option_name); }
-
-	// Unset (remove) the given option:
-	void			unset(const char* option_name) { m_options.erase(option_name); }
-
-	// Get the value for a particular option in the given type:
-	template<class T> T	get(const char* option_name) const;
-
-	// Set the value for a particular option:
-	template<class T> void	set(const char* option_name, const T& option_value);
-};
-
-template<> std::string	ConfigManager::get(const char* option_name) const;
-template<> const char*	ConfigManager::get(const char* option_name) const;
-template<> void	ConfigManager::set(const char* option_name, const char* const& option_value);
-
-template<> bool	ConfigManager::get(const char* option_name) const;
-template<> void	ConfigManager::set(const char* option_name, const bool& option_value);
-
-template<class T> T	ConfigManager::get(const char* option_name) const {
-	T	option_value = T();
-	if (const std::string* raw_value = lookup(option_name)) {
-		std::istringstream in(*raw_value);
-		in >> option_value;
+namespace LM {
+	class ConfigManager {
+	private:
+		typedef std::map<std::string, std::string> map_type;
+	
+		map_type		m_options;
+	
+		static void		write_option(std::ostream& out, const map_type::value_type& option);
+		const std::string*	lookup(const char* option_name) const;
+	public:
+	
+		// Load and save the configuration
+		bool			load(const char* filename);
+		bool			load(std::istream& in);
+		bool			save(const char* filename) const;
+		bool			save(std::ostream& out) const;
+	
+		bool			load_system_config();
+		bool			load_personal_config();
+		bool			save_personal_config() const;
+	
+		static const char*	personal_config_path();
+		static const char*	system_config_path();
+	
+		// Get the raw string value using the subscript operator:
+		std::string&		operator[](const char* option_name) { return m_options[option_name]; }
+		const std::string&	operator[](const char* option_name) const;
+	
+		// Check to see if a particular option has been set:
+		bool			has(const char* option_name) const { return m_options.count(option_name); }
+	
+		// Unset (remove) the given option:
+		void			unset(const char* option_name) { m_options.erase(option_name); }
+	
+		// Get the value for a particular option in the given type:
+		template<class T> T	get(const char* option_name) const;
+	
+		// Set the value for a particular option:
+		template<class T> void	set(const char* option_name, const T& option_value);
+	};
+	
+	template<> std::string	ConfigManager::get(const char* option_name) const;
+	template<> const char*	ConfigManager::get(const char* option_name) const;
+	template<> void	ConfigManager::set(const char* option_name, const char* const& option_value);
+	
+	template<> bool	ConfigManager::get(const char* option_name) const;
+	template<> void	ConfigManager::set(const char* option_name, const bool& option_value);
+	
+	template<class T> T	ConfigManager::get(const char* option_name) const {
+		T	option_value = T();
+		if (const std::string* raw_value = lookup(option_name)) {
+			std::istringstream in(*raw_value);
+			in >> option_value;
+		}
+		return option_value;
 	}
-	return option_value;
-}
-
-template<class T> void	ConfigManager::set(const char* option_name, const T& option_value) {
-	std::ostringstream	out;
-	out << option_value;
-	m_options[option_name] = out.str();
+	
+	template<class T> void	ConfigManager::set(const char* option_name, const T& option_value) {
+		std::ostringstream	out;
+		out << option_value;
+		m_options[option_name] = out.str();
+	}
+	
 }
 
 #endif

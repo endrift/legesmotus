@@ -32,6 +32,8 @@
 #include <sys/socket.h>
 #endif
 
+using namespace LM;
+
 IPAddress::IPAddress() {
 	host = 0;
 	port = 0;
@@ -62,11 +64,11 @@ bool IPAddress::is_localhost() const {
 }
 
 
-std::ostream&		operator<< (std::ostream& out, const IPAddress& addr) {
+std::ostream&		LM::operator<< (std::ostream& out, const IPAddress& addr) {
 	return out << format_ip_address(addr);
 }
 
-StringTokenizer&	operator>> (StringTokenizer& tok, IPAddress& addr) {
+StringTokenizer&	LM::operator>> (StringTokenizer& tok, IPAddress& addr) {
 	if (const char* str = tok.get_next()) {
 		std::string	host_part;
 		uint16_t	port_part;

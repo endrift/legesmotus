@@ -27,6 +27,7 @@
 #include <string>
 #include <sstream>
 
+using namespace LM;
 using namespace std;
 
 Minimap::Minimap(PathManager& path_manager, double scale) : m_path_manager(path_manager) {

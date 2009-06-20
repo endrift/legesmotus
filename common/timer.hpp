@@ -27,6 +27,8 @@
 
 #include <stdint.h>
 
-uint64_t	get_ticks();
+namespace LM {
+	uint64_t	get_ticks();
+}
 
 #endif

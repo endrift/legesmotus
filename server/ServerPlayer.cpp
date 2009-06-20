@@ -26,6 +26,7 @@
 #include "Server.hpp"
 #include "common/timer.hpp"
 
+using namespace LM;
 using namespace std;
 
 ServerPlayer::ServerPlayer() {

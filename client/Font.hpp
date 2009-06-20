@@ -30,17 +30,20 @@
 #include <string>
 #include <map>
 
-class Font {
-private:
-	TTF_Font*	m_font;
-public:
-	Font(const char* filename, int size);
-	~Font();
-
-	Sprite*	render_string(const std::string& text);
-	int	line_skip() const;
-	int	ascent() const;
-	int	descent() const;
-};
+namespace LM {
+	class Font {
+	private:
+		TTF_Font*	m_font;
+	public:
+		Font(const char* filename, int size);
+		~Font();
+	
+		Sprite*	render_string(const std::string& text);
+		int	line_skip() const;
+		int	ascent() const;
+		int	descent() const;
+	};
+	
+}
 
 #endif

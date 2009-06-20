@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <time.h>
 
+using namespace LM;
 using namespace std;
 
 extern "C" void clean_exit() {
@@ -42,29 +43,29 @@ namespace {
 		DEFAULT_SERVER_TIMEOUT = 2700,	// 45 minutes
 		DEFAULT_CONTACT_FREQUENCY = 900	// 15 minutes
 	};
-}
 
-static void display_usage(const char* progname) {
-	cout << "Usage: " << progname << " [OPTION]" << endl;
-	cout << "Options:" << endl;
-	cout << "  -d		daemonize the server (not on Windows)" << endl;
-	cout << "  -u USERNAME	drop privileges to given user (not on Windows)" << endl;
-	cout << "  -g GROUPNAME	drop privileges to given group (not on Windows)" << endl;
-	cout << "  -f FREQUENCY	set the frequency (in seconds) at which servers" << endl;
-	cout << "		should contact the meta server [default: " << int(DEFAULT_CONTACT_FREQUENCY) << "]" << endl;
-	cout << "  -t TIMEOUT	set the timeout (in seconds) for servers [default: " << int(DEFAULT_SERVER_TIMEOUT) << "]" << endl;
-	cout << "  -p PORTNO	set the port number to listen on [default: " << uint16_t(METASERVER_PORTNO) << "]" << endl;
-	cout << "  -?, --help	display this help, and exit" << endl;
-	cout << "      --version\tdisplay version information and exit" << endl;
-}
+	void display_usage(const char* progname) {
+		cout << "Usage: " << progname << " [OPTION]" << endl;
+		cout << "Options:" << endl;
+		cout << "  -d		daemonize the server (not on Windows)" << endl;
+		cout << "  -u USERNAME	drop privileges to given user (not on Windows)" << endl;
+		cout << "  -g GROUPNAME	drop privileges to given group (not on Windows)" << endl;
+		cout << "  -f FREQUENCY	set the frequency (in seconds) at which servers" << endl;
+		cout << "		should contact the meta server [default: " << int(DEFAULT_CONTACT_FREQUENCY) << "]" << endl;
+		cout << "  -t TIMEOUT	set the timeout (in seconds) for servers [default: " << int(DEFAULT_SERVER_TIMEOUT) << "]" << endl;
+		cout << "  -p PORTNO	set the port number to listen on [default: " << uint16_t(METASERVER_PORTNO) << "]" << endl;
+		cout << "  -?, --help	display this help, and exit" << endl;
+		cout << "      --version\tdisplay version information and exit" << endl;
+	}
 
-static void display_version() {
-	cout << "Leges Motus Meta Server" << endl;
-	cout << "A networked, 2D shooter set in zero gravity" << endl;
-	cout << endl;
-	cout << "Copyright 2009 Andrew Ayer, Nathan Partlan, Jeffrey Pfau" << endl;
-	cout << "Leges Motus is free and open source software; see the source for copying conditions." << endl;
-	cout << "There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE." << endl;
+	void display_version() {
+		cout << "Leges Motus Meta Server" << endl;
+		cout << "A networked, 2D shooter set in zero gravity" << endl;
+		cout << endl;
+		cout << "Copyright 2009 Andrew Ayer, Nathan Partlan, Jeffrey Pfau" << endl;
+		cout << "Leges Motus is free and open source software; see the source for copying conditions." << endl;
+		cout << "There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE." << endl;
+	}
 }
 
 extern "C" int main(int argc, char* argv[]) try {
@@ -130,7 +131,7 @@ extern "C" int main(int argc, char* argv[]) try {
 
 	return 0;
 
-} catch (const LMException& e) {
+} catch (const Exception& e) {
 	cerr << "Error: " << e.what() << endl;
 	return 1;
 }

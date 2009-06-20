@@ -40,6 +40,7 @@
 #include <set>
 #include <limits>
 
+using namespace LM;
 using namespace std;
 
 // This can't be an enum because we want overloading of operator<< to work OK.
@@ -589,15 +590,15 @@ void	Server::release_player_resources(const ServerPlayer& player) {
 void	Server::start(const char* interface_address, unsigned int portno, const char* map_name)
 {
 	if (!load_map(map_name)) {
-		throw LMException("Failed to load map.");
+		throw Exception("Failed to load map.");
 	}
 
 	if (!resolve_hostname(m_listen_address, interface_address, portno)) {
-		throw LMException("Failed to resolve the interface address.  Please make sure it's correct.");
+		throw Exception("Failed to resolve the interface address.  Please make sure it's correct.");
 	}
 
 	if (!m_network.start(m_listen_address)) {
-		throw LMException("Failed to start server network on interface and port.");
+		throw Exception("Failed to start server network on interface and port.");
 	}
 
 	if (m_register_with_metaserver && !resolve_hostname(m_metaserver_address, METASERVER_HOSTNAME, METASERVER_PORTNO)) {

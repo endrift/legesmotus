@@ -27,6 +27,7 @@
 #include <algorithm>
 #include "common/math.hpp"
 
+using namespace LM;
 using namespace std;
 
 TableBackground::TableBackground(int num_rows, double width) {
@@ -200,7 +201,7 @@ int TableBackground::get_num_rows() const {
 
 double TableBackground::get_row_height(int row) const {
 	if (row >= m_num_rows || row < 0) {
-		throw LMException("Row out of bounds");
+		throw Exception("Row out of bounds");
 	}
 	
 	return m_row_heights[row];
@@ -219,7 +220,7 @@ void TableBackground::set_num_rows(int num_rows) {
 
 void TableBackground::set_row_height(int row, double height) {
 	if (row >= m_num_rows || row < 0) {
-		throw LMException("Row out of bounds");
+		throw Exception("Row out of bounds");
 	}
 	
 	double delta = height - m_row_heights[row];
@@ -242,7 +243,7 @@ void TableBackground::set_border_color(Color color) {
 
 void TableBackground::set_cell_color(int row, Color color) {
 	if (row >= m_num_rows || row < 0) {
-		throw LMException("Row out of bounds");
+		throw Exception("Row out of bounds");
 	}
 	
 	m_cell_colors[row] = color;

@@ -28,15 +28,16 @@
 
 // See .hpp file for extensive comments.
 
+using namespace LM;
 using namespace std;
 
-const double RADIANS_TO_DEGREES = 57.29577951308232;
-const double DEGREES_TO_RADIANS = 1.745329251994e-02;
+const double LM::RADIANS_TO_DEGREES = 57.29577951308232;
+const double LM::DEGREES_TO_RADIANS = 1.745329251994e-02;
 
 // Returns a vector containing { closest point x, closest point y, u }
 // Note: You can check whether the closest point was on the initial line segment by
 // checking whether u is between 0 and 1.
-vector<double> closest_point_on_line(double x1, double y1, double x2, double y2, double x3, double y3) {
+vector<double> LM::closest_point_on_line(double x1, double y1, double x2, double y2, double x3, double y3) {
 	double distp2p1 = Point::distance(Point(x1, y1), Point(x2, y2));
 	if (distp2p1 == 0) {
 		cerr << "Error: Distance between start and end of line is 0.";
@@ -53,7 +54,7 @@ vector<double> closest_point_on_line(double x1, double y1, double x2, double y2,
 	return closestpoint;
 }
 
-double get_normalized_angle(double angle) {
+double LM::get_normalized_angle(double angle) {
 	while (angle < 0) {
 		angle += 360;
 	}
@@ -63,6 +64,6 @@ double get_normalized_angle(double angle) {
 	return angle;
 }
 
-double dot_product(Point a, Point b) {
+double LM::dot_product(Point a, Point b) {
 	return a.x * b.x + a.y * b.y;
 }

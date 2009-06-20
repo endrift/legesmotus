@@ -5,6 +5,8 @@
 #include "client/ScrollBar.hpp"
 #include "client/Sprite.hpp"
 
+using namespace LM;
+
 int main(int argc, char *argv[]) {
 	GameWindow *window = GameWindow::get_instance(300,300,24,false);
 	ScrollBar bar;

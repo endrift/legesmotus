@@ -26,6 +26,8 @@
 #include "GameWindow.hpp"
 #include "common/math.hpp"
 
+using namespace LM;
+
 TiledGraphic::TiledGraphic(SDL_Surface* image) : Graphic(image) {
 	init();
 }

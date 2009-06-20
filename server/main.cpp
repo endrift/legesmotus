@@ -36,6 +36,7 @@
 #include <signal.h>
 #endif
 
+using namespace LM;
 using namespace std;
 
 namespace {
@@ -184,7 +185,7 @@ extern "C" int main(int argc, char* argv[]) try {
 
 	return 0;
 
-} catch (const LMException& e) {
+} catch (const Exception& e) {
 	cerr << "Error: " << e.what() << endl;
 	cerr << "1. Make sure that you are running the server from the top-level source directory, OR that your $LM_DATA_DIR environment variable is set to the directory containing the game resources." << endl;
 	cerr << "2. Make sure that you are not already running the server." << endl;

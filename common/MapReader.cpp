@@ -26,6 +26,7 @@
 #include <string>
 #include <string.h>
 
+using namespace LM;
 using namespace std;
 
 MapReader::MapReader(const char* map_object_data) : StringTokenizer(map_object_data, '\t') {

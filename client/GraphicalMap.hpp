@@ -30,46 +30,49 @@
 #include <list>
 #include <map>
 
-class GameWindow;
-class PathManager;
-class Graphic;
-
-/*
- * Derives from Map, and adds graphics stuff.
- */
-class GraphicalMap : public Map {
-private:
-	PathManager&			m_path_manager;
-	GameWindow* 			m_window;
-	std::list<MapObject>		m_objects;
-	MapObject*			m_gates[2];
-	std::map<std::string, Graphic*>	m_cached_graphics;
-
-	enum {
-		GATE_HEIGHT = 109,	// Height of the gate bar
-		GATE_EXTENT = 24	// Extent to which the gate's bounding polygon should extend outwards horizontally from the actual sprite
-	}; // XXX: Don't hard code
-
-	MapObject*			get_gate_object(char team);
-
-	template<class T> T*		load_graphic(const std::string& sprite_name);
-
-public:
-	GraphicalMap(PathManager&, GameWindow* window);
-	virtual ~GraphicalMap();
-
-	const std::list<MapObject>&	get_objects() const { return m_objects; }
-	virtual void			clear(); // Remove all objects
-
-	// Read and parse the given input stream and load into the current map
-	bool				load(std::istream& in);
-
-	virtual void			set_visible(bool visible);
-	virtual void			add_object(MapReader& data);
-
-	// progress is in [0.0,1.0], where 0 == closed .. 1 == fully open
-	void				set_gate_progress(char team, double progress);
-	void				reset_gates();
-};
+namespace LM {
+	class GameWindow;
+	class PathManager;
+	class Graphic;
+	
+	/*
+	 * Derives from Map, and adds graphics stuff.
+	 */
+	class GraphicalMap : public Map {
+	private:
+		PathManager&			m_path_manager;
+		GameWindow* 			m_window;
+		std::list<MapObject>		m_objects;
+		MapObject*			m_gates[2];
+		std::map<std::string, Graphic*>	m_cached_graphics;
+	
+		enum {
+			GATE_HEIGHT = 109,	// Height of the gate bar
+			GATE_EXTENT = 24	// Extent to which the gate's bounding polygon should extend outwards horizontally from the actual sprite
+		}; // XXX: Don't hard code
+	
+		MapObject*			get_gate_object(char team);
+	
+		template<class T> T*		load_graphic(const std::string& sprite_name);
+	
+	public:
+		GraphicalMap(PathManager&, GameWindow* window);
+		virtual ~GraphicalMap();
+	
+		const std::list<MapObject>&	get_objects() const { return m_objects; }
+		virtual void			clear(); // Remove all objects
+	
+		// Read and parse the given input stream and load into the current map
+		bool				load(std::istream& in);
+	
+		virtual void			set_visible(bool visible);
+		virtual void			add_object(MapReader& data);
+	
+		// progress is in [0.0,1.0], where 0 == closed .. 1 == fully open
+		void				set_gate_progress(char team, double progress);
+		void				reset_gates();
+	};
+	
+}
 
 #endif

@@ -30,6 +30,7 @@
 #include <string>
 #include <string.h>
 
+using namespace LM;
 using namespace std;
 
 // See .hpp file for comments.
@@ -88,7 +89,7 @@ Map::ObjectType	Map::parse_object_type(const char* type_string) {
 	return INVALID_OBJECT_TYPE;
 }
 
-StringTokenizer&	operator>> (StringTokenizer& tok, Map::ObjectType& object_type) {
+StringTokenizer&	LM::operator>> (StringTokenizer& tok, Map::ObjectType& object_type) {
 	if (const char* str = tok.get_next()) {
 		object_type = Map::parse_object_type(str);
 	} else {

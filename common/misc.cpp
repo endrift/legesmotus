@@ -32,13 +32,14 @@
 
 // See .hpp file for extensive comments.
 
+using namespace LM;
 using namespace std;
 
 #ifdef __WIN32
 
 #include <Windows.h>
 
-string	get_username() {
+string	LM::get_username() {
 	char username[64];
 	DWORD unlen = sizeof(username);
 	if (GetUserName(username,&unlen)) {
@@ -48,19 +49,19 @@ string	get_username() {
 	}
 }
 
-void	daemonize() {
-	throw LMException("Sorry, daemonization not supported on Windows.");
+void	LM::daemonize() {
+	throw Exception("Sorry, daemonization not supported on Windows.");
 }
 
-void	drop_privileges(const char* username, const char* groupname) {
-	throw LMException("Sorry, privilege dropping is not supported on Windows.");
+void	LM::drop_privileges(const char* username, const char* groupname) {
+	throw Exception("Sorry, privilege dropping is not supported on Windows.");
 }
 
-bool	has_terminal_output() {
+bool	LM::has_terminal_output() {
 	return true;
 }
 
-bool	scan_directory(list<string>& filenames, const char* directory) {
+bool	LM::scan_directory(list<string>& filenames, const char* directory) {
 	string			full_directory(directory);
 	if (full_directory[full_directory.size() - 1] != '\\') {
 		full_directory += "\\";
@@ -98,7 +99,7 @@ bool	scan_directory(list<string>& filenames, const char* directory) {
 #include <errno.h>
 #include <dirent.h>
 
-string	get_username() {
+string	LM::get_username() {
 	if (struct passwd* pw = getpwuid(getuid())) {
 		return pw->pw_name;
 	} else {
@@ -106,11 +107,11 @@ string	get_username() {
 	}
 }
 
-void	daemonize() {
+void	LM::daemonize() {
 	// Fork, and exit the parent process
 	pid_t	pid = fork();
 	if (pid < 0) {
-		throw LMException(strerror(errno));
+		throw Exception(strerror(errno));
 	} else if (pid > 0) {
 		// Parent process
 		exit(0);
@@ -149,7 +150,7 @@ void	daemonize() {
 	setsid();
 }
 
-void	drop_privileges(const char* username, const char* groupname) {
+void	LM::drop_privileges(const char* username, const char* groupname) {
 	if (!username && !groupname) {
 		return;
 	}
@@ -161,7 +162,7 @@ void	drop_privileges(const char* username, const char* groupname) {
 		if (!(usr = getpwnam(username))) {
 			ostringstream	errmsg;
 			errmsg << username << ": " << (errno ? strerror(errno) : "No such user");
-			throw LMException(errmsg.str().c_str());
+			throw Exception(errmsg.str().c_str());
 		}
 	}
 
@@ -170,7 +171,7 @@ void	drop_privileges(const char* username, const char* groupname) {
 		if (!(grp = getgrnam(groupname))) {
 			ostringstream	errmsg;
 			errmsg << groupname << ": " << (errno ? strerror(errno) : "No such group");
-			throw LMException(errmsg.str().c_str());
+			throw Exception(errmsg.str().c_str());
 		}
 	}
 
@@ -178,7 +179,7 @@ void	drop_privileges(const char* username, const char* groupname) {
 	if (setgid(grp ? grp->gr_gid : usr->pw_gid) < 0) {
 		ostringstream	errmsg;
 		errmsg << "Failed to drop privileges: " << strerror(errno);
-		throw LMException(errmsg.str().c_str());
+		throw Exception(errmsg.str().c_str());
 	}
 
 	if (usr) {
@@ -186,16 +187,16 @@ void	drop_privileges(const char* username, const char* groupname) {
 		if (setuid(usr->pw_uid) < 0) {
 			ostringstream	errmsg;
 			errmsg << "Failed to drop privileges: " << strerror(errno);
-			throw LMException(errmsg.str().c_str());
+			throw Exception(errmsg.str().c_str());
 		}
 	}
 }
 
-bool	has_terminal_output() {
+bool	LM::has_terminal_output() {
 	return isatty(1);
 }
 
-bool	scan_directory(list<string>& filenames, const char* directory) {
+bool	LM::scan_directory(list<string>& filenames, const char* directory) {
 	struct dirent**	files;
 	int		nfiles = scandir(directory, &files, NULL, NULL);
 	if (nfiles < 0) {
@@ -233,7 +234,7 @@ Color::Color(double r, double g, double b, double a) {
 const Color Color::WHITE(1.0, 1.0, 1.0);
 const Color Color::BLACK(0.0, 0.0, 0.0);
 
-void	strip_leading_trailing_spaces(string& str) {
+void	LM::strip_leading_trailing_spaces(string& str) {
 	string::size_type startpos = str.find_first_not_of(" \t");
 	string::size_type endpos = str.find_last_not_of(" \t");
 	if (startpos != string::npos && endpos != string::npos) {
@@ -243,7 +244,7 @@ void	strip_leading_trailing_spaces(string& str) {
 	}
 }
 
-void	condense_whitespace(string& str, int (*my_isspace)(int), char replacement) {
+void	LM::condense_whitespace(string& str, int (*my_isspace)(int), char replacement) {
 	const char*	p = str.c_str();
 
 	// Skip leading whitespace
@@ -271,7 +272,7 @@ void	condense_whitespace(string& str, int (*my_isspace)(int), char replacement) 
 	str.swap(new_str);
 }
 
-void	sanitize_player_name(string& name) {
+void	LM::sanitize_player_name(string& name) {
 	const char*	p = name.c_str();
 
 	// Skip leading whitespace

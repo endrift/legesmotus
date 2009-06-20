@@ -34,11 +34,14 @@
  * It will take care of proper initialization and de-initialization quite nicely.
  */
 
-class ClientSDL {
-public:
-	ClientSDL();
-	~ClientSDL();
-
-};
+namespace LM {
+	class ClientSDL {
+	public:
+		ClientSDL();
+		~ClientSDL();
+	
+	};
+	
+}
 
 #endif

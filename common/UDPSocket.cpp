@@ -41,6 +41,8 @@
 #endif
 
 
+using namespace LM;
+
 void	UDPSocket::init() {
 #ifdef __WIN32__
 	static struct WinSock {
@@ -49,12 +51,12 @@ void	UDPSocket::init() {
 			WORD	version = MAKEWORD(2, 0);
 
 			if (WSAStartup(version, &wsaData) != 0) {
-				throw LMException("Failed to initialize WinSock");
+				throw Exception("Failed to initialize WinSock");
 			}
 
 			if (LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 0 ) {
 				WSACleanup();
-				throw LMException("Required version of WinSock not supported");
+				throw Exception("Required version of WinSock not supported");
 			}
 		}
 		~WinSock() {
@@ -64,7 +66,7 @@ void	UDPSocket::init() {
 #endif
 
 	if ((fd = ::socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-		throw LMException("Failed to create UDP socket");
+		throw Exception("Failed to create UDP socket");
 	}
 
 	// The cast to char* is necessary to build on Windows, but should be harmless.

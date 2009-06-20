@@ -24,6 +24,7 @@
 
 #include "GraphicGroup.hpp"
 
+using namespace LM;
 using namespace std;
 
 GraphicGroup::GraphicGroup() : Graphic() {

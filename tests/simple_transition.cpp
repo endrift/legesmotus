@@ -7,6 +7,8 @@
 #include "common/PathManager.hpp"
 #include "common/math.hpp"
 
+using namespace LM;
+
 extern "C" int main(int argc, char* argv[]) {
 	ClientSDL sdl;
 	(void)(sdl);

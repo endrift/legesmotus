@@ -24,14 +24,16 @@
  
 #include "Exception.hpp"
 
+using namespace LM;
+
 // See .hpp file for comments.
 
-LMException::LMException(const char* message) : m_message(message) {
+Exception::Exception(const char* message) : m_message(message) {
 }
 
-LMException::LMException(const std::string& message) : m_message(message) {
+Exception::Exception(const std::string& message) : m_message(message) {
 }
 
-const char* LMException::what() const throw() {
+const char* Exception::what() const throw() {
 	return m_message.c_str();
 }

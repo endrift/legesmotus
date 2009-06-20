@@ -26,6 +26,8 @@
 #include "ScrollArea.hpp"
 #include <cmath>
 
+using namespace LM;
+
 const double ScrollBar::DEFAULT_AUTOSCROLL = 50.0;
 
 ScrollBar::ScrollBar(ScrollArea* area) : m_bg(5,SCROLL_WIDTH) {

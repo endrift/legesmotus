@@ -8,43 +8,46 @@
 #include <string>
 #include <stdlib.h>
 
+using namespace LM;
 using namespace std;
 
-class LockedClientNetwork {
-	ClientNetwork&		m_network;
-	SDL_mutex*		m_lock;
+namespace {
+	class LockedClientNetwork {
+		ClientNetwork&		m_network;
+		SDL_mutex*		m_lock;
 
-public:
-	explicit LockedClientNetwork(ClientNetwork& network) : m_network(network) {
-		m_lock = SDL_CreateMutex();
-	}
-
-	bool receive_raw_packet(UDPPacket& packet) {
-		SDL_mutexP(m_lock);
-		bool	result = m_network.receive_raw_packet(packet);
-		SDL_mutexV(m_lock);
-		return result;
-	}
-	void send_raw_packet(const UDPPacket& packet) {
-		SDL_mutexP(m_lock);
-		m_network.send_raw_packet(packet);
-		SDL_mutexV(m_lock);
-	}
-};
-
-static int do_recv_thread(void* data) {
-	LockedClientNetwork&	network(*static_cast<LockedClientNetwork*>(data));
-	UDPPacket		packet(MAX_PACKET_LENGTH);
-
-	while (true) {
-		if (network.receive_raw_packet(packet)) {
-			cout.write(packet.get_data(), packet.get_length());
-			cout << endl;
-		} else {
-			SDL_Delay(10);
+	public:
+		explicit LockedClientNetwork(ClientNetwork& network) : m_network(network) {
+			m_lock = SDL_CreateMutex();
 		}
+
+		bool receive_raw_packet(UDPPacket& packet) {
+			SDL_mutexP(m_lock);
+			bool	result = m_network.receive_raw_packet(packet);
+			SDL_mutexV(m_lock);
+			return result;
+		}
+		void send_raw_packet(const UDPPacket& packet) {
+			SDL_mutexP(m_lock);
+			m_network.send_raw_packet(packet);
+			SDL_mutexV(m_lock);
+		}
+	};
+
+	int do_recv_thread(void* data) {
+		LockedClientNetwork&	network(*static_cast<LockedClientNetwork*>(data));
+		UDPPacket		packet(MAX_PACKET_LENGTH);
+
+		while (true) {
+			if (network.receive_raw_packet(packet)) {
+				cout.write(packet.get_data(), packet.get_length());
+				cout << endl;
+			} else {
+				SDL_Delay(10);
+			}
+		}
+		return 0;
 	}
-	return 0;
 }
 
 int main (int argc, char** argv) {

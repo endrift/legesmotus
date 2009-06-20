@@ -24,6 +24,8 @@
 
 #include "MapObject.hpp"
 
+using namespace LM;
+
 MapObject::MapObject(Map::ObjectType type, Point upper_left) {
 	m_type = type;
 	m_upper_left = upper_left;

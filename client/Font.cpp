@@ -25,15 +25,16 @@
 #include "Font.hpp"
 #include "common/Exception.hpp"
 
+using namespace LM;
 using namespace std;
 
 Font::Font(const char* filename, int size) {
 	if (!TTF_WasInit() && TTF_Init() == -1) {
-		throw LMException("Could not init SDL_TTF!");
+		throw Exception("Could not init SDL_TTF!");
 	}
 	m_font = TTF_OpenFont(filename, size);
 	if (!m_font) {
-		throw LMException("Could not load font!");
+		throw Exception("Could not load font!");
 	}
 }
 

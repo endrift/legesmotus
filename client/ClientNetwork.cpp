@@ -34,6 +34,7 @@
 #include "common/timer.hpp"
 #include <iostream>
 
+using namespace LM;
 using namespace std;
 
 ClientNetwork::ClientNetwork() {

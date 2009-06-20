@@ -34,33 +34,36 @@
 #include <stdint.h>
 #include <iosfwd>
 
-class StringTokenizer;
-
-class IPAddress {
-public:
-	uint32_t	host;
-	uint16_t	port;
-
-	IPAddress();
-	IPAddress(uint32_t host, uint16_t port);
-	IPAddress(const struct sockaddr_in& address);
-
-	void		clear () { host = 0; port = 0; }
-
-	void		populate_sockaddr(struct sockaddr_in& address) const;
-	void		set_host(const struct in_addr& addr);
-
-	bool		is_localhost() const;
-
-	bool		operator==(const IPAddress& other) const {
-		return host == other.host && port == other.port;
-	}
-	bool		operator<(const IPAddress& other) const {
-		return host == other.host ? port < other.port : host < other.host;
-	}
-};
-
-std::ostream&		operator<< (std::ostream&, const IPAddress&);
-StringTokenizer&	operator>> (StringTokenizer&, IPAddress&);
+namespace LM {
+	class StringTokenizer;
+	
+	class IPAddress {
+	public:
+		uint32_t	host;
+		uint16_t	port;
+	
+		IPAddress();
+		IPAddress(uint32_t host, uint16_t port);
+		IPAddress(const struct sockaddr_in& address);
+	
+		void		clear () { host = 0; port = 0; }
+	
+		void		populate_sockaddr(struct sockaddr_in& address) const;
+		void		set_host(const struct in_addr& addr);
+	
+		bool		is_localhost() const;
+	
+		bool		operator==(const IPAddress& other) const {
+			return host == other.host && port == other.port;
+		}
+		bool		operator<(const IPAddress& other) const {
+			return host == other.host ? port < other.port : host < other.host;
+		}
+	};
+	
+	std::ostream&		operator<< (std::ostream&, const IPAddress&);
+	StringTokenizer&	operator>> (StringTokenizer&, IPAddress&);
+	
+}
 
 #endif

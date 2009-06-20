@@ -28,52 +28,55 @@
 #include <string>
 #include "IPAddress.hpp"
 
-// What to use to separate packet fields?
-const char PACKET_FIELD_SEPARATOR = '\f';	// Formfeed
+namespace LM {
+	// What to use to separate packet fields?
+	const char PACKET_FIELD_SEPARATOR = '\f';	// Formfeed
 
-// Maximum length of packets:
-enum { MAX_PACKET_LENGTH = 1024 };
+	// Maximum length of packets:
+	enum { MAX_PACKET_LENGTH = 1024 };
 
-// Maximum length of a player name
-enum { MAX_NAME_LENGTH = 20 };
+	// Maximum length of a player name
+	enum { MAX_NAME_LENGTH = 20 };
 
-// The default port number of the server
-enum { DEFAULT_PORTNO = 16877 };
+	// The default port number of the server
+	enum { DEFAULT_PORTNO = 16877 };
 
-// Meta server settings
-enum { METASERVER_PORTNO = 16878 };
-extern const char METASERVER_HOSTNAME[];
+	// Meta server settings
+	enum { METASERVER_PORTNO = 16878 };
+	extern const char METASERVER_HOSTNAME[];
 
-// Packet types:
-enum {
-	ACK_PACKET = 0,
-	PLAYER_UPDATE_PACKET = 1,
-	GUN_FIRED_PACKET = 2,
-	PLAYER_SHOT_PACKET = 3,
-	MESSAGE_PACKET = 4,
-	GAME_START_PACKET = 5,
-	GAME_STOP_PACKET = 6,
-	SCORE_UPDATE_PACKET = 7,
-	WELCOME_PACKET = 8,
-	ANNOUNCE_PACKET = 9,
-	GATE_UPDATE_PACKET = 10,
-	JOIN_PACKET = 11,
-	INFO_PACKET = 12,
-	SHUTDOWN_PACKET = 13,
-	LEAVE_PACKET = 14,
-	PLAYER_ANIMATION_PACKET = 15,
-	REQUEST_DENIED_PACKET = 16,
-	NAME_CHANGE_PACKET = 17,
-	TEAM_CHANGE_PACKET = 18,
-	REGISTER_SERVER_PACKET = 19,
-	UNREGISTER_SERVER_PACKET = 20,
-	UPGRADE_AVAILABLE_PACKET = 21
-};
+	// Packet types:
+	enum {
+		ACK_PACKET = 0,
+		PLAYER_UPDATE_PACKET = 1,
+		GUN_FIRED_PACKET = 2,
+		PLAYER_SHOT_PACKET = 3,
+		MESSAGE_PACKET = 4,
+		GAME_START_PACKET = 5,
+		GAME_STOP_PACKET = 6,
+		SCORE_UPDATE_PACKET = 7,
+		WELCOME_PACKET = 8,
+		ANNOUNCE_PACKET = 9,
+		GATE_UPDATE_PACKET = 10,
+		JOIN_PACKET = 11,
+		INFO_PACKET = 12,
+		SHUTDOWN_PACKET = 13,
+		LEAVE_PACKET = 14,
+		PLAYER_ANIMATION_PACKET = 15,
+		REQUEST_DENIED_PACKET = 16,
+		NAME_CHANGE_PACKET = 17,
+		TEAM_CHANGE_PACKET = 18,
+		REGISTER_SERVER_PACKET = 19,
+		UNREGISTER_SERVER_PACKET = 20,
+		UPGRADE_AVAILABLE_PACKET = 21
+	};
 
-bool		resolve_hostname(IPAddress& resolved_addr, const char* hostname_to_resolve, uint16_t portno); // portno must be in host-byte order
-bool		resolve_ip_address(std::string& resolved_hostname, uint16_t* portno, const IPAddress& address_to_resolve); // portno will be in host-byte order
+	bool		resolve_hostname(IPAddress& resolved_addr, const char* hostname_to_resolve, uint16_t portno); // portno must be in host-byte order
+	bool		resolve_ip_address(std::string& resolved_hostname, uint16_t* portno, const IPAddress& address_to_resolve); // portno will be in host-byte order
 
-std::string	format_ip_address(const IPAddress& addr, bool resolve =false);
+	std::string	format_ip_address(const IPAddress& addr, bool resolve =false);
+
+}
 
 #ifdef __WIN32
 int		inet_aton(const char* cp, struct in_addr* inp); // Compatibility wrapper for Windows

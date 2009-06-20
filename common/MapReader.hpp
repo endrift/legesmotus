@@ -29,17 +29,20 @@
 #include "Map.hpp"
 #include <string>
 
-class MapReader : public StringTokenizer {
-private:
-	Map::ObjectType		m_type;
-	std::string		m_id;
-
-public:
-	explicit MapReader(const char* map_object_data);
-
-	Map::ObjectType		get_type() const { return m_type; }
-	const char*		get_id() const { return m_id.c_str(); }
-	bool			has_id() const { return !m_id.empty(); }
-};
+namespace LM {
+	class MapReader : public StringTokenizer {
+	private:
+		Map::ObjectType		m_type;
+		std::string		m_id;
+	
+	public:
+		explicit MapReader(const char* map_object_data);
+	
+		Map::ObjectType		get_type() const { return m_type; }
+		const char*		get_id() const { return m_id.c_str(); }
+		bool			has_id() const { return !m_id.empty(); }
+	};
+	
+}
 
 #endif

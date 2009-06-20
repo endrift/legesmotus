@@ -36,6 +36,7 @@
 #include <signal.h>
 #endif
 
+using namespace LM;
 using namespace std;
 
 ServerNetwork::ServerNetwork() {

@@ -32,6 +32,7 @@
 #include "common/team.hpp"
 #include <iostream>
 
+using namespace LM;
 using namespace std;
 
 extern "C" void clean_exit() {
@@ -40,31 +41,33 @@ extern "C" void clean_exit() {
 	SDL_PushEvent(&quit_event);
 }
 
-static void display_usage(const char* progname) {
-	cout << "Usage: " << progname << " [OPTION]" << endl;
-	cout << "Options:" << endl;
-	cout << "  -n NAME	set your player name" << endl;
-	cout << "  -t red|blue	set your team" << endl;
-	cout << "  -s SERVER	set the hostname of the server" << endl;
-	cout << "  -p PORTNO	set the port number of the server" << endl;
-	cout << "  -w WIDTH	set the screen width, in pixels" << endl;
-	cout << "  -h HEIGHT	set the screen height, in pixels" << endl;
-	cout << "  -f 		run the game in fullscreen" << endl;
-	cout << "  -?, --help	display this help, and exit" << endl;
-	cout << "      --version\tdisplay version information and exit" << endl;
-}
+namespace {
+	void display_usage(const char* progname) {
+		cout << "Usage: " << progname << " [OPTION]" << endl;
+		cout << "Options:" << endl;
+		cout << "  -n NAME	set your player name" << endl;
+		cout << "  -t red|blue	set your team" << endl;
+		cout << "  -s SERVER	set the hostname of the server" << endl;
+		cout << "  -p PORTNO	set the port number of the server" << endl;
+		cout << "  -w WIDTH	set the screen width, in pixels" << endl;
+		cout << "  -h HEIGHT	set the screen height, in pixels" << endl;
+		cout << "  -f 		run the game in fullscreen" << endl;
+		cout << "  -?, --help	display this help, and exit" << endl;
+		cout << "      --version\tdisplay version information and exit" << endl;
+	}
 
-static void display_legalese() {
-	cout << "Copyright 2009 Andrew Ayer, Nathan Partlan, Jeffrey Pfau" << endl;
-	cout << "Leges Motus is free and open source software; see the source for copying conditions." << endl;
-	cout << "There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE." << endl;
-}
+	void display_legalese() {
+		cout << "Copyright 2009 Andrew Ayer, Nathan Partlan, Jeffrey Pfau" << endl;
+		cout << "Leges Motus is free and open source software; see the source for copying conditions." << endl;
+		cout << "There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE." << endl;
+	}
 
-static void display_version() {
-	cout << "Leges Motus" << endl;
-	cout << "A networked, 2D shooter set in zero gravity" << endl;
-	cout << endl;
-	display_legalese();
+	void display_version() {
+		cout << "Leges Motus" << endl;
+		cout << "A networked, 2D shooter set in zero gravity" << endl;
+		cout << endl;
+		display_legalese();
+	}
 }
 
 extern "C" int main(int argc, char* argv[]) try {
@@ -177,7 +180,7 @@ extern "C" int main(int argc, char* argv[]) try {
 	
 	return 0;
 
-} catch (const LMException& e) {
+} catch (const Exception& e) {
 	cerr << "Error: " << e.what() << endl;
 	cerr << "1. If on X11, check that your $DISPLAY environment variable is set properly." << endl;
 	cerr << "2. Make sure that you are running Leges Motus from the top-level source directory, OR that your $LM_DATA_DIR environment variable is set to the directory containing the game resources." << endl;

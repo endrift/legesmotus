@@ -26,24 +26,26 @@
 #include "StringTokenizer.hpp"
 #include <ostream>
 
-void	LMVersion::init (int M, int m, int p)
+using namespace LM;
+
+void	Version::init (int M, int m, int p)
 {
 	major = M;
 	minor = m;
 	patch = p;
 }
 
-void	LMVersion::init (const char* str)
+void	Version::init (const char* str)
 {
 	StringTokenizer(str, '.') >> major >> minor >> patch;
 }
 
-void	LMVersion::clear ()
+void	Version::clear ()
 {
 	major = minor = patch = 0;
 }
 
-bool	LMVersion::operator< (LMVersion other) const
+bool	Version::operator< (Version other) const
 {
 	if (major == other.major) {
 		if (minor == other.minor) {
@@ -56,17 +58,17 @@ bool	LMVersion::operator< (LMVersion other) const
 	}
 }
 
-bool	LMVersion::operator<= (LMVersion other) const
+bool	Version::operator<= (Version other) const
 {
 	return *this < other || *this == other;
 }
 
-bool	LMVersion::operator>= (LMVersion other) const
+bool	Version::operator>= (Version other) const
 {
 	return *this > other || *this == other;
 }
 
-bool	LMVersion::operator> (LMVersion other) const
+bool	Version::operator> (Version other) const
 {
 	if (major == other.major) {
 		if (minor == other.minor) {
@@ -79,23 +81,23 @@ bool	LMVersion::operator> (LMVersion other) const
 	}
 }
 
-bool	LMVersion::operator== (LMVersion other) const
+bool	Version::operator== (Version other) const
 {
 	return major == other.major && minor == other.minor && patch == other.patch;
 }
 
-bool	LMVersion::operator!= (LMVersion other) const
+bool	Version::operator!= (Version other) const
 {
 	return !(*this == other);
 }
 
 
-std::ostream&	operator<< (std::ostream& out, const LMVersion& version)
+std::ostream&	LM::operator<< (std::ostream& out, const Version& version)
 {
 	return out << version.major << '.' << version.minor << '.' << version.patch;
 }
 
-StringTokenizer&	operator>> (StringTokenizer& tokenize, LMVersion& version)
+StringTokenizer&	LM::operator>> (StringTokenizer& tokenize, Version& version)
 {
 	if (const char* str = tokenize.get_next()) {
 		version.init(str);

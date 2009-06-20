@@ -7,6 +7,7 @@
 #include "client/TableBackground.hpp"
 #include <cmath>
 
+using namespace LM;
 using namespace std;
 
 extern "C" int main(int argc, char* argv[]) {

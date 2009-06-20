@@ -27,6 +27,8 @@
 #include "common/Exception.hpp"
 #include "common/math.hpp"
 
+using namespace LM;
+
 Graphic::Graphic() {
 	init(NULL);
 }

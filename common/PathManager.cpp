@@ -25,6 +25,8 @@
 #include "PathManager.hpp"
 #include <cstdlib>
 
+using namespace LM;
+
 #ifdef __WIN32
 #include <direct.h>
 #define getcwd _getcwd

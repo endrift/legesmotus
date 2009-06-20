@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <iostream>
 
+using namespace LM;
 using namespace std;
 
 SoundController* SoundController::m_instance = NULL;

@@ -36,16 +36,19 @@
  *  Can't load the sprites
  *  etc.
  */
-class LMException : std::exception {
-	std::string		m_message;
-
-public:
-	explicit LMException (const char* message);
-	explicit LMException (const std::string& message);
-	virtual ~LMException () throw() { }
-
-	virtual const char* what () const throw();
-};
-
+namespace LM {
+	class Exception : std::exception {
+		std::string		m_message;
+	
+	public:
+		explicit Exception (const char* message);
+		explicit Exception (const std::string& message);
+		virtual ~Exception () throw() { }
+	
+		virtual const char* what () const throw();
+	};
+	
+	
+}
 
 #endif

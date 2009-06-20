@@ -33,6 +33,7 @@
 #include <memory>
 #include <limits>
 
+using namespace LM;
 using namespace std;
 
 GraphicalMap::GraphicalMap(PathManager& path_manager, GameWindow* window) : m_path_manager(path_manager) {
@@ -125,7 +126,7 @@ void	GraphicalMap::add_object(MapReader& object_data) {
 			if (is_obstacle) {
 				// Bounding polygon - specified by a list of points in the map file
 				// The points are converted into a list of lines for internal representation.
-				LMPolygon&	bounding_polygon(map_object.get_bounding_polygon());
+				Polygon&	bounding_polygon(map_object.get_bounding_polygon());
 				if (object_data.has_more()) {
 					StringTokenizer	tokenizer(object_data.get_next(), ';');
 

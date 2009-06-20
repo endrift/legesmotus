@@ -28,42 +28,45 @@
 #include <string>
 #include "SDL_mixer.h"
 
-class PathManager;
-class GameController;
-
-class SoundController {
-private:
-	PathManager&	m_path_manager;
-	GameController& m_parent;
-	Mix_Chunk* 	m_gunshot_sound;
-	Mix_Chunk* 	m_freeze_sound;
-	Mix_Chunk* 	m_unfreeze_sound;
-	Mix_Chunk* 	m_gate_siren_sound;
-	Mix_Chunk*	m_positive_gate_siren_sound;
-	Mix_Chunk* 	m_victory_sound;
-	Mix_Chunk* 	m_begin_sound;
-	Mix_Chunk*	m_defeat_sound;
-	Mix_Chunk*	m_click_sound;
-	Mix_Chunk*	m_hit_sound;
-	bool		m_sound_on;
-	static SoundController* 	m_instance;
-
-	explicit SoundController(GameController&, PathManager&);
-	~SoundController();
-public:
+namespace LM {
+	class PathManager;
+	class GameController;
 	
-	// Create a new instance, or return the current one. Note: Does not change the
-	// instance if one already exists.
-	static SoundController*	get_instance(GameController& parent, PathManager& path_manager);
-	// Get the current instance, or NULL if there is no such instance
-	static SoundController*	get_instance();
-	static void		destroy_instance();
-	int		play_sound(std::string sound);
-	void		halt_sound(int channel);
-	bool		is_sound_on() const { return m_sound_on; }
-	void		set_sound_on(bool on);
-	void		channel_done(int channel);
-	static void	channel_finished(int channel);
-};
+	class SoundController {
+	private:
+		PathManager&	m_path_manager;
+		GameController& m_parent;
+		Mix_Chunk* 	m_gunshot_sound;
+		Mix_Chunk* 	m_freeze_sound;
+		Mix_Chunk* 	m_unfreeze_sound;
+		Mix_Chunk* 	m_gate_siren_sound;
+		Mix_Chunk*	m_positive_gate_siren_sound;
+		Mix_Chunk* 	m_victory_sound;
+		Mix_Chunk* 	m_begin_sound;
+		Mix_Chunk*	m_defeat_sound;
+		Mix_Chunk*	m_click_sound;
+		Mix_Chunk*	m_hit_sound;
+		bool		m_sound_on;
+		static SoundController* 	m_instance;
+	
+		explicit SoundController(GameController&, PathManager&);
+		~SoundController();
+	public:
+		
+		// Create a new instance, or return the current one. Note: Does not change the
+		// instance if one already exists.
+		static SoundController*	get_instance(GameController& parent, PathManager& path_manager);
+		// Get the current instance, or NULL if there is no such instance
+		static SoundController*	get_instance();
+		static void		destroy_instance();
+		int		play_sound(std::string sound);
+		void		halt_sound(int channel);
+		bool		is_sound_on() const { return m_sound_on; }
+		void		set_sound_on(bool on);
+		void		channel_done(int channel);
+		static void	channel_finished(int channel);
+	};
+	
+}
 
 #endif

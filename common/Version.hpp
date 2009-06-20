@@ -27,31 +27,34 @@
 
 #include <iosfwd>
 
-class StringTokenizer;
-
-class LMVersion {
-public:
-	int	major;
-	int	minor;
-	int	patch;
-
-	LMVersion () { clear(); }
-	LMVersion (int M, int m, int p) { init(M, m, p); }
-	explicit LMVersion (const char* str) { init(str); }
-
-	void	clear ();
-	void	init (int, int, int);
-	void	init (const char* str);
-
-	bool	operator< (LMVersion other) const;
-	bool	operator<= (LMVersion other) const;
-	bool	operator>= (LMVersion other) const;
-	bool	operator> (LMVersion other) const;
-	bool	operator== (LMVersion other) const;
-	bool	operator!= (LMVersion other) const;
-};
-
-std::ostream&		operator<< (std::ostream&, const LMVersion&);
-StringTokenizer&	operator>> (StringTokenizer&, LMVersion&);
+namespace LM {
+	class StringTokenizer;
+	
+	class Version {
+	public:
+		int	major;
+		int	minor;
+		int	patch;
+	
+		Version () { clear(); }
+		Version (int M, int m, int p) { init(M, m, p); }
+		explicit Version (const char* str) { init(str); }
+	
+		void	clear ();
+		void	init (int, int, int);
+		void	init (const char* str);
+	
+		bool	operator< (Version other) const;
+		bool	operator<= (Version other) const;
+		bool	operator>= (Version other) const;
+		bool	operator> (Version other) const;
+		bool	operator== (Version other) const;
+		bool	operator!= (Version other) const;
+	};
+	
+	std::ostream&		operator<< (std::ostream&, const Version&);
+	StringTokenizer&	operator>> (StringTokenizer&, Version&);
+	
+}
 
 #endif

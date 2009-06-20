@@ -27,6 +27,8 @@
 #include <cmath>
 #include "common/math.hpp"
 
+using namespace LM;
+
 // See .hpp file for extensive comments.
 
 Player::Player() {

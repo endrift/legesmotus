@@ -24,6 +24,7 @@
 
 #include "TransitionManager.hpp"
 
+using namespace LM;
 using namespace std;
 
 TransitionManager::TransitionManager() {

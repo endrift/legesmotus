@@ -26,6 +26,7 @@
 #include "common/ConfigManager.hpp"
 #include <iostream>
 
+using namespace LM;
 using namespace std;
 
 ClientConfiguration::ClientConfiguration() {
