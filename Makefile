@@ -52,7 +52,7 @@ Leges\ Motus.app: client server
 	cp -f client/legesmotus.icns "Leges Motus.app/Contents/Resources/"
 	cp -Rf client/legesmotus.nib "Leges Motus.app/Contents/Resources/"
 	cp -Rf data "Leges Motus.app/Contents/Resources/"
-	find "Leges Motus.app" -name .svn -print0 | xargs -0  rm -rf
+	find "Leges Motus.app" -name .svn -print0 | xargs -0 rm -rf
 	test -d "Leges Motus.app/Contents/Frameworks/SDL.framework" || cp -Rf /Library/Frameworks/SDL.framework "Leges Motus.app/Contents/Frameworks"
 	test -d "Leges Motus.app/Contents/Frameworks/SDL_net.framework" || cp -Rf /Library/Frameworks/SDL_net.framework "Leges Motus.app/Contents/Frameworks"
 	test -d "Leges Motus.app/Contents/Frameworks/SDL_image.framework" || cp -Rf /Library/Frameworks/SDL_image.framework "Leges Motus.app/Contents/Frameworks"
@@ -110,6 +110,8 @@ install:
 	install -m 0644 $(BASEDIR)/man/man6/* $(MANDIR)/man6
 	install -d $(BINDIR)
 	install $(BASEDIR)/server/lmserver $(BASEDIR)/client/legesmotus $(BINDIR)
+	strip $(BINDIR)/legesmotus
+	strip $(BINDIR)/lmserver
 
 uninstall:
 	rm -rf $(DATADIR)

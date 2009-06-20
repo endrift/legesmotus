@@ -71,7 +71,7 @@ CFLAGS += -Wall
 ifeq ($(DEBUG),1)
 CFLAGS += -g -O0
 else
-CFLAGS += -s -O2
+CFLAGS += -O2
 endif
 
 LDFLAGS += $(CFLAGS)
