@@ -2362,7 +2362,7 @@ void GameController::player_shot(PacketReader& reader) {
 	
 	// If we were frozen, add to our velocity based on the shot, and freeze.
 	if (shot_id == m_player_id) {
-		if (!m_players[m_player_id].is_frozen()) {
+		if (!m_players[m_player_id].is_frozen() && time_to_unfreeze != 0) {
 			m_frozen_status_rect->set_y(m_screen_height/2 + m_players[m_player_id].get_radius() + 15);
 			m_frozen_status_rect_back->set_y(m_frozen_status_rect->get_y());
 			m_frozen_status_text->set_y(m_frozen_status_rect->get_y());
