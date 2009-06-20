@@ -72,7 +72,6 @@ namespace LM {
 		void				set_gate_progress(char team, double progress);
 		void				reset_gates();
 	};
-	
 }
 
 #endif

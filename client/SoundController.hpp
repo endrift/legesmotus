@@ -66,7 +66,6 @@ namespace LM {
 		void		channel_done(int channel);
 		static void	channel_finished(int channel);
 	};
-	
 }
 
 #endif

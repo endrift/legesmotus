@@ -107,7 +107,6 @@ namespace LM {
 		// Return the last tick on which a packet was received from the server.
 		uint64_t	get_last_packet_time();
 	};
-	
 }
 
 #endif

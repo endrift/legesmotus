@@ -84,7 +84,6 @@ namespace LM {
 		bool				start(uint16_t portno);
 		void				run();
 	};
-	
 }
 
 #endif

@@ -307,7 +307,6 @@ namespace LM {
 		void		set_password(const char* pw);
 		void		set_register_with_metaserver(bool);
 	};
-	
 }
 
 #endif

@@ -62,7 +62,6 @@ namespace LM {
 	
 		void			clear();
 	};
-	
 }
 
 #endif

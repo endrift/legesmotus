@@ -77,7 +77,6 @@ namespace LM {
 		void	set_shadow_offset(double x, double y);
 		void	set_shadow(bool enable);
 	};
-	
 }
 
 #endif

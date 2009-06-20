@@ -68,7 +68,6 @@ namespace LM {
 	public:
 		SinusoidalCurve(double start, double end, double frequency, double phase);
 	};
-	
 }
 
 #endif

@@ -64,7 +64,6 @@ namespace LM {
 		void		send_packet(const IPAddress& address, const PacketWriter& packet);
 		void		send_packet(const IPAddress& address, const std::string& packet_data);
 	};
-	
 }
 
 #endif

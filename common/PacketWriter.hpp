@@ -72,7 +72,6 @@ namespace LM {
 		}
 	
 	};
-	
 }
 
 #endif

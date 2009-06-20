@@ -97,7 +97,6 @@ namespace LM {
 	
 		void			redraw() const;
 	};
-	
 }
 
 #endif

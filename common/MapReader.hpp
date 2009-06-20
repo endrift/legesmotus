@@ -42,7 +42,6 @@ namespace LM {
 		const char*		get_id() const { return m_id.c_str(); }
 		bool			has_id() const { return !m_id.empty(); }
 	};
-	
 }
 
 #endif

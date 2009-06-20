@@ -62,7 +62,6 @@ namespace LM {
 		bool			is_obstacle() const { return m_type == Map::SPRITE && is_intersectable(); }
 	
 	};
-	
 }
 
 #endif

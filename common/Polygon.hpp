@@ -65,7 +65,6 @@ namespace LM {
 		bool			is_filled() const { return !m_lines.empty(); }
 	
 	};
-	
 }
 
 #endif

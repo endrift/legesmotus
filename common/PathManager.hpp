@@ -45,7 +45,6 @@ namespace LM {
 		
 		PathManager& operator=(const PathManager& other);
 	};
-	
 }
 
 #endif

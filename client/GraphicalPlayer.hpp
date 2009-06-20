@@ -59,7 +59,6 @@ namespace LM {
 		void set_rotation_radians(double rotation);
 		void set_is_frozen(bool is_frozen);
 	};
-	
 }
 
 #endif

@@ -61,7 +61,6 @@ namespace LM {
 		bool	operator! () const { return fd < 0; }
 	
 	};
-	
 }
 
 #endif

@@ -68,7 +68,6 @@ namespace LM {
 		int		remaining_teamB_capacity() const { return m_available_spawnpoints[1].size(); }
 		int		remaining_capacity() const { return remaining_teamA_capacity() + remaining_teamB_capacity(); }
 	};
-	
 }
 
 #endif

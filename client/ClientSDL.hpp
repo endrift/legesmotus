@@ -41,7 +41,6 @@ namespace LM {
 		~ClientSDL();
 	
 	};
-	
 }
 
 #endif

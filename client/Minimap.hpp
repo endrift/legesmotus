@@ -61,7 +61,6 @@ namespace LM {
 		void register_with_window(GameWindow* window);
 		void unregister_with_window(GameWindow* window);
 	};
-	
 }
 
 #endif

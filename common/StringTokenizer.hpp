@@ -115,7 +115,6 @@ namespace LM {
 				operator const void* () const { return has_more() ? this : NULL; }
 	
 	};
-	
 }
 
 #endif

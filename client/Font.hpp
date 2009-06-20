@@ -43,7 +43,6 @@ namespace LM {
 		int	ascent() const;
 		int	descent() const;
 	};
-	
 }
 
 #endif

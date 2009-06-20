@@ -79,7 +79,6 @@ namespace LM {
 		ServerPlayer&	init(uint32_t player_id, const IPAddress& address, int client_version, const char* name, char team, Queue& timeout_queue);
 	
 	};
-	
 }
 
 #endif

@@ -115,7 +115,6 @@ namespace LM {
 			}
 		};
 	};
-	
 }
 
 #endif

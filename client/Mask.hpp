@@ -51,7 +51,6 @@ namespace LM {
 	
 		virtual void	draw(const GameWindow* window) const;
 	};
-	
 }
 
 #endif

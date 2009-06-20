@@ -77,7 +77,6 @@ namespace LM {
 		uint64_t	time_until_resend() const;
 		void		resend();
 	};
-	
 }
 
 #endif

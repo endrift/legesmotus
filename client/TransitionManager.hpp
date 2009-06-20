@@ -58,7 +58,6 @@ namespace LM {
 	
 		void update(uint64_t time);
 	};
-	
 }
 
 #endif

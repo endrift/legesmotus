@@ -291,7 +291,6 @@ namespace LM {
 		// Sound callbacks:
 		void		sound_finished(int channel);
 	};
-	
 }
 
 #endif

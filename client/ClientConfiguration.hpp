@@ -52,7 +52,6 @@ namespace LM {
 		void		set_int_value(std::string name, int value);
 		void		set_bool_value(std::string name, bool value);
 	};
-	
 }
 
 #endif

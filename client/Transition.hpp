@@ -63,7 +63,6 @@ namespace LM {
 		bool update(uint64_t current);
 		void change_curve(uint64_t current, Curve* curve, uint64_t duration = 0);
 	};
-	
 }
 
 #endif
