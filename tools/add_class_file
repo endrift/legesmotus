@@ -40,12 +40,14 @@ $(sed 's/^/ * /' < tools/boilerplate.txt)
 #ifndef $guard
 #define $guard
 
-class $classname {
-private:
+namespace LM {
+	class $classname {
+	private:
 
-public:
+	public:
 
-};
+	};
+}
 
 #endif
 EOF
@@ -60,6 +62,9 @@ $(sed 's/^/ * /' < tools/boilerplate.txt)
  */
 
 #include "${classname}.hpp"
+
+using namespace LM;
+using namespace std;
 
 EOF
 
