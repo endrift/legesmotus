@@ -1005,6 +1005,9 @@ void GameController::process_input() {
 				if (m_game_state == SHOW_MENUS) {
 					map<string, Text*>::iterator it;
 					for ( it=m_main_menu_items.begin() ; it != m_main_menu_items.end(); it++ ) {
+						if ((*it).first.find("Thanks") != string::npos) {
+							continue;
+						}
 						Text* thisitem = (*it).second;
 						double x = thisitem->get_x();
 						double y = thisitem->get_y();
