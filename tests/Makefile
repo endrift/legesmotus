@@ -1,6 +1,6 @@
 BASEDIR = ..
 UNIXSTYLE = 1
-include ../Makefile.in
+include ../common.mak
 OBJS = client_network config_test simple_sprite simple_text simple_scroll simple_transition
 
 all: $(OBJS)

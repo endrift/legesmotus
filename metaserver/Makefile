@@ -1,5 +1,5 @@
 BASEDIR = ..
-include ../Makefile.in
+include ../common.mak
 OBJS = MetaServer.o #put .o filenames here (DO NOT PUT .cpp!)
 
 all: lmmetaserver

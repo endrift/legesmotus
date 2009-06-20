@@ -1,5 +1,5 @@
 BASEDIR = ..
-include ../Makefile.in
+include ../common.mak
 OBJS = Server.o ServerMap.o ServerNetwork.o ServerPlayer.o #put .o filenames here (DO NOT PUT .cpp!)
 
 all: lmserver

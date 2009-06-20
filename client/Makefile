@@ -1,5 +1,5 @@
 BASEDIR = ..
-include ../Makefile.in
+include ../common.mak
 OBJS = ClientNetwork.o ClientSDL.o GameController.o GameWindow.o MapObject.o Sprite.o GraphicalPlayer.o \
 	Graphic.o TiledGraphic.o GraphicGroup.o GraphicalMap.o Font.o TextManager.o Text.o Mask.o \
 	Minimap.o TableBackground.o ScrollArea.o ScrollBar.o Transition.o Curve.o TransitionManager.o \

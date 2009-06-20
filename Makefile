@@ -1,5 +1,5 @@
 BASEDIR = .
-include Makefile.in
+include common.mak
 
 ifeq ($(MACHINE)$(UNIXSTYLE),Darwin)
 MACBUNDLE = bundle
@@ -38,7 +38,7 @@ README.rtf: README
 	echo '{\\fonttbl\\f0 Courier;}' >> README.rtf # Set font to Courier
 	echo '\\f0\\fs20' >> README.rtf # Set font size to 10pt
 	echo '\\tx960\\tx1920\\tx2880\\tx3840\\tx4800\\tx5760\\tx6720\\tx7680\\tx8640\\tx9600' >> README.rtf # Set tabstop to 8
-	cat README | sed -e 's/\(\\\)/\\\1/g' | sed -e 's/\($$\)/\\\1/g' >> README.rtf # Parse file
+	cat README | sed -e 's/\(\\|$$\)/\\&/g' -e 's/\($$\)/\\\1/g' >> README.rtf # Parse file
 	echo '}' >> README.rtf # Footer
 
 ifeq ($(MACHINE)$(UNIXSTYLE),Darwin)
@@ -129,4 +129,4 @@ cscope:
 	$(all_sources_cscope)
 	cscope -v -q
 
-.PHONY: clean common server client bundle metaserver install uninstall
+.PHONY: clean common server client bundle package metaserver install uninstall

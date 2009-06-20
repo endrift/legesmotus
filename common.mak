@@ -7,12 +7,15 @@ FRAMEWORKS = /Library/Frameworks
 # Version strings
 VERSION = 0.1.1-svn
 
-# These may be overridden by Makefile.opts
+# These may be overridden by config.mak
 DATADIR = data
 #UNIVERSAL = 1
 #UNIXSTYLE = 1
 
--include $(BASEDIR)/Makefile.opts
+OPTS = $(shell test -r $(BASEDIR)/config.mak && echo 1)
+ifneq ($(OPTS),)
+include $(BASEDIR)/config.mak
+endif
 
 CFLAGS += -DLM_DATA_DIR=\"$(DATADIR)\" -DLM_VERSION="\"$(VERSION)\""
 
