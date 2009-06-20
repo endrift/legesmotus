@@ -165,14 +165,14 @@ private:
 
 	Sprite*		m_logo;
 	
-	std::map<std::string, Graphic*> m_main_menu_items;
+	std::map<std::string, Text*> m_main_menu_items;
 	
-	std::map<std::string, Graphic*> m_options_menu_items;
+	std::map<std::string, Text*> m_options_menu_items;
 	
 	TableBackground* m_server_browser_background;
 	TableBackground* m_server_browser_selection;
 	std::vector<TableBackground*> m_server_browser_buttons;
-	std::map<std::string, Graphic*> m_server_browser_items;
+	std::map<std::string, Text*> m_server_browser_items;
 	std::vector<IPAddress> m_server_list;
 	int		m_server_list_count;
 	int		m_server_browser_selected_item;
@@ -181,7 +181,7 @@ private:
 	
 	bool		m_show_overlay;
 	TableBackground* m_overlay_background;
-	std::map<std::string, Graphic*> m_overlay_items;
+	std::map<std::string, Text*> m_overlay_items;
 	ScrollBar* 	m_overlay_scrollbar;
 	ScrollArea*	m_overlay_scrollarea;
 	
@@ -255,6 +255,8 @@ public:
 	void		send_animation_packet(std::string sprite, std::string field, int value);
 	void		send_name_change_packet(const char* new_name);
 	void		send_team_change_packet(char new_team);
+	void		toggle_main_menu(bool visible);
+	void		toggle_options_menu(bool visible);
 	void		toggle_score_overlay(bool visible);
 	void		toggle_server_browser(bool visible);
 	void		delete_server_browser_entry(int num);

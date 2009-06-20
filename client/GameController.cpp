@@ -286,8 +286,8 @@ void GameController::init(GameWindow* window) {
 	m_logo->set_priority(-1);
 	m_window->register_hud_graphic(m_logo);
 	
-	m_main_menu_items = map<string, Graphic*>();
-	m_options_menu_items = map<string, Graphic*>();
+	m_main_menu_items.clear();
+	m_options_menu_items.clear();
 	
 	// Set the text manager to draw a shadow behind everything.
 	m_text_manager->set_active_font(m_menu_font);
@@ -314,8 +314,8 @@ void GameController::init(GameWindow* window) {
 	m_main_menu_items["versionstr"] = m_text_manager->place_string(string("v. ").append(m_client_version), m_screen_width - 90, m_screen_height - 40, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_text_manager->set_active_font(m_menu_font);
 	
-	static_cast<Text*>(m_main_menu_items["Resume Game"])->set_color(GREYED_OUT);
-	static_cast<Text*>(m_main_menu_items["Disconnect"])->set_color(GREYED_OUT);
+	m_main_menu_items["Resume Game"]->set_color(GREYED_OUT);
+	m_main_menu_items["Disconnect"]->set_color(GREYED_OUT);
 	
 	// Options menu
 	m_text_manager->set_active_font(m_menu_font);
@@ -737,7 +737,6 @@ void GameController::run(int lockfps) {
 				}
 				set_players_visible(false);
 				
-				map<string, Graphic*>::iterator it;
 				
 				for ( unsigned int i = 0; i < m_shots.size(); i++ ) {
 					m_shots[i].first->set_invisible(true);
@@ -747,16 +746,8 @@ void GameController::run(int lockfps) {
 				
 				m_logo->set_invisible(false);
 				
-				for ( it=m_main_menu_items.begin() ; it != m_main_menu_items.end(); it++ ) {
-					Graphic* thisitem = (*it).second;
-					thisitem->set_invisible(false);
-				}
-				
-				for ( it=m_options_menu_items.begin() ; it != m_options_menu_items.end(); it++ ) {
-					Graphic* thisitem = (*it).second;
-					thisitem->set_invisible(true);
-				}
-				
+				toggle_main_menu(true);
+				toggle_options_menu(false);
 				toggle_server_browser(false);
 				
 				m_blue_gate_status_rect->set_invisible(true);
@@ -774,8 +765,6 @@ void GameController::run(int lockfps) {
 				}
 				set_players_visible(false);
 				
-				map<string, Graphic*>::iterator it;
-				
 				for ( unsigned int i = 0; i < m_shots.size(); i++ ) {
 					m_shots[i].first->set_invisible(true);
 				}
@@ -784,15 +773,8 @@ void GameController::run(int lockfps) {
 				
 				m_logo->set_invisible(false);
 				
-				for ( it=m_main_menu_items.begin() ; it != m_main_menu_items.end(); it++ ) {
-					Graphic* thisitem = (*it).second;
-					thisitem->set_invisible(true);
-				}
-				for ( it=m_options_menu_items.begin() ; it != m_options_menu_items.end(); it++ ) {
-					Graphic* thisitem = (*it).second;
-					thisitem->set_invisible(false);
-				}
-				
+				toggle_main_menu(false);
+				toggle_options_menu(true);
 				toggle_server_browser(false);
 				
 				m_blue_gate_status_rect->set_invisible(true);
@@ -810,8 +792,6 @@ void GameController::run(int lockfps) {
 				}
 				set_players_visible(false);
 				
-				map<string, Graphic*>::iterator it;
-				
 				for ( unsigned int i = 0; i < m_shots.size(); i++ ) {
 					m_shots[i].first->set_invisible(true);
 				}
@@ -820,15 +800,8 @@ void GameController::run(int lockfps) {
 				
 				m_logo->set_invisible(false);
 				
-				for ( it=m_main_menu_items.begin() ; it != m_main_menu_items.end(); it++ ) {
-					Graphic* thisitem = (*it).second;
-					thisitem->set_invisible(true);
-				}
-				for ( it=m_options_menu_items.begin() ; it != m_options_menu_items.end(); it++ ) {
-					Graphic* thisitem = (*it).second;
-					thisitem->set_invisible(true);
-				}
-				
+				toggle_main_menu(false);
+				toggle_options_menu(false);
 				toggle_server_browser(true);
 				
 				m_blue_gate_status_rect->set_invisible(true);
@@ -846,8 +819,6 @@ void GameController::run(int lockfps) {
 				}
 				set_players_visible(true);
 				
-				map<string, Graphic*>::iterator it;
-				
 				for ( unsigned int i = 0; i < m_shots.size(); i++ ) {
 					m_shots[i].first->set_invisible(false);
 				}
@@ -856,15 +827,8 @@ void GameController::run(int lockfps) {
 				
 				m_logo->set_invisible(true);
 				
-				for ( it=m_main_menu_items.begin() ; it != m_main_menu_items.end(); it++ ) {
-					Graphic* thisitem = (*it).second;
-					thisitem->set_invisible(true);
-				}
-				for ( it=m_options_menu_items.begin() ; it != m_options_menu_items.end(); it++ ) {
-					Graphic* thisitem = (*it).second;
-					thisitem->set_invisible(true);
-				}
-				
+				toggle_main_menu(false);
+				toggle_options_menu(false);
 				toggle_server_browser(false);
 				
 				m_blue_gate_status_rect->set_invisible(false);
@@ -1039,35 +1003,35 @@ void GameController::process_input() {
 				}
 				
 				if (m_game_state == SHOW_MENUS) {
-					map<string, Graphic*>::iterator it;
+					map<string, Text*>::iterator it;
 					for ( it=m_main_menu_items.begin() ; it != m_main_menu_items.end(); it++ ) {
-						Graphic* thisitem = (*it).second;
+						Text* thisitem = (*it).second;
 						double x = thisitem->get_x();
 						double y = thisitem->get_y();
 						if (event.button.x >= x && event.button.x <= x + thisitem->get_image_width()
 						    && event.button.y >= y && event.button.y <= y + thisitem->get_image_height()) {
 							// We're hovering over this menu item.
-							static_cast<Text*>(thisitem)->set_color(BUTTON_HOVER_COLOR);
+							thisitem->set_color(BUTTON_HOVER_COLOR);
 						} else {
-							static_cast<Text*>(thisitem)->set_color(Color::WHITE);
+							thisitem->set_color(Color::WHITE);
 						}
 					}
 					if (!m_network.is_connected() || !m_join_sent_time == 0) {
-						static_cast<Text*>(m_main_menu_items["Resume Game"])->set_color(GREYED_OUT);
-						static_cast<Text*>(m_main_menu_items["Disconnect"])->set_color(GREYED_OUT);
+						m_main_menu_items["Resume Game"]->set_color(GREYED_OUT);
+						m_main_menu_items["Disconnect"]->set_color(GREYED_OUT);
 					}
 				} else if (m_game_state == SHOW_OPTIONS_MENU) {
-					map<string, Graphic*>::iterator it;
+					map<string, Text*>::iterator it;
 					for ( it=m_options_menu_items.begin() ; it != m_options_menu_items.end(); it++ ) {
-						Graphic* thisitem = (*it).second;
+						Text* thisitem = (*it).second;
 						double x = thisitem->get_x();
 						double y = thisitem->get_y();
 						if (m_mouse_x >= x && m_mouse_x <= x + thisitem->get_image_width()
 						    && m_mouse_y >= y && m_mouse_y <= y + thisitem->get_image_height()) {
 							// We're hovering over this menu item.
-							static_cast<Text*>(thisitem)->set_color(BUTTON_HOVER_COLOR);
+							thisitem->set_color(BUTTON_HOVER_COLOR);
 						} else {
-							static_cast<Text*>(thisitem)->set_color(Color::WHITE);
+							thisitem->set_color(Color::WHITE);
 						}
 					}
 				}
@@ -1167,7 +1131,7 @@ void GameController::process_mouse_click(SDL_Event event) {
 			return;
 		}
 		// Check each item in the menu to see if the mouse is clicking on it.
-		map<string, Graphic*>::iterator it;
+		map<string, Text*>::iterator it;
 		for ( it=m_main_menu_items.begin() ; it != m_main_menu_items.end(); it++ ) {
 			Graphic* thisitem = (*it).second;
 			double x = thisitem->get_x();
@@ -1202,7 +1166,7 @@ void GameController::process_mouse_click(SDL_Event event) {
 			return;
 		}
 		// Check each item in the options menu.
-		map<string, Graphic*>::iterator it;
+		map<string, Text*>::iterator it;
 		for ( it=m_options_menu_items.begin() ; it != m_options_menu_items.end(); it++ ) {
 			Graphic* thisitem = (*it).second;
 			double x = thisitem->get_x();
@@ -1760,10 +1724,30 @@ void GameController::toggle_score_overlay(bool visible) {
 	m_overlay_background->set_invisible(!visible);
 	m_overlay_scrollbar->set_invisible(!visible);
 	m_overlay_scrollarea->set_invisible(!visible);
-	map<string, Graphic*>::iterator it;
+	map<string, Text*>::iterator it;
 	for ( it=m_overlay_items.begin() ; it != m_overlay_items.end(); it++ ) {
 		Graphic* thisitem = (*it).second;
 		thisitem->set_invisible(!visible);
+	}
+}
+
+/*
+ * Show or hide the main menu
+ */
+void GameController::toggle_main_menu(bool visible) {
+	map<string, Text*>::iterator it;
+	for (it = m_main_menu_items.begin(); it != m_main_menu_items.end(); ++it) {
+		it->second->set_invisible(!visible);
+	}
+}
+
+/*
+ * Show or hide the options menu
+ */
+void GameController::toggle_options_menu(bool visible) {
+	map<string, Text*>::iterator it;
+	for (it = m_options_menu_items.begin(); it != m_options_menu_items.end(); ++it) {
+		it->second->set_invisible(!visible);
 	}
 }
 
@@ -1788,7 +1772,7 @@ void GameController::toggle_server_browser(bool visible) {
 		m_server_browser_selection->set_invisible(!visible);
 	}
 	
-	map<string, Graphic*>::iterator it;
+	map<string, Text*>::iterator it;
 	for ( it=m_server_browser_items.begin() ; it != m_server_browser_items.end(); it++ ) {
 		Graphic* thisitem = (*it).second;
 		thisitem->set_invisible(!visible);
@@ -2040,8 +2024,8 @@ void GameController::connect_to_server(int servernum) {
  * Send a disconnect packet.
  */
 void GameController::disconnect() {
-	static_cast<Text*>(m_main_menu_items["Resume Game"])->set_color(GREYED_OUT);
-	static_cast<Text*>(m_main_menu_items["Disconnect"])->set_color(GREYED_OUT);
+	m_main_menu_items["Resume Game"]->set_color(GREYED_OUT);
+	m_main_menu_items["Disconnect"]->set_color(GREYED_OUT);
 	if (!m_players.empty()) {
 		PacketWriter leave_request(LEAVE_PACKET);
 		leave_request << m_player_id;
@@ -2091,8 +2075,8 @@ void GameController::welcome(PacketReader& reader) {
 	
 	m_join_sent_time = 0;
 	
-	static_cast<Text*>(m_main_menu_items["Resume Game"])->set_color(Color::WHITE);
-	static_cast<Text*>(m_main_menu_items["Disconnect"])->set_color(Color::WHITE);
+	m_main_menu_items["Resume Game"]->set_color(Color::WHITE);
+	m_main_menu_items["Disconnect"]->set_color(Color::WHITE);
 	
 	clear_players();
 	
