@@ -44,6 +44,13 @@ public:
 	double get_end() const;
 };
 
+class ConstantCurve : public Curve {
+protected:
+	virtual double	map_progress(double t) const;
+public:
+	ConstantCurve(double start, double end);
+};
+
 class LinearCurve : public Curve {
 protected:
 	virtual double	map_progress(double t) const;

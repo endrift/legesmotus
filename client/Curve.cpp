@@ -50,6 +50,14 @@ double Curve::operator()(double t) const {
 	return m_start_mapping + (m_end_mapping-m_start_mapping)*map_progress(t);
 }
 
+ConstantCurve::ConstantCurve(double start, double end) : Curve(start, end) {
+	// Nothing to do
+}
+
+double ConstantCurve::map_progress(double t) const {
+	return 1.0;
+}
+
 LinearCurve::LinearCurve(double start, double end) : Curve(start, end) {
 	// Nothing to do
 }
