@@ -48,7 +48,7 @@ const int	Server::SERVER_PROTOCOL_VERSION = 2;
 
 const char	Server::SERVER_VERSION[] = LM_VERSION;
 
-Server::Server (PathManager& path_manager) : m_path_manager(path_manager), m_ack_manager(*this)
+Server::Server (PathManager& path_manager) : m_path_manager(path_manager), m_ack_manager(*this), m_gates(2, GateStatus(*this))
 {
 	m_next_player_id = 1;
 	m_is_running = false;
@@ -323,23 +323,37 @@ void	Server::player_shot(const IPAddress& address, PacketReader& inbound_packet)
 		return;
 	}
 
-	// Inform all players that this player has been shot
-	PacketWriter		outbound_packet(PLAYER_SHOT_PACKET);
-	outbound_packet << shooter_id << shot_player_id << int(FREEZE_TIME) << angle;
-	broadcast_packet(outbound_packet);
-	// TODO: REQUIRE ACK
-
 	ServerPlayer*		shooter = get_player(shooter_id);
 	ServerPlayer*		shot_player = get_player(shot_player_id);
 
-	if (shooter && shot_player) {
-		if (shooter->get_team() == shot_player->get_team()) {
-			// Shooting a teammate results in a -1 penalty
-			shooter->add_score(-1);
-		} else {
-			// Add 1 to the shooter's score
-			shooter->add_score(1);
-		}
+	if (!shooter || !shot_player) {
+		return;
+	}
+
+	int			score_change = 0;
+	uint64_t		freeze_time = 0;
+
+	if (shooter->get_team() != shot_player->get_team()) {
+		// Shot an enemy
+		// Results in a +1 score
+		score_change = 1;
+		freeze_time = m_params.freeze_time;
+	} else if (m_params.friendly_fire) {
+		// Shot a teammate and friendly fire is enabled!
+		// Results in a -1 scoring penalty
+		score_change = -1;
+		freeze_time = m_params.freeze_time;
+	}
+
+	// Inform all players that this player has been shot
+	PacketWriter		outbound_packet(PLAYER_SHOT_PACKET);
+	outbound_packet << shooter_id << shot_player_id << freeze_time << angle;
+	broadcast_packet(outbound_packet);
+	// TODO: REQUIRE ACK
+
+	if (score_change) {
+		// Change the score
+		shooter->add_score(score_change);
 
 		// And inform all players of the score update
 		broadcast_score_update(*shooter);
@@ -458,7 +472,7 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 		m_waiting_players.push_back(&new_player);
 		// Tell the player what map is currently in use, and how much time until he spawns
 		PacketWriter		game_start_packet(GAME_START_PACKET);
-		game_start_packet << m_current_map.get_name() << 1 << uint64_t(JOIN_DELAY);
+		game_start_packet << m_current_map.get_name() << 1 << m_params.late_join_delay;
 		m_ack_manager.add_packet(player_id, game_start_packet);
 		m_network.send_packet(address, game_start_packet);
 	}
@@ -736,7 +750,7 @@ void	Server::new_game() {
 	m_waiting_players.clear(); // Waiting players get cleared out and put in general queue...
 
 	PacketWriter		packet(GAME_START_PACKET);
-	packet << m_current_map.get_name() << 0 << uint64_t(START_DELAY);
+	packet << m_current_map.get_name() << 0 << m_params.game_start_delay;
 	m_ack_manager.add_broadcast_packet(packet);
 	broadcast_packet(packet);
 }
@@ -777,7 +791,7 @@ void	Server::start_game() {
 }
 
 void	Server::spawn_waiting_players() {
-	while (!m_waiting_players.empty() && m_waiting_players.front()->is_ready_to_spawn()) {
+	while (!m_waiting_players.empty() && m_waiting_players.front()->is_ready_to_spawn(m_params.late_join_delay)) {
 		spawn_player(*m_waiting_players.front());
 		m_waiting_players.pop_front();
 	}
@@ -867,100 +881,6 @@ void	Server::report_gate_status(char team, int change_in_status) {
 	broadcast_packet(packet);
 }
 
-Server::GateStatus::GateStatus() {
-	reset();
-}
-
-uint64_t Server::GateStatus::time_elapsed() const {
-	return is_moving() ? get_ticks() - m_start_time : 0;
-}
-
-uint64_t Server::GateStatus::time_remaining() const {
-	if (is_moving()) {
-		uint64_t	elapsed_time = time_elapsed();
-		if (m_status == OPENING && elapsed_time < get_open_time()) {
-			return get_open_time() - elapsed_time;
-		} else if (m_status == CLOSING && elapsed_time < GATE_CLOSE_TIME) {
-			return GATE_CLOSE_TIME - elapsed_time;
-		}
-
-		// Gate has finished moving.
-		return 0;
-	} else {
-		// Gate is not moving.
-		return numeric_limits<uint64_t>::max();
-	}
-}
-
-void Server::GateStatus::update() {
-	if (m_status == OPENING && time_elapsed() >= get_open_time()) {
-		m_status = OPEN;
-		m_start_time = 0;
-	} else if (m_status == CLOSING && time_elapsed() >= GATE_CLOSE_TIME) {
-		m_status = CLOSED;
-		m_start_time = 0;
-	}
-}
-
-double	Server::GateStatus::get_progress() const {
-	switch (m_status) {
-	case CLOSED:
-		return 0.0;
-	case OPEN:
-		return 1.0;
-	case OPENING:
-		return time_elapsed() / double(get_open_time());
-	case CLOSING:
-		return 1.0 - time_elapsed() / double(GATE_CLOSE_TIME);
-	}
-	return 0.0;
-}
-
-void	Server::GateStatus::reset() {
-	m_status = CLOSED;
-	m_players.clear();
-	m_start_time = 0;
-}
-
-void	Server::GateStatus::set_progress(double progress) {
-	if (m_status == OPENING) {
-		m_start_time = get_ticks() - uint64_t(progress * get_open_time());
-	} else if (m_status == CLOSING) {
-		m_start_time = get_ticks() - uint64_t((1.0 - progress) * GATE_CLOSE_TIME);
-	}
-}
-
-bool	Server::GateStatus::set_engagement(bool is_now_engaged, uint32_t new_player_id) {
-	bool	gate_was_changed = false;
-
-	if (is_now_engaged) {
-		// Gate is being engaged...
-		double	old_progress = get_progress();
-		if (!is_engaged()) {
-			// It wasn't already engaged, so start opening it...
-			m_status = OPENING;
-			gate_was_changed = true;
-		}
-
-		m_players.insert(new_player_id);
-		set_progress(old_progress);
-
-	} else if (!is_now_engaged && is_engaged() && m_players.count(new_player_id)) {
-		// Gate is being disengaged by a player who was previously engaging it...
-		double	old_progress = get_progress();
-		m_players.erase(new_player_id);
-
-		if (m_players.empty()) {
-			// No players left engaging the gate, so start closing it...
-			m_status = CLOSING;
-			gate_was_changed = true;
-		}
-		set_progress(old_progress);
-	}
-
-	return gate_was_changed;
-}
-
 bool	Server::waiting_to_spawn() const {
 	return (!m_players_have_spawned && !m_players.empty()) ||
 		(m_players_have_spawned && !m_waiting_players.empty());
@@ -968,10 +888,10 @@ bool	Server::waiting_to_spawn() const {
 uint64_t Server::time_until_spawn() const {
 	if (!m_players_have_spawned && !m_players.empty()) {
 		// Game has not started yet, but players have joined.
-		// All players spawn START_DELAY milliseconds after the first player joined
+		// All players spawn m_params.game_start_delay ms after the first player joined
 		uint64_t	time_elapsed = get_ticks() - m_game_start_time;
-		if (time_elapsed < START_DELAY) {
-			return START_DELAY - time_elapsed;
+		if (time_elapsed < m_params.game_start_delay) {
+			return m_params.game_start_delay - time_elapsed;
 		} else {
 			return 0;
 		}
@@ -979,7 +899,7 @@ uint64_t Server::time_until_spawn() const {
 	} else if (m_players_have_spawned && !m_waiting_players.empty()) {
 		// Game has started, and there are players queued up to join.
 		// When does the first one spawn?
-		return m_waiting_players.front()->time_until_spawn();
+		return m_waiting_players.front()->time_until_spawn(m_params.late_join_delay);
 	}
 	return std::numeric_limits<uint64_t>::max();
 }
@@ -1028,7 +948,14 @@ bool	Server::load_map(const char* map_name) {
 	string		map_filename(map_name);
 	map_filename += ".map";
 
-	return m_current_map.load_file(m_path_manager.data_path(map_filename.c_str(), "maps"));
+	if (!m_current_map.load_file(m_path_manager.data_path(map_filename.c_str(), "maps"))) {
+		return false;
+	}
+
+	m_params.reset();
+	m_params.init_from_config(m_current_map.get_options());
+
+	return true;
 }
 
 string	Server::get_unique_player_name(const char* requested_name) const {

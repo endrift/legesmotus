@@ -1,5 +1,7 @@
-soundbarrier
-131072 512
+name soundbarrier
+width 131072
+height 512
+
 # Background
 SPRITE	0,0	TB	metal_bgtile	16384	512	0,0
 SPRITE	-64,192	TB	metal_bgtile	64	128	0,0

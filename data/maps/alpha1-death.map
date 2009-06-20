@@ -1,5 +1,7 @@
-alpha1-death
-2048 1024
+name alpha1-death
+width 2048
+height 1024
+
 # Background
 SPRITE	0,0	TB	metal_bgtile	2048	1024	0,0
 SPRITE	-64,448	TB	metal_bgtile	64	128	0,0

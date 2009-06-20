@@ -28,13 +28,16 @@
 #include "ServerNetwork.hpp"
 #include "ServerPlayer.hpp"
 #include "ServerMap.hpp"
+#include "GateStatus.hpp"
 #include "common/AckManager.hpp"
+#include "common/GameParameters.hpp"
 #include <stdint.h>
 #include <math.h>
 #include <map>
 #include <set>
 #include <list>
 #include <utility>
+#include <vector>
 
 namespace LM {
 	class PacketReader;
@@ -46,82 +49,15 @@ namespace LM {
 		static const int	SERVER_PROTOCOL_VERSION;	// Defined in Server.cpp
 		static const char	SERVER_VERSION[];		// Defined in Server.cpp
 	
-	private:
-		typedef std::map<uint32_t, ServerPlayer> PlayerMap;	// A std::map from player_id to the player object
-	
 		// Internal time constants - should not be set by user
 		// in milliseconds
 		enum {
-			GATE_UPDATE_FREQUENCY = 100		// When a gate is down, update players at least every 100 ms
+			GATE_UPDATE_FREQUENCY = 100,		// When a gate is down, update players at least once every 100 ms
+			PLAYER_TIMEOUT = 10000			// Kick players who have not updated for 10 seconds
 		};
-	
-	public:
-		// Configurable game time constants - in the future could be set by user
-		// in milliseconds
-		enum {
-			FREEZE_TIME = 10000,			// Players stay frozen for 10 seconds
-			GATE_OPEN_TIME = 15000,			// Gate takes 15 seconds to go from fully closed to fully open
-			GATE_CLOSE_TIME = 5000,			// Gate takes 10 seconds to go from fully open to fully closed
-			PLAYER_TIMEOUT = 10000,			// Kick players who have not updated for 10 seconds
-	
-			// Allow 2 seconds for all players to join at beginning of round before spawning them.
-			// TODO: increase to 15 seconds during production
-			// If players join after this time period, they will be subject to JOIN_DELAY below
-			START_DELAY = 5000,
-			JOIN_DELAY = 2000			// Spawn player 2 seconds after he joins mid-round (TODO: increase to 15 during production)
-		};
-	
-		static inline uint64_t get_gate_open_time(size_t nbr_players) {
-			return nbr_players > 1 ? uint64_t(round(GATE_OPEN_TIME * log(2.0) / log(double(nbr_players + 1)))) : uint64_t(GATE_OPEN_TIME);
-		}
-	
+
 	private:
-		// Keeps track of the info for a gate:
-		class GateStatus {
-		public:
-			enum {
-				CLOSED = 0,
-				OPENING = 1,
-				OPEN = 2,
-				CLOSING = 3
-			};
-		private:
-			int			m_status;	// CLOSED, OPENING, or CLOSING
-			std::set<uint32_t>	m_players;	// The players who are holding the gate
-			uint64_t		m_start_time;	// The tick time at which the gate started to be moved
-	
-			void			set_progress(double progress);
-			uint64_t		get_open_time() const { return Server::get_gate_open_time(m_players.size()); }
-	
-		public:
-			GateStatus();
-	
-			// Get basic information about the gate:
-			bool		is_moving() const { return m_status == OPENING || m_status == CLOSING; }
-			bool		is_engaged() const { return m_status == OPENING || m_status == OPEN; }
-			int		get_status() const { return m_status; }
-			uint32_t	get_player_id() const { return !m_players.empty() ? *m_players.begin() : 0; }
-			// TODO: which player ID should I return above?  Right now this information isn't being used (it's sent to the client, which ignores it), but if the client ever provides information about who is lowering the gate, this would be important.
-	
-			uint64_t	time_elapsed() const;	// If moving, how many milliseconds since the gate started moving?
-			uint64_t	time_remaining() const;	// If moving, how many milliseconds until the gate finishes moving?
-	
-			// Return a number in range [0,1] to indicate progress of gate:
-			//  (0.0 == fully closed, 1.0 == fully open)
-			double		get_progress() const;
-	
-			// Update the status of the gate based on how much time has elapsed:
-			//  Call every GATE_UPDATE_FREQUENCY milliseconds when gate is moving
-			void		update();
-	
-			// Reset the gate to fully closed:
-			//  Call at beginning of new games to fully reset the gate
-			void		reset();
-	
-			// Engage or disengage the gate for the given player:
-			//  Returns true if the gate state changed, false otherwise
-			bool		set_engagement(bool is_engaged, uint32_t player_id);
-		};
+		typedef std::map<uint32_t, ServerPlayer> PlayerMap;	// A std::map from player_id to the player object
 	
 		class ServerAckManager : public AckManager {
 			Server&		m_server;
@@ -139,6 +75,7 @@ namespace LM {
 		//
 		// Game State
 		//
+		GameParameters		m_params;
 		std::string		m_password;		// Password for admin access
 		bool			m_is_running;		// When this is false, run() stops its main loop
 		IPAddress		m_listen_address;	// The address the server's listening on
@@ -147,7 +84,7 @@ namespace LM {
 		uint32_t		m_next_player_id;	// Used to allocate next player ID
 		PlayerMap		m_players;
 		ServerMap		m_current_map;
-		GateStatus		m_gates[2];		// [0] = Team A's gate  [1] = Team B's gate
+		std::vector<GateStatus>	m_gates;		// [0] = Team A's gate  [1] = Team B's gate
 		uint64_t		m_game_start_time;	// Time at which the game started
 		bool			m_players_have_spawned;	// True if any players have spawned
 		ServerPlayer::Queue	m_waiting_players;	// Players who have joined after start of round and are waiting to spawn
@@ -283,6 +220,13 @@ namespace LM {
 	
 	public:
 		explicit Server (PathManager& path_manager);
+	
+		// Get information about gate times
+		uint64_t get_gate_open_time(size_t nbr_players) const {
+			return nbr_players > 1 ? uint64_t(round(m_params.gate_open_time * log(2.0) / log(double(nbr_players + 1)))) : m_params.gate_open_time;
+		}
+		uint64_t get_gate_close_time() const { return m_params.gate_close_time; }
+		uint64_t get_gate_stick_time() const { return m_params.gate_stick_time; }
 	
 		// Called upon receipt of network packets:
 		void		ack(const IPAddress& address, PacketReader& packet);

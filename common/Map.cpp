@@ -24,6 +24,7 @@
 
 #include "Map.hpp"
 #include "MapReader.hpp"
+#include "StringTokenizer.hpp"
 #include "misc.hpp"
 #include <iostream>
 #include <fstream>
@@ -46,23 +47,60 @@ Map::~Map() {
 bool	Map::load(istream& in) {
 	clear();
 
-	// read the first three lines of the map file
-	in >> m_name >> m_width >> m_height;
-
-	// read each line one-by-one
 	string			line;
+
+	/*
+	 * Map header: specifies map options (e.g. name, width, etc.)
+	 * This section ends when a blank line is encountered.
+	 * No blank lines are allowed in this section, but comments are allowed.
+	 */
+	while (getline(in, line)) {
+		condense_whitespace(line);
+
+		if (line.empty()) {
+			// Blank line -> end of map header
+			break;
+		}
+		if (line[0] == ';' || line[0] == '#') {
+			// This line is a comment
+			continue;
+		}
+
+		StringTokenizer	tokenizer(line, ' ', 2);
+		string		option_name;
+		tokenizer >> option_name;
+
+		if (option_name == "name") {
+			tokenizer >> m_name;
+		} else if (option_name == "width") {
+			tokenizer >> m_width;
+		} else if (option_name == "height") {
+			tokenizer >> m_height;
+		} else {
+			// Miscellaneous map option (e.g. game mode, max_players, etc.)
+			// Ultimately used for initializing the GameParameters object.
+			tokenizer >> m_options[option_name.c_str()];
+		}
+	}
+
+	/*
+	 * Map body: specifies map objects
+	 * This section continues for the rest of the file.
+	 */
 	while (getline(in, line)) {
 		// Strip any leading or trailing white space
 		strip_leading_trailing_spaces(line);
 
-		// Ignore blank lines and lines starting with # (for comments)
-		// Not ignoring blank lines does cause problems, even if the map file doesn't appear to have blank lines in it.
-		if (!line.empty() && line[0] != '#') {
-			condense_whitespace(line, istab, '\t');
-
-			MapReader	reader(line.c_str());
-			add_object(reader);
+		// Ignore blank lines and lines starting with # or ; (for comments)
+		if (line.empty() || line[0] == '#' || line[0] == ';') {
+			continue;
 		}
+
+		// Condense multiple tab characters into a single tab character
+		condense_whitespace(line, istab, '\t');
+
+		MapReader	reader(line.c_str());
+		add_object(reader);
 	}
 
 	return true;
@@ -76,6 +114,7 @@ bool	Map::load_file(const char* path) {
 void	Map::clear() {
 	m_name.clear();
 	m_width = m_height = 0;
+	m_options.clear();
 }
 
 Map::ObjectType	Map::parse_object_type(const char* type_string) {

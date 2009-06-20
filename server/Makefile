@@ -1,6 +1,6 @@
 BASEDIR = ..
 include ../common.mak
-OBJS = Server.o ServerMap.o ServerNetwork.o ServerPlayer.o #put .o filenames here (DO NOT PUT .cpp!)
+OBJS = GateStatus.o Server.o ServerMap.o ServerNetwork.o ServerPlayer.o #put .o filenames here (DO NOT PUT .cpp!)
 
 all: lmserver
 

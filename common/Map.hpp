@@ -27,6 +27,7 @@
 
 #include <string>
 #include <iosfwd>
+#include "ConfigManager.hpp"
 
 namespace LM {
 	class MapReader;
@@ -51,6 +52,7 @@ namespace LM {
 		std::string	m_name;		// Should be unique
 		int		m_width;
 		int		m_height;
+		ConfigManager	m_options;
 	
 	public:
 		Map();
@@ -60,6 +62,7 @@ namespace LM {
 		const char*	get_name() const { return m_name.c_str(); }
 		int		get_width() const { return m_width; }
 		int		get_height() const { return m_height; }
+		const ConfigManager&	get_options() const { return m_options; }
 		
 		// Read and parse the given input stream and load into the current map
 		virtual bool	load(std::istream& in);

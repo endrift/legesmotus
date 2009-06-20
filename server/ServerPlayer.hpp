@@ -67,8 +67,8 @@ namespace LM {
 	
 		// For spawning
 		void		reset_join_time();
-		uint64_t	time_until_spawn() const;	// How many milliseconds until this player can spawn?
-		bool		is_ready_to_spawn() const { return time_until_spawn() == 0; }
+		uint64_t	time_until_spawn(uint64_t spawn_delay) const;	// How many milliseconds until this player can spawn?
+		bool		is_ready_to_spawn(uint64_t spawn_delay) const { return time_until_spawn(spawn_delay) == 0; }
 	
 		// For time out handling
 		void		seen(Queue& timeout_queue);	// Update last seen time

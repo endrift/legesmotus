@@ -56,9 +56,9 @@ void ServerPlayer::reset_join_time() {
 	m_join_time = get_ticks();
 }
 
-uint64_t ServerPlayer::time_until_spawn() const {
+uint64_t ServerPlayer::time_until_spawn(uint64_t spawn_delay) const {
 	uint64_t time_since_join = get_ticks() - m_join_time;
-	return time_since_join >= Server::JOIN_DELAY ? 0 : Server::JOIN_DELAY - time_since_join;
+	return time_since_join >= spawn_delay ? 0 : spawn_delay - time_since_join;
 }
 
 void ServerPlayer::seen(Queue& timeout_queue) {

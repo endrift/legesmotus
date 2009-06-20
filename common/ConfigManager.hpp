@@ -100,6 +100,9 @@ namespace LM {
 	
 		// Set the value for a particular option:
 		template<class T> void	set(const char* option_name, const T& option_value);
+
+		// Clear away all options
+		void			clear() { m_options.clear(); }
 	};
 	
 	template<> std::string	ConfigManager::get(const char* option_name) const;

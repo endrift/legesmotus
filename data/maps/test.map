@@ -1,5 +1,7 @@
-test
-800 512
+name test
+width 800
+height 512
+
 # Background
 SPRITE	0,0	TB	metal_bgtile	800	512	0,0
 SPRITE	-64,192	TB	metal_bgtile	64	128	0,0

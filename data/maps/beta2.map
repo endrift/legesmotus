@@ -1,5 +1,7 @@
-beta2
-2048 2048
+name beta2
+width 2048
+height 2048
+
 # Background
 SPRITE	0,0	TB	metal_bgtile	2048	2048	0,0
 SPRITE	-64,960	TB	metal_bgtile	64	128	0,0

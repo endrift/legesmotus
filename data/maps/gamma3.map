@@ -1,5 +1,6 @@
-gamma3
-2048 1024
+name gamma3
+width 2048
+height 1024
 
 # Background
 SPRITE	0,0		TB	metal_bgtile	2048	1024	0,0
