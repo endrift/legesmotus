@@ -158,16 +158,20 @@ void TiledGraphic::draw(const GameWindow* window) const {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glPushMatrix();
 	transform_gl();
-	glTranslated(m_start_x, m_start_y, 0.0);
-	glBegin(GL_QUADS);
-	glTexCoord2d(0.0,0.0);
-	glVertex2i(0,0);
-	glTexCoord2d(m_width/m_tile_width,0.0);
-	glVertex2i(int(m_width),0);
-	glTexCoord2d(m_width/m_tile_width,m_height/m_tile_height);
-	glVertex2i(int(m_width),int(m_height));
-	glTexCoord2d(0.0,m_height/m_tile_height);
-	glVertex2i(0,int(m_height));
-	glEnd();
+	GLint vertices[8] = {
+		0, 0,
+		m_width, 0,
+		m_width, m_height,
+		0, m_height
+	};
+	GLdouble texcoords[8] = {
+		m_start_x/m_tile_width, m_start_y/m_tile_width,
+		(m_width + m_start_x)/m_tile_width, m_start_y/m_tile_width,
+		(m_width + m_start_x)/m_tile_width, (m_height + m_start_y)/m_tile_height,
+		m_start_x/m_tile_width, (m_height + m_start_y)/m_tile_height
+	};
+	glVertexPointer(2, GL_INT, 0, vertices);
+	glTexCoordPointer(2, GL_DOUBLE, 0, texcoords);
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	glPopMatrix();
 }

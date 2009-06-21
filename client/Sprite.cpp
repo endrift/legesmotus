@@ -123,15 +123,20 @@ void Sprite::draw(const GameWindow* window) const {
 	glBindTexture(GL_TEXTURE_2D, get_texture_id());
 	glPushMatrix();
 	transform_gl();
-	glBegin(GL_QUADS);
-	glTexCoord2d(0.0, 0.0);
-	glVertex2i(0,0);
-	glTexCoord2d(1.0, 0.0);
-	glVertex2i(m_width, 0);
-	glTexCoord2d(1.0, 1.0);
-	glVertex2i(m_width, m_height);
-	glTexCoord2d(0.0, 1.0);
-	glVertex2i(0, m_height);
-	glEnd();
+	GLint vertices[8] = {
+		0, 0,
+		m_width, 0,
+		m_width, m_height,
+		0, m_height
+	};
+	GLint texcoords[8] = {
+		0, 0,
+		1, 0,
+		1, 1,
+		0, 1
+	};
+	glVertexPointer(2, GL_INT, 0, vertices);
+	glTexCoordPointer(2, GL_INT, 0, texcoords);
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	glPopMatrix();
 }

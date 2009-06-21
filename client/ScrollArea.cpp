@@ -157,22 +157,27 @@ void ScrollArea::draw(const GameWindow* window) const {
 		glPushMatrix();
 		transform_gl();
 		glEnable(GL_STENCIL_TEST);
+		glDisable(GL_TEXTURE_2D);
 		glClearStencil(0);
 		glClear(GL_STENCIL_BUFFER_BIT);
 		glStencilFunc(GL_ALWAYS, 1, 1);
 		glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
 		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 		glColor4d(1.0, 1.0, 1.0, 1.0);
-		glBegin(GL_QUADS);
-		glVertex2d(0.0, 0.0);
-		glVertex2d(m_width, 0.0);
-		glVertex2d(m_width, m_height);
-		glVertex2d(0.0, m_height);
-		glEnd();
+		GLdouble vertices[8] = {
+			0.0, 0.0,
+			m_width, 0.0,
+			m_width, m_height,
+			0.0, m_height
+		};
+		glVertexPointer(2, GL_DOUBLE, 0, vertices);
+		glTexCoordPointer(2, GL_DOUBLE, 0, 0);
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 		glStencilFunc(GL_EQUAL, 1, 1);
 		glTranslated(0,-round(m_progress*(m_content_height-m_height)),0);
+		glEnable(GL_TEXTURE_2D);
 		m_group.draw(window);
 		glDisable(GL_STENCIL_TEST);
 		glPopMatrix();

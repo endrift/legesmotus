@@ -81,6 +81,8 @@ GameWindow::GameWindow(int width, int height, int depth, bool fullscreen) {
 	}
 	glEnable(GL_BLEND);
 	glEnable(GL_TEXTURE_2D);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 	// Set up texture environment for GL_INTERPOLATE, if needed
 	glTexEnvi(GL_TEXTURE_ENV,GL_SRC0_RGB,GL_TEXTURE);
