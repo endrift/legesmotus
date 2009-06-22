@@ -30,6 +30,8 @@
 using namespace LM;
 using namespace std;
 
+const int TableBackground::CORNER_RESOLUTION = 10;
+
 TableBackground::TableBackground(int num_rows, double width) {
 	m_num_rows = 0; // Pre-set this because set_num_rows depends on the old value
 	set_num_rows(num_rows);
@@ -42,6 +44,17 @@ TableBackground::TableBackground(int num_rows, double width) {
 
 TableBackground* TableBackground::clone() const {
 	return new TableBackground(*this);
+}
+
+void TableBackground::draw_corner(double x, double y, double rx, double ry) const {
+	GLdouble vertices[2*(CORNER_RESOLUTION + 2)] = { x, y };
+	for (int i = 0; i <= CORNER_RESOLUTION; ++i) {
+		vertices[2*(i+1)] = x - cos(i*M_PI/(2*CORNER_RESOLUTION))*rx;
+		vertices[2*(i+1)+1] = y - sin(i*M_PI/(2*CORNER_RESOLUTION))*ry;
+	}
+	glVertexPointer(2, GL_DOUBLE, 0, vertices);
+	glTexCoordPointer(2, GL_DOUBLE, 0, 0);
+	glDrawArrays(GL_TRIANGLE_FAN, 0, CORNER_RESOLUTION + 2);
 }
 
 void TableBackground::draw_row(int row) const {
@@ -59,18 +72,8 @@ void TableBackground::draw_row(int row) const {
 			if(diff > 0) {
 				//TODO draw_corner func
 				glColor4d(m_cell_colors[row].r, m_cell_colors[row].g, m_cell_colors[row].b, m_cell_colors[row].a);
-				glBegin(GL_TRIANGLE_FAN);
-				glVertex3d(side_offset, top_offset, 1);
-				for (int i = 0; i <= 16; ++i) {
-					glVertex3d(side_offset + sin((i-16)*M_PI/32)*diff, top_offset - cos((i-16)*M_PI/32)*diff, 1);
-				}
-				glEnd();
-				glBegin(GL_TRIANGLE_FAN);
-				glVertex3d(m_image_width - side_offset, top_offset, 1);
-				for (int i = 0; i <= 16; ++i) {
-					glVertex3d(m_image_width - side_offset + sin(i*M_PI/32)*diff, top_offset - cos(i*M_PI/32)*diff, 1);
-				}
-				glEnd();
+				draw_corner(side_offset, top_offset, diff, diff);
+				draw_corner(m_image_width - side_offset, top_offset, -diff, diff);
 			}
 		}
 		if (m_border_collapse) {
@@ -84,18 +87,8 @@ void TableBackground::draw_row(int row) const {
 			double diff = m_corner_radius - m_border_width;
 			if(diff > 0) {
 				glColor4d(m_cell_colors[row].r, m_cell_colors[row].g, m_cell_colors[row].b, m_cell_colors[row].a);
-				glBegin(GL_TRIANGLE_FAN);
-				glVertex3d(side_offset, height - bottom_offset, 1);
-				for (int i = 0; i <= 16; ++i) {
-					glVertex3d(side_offset + sin((i-16)*M_PI/32)*diff, height - bottom_offset + cos((i-16)*M_PI/32)*diff, 1);
-				}
-				glEnd();
-				glBegin(GL_TRIANGLE_FAN);
-				glVertex3d(m_image_width - side_offset, height - bottom_offset, 1);
-				for (int i = 0; i <= 16; ++i) {
-					glVertex3d(m_image_width - side_offset + sin(i*M_PI/32)*diff, height - bottom_offset + cos(i*M_PI/32)*diff, 1);
-				}
-				glEnd();
+				draw_corner(side_offset, height - top_offset - diff, diff, -diff);
+				draw_corner(m_image_width - side_offset, height - top_offset - diff, -diff, -diff);
 			}
 		}
 		if (m_border_collapse) {
@@ -143,36 +136,16 @@ void TableBackground::draw_row(int row) const {
 	if (row == 0) {
 		bottom_offset = 0;
 		if (m_corner_radius > 0) {
-			glBegin(GL_TRIANGLE_FAN);
-			glVertex3d(side_offset, top_offset, 0);
-			for (int i = 0; i <= 16; ++i) {
-				glVertex3d(side_offset + sin((i-16)*M_PI/32)*side_offset, top_offset - cos((i-16)*M_PI/32)*top_offset, 0);
-			}
-			glEnd();
-			glBegin(GL_TRIANGLE_FAN);
-			glVertex3d(m_image_width - side_offset, top_offset, 0);
-			for (int i = 0; i <= 16; ++i) {
-				glVertex3d(m_image_width - side_offset + sin(i*M_PI/32)*side_offset, top_offset - cos(i*M_PI/32)*top_offset, 0);
-			}
-			glEnd();
+			draw_corner(side_offset, top_offset, side_offset, top_offset);
+			draw_corner(m_image_width - side_offset, top_offset, -side_offset, top_offset);
 		} else {
 			side_offset = 0;
 		}
 	} else if (row == m_num_rows - 1) {
 		top_offset = 0;
 		if (m_corner_radius > 0) {
-			glBegin(GL_TRIANGLE_FAN);
-			glVertex3d(side_offset, height - bottom_offset, 0);
-			for (int i = 0; i <= 16; ++i) {
-				glVertex3d(side_offset + sin((i-16)*M_PI/32)*side_offset, height - bottom_offset + cos((i-16)*M_PI/32)*bottom_offset, 0);
-			}
-			glEnd();
-			glBegin(GL_TRIANGLE_FAN);
-			glVertex3d(m_image_width - side_offset, top_offset, 0);
-			for (int i = 0; i <= 16; ++i) {
-				glVertex3d(m_image_width - side_offset + sin(i*M_PI/32)*side_offset, height - bottom_offset + cos(i*M_PI/32)*bottom_offset, 0);
-			}
-			glEnd();
+			draw_corner(side_offset, height - bottom_offset, side_offset, -bottom_offset);
+			draw_corner(m_image_width - side_offset, height - bottom_offset, -side_offset, -bottom_offset);
 		} else {
 			side_offset = 0;
 		}

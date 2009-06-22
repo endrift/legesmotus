@@ -31,16 +31,19 @@
 namespace LM {
 	class TableBackground : public Graphic {
 	private:
+		static const int CORNER_RESOLUTION;
+
 		int	m_num_rows;
 		std::vector<Color>	m_cell_colors;
 		std::vector<double>	m_row_heights;
-	
+
 		Color	m_border_color;
 		double	m_border_width;
 		double	m_corner_radius;
 		bool	m_border_collapse;
-	
-		void draw_row(int row) const;
+
+		void	draw_corner(double x, double y, double rx, double ry) const;
+		void	draw_row(int row) const;
 	public:
 		TableBackground(int num_rows, double width);
 		virtual TableBackground* clone() const;
