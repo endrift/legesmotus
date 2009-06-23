@@ -25,6 +25,7 @@
 #include "GateStatus.hpp"
 #include "Server.hpp"
 #include "common/timer.hpp"
+#include <limits>
 
 using namespace LM;
 using namespace std;
