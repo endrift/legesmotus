@@ -29,6 +29,8 @@
 #include <iostream>
 #include <stdlib.h>
 #include <time.h>
+#include <string>
+#include <cstring>
 
 using namespace LM;
 using namespace std;

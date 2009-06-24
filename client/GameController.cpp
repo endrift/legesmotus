@@ -548,6 +548,7 @@ void GameController::init(GameWindow* window) {
 		// TODO: better error message
 		cerr << "Unable to resolve metaserver hostname.  Internet-wide server browsing will not be enabled." << std::endl;
 	}
+	scan_all();
 }
 
 /*
@@ -1010,6 +1011,9 @@ void GameController::process_input() {
 					map<string, Text*>::iterator it;
 					for ( it=m_main_menu_items.begin() ; it != m_main_menu_items.end(); it++ ) {
 						if ((*it).first.find("Thanks") != string::npos) {
+							continue;
+						}
+						if ((*it).first.find("version") != string::npos) {
 							continue;
 						}
 						Text* thisitem = (*it).second;
@@ -3005,7 +3009,18 @@ void	GameController::server_info(const IPAddress& server_address, PacketReader& 
 void	GameController::upgrade_available(const IPAddress& server_address, PacketReader& packet) {
 	string		latest_version;
 	packet >> latest_version;
-	cerr << "There is an upgrade available!  Version: " << latest_version << '\n';
+	ostringstream message;
+	message << "Version: " << latest_version;
+
+	if (m_main_menu_items.find("Newversion") != m_main_menu_items.end()) {
+		m_text_manager->remove_string(m_main_menu_items["Newversion"]);
+	}
+	if (m_main_menu_items.find("Newversion2") != m_main_menu_items.end()) {
+		m_text_manager->remove_string(m_main_menu_items["Newversion2"]);
+	}
+	m_text_manager->set_active_font(m_menu_font);
+	m_main_menu_items["Newversion"] = m_text_manager->place_string("There is an upgrade available!", 440, 250, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_main_menu_items["Newversion2"] = m_text_manager->place_string(message.str(), 600, 300, TextManager::LEFT, TextManager::LAYER_HUD);
 }
 
 void	GameController::scan_all() {
