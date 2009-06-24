@@ -104,19 +104,19 @@ void	GateStatus::set_progress(double progress) {
 bool	GateStatus::set_engagement(bool is_now_engaged, uint32_t new_player_id) {
 	bool	gate_was_changed = false;
 
-	if (is_now_engaged) {
-		// Gate is being engaged...
+	if (is_now_engaged && !m_players.count(new_player_id)) {
+		// Gate is being engaged by a player who is not already engaging it...
 		double	old_progress = get_progress();
 		if (!is_engaged()) {
-			// It wasn't already engaged, so start opening it...
+			// The gate wasn't already engaged, so start opening it...
 			m_status = OPENING;
-			gate_was_changed = true;
 		}
 
 		m_players.insert(new_player_id);
 		set_progress(old_progress);
+		gate_was_changed = true;
 
-	} else if (!is_now_engaged && is_engaged() && m_players.count(new_player_id)) {
+	} else if (!is_now_engaged && m_players.count(new_player_id)) {
 		// Gate is being disengaged by a player who was previously engaging it...
 		double	old_progress = get_progress();
 		m_players.erase(new_player_id);
@@ -124,9 +124,9 @@ bool	GateStatus::set_engagement(bool is_now_engaged, uint32_t new_player_id) {
 		if (m_players.empty()) {
 			// No players left engaging the gate, so start closing it...
 			m_status = CLOSING;
-			gate_was_changed = true;
 		}
 		set_progress(old_progress);
+		gate_was_changed = true;
 	}
 
 	return gate_was_changed;

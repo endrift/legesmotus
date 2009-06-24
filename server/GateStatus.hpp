@@ -58,7 +58,7 @@ namespace LM {
 		bool		is_moving() const { return m_status == OPENING || m_status == CLOSING; }
 		bool		is_engaged() const { return m_status == OPENING || m_status == OPEN; }
 		int		get_status() const { return m_status; }
-		uint32_t	get_player_id() const { return !m_players.empty() ? *m_players.begin() : 0; }
+		size_t		get_nbr_players() const { return m_players.size(); }
 		// TODO: which player ID should I return above?  Right now this information isn't being used (it's sent to the client, which ignores it), but if the client ever provides information about who is lowering the gate, this would be important.
 
 		uint64_t	time_elapsed() const;	// If moving, how many milliseconds since the gate started moving?

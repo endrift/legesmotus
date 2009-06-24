@@ -112,8 +112,9 @@ namespace LM {
 		const GateStatus&	get_gate(char team) const { return m_gates[team - 'A']; }
 	
 		// Broadcast a gate update packet to all players
-		//  change_in_status: { -1 = now closing, 0 = no change, 1 = now opening }
-		void			report_gate_status(char team, int change_in_status);
+		//  change_in_players = {-1,0,1}: the change in the number of players who are engaging the gate
+		//  acting_player_id = the player who caused this change in gate status
+		void			report_gate_status(char team, int change_in_players, uint32_t acting_player_id);
 	
 	
 		//
@@ -245,6 +246,7 @@ namespace LM {
 		void		name_change(const IPAddress& address, PacketReader& packet);
 		void		team_change(const IPAddress& address, PacketReader& packet);
 		void		register_server_packet(const IPAddress& address, PacketReader& packet);
+		void		map_info_packet(const IPAddress& address, PacketReader& packet);
 	
 		void		start();
 		void		run();

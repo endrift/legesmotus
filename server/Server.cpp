@@ -588,10 +588,10 @@ void	Server::remove_player(const ServerPlayer& player, const char* leave_message
 void	Server::release_player_resources(const ServerPlayer& player) {
 	// If this player was holding down a gate, make sure the gate status is cleared:
 	if (get_gate('A').set_engagement(false, player.get_id())) {
-		report_gate_status('A', -1);
+		report_gate_status('A', -1, player.get_id());
 	}
 	if (get_gate('B').set_engagement(false, player.get_id())) {
-		report_gate_status('B', -1);
+		report_gate_status('B', -1, player.get_id());
 	}
 
 	// Release/Return the player's spawn point
@@ -659,10 +659,10 @@ void	Server::run()
 
 			// If a gate is moving, broadcast a status report on it
 			if (get_gate('A').is_moving()) {
-				report_gate_status('A', 0);
+				report_gate_status('A', 0, 0);
 			}
 			if (get_gate('B').is_moving()) {
-				report_gate_status('B', 0);
+				report_gate_status('B', 0, 0);
 			}
 
 		} else if (waiting_to_spawn()) {
@@ -831,7 +831,7 @@ void	Server::gate_update(const IPAddress& address, PacketReader& packet) {
 	}
 
 	if (get_gate(team).set_engagement(is_engaged, player_id)) {
-		report_gate_status(team, is_engaged ? 1 : -1);
+		report_gate_status(team, is_engaged ? 1 : -1, player_id);
 	}
 }
 
@@ -877,10 +877,10 @@ uint32_t	Server::server_sleep_time() const {
 	return sleep_time;
 }
 
-void	Server::report_gate_status(char team, int change_in_status) {
+void	Server::report_gate_status(char team, int change_in_players, uint32_t acting_player_id) {
 	const GateStatus&	gate(get_gate(team));
 	PacketWriter		packet(GATE_UPDATE_PACKET);
-	packet << gate.get_player_id() << team << gate.get_progress() << change_in_status;
+	packet << acting_player_id << team << gate.get_progress() << change_in_players << gate.get_nbr_players();
 	broadcast_packet(packet);
 }
 
@@ -1016,5 +1016,8 @@ void	Server::register_server_packet(const IPAddress& address, PacketReader& pack
 	if (m_register_with_metaserver && address == m_metaserver_address) {
 		packet >> m_metaserver_token >> m_metaserver_contact_frequency;
 	}
+}
+
+void	Server::map_info_packet(const IPAddress& address, PacketReader& request_packet) {
 }
 

@@ -156,6 +156,10 @@ void	ServerNetwork::process_packet(Server& server, const UDPPacket& raw_packet) 
 	case REGISTER_SERVER_PACKET:
 		server.register_server_packet(address, reader);
 		break;
+
+	case MAP_INFO_PACKET:
+		server.map_info_packet(address, reader);
+		break;
 	}
 }
 

@@ -2451,19 +2451,22 @@ void GameController::message(PacketReader& reader) {
  * Called when a gate update packet is received.
  */
 void GameController::gate_update(PacketReader& reader) {
-	uint32_t	lowering_player_id; 	// Who's lowering the gate?
-	char		team;			// Which team's gate is being lowered
-	double		progress;		// How much has the gate gone down? 0 == not at all .. 1 == all the way
-	int		change_in_status;	// -1 == now closing, 0 == no change, 1 == now opening
-	reader >> lowering_player_id >> team >> progress >> change_in_status;
+	uint32_t	acting_player_id; 	// Who triggered the gate change?
+	char		team;			// Which team's gate is being updated
+	double		progress;		// How much has the gate opened? 0 == fully closed .. 1 == fully open
+	int		change_in_players;	// {-1,0,1} = the change in the # of players engaging the gate
+	size_t		new_nbr_players;	// How many players are now engaging the gate
+
+	reader >> acting_player_id >> team >> progress >> change_in_players >> new_nbr_players;
 	
-	// If it just started opening, play a sound and set the warning visible.
 	GraphicalPlayer* myplayer = get_player_by_id(m_player_id);
 	if (myplayer == NULL) {
 		return;
 	}
 	
-	if (change_in_status > 0) {
+	if (change_in_players == 1 && new_nbr_players == 1) {
+		// The gate just started opening.
+		// Play a sound and set the warning visible.
 		string soundname = "";
 		if (team == myplayer->get_team()) {
 			soundname = "gatelower";
@@ -2475,7 +2478,9 @@ void GameController::gate_update(PacketReader& reader) {
 			m_gate_warning->set_invisible(false);
 			m_gate_warning_time = get_ticks();
 		}
-	} else if (change_in_status < 0) {
+	} else if (change_in_players == -1 && new_nbr_players == 0) {
+		// The gate just started closing.
+		// Hide the warning and stop the sounds.
 	 	if (m_gate_lower_sounds[team - 'A'] != -1) {
 	 		if (team == myplayer->get_team()) {
 		 		m_gate_warning_time = 0;
