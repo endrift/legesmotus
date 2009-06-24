@@ -53,7 +53,6 @@ void TableBackground::draw_corner(double x, double y, double rx, double ry) cons
 		vertices[2*(i+1)+1] = y - sin(i*M_PI/(2*CORNER_RESOLUTION))*ry;
 	}
 	glVertexPointer(2, GL_DOUBLE, 0, vertices);
-	glTexCoordPointer(2, GL_DOUBLE, 0, 0);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, CORNER_RESOLUTION + 2);
 }
 
