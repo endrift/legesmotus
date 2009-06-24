@@ -55,6 +55,7 @@ using namespace LM;
 using namespace std;
 
 const int GameController::MESSAGE_DISPLAY_TIME = 10000;
+const unsigned int GameController::MAX_MESSAGES_TO_DISPLAY = 20;
 const int GameController::FIRING_DELAY = 700;
 const int GameController::SHOT_DISPLAY_TIME = 180;
 const int GameController::MUZZLE_FLASH_LENGTH = 80;
@@ -626,7 +627,7 @@ void GameController::run(int lockfps) {
 			// Erase messages that are too old.
 			double height = m_chat_window_transition_y->get_curve()->get_end();
 			for (unsigned int i = 0; i < m_messages.size(); i++) {
-				if (m_messages[i].second < currframe) {
+				if (m_messages[i].second < currframe || m_messages.size() > MAX_MESSAGES_TO_DISPLAY) {
 					height -= m_messages[i].first->get_image_height();
 					m_text_manager->remove_string(m_messages[i].first);
 					m_messages.erase(m_messages.begin() + i);
@@ -2361,6 +2362,38 @@ void GameController::player_shot(PacketReader& reader) {
 	double shot_angle;
 	
 	reader >> shooter_id >> shot_id >> time_to_unfreeze >> shot_angle;
+	
+	GraphicalPlayer* shooter = get_player_by_id(shooter_id);
+	GraphicalPlayer* shotplayer = get_player_by_id(shot_id);
+	if (shooter == NULL || shotplayer == NULL) {
+		return;
+	}
+	
+	if (!shotplayer->is_frozen() && time_to_unfreeze != 0) {
+		ostringstream message;
+		
+		if (shooter_id == m_player_id) {
+			message << "You";
+		} else {
+			message << shooter->get_name();
+		}
+		
+		message << " shot ";
+		
+		if (shot_id == m_player_id) {
+			message << "you";
+		} else {
+			message << shotplayer->get_name();
+		}
+		
+		message << ".";
+		
+		if (shooter->get_team() == 'A') {
+			display_message(message.str(), BLUE_COLOR);
+		} else if (shooter->get_team() == 'B') {
+			display_message(message.str(), RED_COLOR);
+		}
+	}
 	
 	// If we were frozen, add to our velocity based on the shot, and freeze.
 	if (shot_id == m_player_id) {

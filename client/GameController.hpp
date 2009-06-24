@@ -78,6 +78,7 @@ namespace LM {
 		};
 	
 		const static int MESSAGE_DISPLAY_TIME;
+		const static unsigned int MAX_MESSAGES_TO_DISPLAY;
 		const static int FIRING_DELAY;
 		const static int SHOT_DISPLAY_TIME;
 		const static int MUZZLE_FLASH_LENGTH;
