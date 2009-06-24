@@ -2460,8 +2460,30 @@ void GameController::gate_update(PacketReader& reader) {
 	reader >> acting_player_id >> team >> progress >> change_in_players >> new_nbr_players;
 	
 	GraphicalPlayer* myplayer = get_player_by_id(m_player_id);
+	GraphicalPlayer* actingplayer = get_player_by_id(acting_player_id);
 	if (myplayer == NULL) {
 		return;
+	}
+	
+	ostringstream message;
+	
+	if (actingplayer != NULL) {
+		message << actingplayer->get_name();
+		if (change_in_players == 1) {
+			message << " engaged the ";
+		} else if (change_in_players == -1) {
+			message << " disengaged from the ";
+		}
+	}
+	
+	if (change_in_players != 0) {
+		if (team == 'A') {
+			message << "blue gate!";
+			display_message(message.str(), RED_COLOR);
+		} else if (team == 'B') {
+			message << "red gate!";
+			display_message(message.str(), BLUE_COLOR);
+		}
 	}
 	
 	if (change_in_players == 1 && new_nbr_players == 1) {
@@ -2473,6 +2495,7 @@ void GameController::gate_update(PacketReader& reader) {
 		} else {
 			soundname = "positivegatelower";
 		}
+		
 		m_gate_lower_sounds[team - 'A'] = m_sound_controller->play_sound(soundname);
 		if (team == m_players[m_player_id].get_team()) {
 			m_gate_warning->set_invisible(false);
