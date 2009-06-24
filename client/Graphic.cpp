@@ -119,6 +119,17 @@ void Graphic::transform_gl() const {
 	glTranslated(-round(m_center_x), -round(m_center_y), 0.0);
 }
 
+void Graphic::draw_rect(double x0, double y0, double x1, double y1) const {
+	GLdouble vertices[8] = {
+		x0, y0,
+		x1, y0,
+		x1, y1,
+		x0, y1
+	};
+	glVertexPointer(2, GL_DOUBLE, 0, vertices);
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+}
+
 double Graphic::get_image_width() const {
 	return m_image_width;
 }

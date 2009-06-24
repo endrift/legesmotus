@@ -100,35 +100,17 @@ void TableBackground::draw_row(int row) const {
 
 	if (top_offset + bottom_offset < height) {
 		glColor4d(m_cell_colors[row].r, m_cell_colors[row].g, m_cell_colors[row].b, m_cell_colors[row].a);
-		glBegin(GL_QUADS);
-		glVertex3d(side_offset, top_offset, 1);
-		glVertex3d(m_image_width - side_offset, top_offset, 1);
-		glVertex3d(m_image_width - side_offset, height - bottom_offset, 1);
-		glVertex3d(side_offset, height - bottom_offset, 1);
+		draw_rect(side_offset, top_offset, m_image_width - side_offset, height - bottom_offset);
 		if (top_offset > m_border_width) {
-			glVertex3d(side_offset, m_border_width, 1);
-			glVertex3d(m_image_width - side_offset, m_border_width, 1);
-			glVertex3d(m_image_width - side_offset, top_offset, 1);
-			glVertex3d(side_offset, top_offset, 1);
+			draw_rect(side_offset, m_border_width, m_image_width - side_offset, top_offset);
 		}
 		if (bottom_offset > m_border_width) {
-			glVertex3d(side_offset, height - bottom_offset, 1);
-			glVertex3d(m_image_width - side_offset, height - bottom_offset, 1);
-			glVertex3d(m_image_width - side_offset, height - m_border_width, 1);
-			glVertex3d(side_offset, height - m_border_width, 1);
+			draw_rect(side_offset, height - bottom_offset, m_image_width - side_offset, height - m_border_width);
 		}
 		if (side_offset > m_border_width) {
-			glVertex3d(m_border_width, top_offset, 1);
-			glVertex3d(side_offset, top_offset, 1);
-			glVertex3d(side_offset, height - bottom_offset, 1);
-			glVertex3d(m_border_width, height - bottom_offset, 1);
-	
-			glVertex3d(m_image_width - side_offset, top_offset, 1);
-			glVertex3d(m_image_width - m_border_width, top_offset, 1);
-			glVertex3d(m_image_width - m_border_width, height - bottom_offset, 1);
-			glVertex3d(m_image_width - side_offset, height - bottom_offset, 1);
+			draw_rect(m_border_width, top_offset, side_offset, height - bottom_offset);
+			draw_rect(m_image_width - side_offset, top_offset, m_image_width - m_border_width, height - bottom_offset);
 		}
-		glEnd();
 	}
 
 	glColor4d(m_border_color.r, m_border_color.g, m_border_color.b, m_border_color.a);
@@ -154,16 +136,8 @@ void TableBackground::draw_row(int row) const {
 		side_offset = 0;
 	}
 
-	glBegin(GL_QUADS);
-	glVertex3d(0, top_offset, 0);
-	glVertex3d(m_image_width, top_offset, 0);
-	glVertex3d(m_image_width, height - bottom_offset, 0);
-	glVertex3d(0, height - bottom_offset, 0);
-	glVertex3d(side_offset, 0, 0);
-	glVertex3d(m_image_width - side_offset, 0, 0);
-	glVertex3d(m_image_width - side_offset, height, 0);
-	glVertex3d(side_offset, height, 0);
-	glEnd();
+	draw_rect(0, top_offset, m_image_width, height - bottom_offset);
+	draw_rect(side_offset, 0, m_image_width - side_offset, height);
 	glTranslated(0, height, 0);
 }
 

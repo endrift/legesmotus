@@ -164,14 +164,7 @@ void ScrollArea::draw(const GameWindow* window) const {
 		glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
 		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 		glColor4d(1.0, 1.0, 1.0, 1.0);
-		GLdouble vertices[8] = {
-			0.0, 0.0,
-			m_width, 0.0,
-			m_width, m_height,
-			0.0, m_height
-		};
-		glVertexPointer(2, GL_DOUBLE, 0, vertices);
-		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+		draw_rect(0.0, 0.0, m_width, m_height);
 		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 		glStencilFunc(GL_EQUAL, 1, 1);

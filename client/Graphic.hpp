@@ -61,6 +61,7 @@ namespace LM {
 		Graphic(const Graphic& other);
 	
 		void transform_gl() const;
+		void draw_rect(double x0, double y0, double x1, double y1) const;
 	
 	public:
 		enum Priority {
