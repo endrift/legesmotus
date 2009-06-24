@@ -173,7 +173,7 @@ void	GraphicalMap::add_object(MapReader& object_data) {
 
 			// XXX: This assumes the height of the sprite is 1 pixel.
 			Sprite*	sprite = load_graphic<Sprite>(sprite_name);
-			sprite->set_priority(Graphic::BACKGROUND);
+			sprite->set_priority(Graphic::OBSTACLE);
 			sprite->set_scale_y(double(GATE_HEIGHT));
 			sprite->set_antialiasing(false);
 			map_object.set_sprite(sprite);
