@@ -25,15 +25,9 @@
 #include "ServerMap.hpp"
 #include "common/MapReader.hpp"
 #include "common/team.hpp"
-#include <algorithm>
-#include <iterator>
 
 using namespace LM;
 using namespace std;
-
-struct address_of {
-	template<class T> T*	operator() (T& r) const { return &r; }
-};
 
 ServerMap::ServerMap() {
 	reset();
@@ -46,50 +40,46 @@ ServerMap::~ServerMap() {
 void	ServerMap::clear() {
 	m_spawnpoints[0].clear();
 	m_spawnpoints[1].clear();
-	m_available_spawnpoints[0].clear();
-	m_available_spawnpoints[1].clear();
 	Map::clear();
 }
 
 void	ServerMap::reset() {
-	m_available_spawnpoints[0].clear();
-	m_available_spawnpoints[1].clear();
-	std::transform(m_spawnpoints[0].begin(), m_spawnpoints[0].end(), back_inserter(m_available_spawnpoints[0]), address_of());
-	std::transform(m_spawnpoints[1].begin(), m_spawnpoints[1].end(), back_inserter(m_available_spawnpoints[1]), address_of());
+	m_spawnpoints[0].reset();
+	m_spawnpoints[1].reset();
+}
+
+int	ServerMap::nbr_spawnpoints(char team) const {
+	if (is_valid_team(team)) {
+		return m_spawnpoints[team - 'A'].size();
+	}
+	return 0;
 }
 
 // Acquire the next available spawnpoint for the given team
-const Point* ServerMap::next_spawnpoint(char team) {
-	if (is_valid_team(team) && has_capacity(team)) {
-		const Point* p(m_available_spawnpoints[team - 'A'].front());
-		m_available_spawnpoints[team - 'A'].pop_front();
-		return p;
+const Spawnpoint* ServerMap::next_spawnpoint(char team) {
+	if (is_valid_team(team)) {
+		return m_spawnpoints[team - 'A'].acquire();
 	}
 	return NULL;
 }
 
-void	ServerMap::return_spawnpoint(char team, const Point* spawnpoint) {
+// Release/return the given spawnpoint to the pool
+void	ServerMap::return_spawnpoint(char team, const Spawnpoint* spawnpoint) {
 	if (is_valid_team(team)) {
-		m_available_spawnpoints[team - 'A'].push_back(spawnpoint);
+		m_spawnpoints[team - 'A'].release(spawnpoint);
 	}
-}
-
-bool	ServerMap::has_capacity(char team) const {
-	return is_valid_team(team) && !m_available_spawnpoints[team - 'A'].empty();
 }
 
 void	ServerMap::add_object(MapReader& object_data) {
 	if (object_data.get_type() == SPAWN_POINT) {
 		Point		point;
-		char		team;
-		object_data >> point >> team;
+		string		team_string;
+		object_data >> point >> team_string;
 
+		char		team = parse_team_string(team_string.c_str());
 		if (is_valid_team(team)) {
-			m_spawnpoints[team - 'A'].push_back(point);
+			m_spawnpoints[team - 'A'].add(point);
 		}
 	}
 }
 
-int	ServerMap::total_capacity(char team) const {
-	return is_valid_team(team) ? m_spawnpoints[team - 'A'].size() : 0;
-}

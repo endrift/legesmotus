@@ -64,7 +64,7 @@ The server supports the following command-line options:
   -m MAPNAME	set the map name (default: alpha1)
   -p PORTNO	set the port number to listen on (default: 16877)
   -P PASSWORD	set the admin password (default: admin mode is disabled)
-  -i PORTNO	address of interface to listen on (default: listen on all interfaces)
+  -i ADDRESS	address of interface to listen on (default: listen on all interfaces)
   -d		daemonize the server (not on Windows)
   -u USERNAME	drop privileges to given user (only super user may use) (not on Windows)
   -g GROUPNAME	drop privileges to given group (only super user may use) (not on Windows)

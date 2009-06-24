@@ -3,5 +3,5 @@ width 400
 height 400
 
 SPRITE	128,96	O	metal_obstacle64	
-SPAWN	0,50	A
-SPAWN	2048,50	B
+SPAWN	0,50	BLUE
+SPAWN	2048,50	RED

@@ -894,7 +894,9 @@ void GameController::process_input() {
 						string message = m_input_text.substr(2);
 						
 						// Check message for commands.
-						if (message.find("/name ") == 0) {
+						if (message == "/quit") {
+							m_quit_game = true;
+						} else if (message.find("/name ") == 0) {
 							string new_name(message.substr(6));
 							if (m_network.is_connected()) {
 								send_name_change_packet(new_name.c_str());
@@ -2845,9 +2847,9 @@ void	GameController::server_info(const IPAddress& server_address, PacketReader& 
 		int		server_protocol_version;
 		string		current_map_name;
 		int		team_count[2];
-		int		team_max_players[2];
+		int		max_players;
 		unsigned int	uptime;
-		info_packet >> server_protocol_version >> current_map_name >> team_count[0] >> team_count[1] >> team_max_players[0] >> team_max_players[1] >> uptime;
+		info_packet >> server_protocol_version >> current_map_name >> team_count[0] >> team_count[1] >> max_players >> uptime;
 		
 		m_ping = get_ticks() - scan_start_time;
 		if (request_packet_id == m_current_ping_id) {
@@ -2914,7 +2916,7 @@ void	GameController::server_info(const IPAddress& server_address, PacketReader& 
 		ostringstream playertotal;
 		playertotal << (team_count[0] + team_count[1]);
 		playertotal << "/";
-		playertotal << (team_max_players[0] + team_max_players[1]);
+		playertotal << max_players;
 		m_server_browser_items[printer.str()] = m_text_manager->place_string(playertotal.str(), m_server_browser_items["playerslabel"]->get_x() - m_server_browser_scrollarea->get_x() + m_server_browser_scrollarea->get_width()/2, 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
 		m_server_browser_items[printer.str()]->set_priority(TEXT_LAYER);
 		m_window->unregister_hud_graphic(m_server_browser_items[printer.str()]);

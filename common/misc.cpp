@@ -38,6 +38,8 @@ using namespace std;
 #ifdef __WIN32
 
 #include <Windows.h>
+#include <stdio.h>
+#include <io.h>
 
 string	LM::get_username() {
 	char username[64];
@@ -58,7 +60,7 @@ void	LM::drop_privileges(const char* username, const char* groupname) {
 }
 
 bool	LM::has_terminal_output() {
-	return true;
+	return _isatty(_fileno(stdout));
 }
 
 bool	LM::scan_directory(list<string>& filenames, const char* directory) {

@@ -1,6 +1,19 @@
 BEGIN {
+	#FS="~"
+	#OFS="\t"
+}
+
+NR == 1 {
+	print "name", $0
+	next
+}
+NR == 2 {
+	print "width", $1
+	print "height", $2
+	print ""
 	FS="~"
 	OFS="\t"
+	next
 }
 
 /^[^#]/ && /[~]/ && $2 != 1 {
@@ -14,14 +27,22 @@ BEGIN {
 }
 
 # Gate
-/^[^#]/ && /[~]/ && $1 == 2 {
-	print "GATE", $3, $4
+/^[^#]/ && /[~]/ && $1 == 2 && $4 == "A" {
+	print "GATE", $3, "BLUE"
+	next
+}
+/^[^#]/ && /[~]/ && $1 == 2 && $4 == "B" {
+	print "GATE", $3, "RED"
 	next
 }
 
 # Spawn point
-/^[^#]/ && /[~]/ && $1 == 3 {
-	print "SPAWN", $3, $4
+/^[^#]/ && /[~]/ && $1 == 3 && $4 == "A" {
+	print "SPAWN", $3, "BLUE"
+	next
+}
+/^[^#]/ && /[~]/ && $1 == 3 && $4 == "B" {
+	print "SPAWN", $3, "RED"
 	next
 }
 

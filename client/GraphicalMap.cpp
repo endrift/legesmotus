@@ -155,8 +155,10 @@ void	GraphicalMap::add_object(MapReader& object_data) {
 		break;
 	case GATE:
 		{
-			char	team;
-			object_data >> team;
+			string		team_string;
+			object_data >> team_string;
+
+			char		team = parse_team_string(team_string.c_str());
 
 			map_object.set_team(team);
 

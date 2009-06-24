@@ -27,6 +27,7 @@
 
 #include "common/Map.hpp"
 #include "common/Point.hpp"
+#include "Spawnpoint.hpp"
 #include <list>
 
 /*
@@ -35,11 +36,10 @@
 namespace LM {
 	class ServerMap : public Map {
 		// Spawnpoints for each team:
-		std::list<Point>	m_spawnpoints[2];
-		std::list<const Point*>	m_available_spawnpoints[2];
+		SpawnpointSet		m_spawnpoints[2];
 	
 		virtual void		add_object(MapReader& object_data);
-	
+
 	public:
 		ServerMap();
 		virtual ~ServerMap();
@@ -47,26 +47,28 @@ namespace LM {
 		virtual void	clear();
 	
 		void		reset();	// Reset the map for a new round - call before assigning spawnpoints
+
+		// How many spawnpoints are there?
+		int		nbr_spawnpoints(char team) const;
+		int		nbr_spawnpoints() const { return m_spawnpoints[0].size() + m_spawnpoints[1].size(); }
 	
-		// How much TOTAL space is available on the map?
-		int		total_teamA_capacity() const { return m_spawnpoints[0].size(); }
-		int		total_teamB_capacity() const { return m_spawnpoints[1].size(); }
-		int		total_capacity(char team) const;
-		int		total_capacity() const { return total_teamA_capacity() + total_teamB_capacity(); }
+		// How many REMAINING spawnpoints are there?
+		// (At present, spawnpoints are always re-used, so this number is always equal to the number of spawnpoints)
+		int		nbr_remaining_spawnpoints(char team) const { return nbr_spawnpoints(team); }
+		int		nbr_remaining_spawnpoints() const { return nbr_spawnpoints(); }
+
+		// Is there space on the map for another player?
+		// (At present, spawnpoints are always re-used, so there is always space available)
+		bool		has_capacity(char team) const { return true; }
+		bool		has_capacity() const { return has_capacity('A') || has_capacity('B'); }
 	
 		// Acquire the next available spawnpoint for the given team
 		// Returns NULL if no spawnpoint is available
-		const Point*	next_spawnpoint(char team);
+		const Spawnpoint* next_spawnpoint(char team);
 	
 		// Release/return the given spawnpoint to the pool
-		void		return_spawnpoint(char team, const Point* p);
+		void		return_spawnpoint(char team, const Spawnpoint* p);
 	
-		bool		has_capacity(char team) const;
-	
-		// How much REAMINING space is available on the map?
-		int		remaining_teamA_capacity() const { return m_available_spawnpoints[0].size(); }
-		int		remaining_teamB_capacity() const { return m_available_spawnpoints[1].size(); }
-		int		remaining_capacity() const { return remaining_teamA_capacity() + remaining_teamB_capacity(); }
 	};
 }
 

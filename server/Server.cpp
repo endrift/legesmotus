@@ -23,7 +23,9 @@
  */
 
 #include "Server.hpp"
+#include "ServerConfig.hpp"
 #include "ServerNetwork.hpp"
+#include "Spawnpoint.hpp"
 #include "common/Exception.hpp"
 #include "common/IPAddress.hpp"
 #include "common/PacketWriter.hpp"
@@ -48,7 +50,7 @@ const int	Server::SERVER_PROTOCOL_VERSION = 2;
 
 const char	Server::SERVER_VERSION[] = LM_VERSION;
 
-Server::Server (PathManager& path_manager) : m_path_manager(path_manager), m_ack_manager(*this), m_gates(2, GateStatus(*this))
+Server::Server (ServerConfig& config, PathManager& path_manager) : m_config(config), m_path_manager(path_manager), m_ack_manager(*this), m_gates(2, GateStatus(*this))
 {
 	m_next_player_id = 1;
 	m_is_running = false;
@@ -150,7 +152,7 @@ void	Server::team_change(const IPAddress& address, PacketReader& packet)
 	}
 
 	// Check to make sure there is space on the current map for the new team
-	if (m_team_count[new_team - 'A'] >= m_current_map.total_capacity(new_team)) {
+	if (!m_current_map.has_capacity(new_team)) {
 		send_system_message(*player, "There are no spawn points left the map for this team.");
 		return;
 	}
@@ -253,9 +255,9 @@ void	Server::command_server(uint32_t player_id, const char* command) {
 		send_system_message(*player, "/server help - Display this help");
 
 	} else if (strncmp(command, "auth ", 5) == 0) {
-		if (m_password.empty()) {
+		if (!m_config.has("password")) {
 			send_system_message(*player, "No operator password set.");
-		} else if (m_password == command + 5) {
+		} else if (m_config.get<string>("password") == command + 5) {
 			player->set_is_op(true);
 			send_system_message(*player, "You are now operator.");
 		} else {
@@ -400,6 +402,12 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 
 	sanitize_player_name(requested_name);
 
+	// Check player's name for validity
+	if (requested_name.empty()) {
+		cerr << "Rejected join for empty player name." << endl;
+		reject_join(address, "Invalid player name.");
+		return;
+	}
 
 	if (!is_valid_team(team)) {
 		// Assign to team equitably.
@@ -412,22 +420,15 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 		}
 	}
 
-	// Check player's name for validity
-	if (requested_name.empty()) {
-		cerr << "Rejected join for empty player name." << endl;
-		reject_join(address, "Invalid player name.");
+	// Check to make sure there is space in the game
+	if (nbr_players() >= m_params.max_players) {
+		cerr << "Rejected join for " << requested_name << ": No space on server" << endl;
+		reject_join(address, "No space on server.");
 		return;
 	}
 
-	/* Put back when maps have player limits
 	// Check to make sure there is space on the current map
 	if (!m_current_map.has_capacity(team)) {
-		reject_join(address, "No space on map.");
-		return;
-	}
-	*/
-	// Check to make sure there is space on the current map
-	if (m_team_count[team - 'A'] >= m_current_map.total_capacity(team)) {
 		cerr << "Rejected join for " << requested_name << ": No space on map" << endl;
 		reject_join(address, "No space on map.");
 		return;
@@ -445,7 +446,7 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 
 	cerr << requested_name << ": Joined on team " << team << ", with ID " << player_id << endl;
 
-	if (m_password.empty() && address.is_localhost()) {
+	if (!m_config.has("password") && address.is_localhost()) {
 		// If no operator password was set, give players connecting from the localhost operator privileges
 		new_player.set_is_op(true);
 	}
@@ -516,7 +517,7 @@ void	Server::info(const IPAddress& address, PacketReader& request_packet) {
 	request_packet >> client_protocol_version >> scan_id >> scan_start_time;
 
 	PacketWriter	response_packet(INFO_PACKET);
-	response_packet << scan_id << scan_start_time << SERVER_PROTOCOL_VERSION << m_current_map.get_name() << m_team_count[0] << m_team_count[1] << m_current_map.total_teamA_capacity() << m_current_map.total_teamB_capacity() << get_ticks();
+	response_packet << scan_id << scan_start_time << SERVER_PROTOCOL_VERSION << m_current_map.get_name() << m_team_count[0] << m_team_count[1] << m_params.max_players << get_ticks();
 	m_network.send_packet(address, response_packet);
 }
 
@@ -601,19 +602,21 @@ void	Server::release_player_resources(const ServerPlayer& player) {
 	--m_team_count[player.get_team() - 'A'];
 }
 
-void	Server::start(const char* interface_address, unsigned int portno, const char* map_name)
+void	Server::start()
 {
-	if (!load_map(map_name)) {
+	if (!load_map(m_config.get<const char*>("map"))) {
 		throw Exception("Failed to load map.");
 	}
 
-	if (!resolve_hostname(m_listen_address, interface_address, portno)) {
+	if (!resolve_hostname(m_listen_address, m_config.get<const char*>("interface"), m_config.get<uint16_t>("portno"))) {
 		throw Exception("Failed to resolve the interface address.  Please make sure it's correct.");
 	}
 
 	if (!m_network.start(m_listen_address)) {
 		throw Exception("Failed to start server network on interface and port.");
 	}
+
+	m_register_with_metaserver = m_config.get<bool>("register_server");
 
 	if (m_register_with_metaserver && !resolve_hostname(m_metaserver_address, METASERVER_HOSTNAME, METASERVER_PORTNO)) {
 		// TODO: better error message
@@ -798,9 +801,9 @@ void	Server::spawn_waiting_players() {
 }
 
 bool	Server::spawn_player(ServerPlayer& player) {
-	if (const Point* point = m_current_map.next_spawnpoint(player.get_team())) {
+	if (const Spawnpoint* point = m_current_map.next_spawnpoint(player.get_team())) {
 		player.set_spawnpoint(point);
-		send_spawn_packet(player, *point, true);
+		send_spawn_packet(player, point->get_point(), true);
 		return true;
 	} else {
 		// Oh noes! No place to spawn this player.
@@ -930,14 +933,6 @@ const ServerPlayer*	Server::get_player_by_name(const char* name) const {
 	return NULL;
 }
 
-void	Server::set_password(const char* pw) {
-	m_password = pw;
-}
-
-void	Server::set_register_with_metaserver(bool rwms) {
-	m_register_with_metaserver = rwms;
-}
-
 void	Server::reject_join(const IPAddress& addr, const char* why) {
 	PacketWriter	packet(REQUEST_DENIED_PACKET);
 	packet << int(JOIN_PACKET) << why;
@@ -952,8 +947,14 @@ bool	Server::load_map(const char* map_name) {
 		return false;
 	}
 
+	// 1. Reset the game parameters to their hard-coded internal defaults
 	m_params.reset();
+
+	// 2. Set the default game parameters for this map
 	m_params.init_from_config(m_current_map.get_options());
+
+	// 3. Set game parameters that are specified in the server-wide config
+	m_params.init_from_config(m_config);
 
 	return true;
 }

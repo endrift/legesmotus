@@ -32,6 +32,8 @@
 #include <list>
 
 namespace LM {
+	class Spawnpoint;
+
 	class ServerPlayer : public Player {
 	public:
 		typedef std::list<ServerPlayer*> Queue;
@@ -42,7 +44,7 @@ namespace LM {
 	
 		bool		m_is_op;		// This player has been authenticated with op status
 	
-		const Point*	m_spawnpoint;		// Where the player was spawned, if anywhere yet
+		const Spawnpoint* m_spawnpoint;		// Where the player was spawned, if anywhere yet
 	
 		uint64_t	m_join_time;		// The tick time at which the player joined the game
 		uint64_t	m_last_seen_time;	// The tick time at which this player was last seen (i.e. last had a packet from)
@@ -62,8 +64,8 @@ namespace LM {
 	
 		// Remembering spawn points
 		bool		has_spawnpoint() const { return m_spawnpoint != NULL; }
-		const Point*	get_spawnpoint() const { return m_spawnpoint; }
-		void		set_spawnpoint(const Point* p) { m_spawnpoint = p; }
+		const Spawnpoint* get_spawnpoint() const { return m_spawnpoint; }
+		void		set_spawnpoint(const Spawnpoint* p) { m_spawnpoint = p; }
 	
 		// For spawning
 		void		reset_join_time();

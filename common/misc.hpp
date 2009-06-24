@@ -73,7 +73,7 @@ namespace LM {
 	// Either username or groupname may be NULL
 	void		drop_privileges(const char* username, const char* groupname);
 
-	// Determine whether the program has terminal output (always returns true on Windows)
+	// Determine whether the program has terminal output
 	bool		has_terminal_output();
 
 	// Scan the given directory and populate the given list with the name of every file and directory in the given directory

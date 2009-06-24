@@ -43,6 +43,7 @@ namespace LM {
 	class PacketReader;
 	class PathManager;
 	class IPAddress;
+	class ServerConfig;
 	
 	class Server {
 	public:
@@ -70,13 +71,12 @@ namespace LM {
 		};
 		friend class ServerAckManager;
 	
-		PathManager&		m_path_manager;
-	
 		//
 		// Game State
 		//
+		ServerConfig&		m_config;
+		PathManager&		m_path_manager;
 		GameParameters		m_params;
-		std::string		m_password;		// Password for admin access
 		bool			m_is_running;		// When this is false, run() stops its main loop
 		IPAddress		m_listen_address;	// The address the server's listening on
 		ServerNetwork		m_network;
@@ -210,6 +210,9 @@ namespace LM {
 	
 		// When a player is removed or switches teams, call this function to release any resources (gate holds, team counts, spawnpoints) that the player holds:
 		void			release_player_resources(const ServerPlayer& player);
+
+		// How many players are in the game?
+		int			nbr_players() const { return m_team_count[0] + m_team_count[1]; }
 	
 		//
 		// Main Loop Helpers
@@ -219,7 +222,7 @@ namespace LM {
 		uint32_t		server_sleep_time() const;
 	
 	public:
-		explicit Server (PathManager& path_manager);
+		Server (ServerConfig& config, PathManager& path_manager);
 	
 		// Get information about gate times
 		uint64_t get_gate_open_time(size_t nbr_players) const {
@@ -243,13 +246,10 @@ namespace LM {
 		void		team_change(const IPAddress& address, PacketReader& packet);
 		void		register_server_packet(const IPAddress& address, PacketReader& packet);
 	
-		void		start(const char* interface_address, unsigned int portno, const char* map_name); // map_name is NAME of map (excluding .map)
+		void		start();
 		void		run();
 		void		stop();
 		void		restart();
-	
-		void		set_password(const char* pw);
-		void		set_register_with_metaserver(bool);
 	};
 }
 

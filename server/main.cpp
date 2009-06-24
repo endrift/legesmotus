@@ -23,6 +23,7 @@
  */
 
 #include "Server.hpp"
+#include "ServerConfig.hpp"
 #include "common/Exception.hpp"
 #include "common/network.hpp"
 #include "common/PathManager.hpp"
@@ -32,9 +33,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <memory>
-#ifndef __WIN32
 #include <signal.h>
-#endif
 
 using namespace LM;
 using namespace std;
@@ -45,10 +44,11 @@ namespace {
 	void display_usage(const char* progname) {
 		cout << "Usage: " << progname << " [OPTION]" << endl;
 		cout << "Options:" << endl;
+		cout << "  -c CONFFILE	load the given configuration file" << endl;
 		cout << "  -m MAPNAME	set the map name [default: alpha1]" << endl;
 		cout << "  -P PASSWORD	set the admin password [default: DISABLED]" << endl;
 		cout << "  -p PORTNO	set the port number to listen on [default: " << DEFAULT_PORTNO << "]" << endl;
-		cout << "  -i PORTNO	address of interface to listen on [default: all interfaces]" << endl;
+		cout << "  -i ADDRESS	address of interface to listen on [default: all interfaces]" << endl;
 		cout << "  -d		daemonize the server (not on Windows)" << endl;
 		cout << "  -u USERNAME	drop privileges to given user (only super user may use) (not on Windows)" << endl;
 		cout << "  -g GROUPNAME	drop privileges to given group (only super user may use) (not on Windows)" << endl;
@@ -77,7 +77,10 @@ namespace {
 	}
 
 	void	init_signals () {
-	#ifndef __WIN32
+	#ifdef __WIN32
+		signal(SIGINT, graceful_termination_handler);
+		signal(SIGTERM, graceful_termination_handler);
+	#else
 		struct sigaction	siginfo;
 
 		// Block all these signals, and only unblock them when the server is ready to handle them (typically when it's waiting on a select)
@@ -116,28 +119,32 @@ extern "C" int main(int argc, char* argv[]) try {
 	srand(time(0));
 	get_ticks(); // Initialize the tick counter to 0 (needed because the INFO packet contains the server uptime)
 
-	string			password;
-	string			map_name("alpha1");
-	const char*		interface_ip_address = NULL;
+	ServerConfig		config;
 	const char*		username = NULL;
 	const char*		groupname = NULL;
-	unsigned int		portno = DEFAULT_PORTNO;
 	bool			daemonize = false;
-	bool			local_server = false;
 
 	for (int i = 1; i < argc; i++) {
-		if (strcmp(argv[i], "-i") == 0 && argc > i+1) {
-			interface_ip_address = argv[i+1];
+		if (strcmp(argv[i], "-c") == 0 && argc > i+1) {
+			if (!config.load(argv[i+1])) {
+				cerr << argv[i+1] << ": failed to load configuration file" << endl;
+				return 1;
+			}
+			++i;
+		} else if (strcmp(argv[i], "-i") == 0 && argc > i+1) {
+			config.set("interface", argv[i+1]);
 			++i;
 		} else if (strcmp(argv[i], "-p") == 0 && argc > i+1) {
-			portno = atoi(argv[i+1]);
+			config.set("portno", atoi(argv[i+1]));
 			++i;
 		} else if (strcmp(argv[i], "-P") == 0 && argc > i+1) {
-			password = argv[i+1];
+			config.set("password", argv[i+1]);
 			++i;
 		} else if (strcmp(argv[i], "-m") == 0 && argc > i+1) {
-			map_name = argv[i+1];
+			config.set("map", argv[i+1]);
 			++i;
+		} else if (strcmp(argv[i], "-l") == 0) {
+			config.set("register_server", false);
 		} else if (strcmp(argv[i], "-u") == 0 && argc > i+1) {
 			username = argv[i+1];
 			++i;
@@ -146,8 +153,6 @@ extern "C" int main(int argc, char* argv[]) try {
 			++i;
 		} else if (strcmp(argv[i], "-d") == 0) {
 			daemonize = true;
-		} else if (strcmp(argv[i], "-l") == 0) {
-			local_server = true;
 		} else if (strcmp(argv[i], "--version") == 0) {
 			display_version();
 			return 0;
@@ -165,11 +170,9 @@ extern "C" int main(int argc, char* argv[]) try {
 
 	PathManager		path_manager(argv[0]);
 
-	server.reset(new Server(path_manager));
+	server.reset(new Server(config, path_manager));
 
-	server->set_password(password.c_str());
-	server->set_register_with_metaserver(!local_server);
-	server->start(interface_ip_address, portno, map_name.c_str());
+	server->start();
 
 	if (username || groupname) {
 		drop_privileges(username, groupname);
