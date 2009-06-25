@@ -123,60 +123,82 @@ extern "C" int main(int argc, char* argv[]) try {
 		}
 	}
 
-	if (!server.empty() && !resolve_hostname(server_address, server.c_str(), portno)) {
-		cerr << "Hostname of requested server not found: " << server << endl;
-		return 1;
-	}
-
-	if (has_terminal_output()) {
-		cout << "Welcome to Leges Motus." << endl;
-		display_legalese();
-	}
-	
 	PathManager	pathman(argv[0]);
-	ClientConfiguration config;
 
-	if (width > 0 && height > 0) {
-		// Use the specified width and height
-		game_controller = new GameController(pathman, &config, width, height, fullscreen);
-	} else if (fullscreen) {
-		// Use optimal settings
-		game_controller = new GameController(pathman, &config);
-	} else {
-		width = config.get_int_value("screen_width");
-		height = config.get_int_value("screen_height");
-		fullscreen = config.get_bool_value("fullscreen");
-		if (width == -1) {
-			width = 1024;
+	bool restart = true;
+	while(restart) {
+		if (!server.empty() && !resolve_hostname(server_address, server.c_str(), portno)) {
+			cerr << "Hostname of requested server not found: " << server << endl;
+			return 1;
 		}
-		if (height == -1) {
-			height = 768;
+
+		if (has_terminal_output()) {
+			cout << "Welcome to Leges Motus." << endl;
+			display_legalese();
 		}
-		// Use the default from the config
-		game_controller = new GameController(pathman, &config, width, height, fullscreen);
-	}
 
-	if (!name.empty()) {
-		config.set_string_value("name", name);
-	} else {
-		if (config.get_string_value("name") == "" || config.get_string_value("name") == "Unnamed") {
-			config.set_string_value("name", get_username());
+		ClientConfiguration config;
+		
+		if (width > 0 && height > 0) {
+			// Use the specified width and height
+			game_controller = new GameController(pathman, &config, width, height, fullscreen);
+		} else if (fullscreen) {
+			// Use optimal settings
+			game_controller = new GameController(pathman, &config);
+		} else {
+			width = config.get_int_value("screen_width");
+			height = config.get_int_value("screen_height");
+			fullscreen = config.get_bool_value("fullscreen");
+			if (width == -1) {
+				width = 1024;
+			}
+			if (height == -1) {
+				height = 768;
+			}
+			// Use the default from the config
+			game_controller = new GameController(pathman, &config, width, height, fullscreen);
 		}
-		name = config.get_string_value("name");
-	}
 
-	game_controller->set_player_name(!name.empty() ? name : get_username());
-	if (!server.empty()) {
-		game_controller->connect_to_server(server_address, team);
-	}
+		if (!name.empty()) {
+			config.set_string_value("name", name);
+		} else {
+			if (config.get_string_value("name") == "" || config.get_string_value("name") == "Unnamed") {
+				config.set_string_value("name", get_username());
+			}
+			name = config.get_string_value("name");
+		}
 
-	game_controller->run();
+		game_controller->set_player_name(!name.empty() ? name : get_username());
+		if (!server.empty()) {
+			game_controller->connect_to_server(server_address, team);
+		}
+
+		game_controller->run();
+		
+		if (game_controller->wants_restart()) {
+			// Allow the resolution to be re-specified by the config.
+			width = 0;
+			height = 0;
+			fullscreen = false;
+			
+			// Reconnect to the server we were on.
+			server = game_controller->get_server_address();
+			size_t portdelim = server.find(":");
+			if (portdelim != string::npos) {
+				portno = atoi(server.substr(portdelim+1).c_str());
+				server = server.substr(0, portdelim);
+			}
+			game_controller->disconnect();
+		} else {
+			restart = false;
+		}
+		
+		delete game_controller;
+	}
 	
 	if (has_terminal_output()) {
 		cout << "Leges Motus is now exiting.  Thanks for playing!" << endl;
 	}
-	
-	delete game_controller;
 	
 	return 0;
 

@@ -115,18 +115,19 @@ namespace LM {
 		int 		m_screen_height;
 		int		m_map_width;
 		int		m_map_height;
-		Polygon	m_map_polygon;
+		Polygon		m_map_polygon;
 		int 		m_pixel_depth;
 		int		m_game_state;
 		bool 		m_fullscreen;
 		bool		m_quit_game;
+		bool		m_restart;
 		double		m_offset_x;
 		double		m_offset_y;
 		double		m_mouse_x;
 		double		m_mouse_y;
 		Uint8*		m_keys;
 		KeyBindings	m_key_bindings;
-		KeyBindings m_alt_key_bindings;
+		KeyBindings 	m_alt_key_bindings;
 		std::map<int, GraphicalPlayer> m_players;
 		unsigned int	m_player_id;
 		bool		m_holding_gate;
@@ -170,6 +171,9 @@ namespace LM {
 		std::map<std::string, Text*> m_main_menu_items;
 		
 		std::map<std::string, Text*> m_options_menu_items;
+		size_t		m_num_resolutions;
+		size_t		m_resolution_selected;
+		std::vector<std::pair<int, int> > m_resolutions;
 		
 		TableBackground* m_server_browser_background;
 		TableBackground* m_server_browser_selection;
@@ -232,6 +236,7 @@ namespace LM {
 		void		contact_metaserver();
 	
 		void		send_ack(const PacketReader& packet);
+		
 	public:
 		explicit GameController(PathManager& pathman, ClientConfiguration* config);
 		GameController(PathManager& pathman, ClientConfiguration* config, int width, int height, bool fullscreen =false, int depth =24);
@@ -268,6 +273,8 @@ namespace LM {
 		void		delete_individual_score(const GraphicalPlayer& currplayer);
 		void		set_player_name(std::string name);
 		void		clear_players();
+		bool		wants_restart();
+		std::string	get_server_address();
 		std::string	format_time_from_millis(uint64_t milliseconds);
 		
 		// Network callbacks:

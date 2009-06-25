@@ -44,6 +44,7 @@
 #include "SDL_image.h"
 
 #include <vector>
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
@@ -74,6 +75,13 @@ const int GameController::DOUBLE_CLICK_TIME = 300;
 const int GameController::NETWORK_TIMEOUT_LIMIT = 10000;
 const unsigned int GameController::PING_FREQUENCY = 2000;
 const int GameController::TEXT_LAYER = -4;
+
+bool	sort_resolution(pair<int, int> pairone, pair<int, int> pairtwo) {
+	if (pairone.first == pairtwo.first) {
+		return pairone.second < pairtwo.second;
+	}
+	return pairone.first < pairtwo.first;
+}
 
 GameController::GameController(PathManager& path_manager, ClientConfiguration* config) : m_path_manager(path_manager) {
 #ifndef __WIN32
@@ -155,6 +163,7 @@ GameController::~GameController() {
 	delete m_minimap;
 
 	// The GameWindow instance should always be destroyed last, since other stuff may depend on it.
+	m_window->deinit_video();
 	m_window->destroy_instance();
 }
 
@@ -170,6 +179,7 @@ void GameController::init(GameWindow* window) {
 	
 	// Initial game state will be showing the main menu.
 	m_game_state = SHOW_MENUS;
+	m_restart = false;
 	
 	m_screen_width = window->get_width();
 	m_screen_height = window->get_height();
@@ -324,6 +334,45 @@ void GameController::init(GameWindow* window) {
 	m_options_menu_items["Back"] = m_text_manager->place_string("Back", 50, 200, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_options_menu_items["Enter Name"] = m_text_manager->place_string("Enter Name", 50, 250, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_options_menu_items["Toggle Sound"] = m_text_manager->place_string("Toggle Sound", 50, 300, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_options_menu_items["Resolution"] = m_text_manager->place_string("Screen Resolution: ", 50, 350, TextManager::LEFT, TextManager::LAYER_HUD);
+	string fullscreen = "";
+	if (m_configuration->get_bool_value("fullscreen")) {
+		fullscreen = "Fullscreen: Yes";
+	} else {
+		fullscreen = "Fullscreen: No";
+	}
+	m_options_menu_items["Fullscreen"] = m_text_manager->place_string(fullscreen, 50, 400, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_options_menu_items["Apply"] = m_text_manager->place_string("Apply", m_screen_width - 200, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
+	
+	int depths[100];
+	m_window->supported_resolutions(NULL, NULL, depths, &m_num_resolutions);
+	int supported_widths[m_num_resolutions];
+	int supported_heights[m_num_resolutions];
+	bool found_res = false;
+	m_window->supported_resolutions(supported_widths, supported_heights, depths, &m_num_resolutions);
+	cerr << "Num resolutions: " << m_num_resolutions << endl;
+	for (size_t i = 0; i < m_num_resolutions; i++) {
+		if (m_screen_width == supported_widths[i] && m_screen_height == supported_heights[i]) {
+			found_res = true;
+		}
+		m_resolutions.push_back(make_pair(supported_widths[i], supported_heights[i]));
+	}
+	if (found_res == false) {
+		m_resolutions.push_back(make_pair(m_screen_width, m_screen_height));
+		m_num_resolutions++;
+	}
+	sort(m_resolutions.begin(), m_resolutions.end(), sort_resolution);
+	
+	for (size_t i = 0; i < m_num_resolutions; i++) {
+		int width = m_resolutions[i].first;
+		int height = m_resolutions[i].second;
+		stringstream resolution;
+		resolution << width << "x" << height;
+		if (m_screen_width == width && m_screen_height == height) {
+			m_resolution_selected = i;
+			m_options_menu_items["CurrResolution"] = m_text_manager->place_string(resolution.str(), 410, 350, TextManager::LEFT, TextManager::LAYER_HUD);
+		}
+	}
 	
 	// Server browser
 	m_server_browser_selected_item = -1;
@@ -856,7 +905,9 @@ void GameController::run(int lockfps) {
 		}
 	}
 	
-	disconnect();
+	if (!m_restart) {
+		disconnect();
+	}
 }
 
 /*
@@ -1206,6 +1257,37 @@ void GameController::process_mouse_click(SDL_Event event) {
 						m_configuration->set_bool_value("sound", true);
 						display_message("Sound is now ON.");
 					}
+				} else if ((*it).first == "Resolution" || (*it).first == "CurrResolution") {
+					m_resolution_selected++;
+					if (m_resolution_selected >= m_num_resolutions) {
+						m_resolution_selected = 0;
+					}
+					int width = m_resolutions[m_resolution_selected].first;
+					int height = m_resolutions[m_resolution_selected].second;
+					stringstream resolution;
+					resolution << width << "x" << height;
+					m_text_manager->remove_string(m_options_menu_items["CurrResolution"]);
+					m_text_manager->set_active_font(m_menu_font);
+					m_options_menu_items["CurrResolution"] = m_text_manager->place_string(resolution.str(), 410, 350, TextManager::LEFT, TextManager::LAYER_HUD);
+				} else if ((*it).first == "Fullscreen") {
+					string fullscreen = "";
+					if (m_configuration->get_bool_value("fullscreen")) {
+						m_configuration->set_bool_value("fullscreen", false);
+						fullscreen = "Fullscreen: No";
+					} else {
+						m_configuration->set_bool_value("fullscreen", true);
+						fullscreen = "Fullscreen: Yes";
+					}
+					m_text_manager->remove_string(m_options_menu_items["Fullscreen"]);
+					m_text_manager->set_active_font(m_menu_font);
+					m_options_menu_items["Fullscreen"] = m_text_manager->place_string(fullscreen, 50, 400, TextManager::LEFT, TextManager::LAYER_HUD);
+				} else if ((*it).first == "Apply") {
+					int width = m_resolutions[m_resolution_selected].first;
+					int height = m_resolutions[m_resolution_selected].second;
+					m_configuration->set_int_value("screen_width", width);
+					m_configuration->set_int_value("screen_height", height);
+					m_restart = true;
+					m_quit_game = true;
 				}
 				m_sound_controller->play_sound("click");
 			}
@@ -3090,6 +3172,18 @@ void	GameController::sound_finished(int channel) {
 		if (m_gate_lower_sounds[i] == channel) {
 			m_gate_lower_sounds[i] = -1;
 		}
+	}
+}
+
+bool	GameController::wants_restart() {
+	return m_restart;
+}
+
+string	GameController::get_server_address() {
+	if (m_network.is_connected() && m_join_sent_time == 0) {
+		return format_ip_address(m_network.get_server_address(), true);
+	} else {
+		return "";
 	}
 }
 
