@@ -157,6 +157,7 @@ void ScrollArea::draw(const GameWindow* window) const {
 		glPushMatrix();
 		transform_gl();
 		glEnable(GL_STENCIL_TEST);
+		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 		glDisable(GL_TEXTURE_2D);
 		glClearStencil(0);
 		glClear(GL_STENCIL_BUFFER_BIT);
@@ -170,6 +171,7 @@ void ScrollArea::draw(const GameWindow* window) const {
 		glStencilFunc(GL_EQUAL, 1, 1);
 		glTranslated(0,-round(m_progress*(m_content_height-m_height)),0);
 		glEnable(GL_TEXTURE_2D);
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		m_group.draw(window);
 		glDisable(GL_STENCIL_TEST);
 		glPopMatrix();
