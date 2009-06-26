@@ -990,6 +990,9 @@ void GameController::process_input() {
 						if (m_input_text.length() <= 2) {
 							break;
 						}
+						if (m_input_text.find("[TEAM]> ") == 0 && m_input_text.length() <= 8) {
+							break;
+						}
 						m_input_text.erase(m_input_text.length() - 1);
 						m_text_manager->remove_string(m_input_bar);
 						m_text_manager->set_active_color(Color::WHITE);
