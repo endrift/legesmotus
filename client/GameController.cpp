@@ -943,6 +943,11 @@ void GameController::process_input() {
 						m_input_bar_back->set_invisible(true);
 						m_input_text = "> ";
 					} else if (event.key.keysym.sym == m_key_bindings.send_chat || event.key.keysym.sym == m_alt_key_bindings.send_chat) {
+						if (m_input_text.find("[TEAM]> ") == 0) {
+							string msg = m_input_text.substr(8);
+							m_input_text = ((string)"> /tchat ").append(msg);
+						}
+						
 						// Remove the "> " from the front.
 						string message = m_input_text.substr(2);
 						
@@ -1026,7 +1031,7 @@ void GameController::process_input() {
 						SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 						m_text_manager->set_active_color(Color::WHITE);
 						m_text_manager->set_active_font(m_font);
-						m_input_text = "> /tchat ";
+						m_input_text = "[TEAM]> ";
 						if (m_input_bar == NULL) {
 							m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
 							m_input_bar_back->set_image_width(m_input_bar->get_image_width() + 6);
