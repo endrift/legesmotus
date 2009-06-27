@@ -35,6 +35,7 @@ Transition::Transition(Graphic* transitioned, Property property, Curve* curve, u
 	m_duration = duration;
 	m_curve_owned = false;
 	m_graphic_owned = false;
+	m_listener = NULL;
 }
 
 Transition::~Transition() {
@@ -94,15 +95,25 @@ bool Transition::get_graphic_ownership() const {
 	return m_graphic_owned;
 }
 
+void Transition::set_listener(Listener* listener) {
+	m_listener = listener;
+}
+
 bool Transition::update(uint64_t current) {
 	if (m_duration == 0) {
 		return true;
+		if (m_listener != NULL) {
+			m_listener->finished(this);
+		}
 	}
 	bool passed = false;
 	uint64_t progress = current - m_start;
 	if (progress >= m_duration) {
 		progress = m_duration;
 		passed = true;
+		if (m_listener != NULL) {
+			m_listener->finished(this);
+		}
 	} else if (current < m_start) {
 		progress = 0;
 	}

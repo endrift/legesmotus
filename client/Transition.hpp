@@ -34,6 +34,11 @@ namespace LM {
 	class Transition {
 	public:
 		typedef void (Graphic::*Property)(double param);
+		class Listener {
+		public:
+			virtual ~Listener() {}
+			virtual void finished(Transition* which) = 0;
+		};
 	private:
 		Graphic*	m_transed;
 		Property	m_prop;
@@ -42,6 +47,7 @@ namespace LM {
 		uint64_t	m_duration;
 		bool		m_curve_owned;
 		bool		m_graphic_owned;
+		Listener*	m_listener;
 	public:
 		Transition(Graphic* transitioned, Property property, Curve* curve = 0, uint64_t start = 0, uint64_t duration = 0);
 		~Transition();
@@ -58,6 +64,8 @@ namespace LM {
 		Graphic* get_graphic();
 		bool	get_curve_ownership() const;
 		bool	get_graphic_ownership() const;
+
+		void	set_listener(Listener* listener);
 	
 		// Returns true if current >= end
 		bool update(uint64_t current);
