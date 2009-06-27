@@ -73,10 +73,11 @@ const int GameController::GATE_STATUS_RECT_WIDTH = 80;
 const int GameController::FROZEN_STATUS_RECT_WIDTH = 60;
 const int GameController::DOUBLE_CLICK_TIME = 300;
 const int GameController::NETWORK_TIMEOUT_LIMIT = 10000;
-const unsigned int GameController::PING_FREQUENCY = 2000;
 const int GameController::TEXT_LAYER = -4;
+const unsigned int GameController::PING_FREQUENCY = 2000;
+const uint64_t GameController::BLIP_DURATION = 1000;
 
-bool	sort_resolution(pair<int, int> pairone, pair<int, int> pairtwo) {
+static bool	sort_resolution(pair<int, int> pairone, pair<int, int> pairtwo) {
 	if (pairone.first == pairtwo.first) {
 		return pairone.second < pairtwo.second;
 	}
@@ -587,7 +588,7 @@ void GameController::init(GameWindow* window) {
 	m_transition_manager.add_transition(m_chat_window_transition_y);
 	
 	// Set up the radar.
-	m_radar = new Radar(m_path_manager, RADAR_SCALE);
+	m_radar = new Radar(m_path_manager, RADAR_SCALE, RADAR_ON);
 	m_radar->set_x(m_screen_width - 120);
 	m_radar->set_y(120);
 	m_radar->register_with_window(m_window);
@@ -774,7 +775,8 @@ void GameController::run(int lockfps) {
 					send_animation_packet("frontarm", "rotation", int(round(angle))); // XXX: going double->int here
 				}
 				send_my_player_update();
-				
+				m_radar->update(currframe);
+
 				// Set the new offset of the window so that the player is centered.
 				m_offset_x = m_players[m_player_id].get_x() - (m_screen_width/2.0);
 				m_offset_y = m_players[m_player_id].get_y() - (m_screen_height/2.0);
@@ -2193,6 +2195,8 @@ void GameController::welcome(PacketReader& reader) {
 	}
 	m_window->register_graphic(m_players[m_player_id].get_sprite());
 	m_radar->add_blip(m_player_id, team, 0, 0);
+	// Because our blip never gets "activated", and if the mode is aural, we won't get any alpha, so add some
+	m_radar->set_blip_alpha(m_player_id, 1.0);
 	
 	m_players[m_player_id].set_radius(30);
 	m_players[m_player_id].set_name_sprite(m_text_manager->place_string(m_players[m_player_id].get_name(), m_screen_width/2, (m_screen_height/2)-(m_players[m_player_id].get_radius()+30), TextManager::CENTER, TextManager::LAYER_MAIN));
@@ -2442,6 +2446,7 @@ void GameController::gun_fired(PacketReader& reader) {
 	m_window->register_graphic(this_shot);
 	
 	m_sound_controller->play_sound("fire");
+	m_radar->activate_blip(playerid, get_ticks(), BLIP_DURATION);
 	
 	player_fired(playerid, start_x, start_y, rotation);
 }

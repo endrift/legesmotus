@@ -33,7 +33,7 @@ Transition::Transition(Graphic* transitioned, Property property, Curve* curve, u
 	m_curve = curve;
 	m_start = start;
 	m_duration = duration;
-	m_curve_owned = false;
+	m_curve_owned = true;
 	m_graphic_owned = false;
 	m_listener = NULL;
 }

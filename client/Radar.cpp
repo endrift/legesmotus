@@ -30,7 +30,7 @@
 using namespace LM;
 using namespace std;
 
-Radar::Radar(PathManager& path_manager, double scale) : m_path_manager(path_manager) {
+Radar::Radar(PathManager& path_manager, double scale, RadarMode mode) : m_path_manager(path_manager) {
 	m_whole = new GraphicGroup;
 
 	Sprite mask_sprite(m_path_manager.data_path("mini_circle.png", "sprites"));
@@ -50,6 +50,7 @@ Radar::Radar(PathManager& path_manager, double scale) : m_path_manager(path_mana
 	m_master_blip_blue = new Sprite(m_path_manager.data_path("mini_blip_blue.png", "sprites"));
 
 	m_scale = scale;
+	m_mode = mode;
 }
 
 Radar::~Radar() {
@@ -70,12 +71,24 @@ void Radar::set_invisible(bool enable) {
 	m_whole->set_invisible(enable);
 }
 
+void Radar::set_mode(RadarMode mode) {
+	m_mode = mode;
+	if (mode == RADAR_OFF) {
+		set_invisible(true);
+	} else {
+		set_invisible(false);
+	}
+}
+
 void Radar::add_blip(uint32_t id, char team, double x, double y) {
-	Sprite *clone;
+	Sprite* clone;
 	if (team == 'A') {
 		clone = m_master_blip_blue->clone();
 	} else {
 		clone = m_master_blip_red->clone();
+	}
+	if (m_mode == RADAR_AURAL) {
+		clone->set_alpha(0.0);
 	}
 	clone->set_x(x*m_scale);
 	clone->set_y(y*m_scale);
@@ -106,6 +119,30 @@ void Radar::set_blip_invisible(uint32_t id, bool invisible) {
 	}
 }
 
+void Radar::set_blip_alpha(uint32_t id, double alpha) {
+	Graphic *blip;
+	stringstream s;
+	s << id;
+	blip = m_minigroup->get_graphic(s.str());
+	if (blip != NULL) {
+		blip->set_alpha(alpha);
+	}
+}
+
+void Radar::activate_blip(uint32_t id, uint64_t current, uint64_t duration) {
+	if (m_mode != RADAR_AURAL) {
+		return;
+	}
+	Graphic *blip;
+	stringstream s;
+	s << id;
+	blip = m_minigroup->get_graphic(s.str());
+	if (blip != NULL) {
+		m_transman.add_transition(new Transition(blip, &Graphic::set_alpha,
+			new LinearCurve(1.0, 0.0), current, duration), false, TransitionManager::DELETE);
+	}
+}
+
 void Radar::remove_blip(uint32_t id) {
 	Graphic *blip;
 	stringstream s;
@@ -118,6 +155,10 @@ void Radar::remove_blip(uint32_t id) {
 void Radar::recenter(double x, double y) {
 	m_minigroup->set_center_x(x*m_scale);
 	m_minigroup->set_center_y(y*m_scale);
+}
+
+void Radar::update(uint64_t tick) {
+	m_transman.update(tick);
 }
 
 void Radar::register_with_window(GameWindow* window) {
