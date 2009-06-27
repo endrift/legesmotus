@@ -1,5 +1,5 @@
 /*
- * client/Minimap.hpp
+ * client/Radar.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,8 +22,8 @@
  * 
  */
 
-#ifndef LM_CLIENT_MINIMAP_HPP
-#define LM_CLIENT_MINIMAP_HPP
+#ifndef LM_CLIENT_RADAR_HPP
+#define LM_CLIENT_RADAR_HPP
 
 #include "Mask.hpp"
 #include "Sprite.hpp"
@@ -32,7 +32,7 @@
 #include <stdint.h>
 
 namespace LM {
-	class Minimap {
+	class Radar {
 	private:
 		PathManager&	m_path_manager;
 		Mask*		m_minimask;
@@ -42,8 +42,8 @@ namespace LM {
 		Sprite*		m_master_blip_blue;
 		double		m_scale;
 	public:
-		explicit Minimap(PathManager& path_manager, double scale = 0.125);
-		~Minimap();
+		explicit Radar(PathManager& path_manager, double scale = 0.125);
+		~Radar();
 	
 		void set_x(double x);
 		void set_y(double y);

@@ -63,7 +63,7 @@ const int GameController::MUZZLE_FLASH_LENGTH = 80;
 const int GameController::GATE_WARNING_FLASH_LENGTH = 3000;
 const double GameController::FIRING_RECOIL = 1.5;
 const double GameController::RANDOM_ROTATION_SCALE = 1.0;
-const double GameController::MINIMAP_SCALE = 0.1;
+const double GameController::RADAR_SCALE = 0.1;
 const Color GameController::BLUE_COLOR(0.4, 0.4, 1.0);
 const Color GameController::RED_COLOR(1.0, 0.4, 0.4);
 const Color GameController::GREYED_OUT(0.5, 0.5, 0.5);
@@ -159,8 +159,8 @@ GameController::~GameController() {
 	delete m_shot;
 	delete m_logo;
 
-	m_minimap->unregister_with_window(m_window);
-	delete m_minimap;
+	m_radar->unregister_with_window(m_window);
+	delete m_radar;
 
 	// The GameWindow instance should always be destroyed last, since other stuff may depend on it.
 	m_window->deinit_video();
@@ -586,11 +586,11 @@ void GameController::init(GameWindow* window) {
 	m_chat_window_transition_y->set_curve_ownership(true);
 	m_transition_manager.add_transition(m_chat_window_transition_y);
 	
-	// Set up the minimap.
-	m_minimap = new Minimap(m_path_manager, MINIMAP_SCALE);
-	m_minimap->set_x(m_screen_width - 120);
-	m_minimap->set_y(120);
-	m_minimap->register_with_window(m_window);
+	// Set up the radar.
+	m_radar = new Radar(m_path_manager, RADAR_SCALE);
+	m_radar->set_x(m_screen_width - 120);
+	m_radar->set_y(120);
+	m_radar->register_with_window(m_window);
 
 	m_current_scan_id = 0;
 	if (!resolve_hostname(m_metaserver_address, METASERVER_HOSTNAME, METASERVER_PORTNO)) {
@@ -794,7 +794,7 @@ void GameController::run(int lockfps) {
 					m_shots[i].first->set_invisible(true);
 				}
 				
-				m_minimap->set_invisible(true);
+				m_radar->set_invisible(true);
 				
 				m_logo->set_invisible(false);
 				
@@ -821,7 +821,7 @@ void GameController::run(int lockfps) {
 					m_shots[i].first->set_invisible(true);
 				}
 				
-				m_minimap->set_invisible(true);
+				m_radar->set_invisible(true);
 				
 				m_logo->set_invisible(false);
 				
@@ -848,7 +848,7 @@ void GameController::run(int lockfps) {
 					m_shots[i].first->set_invisible(true);
 				}
 				
-				m_minimap->set_invisible(true);
+				m_radar->set_invisible(true);
 				
 				m_logo->set_invisible(false);
 				
@@ -875,7 +875,7 @@ void GameController::run(int lockfps) {
 					m_shots[i].first->set_invisible(false);
 				}
 				
-				m_minimap->set_invisible(false);
+				m_radar->set_invisible(false);
 				
 				m_logo->set_invisible(true);
 				
@@ -1556,11 +1556,11 @@ void GameController::move_objects(float timescale) {
 		m_holding_gate = false;
 	}
 	
-	// Set the player position and minimap position.
+	// Set the player position and radar position.
 	m_players[m_player_id].set_x(new_x);
 	m_players[m_player_id].set_y(new_y);
-	m_minimap->move_blip(m_player_id, new_x, new_y);
-	m_minimap->recenter(new_x, new_y);
+	m_radar->move_blip(m_player_id, new_x, new_y);
+	m_radar->recenter(new_x, new_y);
 	m_players[m_player_id].set_rotation_degrees(m_players[m_player_id].get_rotation_degrees() + m_players[m_player_id].get_rotational_vel() * timescale);
 	
 	// Set name sprites visible/invisible. and move players.
@@ -1580,7 +1580,7 @@ void GameController::move_objects(float timescale) {
 		
 		m_players[currplayer.get_id()].set_x(currplayer.get_x() + currplayer.get_x_vel() * timescale);
 		m_players[currplayer.get_id()].set_y(currplayer.get_y() + currplayer.get_y_vel() * timescale);
-		m_minimap->move_blip(currplayer.get_id(), m_players[currplayer.get_id()].get_x(), m_players[currplayer.get_id()].get_y());
+		m_radar->move_blip(currplayer.get_id(), m_players[currplayer.get_id()].get_x(), m_players[currplayer.get_id()].get_y());
 	}
 }
 
@@ -1808,11 +1808,11 @@ void GameController::set_players_visible(bool visible) {
 		if (visible) {
 			currplayer.get_sprite()->set_invisible(currplayer.is_invisible());
 			currplayer.get_name_sprite()->set_invisible(currplayer.is_invisible());
-			m_minimap->set_blip_invisible(it->first,currplayer.is_invisible());
+			m_radar->set_blip_invisible(it->first,currplayer.is_invisible());
 		} else {
 			currplayer.get_sprite()->set_invisible(true);
 			currplayer.get_name_sprite()->set_invisible(true);
-			m_minimap->set_blip_invisible(it->first,true);
+			m_radar->set_blip_invisible(it->first,true);
 		}
 	}
 }
@@ -2192,7 +2192,7 @@ void GameController::welcome(PacketReader& reader) {
 		m_window->register_graphic(&red_player);
 	}
 	m_window->register_graphic(m_players[m_player_id].get_sprite());
-	m_minimap->add_blip(m_player_id, team, 0, 0);
+	m_radar->add_blip(m_player_id, team, 0, 0);
 	
 	m_players[m_player_id].set_radius(30);
 	m_players[m_player_id].set_name_sprite(m_text_manager->place_string(m_players[m_player_id].get_name(), m_screen_width/2, (m_screen_height/2)-(m_players[m_player_id].get_radius()+30), TextManager::CENTER, TextManager::LAYER_MAIN));
@@ -2238,7 +2238,7 @@ void GameController::announce(PacketReader& reader) {
 		m_players.insert(pair<int, GraphicalPlayer>(playerid,GraphicalPlayer((const char*)playername.c_str(), playerid, team, new GraphicGroup(red_player))));
 		m_text_manager->set_active_color(RED_COLOR);
 	}
-	m_minimap->add_blip(playerid,team,0,0);
+	m_radar->add_blip(playerid,team,0,0);
 	
 	// Register the player sprite with the window
 	m_window->register_graphic(m_players[playerid].get_sprite());
@@ -2275,7 +2275,7 @@ void GameController::player_update(PacketReader& reader) {
 	}
 	
 	currplayer->set_position(x, y);
-	m_minimap->move_blip(player_id, x, y);
+	m_radar->move_blip(player_id, x, y);
 	currplayer->set_velocity(velocity_x, velocity_y);
 	currplayer->set_rotation_degrees(rotation);
 	
@@ -2284,12 +2284,12 @@ void GameController::player_update(PacketReader& reader) {
 		currplayer->set_is_invisible(false);
 		m_text_manager->reposition_string(m_players[player_id].get_name_sprite(), x, y - (m_players[player_id].get_radius()+30), TextManager::CENTER);
 		m_players[player_id].get_name_sprite()->set_invisible(false);
-		m_minimap->set_blip_invisible(player_id,false);
+		m_radar->set_blip_invisible(player_id,false);
 	} else {
 		currplayer->set_is_invisible(true);
 		m_players[player_id].get_name_sprite()->set_invisible(true);
 		m_players[player_id].set_velocity(0, 0);
-		m_minimap->set_blip_invisible(player_id,true);
+		m_radar->set_blip_invisible(player_id,true);
 	}
 	
 	if (flags.find_first_of('F') == string::npos) {
@@ -2408,7 +2408,7 @@ void GameController::leave(PacketReader& reader) {
 	
 	m_text_manager->remove_string(m_players[playerid].get_name_sprite());
 	m_window->unregister_graphic(m_players[playerid].get_sprite());
-	m_minimap->remove_blip(playerid);
+	m_radar->remove_blip(playerid);
 	delete_individual_score(m_players[playerid]);
 	delete m_players[playerid].get_sprite();
 	m_players.erase(playerid);
@@ -2705,7 +2705,7 @@ void GameController::game_stop(PacketReader& reader) {
 	m_blue_gate_status_rect->set_image_width(GATE_STATUS_RECT_WIDTH);
 	m_red_gate_status_rect->set_image_width(GATE_STATUS_RECT_WIDTH);
 	m_players[m_player_id].set_is_invisible(true);
-	m_minimap->set_blip_invisible(m_player_id,true);
+	m_radar->set_blip_invisible(m_player_id,true);
 	m_players[m_player_id].set_is_frozen(true);
 }
 
@@ -2868,7 +2868,7 @@ void GameController::team_change(PacketReader& reader) {
 		// Remove the name and sprite.
 		m_text_manager->remove_string(m_players[playerid].get_name_sprite());
 		m_window->unregister_graphic(m_players[playerid].get_sprite());
-		m_minimap->remove_blip(playerid);
+		m_radar->remove_blip(playerid);
 		delete m_players[playerid].get_sprite();
 
 		// Generate new graphics for it.
@@ -2881,7 +2881,7 @@ void GameController::team_change(PacketReader& reader) {
 			m_text_manager->set_active_color(RED_COLOR);
 			display_message(msg.str().c_str(), RED_COLOR);
 		}
-		m_minimap->add_blip(playerid,team,0,0);
+		m_radar->add_blip(playerid,team,0,0);
 		
 		m_window->register_graphic(m_players[playerid].get_sprite());
 		m_players[playerid].set_name_sprite(m_text_manager->place_string(m_players[playerid].get_name(), m_players[playerid].get_x(), m_players[playerid].get_y()-(m_players[playerid].get_radius()+30), TextManager::CENTER, TextManager::LAYER_MAIN));
@@ -3167,7 +3167,7 @@ void	GameController::clear_players() {
 			const GraphicalPlayer& currplayer = (*it).second;
 			m_text_manager->remove_string(m_players[currplayer.get_id()].get_name_sprite());
 			m_window->unregister_graphic(m_players[currplayer.get_id()].get_sprite());
-			m_minimap->remove_blip(currplayer.get_id());
+			m_radar->remove_blip(currplayer.get_id());
 			delete_individual_score(m_players[currplayer.get_id()]);
 			delete m_players[currplayer.get_id()].get_sprite();
 		}

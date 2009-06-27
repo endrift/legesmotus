@@ -1,5 +1,5 @@
 /*
- * client/Minimap.cpp
+ * client/Radar.cpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,7 +22,7 @@
  * 
  */
 
-#include "Minimap.hpp"
+#include "Radar.hpp"
 #include "GameWindow.hpp"
 #include <string>
 #include <sstream>
@@ -30,7 +30,7 @@
 using namespace LM;
 using namespace std;
 
-Minimap::Minimap(PathManager& path_manager, double scale) : m_path_manager(path_manager) {
+Radar::Radar(PathManager& path_manager, double scale) : m_path_manager(path_manager) {
 	m_whole = new GraphicGroup;
 
 	Sprite mask_sprite(m_path_manager.data_path("mini_circle.png", "sprites"));
@@ -52,25 +52,25 @@ Minimap::Minimap(PathManager& path_manager, double scale) : m_path_manager(path_
 	m_scale = scale;
 }
 
-Minimap::~Minimap() {
+Radar::~Radar() {
 	delete m_whole;
 	delete m_master_blip_red;
 	delete m_master_blip_blue;
 }
 
-void Minimap::set_x(double x) {
+void Radar::set_x(double x) {
 	m_whole->set_x(x);
 }
 
-void Minimap::set_y(double y) {
+void Radar::set_y(double y) {
 	m_whole->set_y(y);
 }
 
-void Minimap::set_invisible(bool enable) {
+void Radar::set_invisible(bool enable) {
 	m_whole->set_invisible(enable);
 }
 
-void Minimap::add_blip(uint32_t id, char team, double x, double y) {
+void Radar::add_blip(uint32_t id, char team, double x, double y) {
 	Sprite *clone;
 	if (team == 'A') {
 		clone = m_master_blip_blue->clone();
@@ -85,7 +85,7 @@ void Minimap::add_blip(uint32_t id, char team, double x, double y) {
 	delete clone;
 }
 
-void Minimap::move_blip(uint32_t id, double x, double y) {
+void Radar::move_blip(uint32_t id, double x, double y) {
 	Graphic *blip;
 	stringstream s;
 	s << id;
@@ -96,7 +96,7 @@ void Minimap::move_blip(uint32_t id, double x, double y) {
 	}
 }
 
-void Minimap::set_blip_invisible(uint32_t id, bool invisible) {
+void Radar::set_blip_invisible(uint32_t id, bool invisible) {
 	Graphic *blip;
 	stringstream s;
 	s << id;
@@ -106,7 +106,7 @@ void Minimap::set_blip_invisible(uint32_t id, bool invisible) {
 	}
 }
 
-void Minimap::remove_blip(uint32_t id) {
+void Radar::remove_blip(uint32_t id) {
 	Graphic *blip;
 	stringstream s;
 	s << id;
@@ -115,15 +115,15 @@ void Minimap::remove_blip(uint32_t id) {
 	delete blip;
 }
 
-void Minimap::recenter(double x, double y) {
+void Radar::recenter(double x, double y) {
 	m_minigroup->set_center_x(x*m_scale);
 	m_minigroup->set_center_y(y*m_scale);
 }
 
-void Minimap::register_with_window(GameWindow* window) {
+void Radar::register_with_window(GameWindow* window) {
 	window->register_hud_graphic(m_whole);
 }
 
-void Minimap::unregister_with_window(GameWindow* window) {
+void Radar::unregister_with_window(GameWindow* window) {
 	window->unregister_hud_graphic(m_whole);
 }

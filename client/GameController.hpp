@@ -37,7 +37,7 @@
 #include "common/PacketReader.hpp"
 #include "common/misc.hpp"
 #include "GraphicalPlayer.hpp"
-#include "Minimap.hpp"
+#include "Radar.hpp"
 #include "Font.hpp"
 #include "ScrollArea.hpp"
 #include "ScrollBar.hpp"
@@ -85,7 +85,7 @@ namespace LM {
 		const static int GATE_WARNING_FLASH_LENGTH;
 		const static double FIRING_RECOIL;
 		const static double RANDOM_ROTATION_SCALE;
-		const static double MINIMAP_SCALE;
+		const static double RADAR_SCALE;
 		const static int GATE_STATUS_RECT_WIDTH;
 		const static int FROZEN_STATUS_RECT_WIDTH;
 		const static int DOUBLE_CLICK_TIME;
@@ -205,8 +205,8 @@ namespace LM {
 		TableBackground* m_frozen_status_rect_back;
 		Graphic*	m_frozen_status_text;
 		
-		// MINIMAP CODE BY JEFFREY
-		Minimap*	m_minimap;
+		// RADAR CODE BY JEFFREY
+		Radar*	m_radar;
 	
 		// TEMPORARY MAP CODE BY ANDREW
 		GraphicalMap*	m_map;
