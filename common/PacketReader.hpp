@@ -30,6 +30,7 @@
 #include <string>
 #include <stdint.h>
 #include <iosfwd>
+#include <algorithm>
 
 namespace LM {
 	class UDPPacket;
@@ -77,11 +78,16 @@ namespace LM {
 		// To test whether there are any tokens left for processing
 		bool		operator! () const { return !has_more(); }
 				operator const void* () const { return has_more() ? this : NULL; }
+
+		void		swap(PacketReader& other);
 	};
 	
 	// Write the remaining un-processed raw packet data to an output stream:
 	std::ostream&	operator<<(std::ostream& out, const PacketReader& packet_reader);
-	
+}
+
+namespace std {
+	template<> inline void swap (LM::PacketReader& x, LM::PacketReader& y) { x.swap(y); }
 }
 
 #endif

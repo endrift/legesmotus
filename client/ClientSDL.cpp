@@ -31,7 +31,7 @@ using namespace LM;
 // See ClientSDL.hpp for a description of this class's purpose.
 
 ClientSDL::ClientSDL() {
-	if (SDL_Init(0) == -1) {
+	if (SDL_Init(SDL_INIT_NOPARACHUTE) == -1) {
 		throw Exception("Failed to initialize SDL.");
 	}
 }

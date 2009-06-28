@@ -23,20 +23,50 @@
  */
 
 #include "MapReader.hpp"
+#include "PacketReader.hpp"
+#include "PacketWriter.hpp"
 #include <string>
 #include <string.h>
+#include <algorithm>
 
 using namespace LM;
 using namespace std;
 
-MapReader::MapReader(const char* map_object_data) : StringTokenizer(map_object_data, '\t') {
+MapReader::MapReader() {
+	m_type = Map::INVALID_OBJECT_TYPE;
+}
+
+MapReader::MapReader(const char* map_object_data) : StringTokenizer(map_object_data, "\t", true) {
 	if (const char* object_header = get_next()) {
 		if (strchr(object_header, ':')) {
-			StringTokenizer	tok(object_header, ':');
-			tok >> m_id >> m_type;
+			StringTokenizer(object_header, ':') >> m_id >> m_type;
 		} else {
 			m_type = Map::parse_object_type(object_header);
 		}
 	}
+}
+
+void	MapReader::swap(MapReader& other) {
+	StringTokenizer::swap(other);
+	// std:: prefix necessary here to avoid name conflicts
+	std::swap(m_type, other.m_type);
+	std::swap(m_id, other.m_id);
+}
+
+PacketReader&	LM::operator>>(PacketReader& packet, MapReader& map_object) {
+	int	type_int;
+	packet >> type_int >> map_object.m_id;
+	map_object.m_type = Map::ObjectType(type_int);
+	if (const char* data = packet.get_next()) {
+		map_object.StringTokenizer::init(data, "\t", true);
+	} else {
+		map_object.StringTokenizer::init("", "\t", true);
+	}
+	return packet;
+}
+
+PacketWriter&	LM::operator<<(PacketWriter& packet, const MapReader& map_object) {
+	packet << int(map_object.m_type) << map_object.m_id << map_object.get_rest();
+	return packet;
 }
 

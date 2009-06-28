@@ -41,10 +41,12 @@
 #include "Font.hpp"
 #include "ScrollArea.hpp"
 #include "ScrollBar.hpp"
+#include "MapReceiver.hpp"
 
 #include <string>
 #include <vector>
 #include <map>
+#include <memory>
 
 namespace LM {
 	class TiledGraphic;
@@ -211,6 +213,7 @@ namespace LM {
 	
 		// TEMPORARY MAP CODE BY ANDREW
 		GraphicalMap*	m_map;
+		std::auto_ptr<MapReceiver>	m_map_receiver;
 	
 		// Server Browsing/Scanning
 		IPAddress	m_metaserver_address;
@@ -235,6 +238,10 @@ namespace LM {
 	
 		// Connect to the meta server to scan the Internet
 		void		contact_metaserver();
+
+		bool		load_map(const char* map_name, int map_revision);
+		void		request_map();
+		void		init_map();
 	
 		void		send_ack(const PacketReader& packet);
 		
@@ -294,6 +301,8 @@ namespace LM {
 		void		request_denied(PacketReader& reader);
 		void		name_change(PacketReader& reader);
 		void		team_change(PacketReader& reader);
+		void		map_info_packet(PacketReader& reader);
+		void		map_object_packet(PacketReader& reader);
 		void		server_info(const IPAddress& server_address, PacketReader& reader);
 		void		upgrade_available(const IPAddress& server_address, PacketReader& reader);
 	

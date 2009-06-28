@@ -28,6 +28,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <ostream>
+#include <algorithm>
 
 // See .hpp file for extensive comments.
 
@@ -40,12 +41,20 @@ PacketReader::PacketReader(const char* packet_data, char separator) : StringToke
 }
 
 PacketReader::PacketReader(const UDPPacket& packet) {
-	StringTokenizer::init_from_raw_data(packet.get_data(), packet.get_length(), PACKET_FIELD_SEPARATOR);
+	StringTokenizer::set_delimiter(PACKET_FIELD_SEPARATOR);
+	StringTokenizer::init_from_raw_data(packet.get_data(), packet.get_length(), false);
 	// Process the first two fields, which are always packet type and packet ID
 	*this >> m_packet_type >> m_packet_id;
 }
 
 std::ostream&   LM::operator<<(std::ostream& out, const PacketReader& packet_reader) {
 	return out << packet_reader.get_rest();
+}
+
+void	PacketReader::swap(PacketReader& other) {
+	StringTokenizer::swap(other);
+	// std:: prefix necessary here to avoid name conflicts
+	std::swap(m_packet_type, other.m_packet_type);
+	std::swap(m_packet_id, other.m_packet_id);
 }
 

@@ -78,6 +78,12 @@ namespace LM {
 
 	// Scan the given directory and populate the given list with the name of every file and directory in the given directory
 	bool		scan_directory(std::list<std::string>& filenames, const char* directory);
+
+	template<class T> inline const T& make_empty ()
+	{
+		static const T empty_obj;
+		return empty_obj;
+	}
 }
 
 #endif

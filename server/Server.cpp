@@ -37,6 +37,7 @@
 #include "common/timer.hpp"
 #include <string>
 #include <cstdlib>
+#include <cstring>
 #include <cmath>
 #include <iostream>
 #include <set>
@@ -285,7 +286,7 @@ void	Server::command_server(uint32_t player_id, const char* command) {
 
 	} else if (strncmp(command, "map ", 4) == 0 && player->is_op()) {
 		const char*	new_map_name = command + 4;
-		if (strchr(new_map_name, '/') == NULL && load_map(new_map_name)) {
+		if (strpbrk(new_map_name, "/\\") == NULL && load_map(new_map_name)) {
 			game_over(0);
 			new_game();
 		} else {
@@ -464,7 +465,7 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 		// Joining a game that hasn't started yet.
 		// Tell the player what map is currently in use, and how much time until the round starts (i.e. players spawn)
 		PacketWriter		game_start_packet(GAME_START_PACKET);
-		game_start_packet << m_current_map.get_name() << 0 << time_until_spawn();
+		game_start_packet << m_current_map.get_name() << m_current_map.get_revision() << 0 << time_until_spawn();
 		m_ack_manager.add_packet(player_id, game_start_packet);
 		m_network.send_packet(address, game_start_packet);
 	} else {
@@ -473,7 +474,7 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 		m_waiting_players.push_back(&new_player);
 		// Tell the player what map is currently in use, and how much time until he spawns
 		PacketWriter		game_start_packet(GAME_START_PACKET);
-		game_start_packet << m_current_map.get_name() << 1 << m_params.late_join_delay;
+		game_start_packet << m_current_map.get_name() << m_current_map.get_revision() << 1 << m_params.late_join_delay;
 		m_ack_manager.add_packet(player_id, game_start_packet);
 		m_network.send_packet(address, game_start_packet);
 	}
@@ -753,7 +754,7 @@ void	Server::new_game() {
 	m_waiting_players.clear(); // Waiting players get cleared out and put in general queue...
 
 	PacketWriter		packet(GAME_START_PACKET);
-	packet << m_current_map.get_name() << 0 << m_params.game_start_delay;
+	packet << m_current_map.get_name() << m_current_map.get_revision() << 0 << m_params.game_start_delay;
 	m_ack_manager.add_broadcast_packet(packet);
 	broadcast_packet(packet);
 }
@@ -788,7 +789,7 @@ void	Server::start_game() {
 
 	// Send the game start packet
 	PacketWriter		packet(GAME_START_PACKET);
-	packet << m_current_map.get_name() << 1 << 0;
+	packet << m_current_map.get_name() << m_current_map.get_revision() << 1 << 0;
 	m_ack_manager.add_broadcast_packet(packet);
 	broadcast_packet(packet);
 }
@@ -1019,5 +1020,23 @@ void	Server::register_server_packet(const IPAddress& address, PacketReader& pack
 }
 
 void	Server::map_info_packet(const IPAddress& address, PacketReader& request_packet) {
+	uint32_t	player_id;
+	request_packet >> player_id;
+	if (!is_authorized(address, player_id)) {
+		return;
+	}
+
+	PacketWriter	info_packet(MAP_INFO_PACKET);
+	info_packet << request_packet.packet_id() << m_current_map << m_current_map.nbr_objects();
+	m_network.send_packet(address, info_packet);
+	m_ack_manager.add_packet(player_id, info_packet);
+
+	const list<MapReader>&	map_objects(m_current_map.get_objects());
+	for (list<MapReader>::const_iterator it(map_objects.begin()); it != map_objects.end(); ++it) {
+		PacketWriter	object_packet(MAP_OBJECT_PACKET);
+		object_packet << request_packet.packet_id() << *it;
+		m_network.send_packet(address, object_packet);
+		m_ack_manager.add_packet(player_id, object_packet);
+	}
 }
 

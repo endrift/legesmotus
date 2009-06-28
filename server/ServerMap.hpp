@@ -26,6 +26,7 @@
 #define LM_SERVER_SERVERMAP_HPP
 
 #include "common/Map.hpp"
+#include "common/MapReader.hpp"
 #include "common/Point.hpp"
 #include "Spawnpoint.hpp"
 #include <list>
@@ -34,9 +35,13 @@
  * Derives from Map, and adds spawnpoint tracking.
  */
 namespace LM {
+	class PacketWriter;
+
 	class ServerMap : public Map {
 		// Spawnpoints for each team:
 		SpawnpointSet		m_spawnpoints[2];
+
+		std::list<MapReader>	m_objects;
 	
 		virtual void		add_object(MapReader& object_data);
 
@@ -47,6 +52,10 @@ namespace LM {
 		virtual void	clear();
 	
 		void		reset();	// Reset the map for a new round - call before assigning spawnpoints
+
+
+		const std::list<MapReader>&	get_objects() const { return m_objects; }
+		size_t				nbr_objects() const { return m_objects.size(); }
 
 		// How many spawnpoints are there?
 		int		nbr_spawnpoints(char team) const;
@@ -70,6 +79,11 @@ namespace LM {
 		void		return_spawnpoint(char team, const Spawnpoint* p);
 	
 	};
+
+	inline PacketWriter& operator<<(PacketWriter& packet, const ServerMap& server_map) {
+		const Map& map(server_map);
+		return packet << map;
+	}
 }
 
 #endif

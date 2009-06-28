@@ -60,6 +60,7 @@ namespace LM {
 		virtual ~GraphicalMap();
 	
 		const std::list<MapObject>&	get_objects() const { return m_objects; }
+		size_t				nbr_objects() const { return m_objects.size(); }
 		virtual void			clear(); // Remove all objects
 	
 		// Read and parse the given input stream and load into the current map
@@ -71,6 +72,8 @@ namespace LM {
 		// progress is in [0.0,1.0], where 0 == closed .. 1 == fully open
 		void				set_gate_progress(char team, double progress);
 		void				reset_gates();
+
+		void				reset(); // Reset the map for a new round
 	};
 }
 

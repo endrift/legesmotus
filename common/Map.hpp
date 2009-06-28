@@ -32,6 +32,8 @@
 namespace LM {
 	class MapReader;
 	class StringTokenizer;
+	class PacketReader;
+	class PacketWriter;
 	
 	/*
 	 * A Map keeps track of things like the map name, dimensions, and spawn points
@@ -50,6 +52,7 @@ namespace LM {
 	
 	protected:
 		std::string	m_name;		// Should be unique
+		int		m_revision;
 		int		m_width;
 		int		m_height;
 		ConfigManager	m_options;
@@ -60,9 +63,12 @@ namespace LM {
 	
 		// Standard getters
 		const char*	get_name() const { return m_name.c_str(); }
+		int		get_revision() const { return m_revision; }
 		int		get_width() const { return m_width; }
 		int		get_height() const { return m_height; }
 		const ConfigManager&	get_options() const { return m_options; }
+
+		bool		is_loaded(const char* name, int revision) const;
 		
 		// Read and parse the given input stream and load into the current map
 		virtual bool	load(std::istream& in);
@@ -75,6 +81,9 @@ namespace LM {
 		virtual void	clear();
 		// Parse the given packet representation of a map object and add it to the map
 		virtual void	add_object(MapReader& data) = 0;
+
+		friend PacketReader&	operator>>(PacketReader& packet, Map& map);
+		friend PacketWriter&	operator<<(PacketWriter& packet, const Map& map);
 	};
 	
 	StringTokenizer&	operator>> (StringTokenizer&, Map::ObjectType&);

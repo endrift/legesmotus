@@ -1,5 +1,5 @@
 /*
- * common/MapReader.hpp
+ * client/MapReceiver.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,40 +22,40 @@
  * 
  */
 
-#ifndef LM_COMMON_MAPREADER_HPP
-#define LM_COMMON_MAPREADER_HPP
+#ifndef LM_CLIENT_MAPRECEIVER_HPP
+#define LM_CLIENT_MAPRECEIVER_HPP
 
-#include "StringTokenizer.hpp"
-#include "Map.hpp"
-#include <string>
-#include <algorithm>
+#include <stddef.h>
+#include <stdint.h>
+#include <set>
 
 namespace LM {
+	class Map;
 	class PacketReader;
-	class PacketWriter;
 
-	class MapReader : public StringTokenizer {
+	class MapReceiver {
 	private:
-		Map::ObjectType		m_type;
-		std::string		m_id;
-	
+		Map&			m_map;
+		uint32_t		m_transmission_id;
+		bool			m_has_info;
+		size_t			m_nbr_expected_objects;
+		size_t			m_nbr_received_objects;
+		std::set<uint32_t>	m_seen_packets;
+
 	public:
-		MapReader();
-		explicit MapReader(const char* map_object_data);
-	
-		Map::ObjectType		get_type() const { return m_type; }
-		const char*		get_id() const { return m_id.c_str(); }
-		bool			has_id() const { return !m_id.empty(); }
+		MapReceiver(Map& map, uint32_t transmission_id);
 
-		void			swap(MapReader& other);
+		// This function returns true when the entire map has been received
+		// Returns false if there is still more data to be received
+		bool			is_done() const { return m_has_info && m_nbr_received_objects >= m_nbr_expected_objects; }
 
-		friend PacketReader&	operator>>(PacketReader& packet, MapReader& map_object);
-		friend PacketWriter&	operator<<(PacketWriter& packet, const MapReader& map_object);
+		// These functions return true if the packet was accepted,
+		// or false if it was rejected (e.g. because it's not ready for the packet,
+		// or the packet ID has already been seen)
+		// Only send an ACK to the server if the packet was accepted.
+		bool			map_info(PacketReader& map_info_packet);
+		bool			map_object(PacketReader& map_object_packet);
 	};
-}
-
-namespace std {
-	template<> inline void swap (LM::MapReader& x, LM::MapReader& y) { x.swap(y); }
 }
 
 #endif

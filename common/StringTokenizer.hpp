@@ -28,6 +28,7 @@
 #include <string>
 #include <stdint.h>
 #include <iosfwd>
+#include <algorithm>
 
 namespace LM {
 	class Point;
@@ -50,15 +51,18 @@ namespace LM {
 	 *	// value is now 5.2
 	 */
 	class StringTokenizer {
+	public:
+		enum { max_delimiters = 4 };
 	private:
-		char		m_delimiter;	// The character we're splitting on
+		char		m_delimiters[max_delimiters];	// The characters we're splitting on
 		char*		m_buffer;	// A copy of the data we're splitting
 		char*		m_next_token;	// A pointer into m_buffer to the start of the next token to extract
 		size_t		m_tokens_left;	// Number of tokens left to extract
 	
-		// disallow copy and assignment
-		StringTokenizer(const StringTokenizer&) { }
+		// Disallow assignment
 		StringTokenizer& operator=(const StringTokenizer&) { return *this; }
+
+		bool		is_delimiter(char c) const;
 	
 	public:
 		StringTokenizer();
@@ -66,12 +70,24 @@ namespace LM {
 		StringTokenizer(const std::string& str, char delimiter, size_t max_tokens) { m_buffer = NULL; init(str.c_str(), delimiter, max_tokens); }
 		StringTokenizer(const char* str, char delimiter) { m_buffer = NULL; init(str, delimiter); }
 		StringTokenizer(const char* str, char delimiter, size_t max_tokens) { m_buffer = NULL; init(str, delimiter, max_tokens); }
+
+		StringTokenizer(const std::string& str, const char* delimiters, bool condense =false) { m_buffer = NULL; init(str.c_str(), delimiters, condense); }
+		StringTokenizer(const std::string& str, const char* delimiters, bool condense, size_t max_tokens) { m_buffer = NULL; init(str.c_str(), delimiters, condense, max_tokens); }
+		StringTokenizer(const char* str, const char* delimiters, bool condense =false) { m_buffer = NULL; init(str, delimiters, condense); }
+		StringTokenizer(const char* str, const char* delimiters, bool condense, size_t max_tokens) { m_buffer = NULL; init(str, delimiters, condense, max_tokens); }
+
+		StringTokenizer(const StringTokenizer& other);
+
 		~StringTokenizer();
-	
+
 		// Initialize
 		void			init(const char* str, char delimiter);
 		void			init(const char* str, char delimiter, size_t max_tokens);
-		void			init_from_raw_data(const char* str, size_t len, char delimiter); // Initialize from the first len characters of str
+		void			init(const char* str, const char* delimiters, bool condense =false);
+		void			init(const char* str, const char* delimiters, bool condense, size_t max_tokens);
+		void			init_from_raw_data(const char* str, size_t len, bool condense =false); // Initialize from the first len characters of str
+		void			set_delimiter(char);
+		void			set_delimiters(const char*);
 	
 		// Get the next token
 		const char*		get_next ();
@@ -114,7 +130,13 @@ namespace LM {
 		bool		operator! () const { return !has_more(); }
 				operator const void* () const { return has_more() ? this : NULL; }
 	
+		void		swap(StringTokenizer& other);
 	};
+
+}
+
+namespace std {
+	template<> inline void swap (LM::StringTokenizer& x, LM::StringTokenizer& y) { x.swap(y); }
 }
 
 #endif

@@ -40,6 +40,7 @@ ServerMap::~ServerMap() {
 void	ServerMap::clear() {
 	m_spawnpoints[0].clear();
 	m_spawnpoints[1].clear();
+	m_objects.clear();
 	Map::clear();
 }
 
@@ -71,6 +72,9 @@ void	ServerMap::return_spawnpoint(char team, const Spawnpoint* spawnpoint) {
 }
 
 void	ServerMap::add_object(MapReader& object_data) {
+	// Save the object data in the m_objects list
+	m_objects.push_back(object_data);
+	
 	if (object_data.get_type() == SPAWN_POINT) {
 		Point		point;
 		string		team_string;

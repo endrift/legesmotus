@@ -25,6 +25,8 @@
 #include "Map.hpp"
 #include "MapReader.hpp"
 #include "StringTokenizer.hpp"
+#include "PacketReader.hpp"
+#include "PacketWriter.hpp"
 #include "misc.hpp"
 #include <iostream>
 #include <fstream>
@@ -37,11 +39,16 @@ using namespace std;
 // See .hpp file for comments.
 
 Map::Map() {
+	m_revision = 0;
 	m_width = m_height = 0;
 }
 
 Map::~Map() {
 	Map::clear();
+}
+
+bool	Map::is_loaded(const char* name, int revision) const {
+	return !m_name.empty() && m_name == name && m_revision == revision;
 }
 
 bool	Map::load(istream& in) {
@@ -55,23 +62,24 @@ bool	Map::load(istream& in) {
 	 * No blank lines are allowed in this section, but comments are allowed.
 	 */
 	while (getline(in, line)) {
-		condense_whitespace(line);
-
-		if (line.empty()) {
-			// Blank line -> end of map header
-			break;
-		}
 		if (line[0] == ';' || line[0] == '#') {
 			// This line is a comment
 			continue;
 		}
 
-		StringTokenizer	tokenizer(line, ' ', 2);
+		StringTokenizer	tokenizer(line, " \t", true, 2);
 		string		option_name;
 		tokenizer >> option_name;
 
+		if (option_name.empty()) {
+			// Blank line -> end of map header
+			break;
+		}
+
 		if (option_name == "name") {
 			tokenizer >> m_name;
+		} else if (option_name == "revision") {
+			tokenizer >> m_revision;
 		} else if (option_name == "width") {
 			tokenizer >> m_width;
 		} else if (option_name == "height") {
@@ -96,9 +104,6 @@ bool	Map::load(istream& in) {
 			continue;
 		}
 
-		// Condense multiple tab characters into a single tab character
-		condense_whitespace(line, istab, '\t');
-
 		MapReader	reader(line.c_str());
 		add_object(reader);
 	}
@@ -113,6 +118,7 @@ bool	Map::load_file(const char* path) {
 
 void	Map::clear() {
 	m_name.clear();
+	m_revision = 0;
 	m_width = m_height = 0;
 	m_options.clear();
 }
@@ -135,5 +141,15 @@ StringTokenizer&	LM::operator>> (StringTokenizer& tok, Map::ObjectType& object_t
 		object_type = Map::INVALID_OBJECT_TYPE;
 	}
 	return tok;
+}
+
+PacketReader&	LM::operator>>(PacketReader& packet, Map& map) {
+	packet >> map.m_name >> map.m_revision >> map.m_width >> map.m_height;
+	return packet;
+}
+
+PacketWriter&	LM::operator<<(PacketWriter& packet, const Map& map) {
+	packet << map.m_name << map.m_revision << map.m_width << map.m_height;
+	return packet;
 }
 

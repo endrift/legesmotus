@@ -48,6 +48,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
+#include <cstring>
 #include <iostream>
 #include <limits>
 #include <sstream>
@@ -2648,27 +2649,20 @@ void GameController::game_start(PacketReader& reader) {
 		return;
 	}
 
-	string 		mapname;
+	/*
+	 * Process the packet
+	 */
+	string 		map_name;
+	int 		map_revision;
 	bool		game_started;
 	uint32_t	timeleft;
-	reader >> mapname >> game_started >> timeleft;
+	reader >> map_name >> map_revision >> game_started >> timeleft;
 
 	send_ack(reader);
 
-	// Load the map
-	string		mapfilename(mapname + ".map");
-
-	if (mapname.find_first_of('/') != string::npos || !m_map->load_file(m_path_manager.data_path(mapfilename.c_str(), "maps"))) {
-		string	message("You do not have the current map installed: ");
-		message += mapname;
-		display_message(message.c_str());
-	}
-
-	m_map_width = m_map->get_width();
-	m_map_height = m_map->get_height();
-	m_map_polygon.make_rectangle(m_map_width, m_map_height);
-
-	// Tell the player what's going on
+	/*
+	 * Tell the player what's going on
+	 */
 	ostringstream	message;
 	if (game_started) {
 		if (m_game_state == GAME_OVER) {
@@ -2686,6 +2680,20 @@ void GameController::game_start(PacketReader& reader) {
 	}
 	
 	display_message(message.str().c_str());
+
+	/*
+	 * Load the map, if it has changed
+	 */
+	if (m_map->is_loaded(map_name.c_str(), map_revision)) {
+		// Map already loaded - just reset it
+		m_map->reset();
+	} else {
+		// This map/revision is not already loaded - let's try to load it
+		if (!load_map(map_name.c_str(), map_revision)) {
+			// Couldn't load - request it from the server
+			request_map();
+		}
+	}
 }
 
 /*
@@ -3239,3 +3247,57 @@ string	GameController::format_time_from_millis(uint64_t milliseconds) {
 	uptimestr << uptimesecs;
 	return uptimestr.str();
 }
+
+void GameController::map_info_packet(PacketReader& reader) {
+	if (m_map_receiver.get() && m_map_receiver->map_info(reader)) {
+		init_map();
+		if (m_map_receiver->is_done()) {
+			m_map_receiver.reset();
+		}
+		send_ack(reader);
+	}
+}
+
+void GameController::map_object_packet(PacketReader& reader) {
+	if (m_map_receiver.get() && m_map_receiver->map_object(reader)) {
+		if (m_map_receiver->is_done()) {
+			m_map_receiver.reset();
+		}
+		send_ack(reader);
+	}
+}
+
+void	GameController::request_map() {
+	m_map->clear();
+	PacketWriter		packet(MAP_INFO_PACKET);
+	packet << m_player_id;
+	m_network.send_packet(packet);
+	m_map_receiver.reset(new MapReceiver(*m_map, packet.packet_id()));
+}
+
+bool	GameController::load_map(const char* map_name, int map_revision) {
+	if (strpbrk(map_name, "/\\") != NULL) {
+		return false;
+	}
+
+	string		map_filename(map_name);
+	map_filename += ".map";
+
+	if (!m_map->load_file(m_path_manager.data_path(map_filename.c_str(), "maps"))) {
+		return false;
+	}
+
+	if (m_map->get_revision() != map_revision) {
+		return false;
+	}
+
+	init_map();
+	return true;
+}
+
+void	GameController::init_map() {
+	m_map_width = m_map->get_width();
+	m_map_height = m_map->get_height();
+	m_map_polygon.make_rectangle(m_map_width, m_map_height);
+}
+

@@ -28,6 +28,7 @@
 #include <cstdlib>
 #include <ostream>
 #include <limits>
+#include <algorithm>
 
 // See .hpp file for extensive comments.
 
@@ -35,10 +36,21 @@ using namespace LM;
 using namespace std;
 
 StringTokenizer::StringTokenizer() {
-	m_delimiter = 0;
+	memset(m_delimiters, 0, max_delimiters);
 	m_buffer = NULL;
 	m_next_token = NULL;
 	m_tokens_left = 0;
+}
+StringTokenizer::StringTokenizer(const StringTokenizer& other) {
+	memcpy(m_delimiters, other.m_delimiters, max_delimiters);
+	m_buffer = NULL;
+	if (other.m_tokens_left) {
+		init_from_raw_data(other.m_next_token, strlen(other.m_next_token), false);
+		m_tokens_left = other.m_tokens_left;
+	} else {
+		m_next_token = NULL;
+		m_tokens_left = 0;
+	}
 }
 
 const char*	StringTokenizer::get_next() {
@@ -55,15 +67,15 @@ const char*	StringTokenizer::get_next() {
 	// Remember where we started.
 	char*		start = m_next_token;
 
-	// Advance until we either hit the end of the data or reach a field separator
-	while (*m_next_token != '\0' && *m_next_token != m_delimiter) {
+	// Advance until we either hit the end of the data or reach a delimiter character
+	while (*m_next_token != '\0' && !is_delimiter(*m_next_token)) {
 		++m_next_token;
 	}
 	
 	if (*m_next_token == '\0') {
 		m_next_token = NULL; // End of packet data -- invalidate the reader
 	} else {
-		*m_next_token++ = '\0'; // Overwrite the field separator
+		*m_next_token++ = '\0'; // Overwrite the delimiter character
 	}
 	
 	return start;
@@ -72,24 +84,67 @@ const char*	StringTokenizer::get_next() {
 
 
 void	StringTokenizer::init(const char* str, char delimiter) {
-	init_from_raw_data(str, strlen(str), delimiter);
+	set_delimiter(delimiter);
+	init_from_raw_data(str, strlen(str), false);
 }
 
 void	StringTokenizer::init(const char* str, char delimiter, size_t max_tokens) {
-	init(str, delimiter);
+	set_delimiter(delimiter);
+	init_from_raw_data(str, strlen(str), false);
 	m_tokens_left = max_tokens;
 }
 
-void	StringTokenizer::init_from_raw_data(const char* str, size_t len, char delimiter) {
-	delete[] m_buffer;
-	m_buffer = NULL;
 
-	m_delimiter = delimiter;
+void	StringTokenizer::init(const char* str, const char* delimiters, bool condense) {
+	set_delimiters(delimiters);
+	init_from_raw_data(str, strlen(str), condense);
+}
+
+void	StringTokenizer::init(const char* str, const char* delimiters, bool condense, size_t max_tokens) {
+	set_delimiters(delimiters);
+	init_from_raw_data(str, strlen(str), condense);
+	m_tokens_left = max_tokens;
+}
+
+
+void	StringTokenizer::init_from_raw_data(const char* str, size_t len, bool condense) {
+	delete[] m_buffer;
+	m_buffer = NULL; // set to NULL for exception safety
 
 	// Copy in the data
 	m_buffer = new char[len + 1];
-	memcpy(m_buffer, str, len);
-	m_buffer[len] = '\0';
+
+	if (condense) {
+		size_t		i = 0;
+
+		// Skip leading delimiters
+		while (i < len && is_delimiter(str[i])) {
+			++i;
+		}
+
+		bool		is_in_delimiter = false;
+		char*		dest = m_buffer;
+		while (i < len) {
+			if (is_delimiter(str[i])) {
+				// Delimiter - skip it for now
+				is_in_delimiter = true;
+			} else {
+				if (is_in_delimiter) {
+					// End of an all-delimiter region.
+					is_in_delimiter = false;
+					// Add a single delimiter character.
+					*dest++ = m_delimiters[0];
+				}
+				*dest++ = str[i];
+			}
+			++i;
+		}
+		*dest = '\0';
+	} else {
+		memcpy(m_buffer, str, len);
+		m_buffer[len] = '\0';
+	}
+
 	// Start at the beginning
 	m_next_token = m_buffer;
 
@@ -200,4 +255,40 @@ StringTokenizer&	StringTokenizer::operator>> (Point& point) {
 	return *this;
 }
 
+void	StringTokenizer::swap(StringTokenizer& other) {
+	// std:: prefix necessary here to avoid name conflicts
+	for (int i = 0; i < max_delimiters; ++i) {
+		std::swap(m_delimiters[i], other.m_delimiters[i]);
+	}
+	std::swap(m_buffer, other.m_buffer);
+	std::swap(m_next_token, other.m_next_token);
+	std::swap(m_tokens_left, other.m_tokens_left);
+}
+
+bool	StringTokenizer::is_delimiter(char c) const {
+	int i = 0;
+	while (i < max_delimiters && m_delimiters[i]) {
+		if (m_delimiters[i++] == c) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void	StringTokenizer::set_delimiter(char c) {
+	m_delimiters[0] = c;
+	memset(m_delimiters + 1, 0, max_delimiters - 1);
+}
+
+void	StringTokenizer::set_delimiters(const char* delimiters) {
+	// Store up to max_delimiters in m_delimiters
+	int i = 0;
+	while (i < max_delimiters && *delimiters) {
+		m_delimiters[i++] = *delimiters++;
+	}
+	// and zero pad the rest
+	while (i < max_delimiters) {
+		m_delimiters[i++] = 0;
+	}
+}
 

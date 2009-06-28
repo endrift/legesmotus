@@ -51,13 +51,15 @@ bool	ConfigManager::load(std::istream& in) {
 			continue;
 		}
 
-		condense_whitespace(line);
-
+		StringTokenizer	tokenize(line, " \t", true, 2);
 		string		name;
-		string		value;
-		StringTokenizer(line, ' ', 2) >> name >> value;
+		tokenize >> name;
 
-		m_options[name] = value;
+		if (name.empty()) {
+			continue;
+		}
+
+		tokenize >> m_options[name];
 	}
 	return true;
 }
@@ -106,8 +108,7 @@ const string&	ConfigManager::operator[](const char* option_name) const {
 	if (const string* option_value = lookup(option_name)) {
 		return *option_value;
 	} else {
-		static const string	empty;
-		return empty;
+		return make_empty<string>();
 	}
 }
 

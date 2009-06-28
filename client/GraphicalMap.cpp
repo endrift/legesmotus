@@ -32,6 +32,7 @@
 #include "common/team.hpp"
 #include <memory>
 #include <limits>
+#include <cstring>
 
 using namespace LM;
 using namespace std;
@@ -62,6 +63,11 @@ template<class T> T* GraphicalMap::load_graphic(const std::string& sprite_name) 
 	Graphic*&	graphic = m_cached_graphics[sprite_name];
 
 	if (!graphic) {
+		if (sprite_name.find_first_of("/\\") != string::npos) {
+			// TODO: do this more nicely
+			return new T(static_cast<SDL_Surface*>(NULL));
+		}
+
 		// Graphic not cached yet.
 		string	filename(sprite_name);
 		filename += ".png";
@@ -231,5 +237,9 @@ MapObject* 	GraphicalMap::get_gate_object(char team) {
 void	GraphicalMap::reset_gates() {
 	set_gate_progress('A', 0.0);
 	set_gate_progress('B', 0.0);
+}
+
+void	GraphicalMap::reset() {
+	reset_gates();
 }
 

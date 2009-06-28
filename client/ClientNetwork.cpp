@@ -182,6 +182,15 @@ void	ClientNetwork::process_server_packet(GameController& controller, const UDPP
 		controller.team_change(reader);
 		break;
 
+
+	case MAP_INFO_PACKET:
+		controller.map_info_packet(reader);
+		break;
+
+	case MAP_OBJECT_PACKET:
+		controller.map_object_packet(reader);
+		break;
+
 	case INFO_PACKET:
 		controller.server_info(raw_packet.get_address(), reader);
 		break;
