@@ -356,8 +356,12 @@ void GameController::init(GameWindow* window) {
 		if (m_screen_width == supported_widths[i] && m_screen_height == supported_heights[i]) {
 			found_res = true;
 		}
+		if (supported_widths[i] < 640 || supported_heights[i] < 480) {
+			continue;
+		}
 		m_resolutions.push_back(make_pair(supported_widths[i], supported_heights[i]));
 	}
+	m_num_resolutions = m_resolutions.size();
 	if (found_res == false) {
 		m_resolutions.push_back(make_pair(m_screen_width, m_screen_height));
 		m_num_resolutions++;
