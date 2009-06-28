@@ -588,7 +588,7 @@ void GameController::init(GameWindow* window) {
 	m_transition_manager.add_transition(m_chat_window_transition_y);
 	
 	// Set up the radar.
-	m_radar = new Radar(m_path_manager, RADAR_SCALE, RADAR_ON);
+	m_radar = new Radar(m_path_manager, RADAR_SCALE, RADAR_AURAL);
 	m_radar->set_x(m_screen_width - 120);
 	m_radar->set_y(120);
 	m_radar->register_with_window(m_window);

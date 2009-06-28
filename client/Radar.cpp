@@ -80,6 +80,10 @@ void Radar::set_mode(RadarMode mode) {
 	}
 }
 
+RadarMode Radar::get_mode() const {
+	return m_mode;
+}
+
 void Radar::add_blip(uint32_t id, char team, double x, double y) {
 	Sprite* clone;
 	if (team == 'A') {
@@ -138,8 +142,13 @@ void Radar::activate_blip(uint32_t id, uint64_t current, uint64_t duration) {
 	s << id;
 	blip = m_minigroup->get_graphic(s.str());
 	if (blip != NULL) {
+		Transition* old = m_transman.get_transition(s.str());
+		if (old != NULL) {
+			m_transman.remove_transition(old); // Transition is deleted by the manager
+		}
 		m_transman.add_transition(new Transition(blip, &Graphic::set_alpha,
-			new LinearCurve(1.0, 0.0), current, duration), false, TransitionManager::DELETE);
+			new LinearCurve(1.0, 0.0), current, duration), s.str(), false, TransitionManager::DELETE);
+		
 	}
 }
 

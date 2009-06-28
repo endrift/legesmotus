@@ -46,6 +46,9 @@ namespace LM {
 		};
 		std::list<State>	m_transitions;
 		std::map<std::string, State*> m_statemap;
+		std::map<Transition*, std::string> m_namemap;
+
+		std::list<State>::iterator remove_transition(const std::list<State>::iterator& iter);
 	public:
 		TransitionManager();
 		~TransitionManager();

@@ -32,6 +32,7 @@
 #include "common/GameParameters.hpp"
 #include "TransitionManager.hpp"
 #include <stdint.h>
+#include <map>
 
 namespace LM {
 	class Radar {
@@ -50,24 +51,26 @@ namespace LM {
 		explicit Radar(PathManager& path_manager, double scale, RadarMode mode);
 		~Radar();
 	
-		void set_x(double x);
-		void set_y(double y);
-		void set_invisible(bool enable);
-		void set_mode(RadarMode mode);
+		void	set_x(double x);
+		void	set_y(double y);
+		void	set_invisible(bool enable);
+		void	set_mode(RadarMode mode);
+
+		RadarMode get_mode() const;
 	
 		// Blips cannot be accessed directly
-		void add_blip(uint32_t id, char team, double x, double y);
-		void move_blip(uint32_t id, double x, double y);
-		void set_blip_invisible(uint32_t id, bool invisible);
-		void set_blip_alpha(uint32_t id, double alpha);
-		void activate_blip(uint32_t id, uint64_t current, uint64_t duration);
-		void remove_blip(uint32_t id);
+		void	add_blip(uint32_t id, char team, double x, double y);
+		void	move_blip(uint32_t id, double x, double y);
+		void	set_blip_invisible(uint32_t id, bool invisible);
+		void	set_blip_alpha(uint32_t id, double alpha);
+		void	activate_blip(uint32_t id, uint64_t current, uint64_t duration);
+		void	remove_blip(uint32_t id);
 	
-		void recenter(double x, double y);
-		void update(uint64_t tick);
+		void	recenter(double x, double y);
+		void	update(uint64_t tick);
 
-		void register_with_window(GameWindow* window);
-		void unregister_with_window(GameWindow* window);
+		void	register_with_window(GameWindow* window);
+		void	unregister_with_window(GameWindow* window);
 	};
 }
 

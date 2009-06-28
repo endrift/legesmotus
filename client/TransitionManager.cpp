@@ -54,15 +54,24 @@ void TransitionManager::add_transition(Transition* transition, const string& nam
 	state.removal = removal;
 	m_transitions.push_back(state);
 	m_statemap[name] = &m_transitions.back();
+	m_namemap[transition] = name;
+}
+
+list<TransitionManager::State>::iterator TransitionManager::remove_transition(const list<State>::iterator& iter) {
+	if (m_namemap.find(iter->transition) != m_namemap.end()) {
+		m_statemap.erase(m_namemap[iter->transition]);
+		m_namemap.erase(iter->transition);
+	}
+	if (iter->removal == DELETE) {
+		delete iter->transition;
+	} 
+	return m_transitions.erase(iter);
 }
 
 void TransitionManager::remove_transition(Transition* transition) {
 	for (list<State>::iterator iter = m_transitions.begin(); iter != m_transitions.end();) {
 		if (iter->transition == transition) {
-			if (iter->removal == DELETE) {
-				delete iter->transition;
-			} 
-			iter = m_transitions.erase(iter);
+			iter = remove_transition(iter);
 		} else {
 			++iter;
 		}
@@ -87,9 +96,8 @@ void TransitionManager::update(uint64_t time) {
 			} else {
 				switch (iter->removal) {
 				case DELETE:
-					delete iter->transition;
 				case REMOVE:
-					iter = m_transitions.erase(iter);
+					iter = remove_transition(iter);
 					continue;
 				case KEEP:
 					break;
