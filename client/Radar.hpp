@@ -54,6 +54,7 @@ namespace LM {
 		void	set_x(double x);
 		void	set_y(double y);
 		void	set_invisible(bool enable);
+		void	set_scale(double scale);
 		void	set_mode(RadarMode mode);
 
 		RadarMode get_mode() const;
