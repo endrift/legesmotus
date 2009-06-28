@@ -242,6 +242,9 @@ namespace LM {
 		bool		load_map(const char* map_name, int map_revision);
 		void		request_map();
 		void		init_map();
+
+		// Display legalese in the chat window
+		void		display_legalese();
 	
 		void		send_ack(const PacketReader& packet);
 		

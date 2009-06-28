@@ -984,6 +984,8 @@ void GameController::process_input() {
 							}
 						} else if (message.find("/tchat ") == 0) {
 							send_team_message(message.substr(7));
+						} else if (message == "/copying" || message == "/warranty" || message == "/legal" || message == "/copyright") {
+							display_legalese();
 						} else {
 							send_message(message);
 						}
@@ -2967,6 +2969,9 @@ void GameController::display_message(string message, Color color) {
 	m_text_manager->set_active_font(m_font);
 	int y = 20 + (m_font->ascent() + m_font->descent() + 5) * m_messages.size();
 	Graphic* message_sprite = m_text_manager->place_string(message, 20, y, TextManager::LEFT, TextManager::LAYER_HUD);
+	if (!message_sprite) {
+		return;
+	}
 	m_messages.push_back(pair<Graphic*, int>(message_sprite, get_ticks() + MESSAGE_DISPLAY_TIME));
 	uint64_t currframe = get_ticks();
 	m_chat_window_transition_y->change_curve(currframe, new LinearCurve(0, y + message_sprite->get_image_height() + 6 - m_chat_window_back->get_y()), 100);
@@ -3299,5 +3304,33 @@ void	GameController::init_map() {
 	m_map_width = m_map->get_width();
 	m_map_height = m_map->get_height();
 	m_map_polygon.make_rectangle(m_map_width, m_map_height);
+}
+
+void	GameController::display_legalese() {
+	const char*	legalese[] = {
+		"This is Leges Motus, a networked, 2D shooter set in zero gravity.",
+		" ",
+		"Copyright 2009 Andrew Ayer, Nathan Partlan, Jeffrey Pfau",
+		" ",
+		"Leges Motus is free and open source software.  You may redistribute it and/or",
+		"modify it under the terms of version 2, or (at your option) version 3, of the",
+		"GNU General Public License (GPL), as published by the Free Software Foundation.",
+		" ",
+		"Leges Motus is distributed in the hope that it will be useful, but WITHOUT ANY",
+		"WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A",
+		"PARTICULAR PURPOSE.  See the full text of the GNU General Public License for",
+		"further detail.",
+		" ",
+		"For a full copy of the GNU General Public License, please see the COPYING file",
+		"in the root of the source code tree.  You may also retrieve a copy from",
+		"<http://www.gnu.org/licenses/gpl-2.0.txt>, or request a copy by writing to the",
+		"Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA",
+		"02111-1307  USA",
+		" "
+	};
+
+	for (size_t i = 0; i < sizeof(legalese) / sizeof(legalese[0]); ++i) {
+		display_message(legalese[i]);
+	}
 }
 
