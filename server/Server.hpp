@@ -207,10 +207,10 @@ namespace LM {
 		std::string		get_unique_player_name(const char* requested_name) const;
 	
 		// Remove the given player from the game
-		void			remove_player(const ServerPlayer& player, const char* leave_message);
+		void			remove_player(ServerPlayer& player, const char* leave_message);
 	
 		// When a player is removed or switches teams, call this function to release any resources (gate holds, team counts, spawnpoints) that the player holds:
-		void			release_player_resources(const ServerPlayer& player);
+		void			release_player_resources(ServerPlayer& player);
 
 		// How many players are in the game?
 		int			nbr_players() const { return m_team_count[0] + m_team_count[1]; }

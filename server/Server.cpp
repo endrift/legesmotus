@@ -566,12 +566,11 @@ void	Server::leave(const IPAddress& address, PacketReader& packet) {
 	}
 }
 
-void	Server::remove_player(const ServerPlayer& player, const char* leave_message) {
+void	Server::remove_player(ServerPlayer& player, const char* leave_message) {
 	cerr << player.get_name() << ": Leaving: " << leave_message << endl;
 
 	const uint32_t	player_id = player.get_id();
 
-	m_waiting_players.remove(const_cast<ServerPlayer*>(&player)); // const_cast OK: only being used for comparison inside erase function
 	m_timeout_queue.erase(player.get_timeout_queue_position());
 
 	// Broadcast to the game that this player has left
@@ -586,7 +585,7 @@ void	Server::remove_player(const ServerPlayer& player, const char* leave_message
 	m_players.erase(player_id);
 }
 
-void	Server::release_player_resources(const ServerPlayer& player) {
+void	Server::release_player_resources(ServerPlayer& player) {
 	// If this player was holding down a gate, make sure the gate status is cleared:
 	if (get_gate('A').set_engagement(false, player.get_id())) {
 		report_gate_status('A', -1, player.get_id());
@@ -598,7 +597,10 @@ void	Server::release_player_resources(const ServerPlayer& player) {
 	// Release/Return the player's spawn point
 	if (player.has_spawnpoint()) {
 		m_current_map.return_spawnpoint(player.get_team(), player.get_spawnpoint());
+		player.set_spawnpoint(NULL);
 	}
+
+	m_waiting_players.remove(&player);
 
 	--m_team_count[player.get_team() - 'A'];
 }
