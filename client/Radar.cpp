@@ -72,7 +72,7 @@ void Radar::set_invisible(bool enable) {
 }
 
 void Radar::set_scale(double scale) {
-	m_scale = scale
+	m_scale = scale;
 }
 
 void Radar::set_mode(RadarMode mode) {
