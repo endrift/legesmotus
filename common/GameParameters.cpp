@@ -44,6 +44,7 @@ void 	GameParameters::reset() {
 	radar_mode = RADAR_ON;
 	game_start_delay = 5000;
 	late_join_delay = 5000;
+	team_change_period = 30000; // 30 seconds
 }
 
 void	GameParameters::init_from_config(const ConfigManager& config) {
@@ -58,6 +59,7 @@ void	GameParameters::init_from_config(const ConfigManager& config) {
 	if (config.has("radar_mode"))		radar_mode = config.get<RadarMode>("radar_mode");
 	if (config.has("game_start_delay"))	game_start_delay = config.get<uint64_t>("game_start_delay");
 	if (config.has("late_join_delay"))	late_join_delay = config.get<uint64_t>("late_join_delay");
+	if (config.has("team_change_period"))	team_change_period = config.get<uint64_t>("team_change_period");
 }
 
 ostream&	LM::operator<<(ostream& out, GameMode mode) {

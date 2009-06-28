@@ -40,7 +40,7 @@ namespace LM {
 	
 	private:
 		IPAddress	m_address;		// The address from which the player is connecting.
-		int		m_client_version;	// The version of the player's client.
+		int		m_client_version;	// The protocol version of the player's client.
 	
 		bool		m_is_op;		// This player has been authenticated with op status
 	
@@ -48,6 +48,7 @@ namespace LM {
 	
 		uint64_t	m_join_time;		// The tick time at which the player joined the game
 		uint64_t	m_last_seen_time;	// The tick time at which this player was last seen (i.e. last had a packet from)
+		uint64_t	m_team_change_time;	// The tick time at which this player last changed teams
 	
 		// Iterator into a list which keeps track of when players were last seen:
 		Queue::iterator	m_timeout_queue_position;
@@ -71,6 +72,10 @@ namespace LM {
 		void		reset_join_time();
 		uint64_t	time_until_spawn(uint64_t spawn_delay) const;	// How many milliseconds until this player can spawn?
 		bool		is_ready_to_spawn(uint64_t spawn_delay) const { return time_until_spawn(spawn_delay) == 0; }
+
+		// For team changing cooldown (Ticket #63)
+		void		set_team_change_time();		// Set the time to now
+		uint64_t	get_team_change_time() const { return m_team_change_time; }
 	
 		// For time out handling
 		void		seen(Queue& timeout_queue);	// Update last seen time

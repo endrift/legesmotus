@@ -33,7 +33,7 @@ ServerPlayer::ServerPlayer() {
 	m_client_version = -1;
 	m_is_op = false;
 	m_spawnpoint = NULL;
-	m_join_time = m_last_seen_time = 0;
+	m_join_time = m_last_seen_time = m_team_change_time = 0;
 }
 
 ServerPlayer& ServerPlayer::init(uint32_t player_id, const IPAddress& address, int client_version, const char* name, char team, ServerPlayer::Queue& timeout_queue) {
@@ -54,6 +54,10 @@ ServerPlayer& ServerPlayer::init(uint32_t player_id, const IPAddress& address, i
 
 void ServerPlayer::reset_join_time() {
 	m_join_time = get_ticks();
+}
+
+void ServerPlayer::set_team_change_time() {
+	m_team_change_time = get_ticks();
 }
 
 uint64_t ServerPlayer::time_until_spawn(uint64_t spawn_delay) const {

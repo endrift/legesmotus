@@ -152,6 +152,13 @@ void	Server::team_change(const IPAddress& address, PacketReader& packet)
 		return;
 	}
 
+	// Make sure the player isn't changing teams too soon
+	if (m_players_have_spawned && player->get_team_change_time() >= m_game_start_time && get_ticks() - player->get_team_change_time() < m_params.team_change_period) {
+		// TODO: use a REJECT packet instead of sending a system message
+		send_system_message(*player, "You are changing teams too often.  Please wait a bit and try again.");
+		return;
+	}
+
 	// Check to make sure there is space on the current map for the new team
 	if (!m_current_map.has_capacity(new_team)) {
 		send_system_message(*player, "There are no spawn points left the map for this team.");
@@ -164,6 +171,8 @@ void	Server::team_change(const IPAddress& address, PacketReader& packet)
 	++m_team_count[new_team - 'A'];
 
 	if (m_players_have_spawned) {
+		player->set_team_change_time();
+
 		// Hide and freeze the player
 		send_spawn_packet(*player, Point(0, 0), false);
 
