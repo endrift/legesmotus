@@ -588,7 +588,7 @@ void GameController::init(GameWindow* window) {
 	m_transition_manager.add_transition(m_chat_window_transition_y);
 	
 	// Set up the radar.
-	m_radar = new Radar(m_path_manager, RADAR_SCALE, RADAR_AURAL);
+	m_radar = new Radar(m_path_manager, RADAR_SCALE, RADAR_ON);
 	m_radar->set_x(m_screen_width - 120);
 	m_radar->set_y(120);
 	m_radar->register_with_window(m_window);
@@ -635,6 +635,9 @@ void GameController::run(int lockfps) {
 		if (!m_players.empty() && m_time_to_unfreeze < get_ticks() && m_time_to_unfreeze != 0) {
 			m_sound_controller->play_sound("unfreeze");
 			m_players[m_player_id].set_is_frozen(false);
+			if (m_radar->get_mode() == RADAR_ON) {
+				m_radar->set_blip_alpha(m_player_id, 1.0);
+			}
 			m_time_to_unfreeze = 0;
 			m_total_time_frozen = 0;
 		}
@@ -2298,8 +2301,14 @@ void GameController::player_update(PacketReader& reader) {
 	
 	if (flags.find_first_of('F') == string::npos) {
 		currplayer->set_is_frozen(false);
+		if (m_radar->get_mode() == RADAR_ON) {
+			m_radar->set_blip_alpha(player_id, 1.0);
+		}
 	} else {
 		currplayer->set_is_frozen(true);
+		if (m_radar->get_mode() == RADAR_ON) {
+			m_radar->set_blip_alpha(player_id, 0.5);
+		}
 	}
 	
 }
@@ -2502,6 +2511,9 @@ void GameController::player_shot(PacketReader& reader) {
 			m_frozen_status_text->set_y(m_frozen_status_rect->get_y());
 			m_sound_controller->play_sound("freeze");
 			m_players[m_player_id].set_is_frozen(true);
+			if (m_radar->get_mode() == RADAR_ON) {
+				m_radar->set_blip_alpha(m_player_id, 0.5);
+			}
 			m_time_to_unfreeze = get_ticks() + time_to_unfreeze;
 			m_total_time_frozen = time_to_unfreeze;
 		}
