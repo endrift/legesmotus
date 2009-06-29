@@ -31,6 +31,7 @@
 #include "TextManager.hpp"
 #include "SoundController.hpp"
 #include "TableBackground.hpp"
+#include "ServerBrowser.hpp"
 #include "ClientConfiguration.hpp"
 #include "TransitionManager.hpp"
 #include "common/PathManager.hpp"
@@ -104,6 +105,7 @@ namespace LM {
 		TextManager*	m_text_manager;
 		SoundController* m_sound_controller;
 		TransitionManager m_transition_manager;
+		ServerBrowser*	m_server_browser;
 		Font*		m_font;
 		Font*		m_medium_font;
 		Font*		m_menu_font;
@@ -178,16 +180,6 @@ namespace LM {
 		size_t		m_resolution_selected;
 		std::vector<std::pair<int, int> > m_resolutions;
 		
-		TableBackground* m_server_browser_background;
-		TableBackground* m_server_browser_selection;
-		std::vector<TableBackground*> m_server_browser_buttons;
-		std::map<std::string, Text*> m_server_browser_items;
-		std::vector<IPAddress> m_server_list;
-		int		m_server_list_count;
-		int		m_server_browser_selected_item;
-		ScrollBar* 	m_server_browser_scrollbar;
-		ScrollArea*	m_server_browser_scrollarea;
-		
 		bool		m_show_overlay;
 		TableBackground* m_overlay_background;
 		std::map<std::string, Text*> m_overlay_items;
@@ -229,9 +221,6 @@ namespace LM {
 		// Scan a particular server:
 		void		scan_server(const IPAddress& server_address);
 		void		ping_server(const IPAddress& server_address);
-	
-		// Scan both the local network and the meta server for servers:
-		void		scan_all();
 	
 		// Scan the local network for servers:
 		void		scan_local_network();
@@ -287,6 +276,9 @@ namespace LM {
 		bool		wants_restart();
 		std::string	get_server_address();
 		std::string	format_time_from_millis(uint64_t milliseconds);
+		
+		// Scan both the local network and the meta server for servers:
+		void		scan_all();
 		
 		// Network callbacks:
 		void		welcome(PacketReader& reader);
