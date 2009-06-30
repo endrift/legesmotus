@@ -134,6 +134,9 @@ GameController::~GameController() {
 	
 	delete m_overlay_background;
 	
+	delete m_server_browser;
+	delete m_chat_log;
+	
 	delete m_blue_gate_status_rect;
 	delete m_blue_gate_status_rect_back;
 	delete m_red_gate_status_rect;
@@ -379,6 +382,10 @@ void GameController::init(GameWindow* window) {
 	m_server_browser = new ServerBrowser(*this, m_window, m_text_manager, m_screen_width, m_screen_height, m_font, m_medium_font, m_menu_font);
 	m_server_browser->set_visible(false);
 	
+	// Chat log
+	m_chat_log = new ChatLog(*this, m_window, m_text_manager, m_screen_width, m_screen_height, m_font, m_medium_font, m_menu_font);
+	m_chat_log->set_visible(false);
+	
 	// Initialize the overlay.
 	m_overlay_background = new TableBackground(3, m_screen_width - 300);
 	m_overlay_background->set_row_height(0, 80);
@@ -608,6 +615,9 @@ void GameController::run(int lockfps) {
 			}
 			if (!m_overlay_scrollbar->is_invisible()) {
 				m_overlay_scrollbar->autoscroll(currframe - startframe);
+			}
+			if (!m_chat_log->is_invisible()) {
+				m_chat_log->autoscroll(currframe - startframe);
 			}
 		
 			bool erasedone = false;
@@ -874,6 +884,9 @@ void GameController::process_input() {
 					m_text_manager->set_active_color(Color::WHITE);
 					// If we're going back to the menu, remove the input bar.
 					if (event.key.keysym.sym == m_key_bindings.show_menu || event.key.keysym.sym == m_alt_key_bindings.show_menu) {
+						if (!m_chat_log->is_invisible()) {
+							m_chat_log->set_visible(false);
+						}
 						SDL_EnableUNICODE(0);
 						SDL_EnableKeyRepeat(0, 0); // Disable key repeat
 						m_text_manager->remove_string(m_input_bar);
@@ -969,6 +982,9 @@ void GameController::process_input() {
 							m_input_bar_back->set_image_width(m_input_bar->get_image_width() + 6);
 							m_input_bar_back->set_invisible(false);
 						}
+						if (event.key.keysym.sym == m_key_bindings.open_console || event.key.keysym.sym == m_alt_key_bindings.open_console) {
+							m_chat_log->set_visible(true);
+						}
 					} else if (event.key.keysym.sym == m_key_bindings.open_team_chat || event.key.keysym.sym == m_alt_key_bindings.open_team_chat) {
 						SDL_EnableUNICODE(1);
 						SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
@@ -981,7 +997,9 @@ void GameController::process_input() {
 							m_input_bar_back->set_invisible(false);
 						}
 					} else if (event.key.keysym.sym == m_key_bindings.show_menu || event.key.keysym.sym == m_alt_key_bindings.show_menu) {
-						if (m_game_state == SHOW_MENUS && !m_players.empty()) {
+						if (!m_chat_log->is_invisible()) {
+							m_chat_log->set_visible(false);
+						} else if (m_game_state == SHOW_MENUS && !m_players.empty()) {
 							m_game_state = GAME_IN_PROGRESS;
 						} else {
 							m_game_state = SHOW_MENUS;
@@ -1004,6 +1022,9 @@ void GameController::process_input() {
 				}
 				if (!m_overlay_scrollbar->is_invisible()) {
 					m_overlay_scrollbar->mouse_motion_event(event.motion);
+				}
+				if (!m_chat_log->is_invisible()) {
+					m_chat_log->scrollbar_motion_event(event.motion);
 				}
 				
 				if (m_game_state == SHOW_MENUS) {
@@ -1056,6 +1077,9 @@ void GameController::process_input() {
 				if (!m_overlay_scrollbar->is_invisible()) {
 					m_overlay_scrollbar->mouse_button_event(event.button);
 				}
+				if (!m_chat_log->is_invisible()) {
+					m_chat_log->scrollbar_button_event(event.button);
+				}
 				break;
 				
 			case SDL_MOUSEBUTTONUP:
@@ -1064,6 +1088,9 @@ void GameController::process_input() {
 				}
 				if (!m_overlay_scrollbar->is_invisible()) {
 					m_overlay_scrollbar->mouse_button_event(event.button);
+				}
+				if (!m_chat_log->is_invisible()) {
+					m_chat_log->scrollbar_button_event(event.button);
 				}
 				break;
 				
@@ -1288,6 +1315,8 @@ void GameController::process_mouse_click(SDL_Event event) {
 		
 	} else if (m_game_state == GAME_IN_PROGRESS) {
 		if (!m_overlay_background->is_invisible()) {
+			// Do nothing.
+		} else if (!m_chat_log->is_invisible()) {
 			// Do nothing.
 		} else if (event.button.button == 1) {
 			// Fire the gun if it's ready.
@@ -2770,6 +2799,7 @@ void GameController::display_message(string message, Color color) {
 		m_chat_window_transition_x->change_curve(currframe, new LinearCurve(0, message_sprite->get_image_width() + 6), 100);
 		//m_chat_window_back->set_image_width(message_sprite->get_image_width() + 6);
 	}
+	m_chat_log->add_message(message, color);
 	m_chat_window_back->set_invisible(false);
 }
 

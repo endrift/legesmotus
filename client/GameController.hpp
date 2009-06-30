@@ -34,6 +34,7 @@
 #include "ServerBrowser.hpp"
 #include "ClientConfiguration.hpp"
 #include "TransitionManager.hpp"
+#include "ChatLog.hpp"
 #include "common/PathManager.hpp"
 #include "common/PacketReader.hpp"
 #include "common/misc.hpp"
@@ -106,6 +107,7 @@ namespace LM {
 		SoundController* m_sound_controller;
 		TransitionManager m_transition_manager;
 		ServerBrowser*	m_server_browser;
+		ChatLog*	m_chat_log;
 		Font*		m_font;
 		Font*		m_medium_font;
 		Font*		m_menu_font;
