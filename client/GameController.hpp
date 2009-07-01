@@ -38,6 +38,7 @@
 #include "common/PathManager.hpp"
 #include "common/PacketReader.hpp"
 #include "common/misc.hpp"
+#include "common/GameParameters.hpp"
 #include "GraphicalPlayer.hpp"
 #include "Radar.hpp"
 #include "Font.hpp"
@@ -83,20 +84,16 @@ namespace LM {
 	
 		const static int MESSAGE_DISPLAY_TIME;
 		const static unsigned int MAX_MESSAGES_TO_DISPLAY;
-		const static int FIRING_DELAY;
 		const static int SHOT_DISPLAY_TIME;
 		const static int MUZZLE_FLASH_LENGTH;
 		const static int GATE_WARNING_FLASH_LENGTH;
-		const static double FIRING_RECOIL;
 		const static double RANDOM_ROTATION_SCALE;
-		const static double RADAR_SCALE;
 		const static int GATE_STATUS_RECT_WIDTH;
 		const static int FROZEN_STATUS_RECT_WIDTH;
 		const static int DOUBLE_CLICK_TIME;
 		const static int NETWORK_TIMEOUT_LIMIT;
 		const static int TEXT_LAYER;
 		const static unsigned int PING_FREQUENCY;
-		const static uint64_t BLIP_DURATION;
 		
 		PathManager& 	m_path_manager;
 		ClientConfiguration* m_configuration;
@@ -135,8 +132,8 @@ namespace LM {
 		Uint8*		m_keys;
 		KeyBindings	m_key_bindings;
 		KeyBindings 	m_alt_key_bindings;
-		std::map<int, GraphicalPlayer> m_players;
-		unsigned int	m_player_id;
+		std::map<uint32_t, GraphicalPlayer> m_players;
+		uint32_t 	m_player_id;
 		bool		m_holding_gate;
 		int		m_gate_lower_sounds[2];
 		uint64_t	m_last_fired;
@@ -203,9 +200,11 @@ namespace LM {
 		Graphic*	m_frozen_status_text;
 		
 		// RADAR CODE BY JEFFREY
-		Radar*	m_radar;
+		Radar*		m_radar;
+		void		set_radar_mode(RadarMode mode); // wrapper around Radar::set_mode
 	
 		// TEMPORARY MAP CODE BY ANDREW
+		GameParameters	m_params;
 		GraphicalMap*	m_map;
 		std::auto_ptr<MapReceiver>	m_map_receiver;
 	
@@ -215,7 +214,7 @@ namespace LM {
 		
 		void		init(GameWindow* window);
 		void		process_input();
-		GraphicalPlayer* get_player_by_id(unsigned int player_id);
+		GraphicalPlayer* get_player_by_id(uint32_t player_id);
 		GraphicalPlayer* get_player_by_name(const char* name);
 		void		send_my_player_update();
 		void		attempt_jump();
@@ -252,8 +251,8 @@ namespace LM {
 		void		connect_to_server(const IPAddress& server_address, char team =0);
 		void		connect_to_server(int servernum);
 		void		disconnect();
-		void		player_fired(unsigned int player_id, double start_x, double start_y, double direction);
-		void		send_player_shot(unsigned int shooter_id, unsigned int hit_player_id, double angle);
+		void		player_fired(uint32_t player_id, double start_x, double start_y, double direction);
+		void		send_player_shot(uint32_t shooter_id, uint32_t hit_player_id, double angle);
 		void		send_message(std::string message);
 		void		send_team_message(std::string message);
 		void		display_message(std::string message) { display_message(message, Color::WHITE); }
@@ -300,6 +299,7 @@ namespace LM {
 		void		team_change(PacketReader& reader);
 		void		map_info_packet(PacketReader& reader);
 		void		map_object_packet(PacketReader& reader);
+		void		game_param_packet(PacketReader& reader);
 		void		server_info(const IPAddress& server_address, PacketReader& reader);
 		void		upgrade_available(const IPAddress& server_address, PacketReader& reader);
 	

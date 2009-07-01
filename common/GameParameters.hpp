@@ -32,6 +32,7 @@
 namespace LM {
 	class StringTokenizer;
 	class ConfigManager;
+	class PacketReader;
 
 	enum GameMode {
 		CLASSIC,
@@ -51,19 +52,25 @@ namespace LM {
 		int		max_players;
 		uint64_t	gate_open_time;
 		uint64_t	gate_close_time;
-		uint64_t	gate_stick_time;
+		uint64_t	gate_stick_time;	// NOT YET IMPLEMENTED
 		uint64_t	freeze_time;
 		bool		friendly_fire;
-		uint64_t	game_timeout;		// 0 for no timeout
-		GameMode	game_mode;
+		uint64_t	game_timeout;		// 0 for no timeout  NOT YET IMPLEMENTED
+		GameMode	game_mode;		// NOT YET IMPLEMENTED
 		RadarMode	radar_mode;
+		double		radar_scale;
+		uint64_t	radar_blip_duration;	// in aural mode, how long do blips appear?
 		uint64_t	game_start_delay;
 		uint64_t	late_join_delay;
 		uint64_t	team_change_period;
+		double		firing_recoil;
+		uint64_t	firing_delay;		// minimum time between shots
 
 		GameParameters() { reset(); }
 
 		void		init_from_config(const ConfigManager& config);
+
+		void		process_param_packet(PacketReader& packet);
 
 		void		reset();
 	};
@@ -72,6 +79,8 @@ namespace LM {
 	std::ostream&		operator<<(std::ostream&, RadarMode);
 	std::istream&		operator>>(std::istream&, GameMode&);
 	std::istream&		operator>>(std::istream&, RadarMode&);
+	StringTokenizer&	operator>>(StringTokenizer&, GameMode&);
+	StringTokenizer&	operator>>(StringTokenizer&, RadarMode&);
 
 	GameMode		parse_game_mode(const char* str);
 	RadarMode		parse_radar_mode(const char* str);

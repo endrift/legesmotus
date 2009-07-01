@@ -24,6 +24,8 @@
 
 #include "GameParameters.hpp"
 #include "ConfigManager.hpp"
+#include "StringTokenizer.hpp"
+#include "PacketReader.hpp"
 #include <limits>
 #include <istream>
 #include <ostream>
@@ -42,9 +44,13 @@ void 	GameParameters::reset() {
 	game_timeout = 0; // No timeout
 	game_mode = CLASSIC;
 	radar_mode = RADAR_ON;
+	radar_scale = 0.1;
+	radar_blip_duration = 1000;
 	game_start_delay = 5000;
 	late_join_delay = 5000;
 	team_change_period = 30000; // 30 seconds
+	firing_recoil = 1.5;
+	firing_delay = 700;
 }
 
 void	GameParameters::init_from_config(const ConfigManager& config) {
@@ -57,9 +63,30 @@ void	GameParameters::init_from_config(const ConfigManager& config) {
 	if (config.has("game_timeout"))		game_timeout = config.get<uint64_t>("game_timeout");
 	if (config.has("game_mode"))		game_mode = config.get<GameMode>("game_mode");
 	if (config.has("radar_mode"))		radar_mode = config.get<RadarMode>("radar_mode");
+	if (config.has("radar_scale"))		radar_scale = config.get<double>("radar_scale");
+	if (config.has("radar_blip_duration"))	radar_blip_duration = config.get<uint64_t>("radar_blip_duration");
 	if (config.has("game_start_delay"))	game_start_delay = config.get<uint64_t>("game_start_delay");
 	if (config.has("late_join_delay"))	late_join_delay = config.get<uint64_t>("late_join_delay");
 	if (config.has("team_change_period"))	team_change_period = config.get<uint64_t>("team_change_period");
+	if (config.has("firing_recoil"))	firing_recoil = config.get<double>("firing_recoil");
+	if (config.has("firing_delay"))		firing_delay = config.get<uint64_t>("firing_delay");
+}
+
+void	GameParameters::process_param_packet(PacketReader& packet) {
+	string		param_name;
+	packet >> param_name;
+
+	if (param_name == "radar_mode") {
+		packet >> radar_mode;
+	} else if (param_name == "radar_scale") {
+		packet >> radar_scale;
+	} else if (param_name == "radar_blip_duration") {
+		packet >> radar_blip_duration;
+	} else if (param_name == "firing_recoil") {
+		packet >> firing_recoil;
+	} else if (param_name == "firing_delay") {
+		packet >> firing_delay;
+	}
 }
 
 ostream&	LM::operator<<(ostream& out, GameMode mode) {
@@ -86,17 +113,21 @@ istream&	LM::operator>>(istream& in, RadarMode& mode) {
 
 
 GameMode	LM::parse_game_mode(const char* str) {
-	if (strcmp(str, "CLASSIC") == 0)	return CLASSIC;
-	if (strcmp(str, "DEATHMATCH") == 0)	return DEATHMATCH;
-	if (strcmp(str, "RACE") == 0)		return RACE;
+	if (str) {
+		if (strcasecmp(str, "CLASSIC") == 0)	return CLASSIC;
+		if (strcasecmp(str, "DEATHMATCH") == 0)	return DEATHMATCH;
+		if (strcasecmp(str, "RACE") == 0)	return RACE;
+	}
 
 	return CLASSIC;
 }
 
 RadarMode	LM::parse_radar_mode(const char* str) {
-	if (strcmp(str, "ON") == 0)	return RADAR_ON;
-	if (strcmp(str, "OFF") == 0)	return RADAR_OFF;
-	if (strcmp(str, "AURAL") == 0)	return RADAR_AURAL;
+	if (str) {
+		if (strcasecmp(str, "ON") == 0)		return RADAR_ON;
+		if (strcasecmp(str, "OFF") == 0)	return RADAR_OFF;
+		if (strcasecmp(str, "AURAL") == 0)	return RADAR_AURAL;
+	}
 
 	return RADAR_OFF;
 }
@@ -117,5 +148,15 @@ const char*	LM::format_radar_mode(RadarMode mode) {
 	case RADAR_AURAL:	return "AURAL";
 	}
 	return "";
+}
+
+StringTokenizer&	LM::operator>>(StringTokenizer& tokenize, GameMode& mode) {
+	mode = parse_game_mode(tokenize.get_next());
+	return tokenize;
+}
+
+StringTokenizer&	LM::operator>>(StringTokenizer& tokenize, RadarMode& mode) {
+	mode = parse_radar_mode(tokenize.get_next());
+	return tokenize;
 }
 

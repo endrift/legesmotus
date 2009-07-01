@@ -477,6 +477,8 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 		game_start_packet << m_current_map.get_name() << m_current_map.get_revision() << 0 << time_until_spawn();
 		m_ack_manager.add_packet(player_id, game_start_packet);
 		m_network.send_packet(address, game_start_packet);
+
+		broadcast_params(&new_player);
 	} else {
 		// Joining a game that has already started
 		// Add the player to the join queue
@@ -486,6 +488,8 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 		game_start_packet << m_current_map.get_name() << m_current_map.get_revision() << 1 << m_params.late_join_delay;
 		m_ack_manager.add_packet(player_id, game_start_packet);
 		m_network.send_packet(address, game_start_packet);
+
+		broadcast_params(&new_player);
 	}
 
 	// Send the new player an announce packet and score update packet for every player currently in the game (except for the one just added)
@@ -768,6 +772,8 @@ void	Server::new_game() {
 	packet << m_current_map.get_name() << m_current_map.get_revision() << 0 << m_params.game_start_delay;
 	m_ack_manager.add_broadcast_packet(packet);
 	broadcast_packet(packet);
+
+	broadcast_params();
 }
 
 void	Server::game_over(char winning_team) {
@@ -1049,5 +1055,25 @@ void	Server::map_info_packet(const IPAddress& address, PacketReader& request_pac
 		m_network.send_packet(address, object_packet);
 		m_ack_manager.add_packet(player_id, object_packet);
 	}
+}
+
+template<class T> void Server::broadcast_param(const ServerPlayer* player, const char* param_name, const T& param_value) {
+	PacketWriter	packet(GAME_PARAM_PACKET);
+	packet << param_name << param_value;
+	if (player) {
+		m_ack_manager.add_packet(player->get_id(), packet);
+		m_network.send_packet(player->get_address(), packet);
+	} else {
+		m_ack_manager.add_broadcast_packet(packet);
+		broadcast_packet(packet);
+	}
+}
+
+void	Server::broadcast_params(const ServerPlayer* player) {
+	broadcast_param(player, "radar_mode", m_params.radar_mode);
+	broadcast_param(player, "radar_scale", m_params.radar_scale);
+	broadcast_param(player, "radar_blip_duration", m_params.radar_blip_duration);
+	broadcast_param(player, "firing_recoil", m_params.firing_recoil);
+	broadcast_param(player, "firing_delay", m_params.firing_delay);
 }
 

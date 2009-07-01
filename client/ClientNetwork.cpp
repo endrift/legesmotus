@@ -191,6 +191,10 @@ void	ClientNetwork::process_server_packet(GameController& controller, const UDPP
 		controller.map_object_packet(reader);
 		break;
 
+	case GAME_PARAM_PACKET:
+		controller.game_param_packet(reader);
+		break;
+
 	case INFO_PACKET:
 		controller.server_info(raw_packet.get_address(), reader);
 		break;

@@ -59,13 +59,10 @@ using namespace std;
 
 const int GameController::MESSAGE_DISPLAY_TIME = 10000;
 const unsigned int GameController::MAX_MESSAGES_TO_DISPLAY = 20;
-const int GameController::FIRING_DELAY = 700;
 const int GameController::SHOT_DISPLAY_TIME = 180;
 const int GameController::MUZZLE_FLASH_LENGTH = 80;
 const int GameController::GATE_WARNING_FLASH_LENGTH = 3000;
-const double GameController::FIRING_RECOIL = 1.5;
 const double GameController::RANDOM_ROTATION_SCALE = 1.0;
-const double GameController::RADAR_SCALE = 0.1;
 const Color GameController::BLUE_COLOR(0.4, 0.4, 1.0);
 const Color GameController::RED_COLOR(1.0, 0.4, 0.4);
 const Color GameController::GREYED_OUT(0.5, 0.5, 0.5);
@@ -77,7 +74,6 @@ const int GameController::DOUBLE_CLICK_TIME = 300;
 const int GameController::NETWORK_TIMEOUT_LIMIT = 10000;
 const int GameController::TEXT_LAYER = -4;
 const unsigned int GameController::PING_FREQUENCY = 2000;
-const uint64_t GameController::BLIP_DURATION = 1000;
 
 static bool	sort_resolution(pair<int, int> pairone, pair<int, int> pairtwo) {
 	if (pairone.first == pairtwo.first) {
@@ -528,7 +524,7 @@ void GameController::init(GameWindow* window) {
 	m_transition_manager.add_transition(m_chat_window_transition_y);
 	
 	// Set up the radar.
-	m_radar = new Radar(m_path_manager, RADAR_SCALE, RADAR_ON);
+	m_radar = new Radar(m_path_manager, m_params.radar_scale, m_params.radar_mode);
 	m_radar->set_x(m_screen_width - 120);
 	m_radar->set_y(120);
 	m_radar->register_with_window(m_window);
@@ -1320,7 +1316,7 @@ void GameController::process_mouse_click(SDL_Event event) {
 			// Do nothing.
 		} else if (event.button.button == 1) {
 			// Fire the gun if it's ready.
-			if (m_last_fired != 0 && m_last_fired > get_ticks() - FIRING_DELAY) {
+			if (m_last_fired != 0 && m_last_fired > get_ticks() - m_params.firing_delay) {
 				return;
 			}
 			if (m_players.empty() || m_players[m_player_id].is_frozen()) {
@@ -1331,7 +1327,7 @@ void GameController::process_mouse_click(SDL_Event event) {
 			double direction = atan2(y_dist, x_dist) * RADIANS_TO_DEGREES;
 			// Cause recoil if the player is not hanging onto a wall.
 			if (m_players[m_player_id].get_x_vel() != 0 || m_players[m_player_id].get_y_vel() != 0) {
-				m_players[m_player_id].set_velocity(m_players[m_player_id].get_x_vel() - FIRING_RECOIL * cos((direction) * DEGREES_TO_RADIANS), m_players[m_player_id].get_y_vel() - FIRING_RECOIL * sin((direction) * DEGREES_TO_RADIANS));
+				m_players[m_player_id].set_velocity(m_players[m_player_id].get_x_vel() - m_params.firing_recoil * cos((direction) * DEGREES_TO_RADIANS), m_players[m_player_id].get_y_vel() - m_params.firing_recoil * sin((direction) * DEGREES_TO_RADIANS));
 			}
 			m_last_fired = get_ticks();
 			player_fired(m_player_id, m_players[m_player_id].get_x(), m_players[m_player_id].get_y(), direction);
@@ -1489,7 +1485,7 @@ void GameController::move_objects(float timescale) {
 	m_players[m_player_id].set_rotation_degrees(m_players[m_player_id].get_rotation_degrees() + m_players[m_player_id].get_rotational_vel() * timescale);
 	
 	// Set name sprites visible/invisible. and move players.
-	map<int, GraphicalPlayer>::iterator it;
+	map<uint32_t, GraphicalPlayer>::iterator it;
 	for ( it=m_players.begin() ; it != m_players.end(); it++ ) {
 		const GraphicalPlayer& currplayer = (*it).second;
 		if (currplayer.is_invisible()) {
@@ -1580,7 +1576,7 @@ void GameController::attempt_jump() {
 /*
  * Called when a player (including you) fires.
  */
-void GameController::player_fired(unsigned int player_id, double start_x, double start_y, double direction) {
+void GameController::player_fired(uint32_t player_id, double start_x, double start_y, double direction) {
 	if (m_players.empty()) {
 		return;
 	}
@@ -1623,7 +1619,7 @@ void GameController::player_fired(unsigned int player_id, double start_x, double
 	if (player_id == m_player_id) {
 		const GraphicalPlayer* hit_player = NULL;
 		
-		map<int, GraphicalPlayer>::iterator it;
+		map<uint32_t, GraphicalPlayer>::iterator it;
 		for ( it=m_players.begin() ; it != m_players.end(); it++ ) {
 			const GraphicalPlayer& currplayer = (*it).second;
 			if (currplayer.get_id() == player_id) {
@@ -1724,7 +1720,7 @@ void GameController::set_players_visible(bool visible) {
 		return;
 	}
 
-	map<int, GraphicalPlayer>::iterator it;
+	map<uint32_t, GraphicalPlayer>::iterator it;
 	for ( it=m_players.begin() ; it != m_players.end(); it++ ) {
 		const GraphicalPlayer& currplayer = (*it).second;
 		if (currplayer.get_sprite() == NULL) {
@@ -1819,7 +1815,7 @@ void GameController::update_individual_scores() {
 		return;
 	}
 
-	for (map<int, GraphicalPlayer>::iterator it = m_players.begin(); it != m_players.end(); ++it) {
+	for (map<uint32_t, GraphicalPlayer>::iterator it = m_players.begin(); it != m_players.end(); ++it) {
 		if (it->second.get_sprite() != NULL && it->second.get_team() == 'A') {
 			blue_players.push_back(&it->second);
 		} else if (it->second.get_sprite() != NULL && it->second.get_team() == 'B') {
@@ -1910,7 +1906,7 @@ void GameController::delete_individual_score(const GraphicalPlayer& currplayer) 
 /*
  * Send a player shot packet.
  */
-void GameController::send_player_shot(unsigned int shooter_id, unsigned int hit_player_id, double angle) {
+void GameController::send_player_shot(uint32_t shooter_id, uint32_t hit_player_id, double angle) {
 	PacketWriter player_shot(PLAYER_SHOT_PACKET);
 	player_shot << shooter_id;
 	player_shot << hit_player_id;
@@ -2086,7 +2082,7 @@ void GameController::player_update(PacketReader& reader) {
 		return;
 	}
 
-	unsigned int player_id;
+	uint32_t player_id;
 	long x;
 	long y;
 	double velocity_x;
@@ -2280,7 +2276,7 @@ void GameController::gun_fired(PacketReader& reader) {
 	m_window->register_graphic(this_shot);
 	
 	m_sound_controller->play_sound("fire");
-	m_radar->activate_blip(playerid, get_ticks(), BLIP_DURATION);
+	m_radar->activate_blip(playerid, get_ticks(), m_params.radar_blip_duration);
 	
 	player_fired(playerid, start_x, start_y, rotation);
 }
@@ -2343,7 +2339,7 @@ void GameController::player_shot(PacketReader& reader) {
 			m_total_time_frozen = time_to_unfreeze;
 		}
 		if (shot_angle != 0) {
-			m_players[m_player_id].set_velocity(m_players[m_player_id].get_x_vel() - FIRING_RECOIL * cos((shot_angle) * DEGREES_TO_RADIANS), m_players[m_player_id].get_y_vel() - FIRING_RECOIL * sin((shot_angle) * DEGREES_TO_RADIANS));
+			m_players[m_player_id].set_velocity(m_players[m_player_id].get_x_vel() - m_params.firing_recoil * cos((shot_angle) * DEGREES_TO_RADIANS), m_players[m_player_id].get_y_vel() - m_params.firing_recoil * sin((shot_angle) * DEGREES_TO_RADIANS));
 		}
 	}
 }
@@ -2806,8 +2802,8 @@ void GameController::display_message(string message, Color color) {
 /*
  * Get a player by their ID.
  */
-GraphicalPlayer* GameController::get_player_by_id(unsigned int player_id) {
-	map<int, GraphicalPlayer>::iterator it(m_players.find(player_id));
+GraphicalPlayer* GameController::get_player_by_id(uint32_t player_id) {
+	map<uint32_t, GraphicalPlayer>::iterator it(m_players.find(player_id));
 	return it == m_players.end() ? NULL : &it->second;
 }
 
@@ -2815,7 +2811,7 @@ GraphicalPlayer* GameController::get_player_by_id(unsigned int player_id) {
  * Get a player by name.
  */
 GraphicalPlayer* GameController::get_player_by_name(const char* name) {
-	for (map<int, GraphicalPlayer>::iterator it(m_players.begin()); it != m_players.end(); ++it) {
+	for (map<uint32_t, GraphicalPlayer>::iterator it(m_players.begin()); it != m_players.end(); ++it) {
 		if (it->second.compare_name(name)) {
 			return &it->second;
 		}
@@ -2947,7 +2943,7 @@ void	GameController::set_player_name(string name) {
 
 void	GameController::clear_players() {
 	if (!m_players.empty()) {
-		map<int, GraphicalPlayer>::iterator it;
+		map<uint32_t, GraphicalPlayer>::iterator it;
 		for ( it=m_players.begin() ; it != m_players.end(); it++ ) {
 			const GraphicalPlayer& currplayer = (*it).second;
 			m_text_manager->remove_string(m_players[currplayer.get_id()].get_name_sprite());
@@ -3082,6 +3078,31 @@ void	GameController::display_legalese() {
 
 	for (size_t i = 0; i < sizeof(legalese) / sizeof(legalese[0]); ++i) {
 		display_message(legalese[i]);
+	}
+}
+
+void GameController::game_param_packet(PacketReader& packet) {
+	m_params.process_param_packet(packet);
+	send_ack(packet);
+
+	set_radar_mode(m_params.radar_mode);
+	m_radar->set_scale(m_params.radar_scale);
+}
+
+void GameController::set_radar_mode(RadarMode mode) {
+	if (mode == m_radar->get_mode()) {
+		return;
+	}
+
+	m_radar->set_mode(mode);
+
+	if (mode == RADAR_AURAL) {
+		// Hide all the radar blips, because we're entering aural mode
+		for (std::map<uint32_t, GraphicalPlayer>::const_iterator it(m_players.begin()); it != m_players.end(); ++it) {
+			if (it->second.get_id() != m_player_id) {
+				m_radar->set_blip_alpha(it->second.get_id(), 0.0);
+			}
+		}
 	}
 }
 

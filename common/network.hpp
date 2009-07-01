@@ -70,7 +70,8 @@ namespace LM {
 		UNREGISTER_SERVER_PACKET = 20,
 		UPGRADE_AVAILABLE_PACKET = 21,
 		MAP_INFO_PACKET = 22,
-		MAP_OBJECT_PACKET = 23
+		MAP_OBJECT_PACKET = 23,
+		GAME_PARAM_PACKET = 24
 	};
 
 	bool		resolve_hostname(IPAddress& resolved_addr, const char* hostname_to_resolve, uint16_t portno); // portno must be in host-byte order

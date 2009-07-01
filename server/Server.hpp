@@ -140,7 +140,12 @@ namespace LM {
 		void			rebroadcast_packet_except(const PacketReader& packet, uint32_t excluded_player_id);
 	
 		/* */
-	
+
+		// Send all the relevant game parameters to the client (should be called at the beginning of each new game)
+		// If player is NULL, broadcast to all players, otherwise only to specific player
+		void			broadcast_params(const ServerPlayer* player =NULL);
+		template<class T> void	broadcast_param(const ServerPlayer* player, const char* param_name, const T& param_value);
+
 		// Reset the scores for all players, broadcasting score updates for each one (call at beginning of new game)
 		void			reset_player_scores();
 	
