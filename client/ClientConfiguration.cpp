@@ -56,7 +56,6 @@ void ClientConfiguration::reload_config() {
 			m_string_vals[itemname] = itemdefault;
 			m_config_manager.set(itemname.c_str(), itemdefault);
 		}
-		cerr << itemname << ": " << m_string_vals[itemname] << endl;
 	}
 	
 	map<string, int>::iterator iit;
@@ -69,7 +68,6 @@ void ClientConfiguration::reload_config() {
 			m_int_vals[itemname] = itemdefault;
 			m_config_manager.set(itemname.c_str(), itemdefault);
 		}
-		cerr << itemname << ": " << m_int_vals[itemname] << endl;
 	}
 	
 	map<string, bool>::iterator bit;
@@ -82,7 +80,6 @@ void ClientConfiguration::reload_config() {
 			m_bool_vals[itemname] = itemdefault;
 			m_config_manager.set(itemname.c_str(), itemdefault);
 		}
-		cerr << itemname << ": " << m_bool_vals[itemname] << endl;
 	}
 	
 	m_config_manager.save_personal_config();
