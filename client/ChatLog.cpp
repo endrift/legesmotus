@@ -35,6 +35,7 @@ using namespace std;
 
 const int ChatLog::TEXT_LAYER = -4;
 const int ChatLog::LINE_SPACING = 15;
+const int ChatLog::RIGHT_PADDING = 25;
 
 ChatLog::ChatLog(GameController& parent, GameWindow* window, TextManager* textmanager, int screenwidth, 
 				int screenheight, Font* standardfont, Font* mediumfont, Font* menufont) : m_parent(parent) {
@@ -71,10 +72,10 @@ ChatLog::ChatLog(GameController& parent, GameWindow* window, TextManager* textma
 	m_scrollbar->set_section_color(ScrollBar::TRACKER, Color(0.2,0.2,0.4));
 	m_scrollbar->set_scroll_speed(3);
 	
-	m_scrollarea = new ScrollArea(m_background->get_x() - m_background->get_image_width()/2 - m_scrollbar->get_x() - m_scrollbar->get_image_width() + LINE_SPACING, m_background->get_image_height() - m_background->get_row_height(0) - 30,10,m_scrollbar);
+	m_scrollarea = new ScrollArea(m_background->get_x() - m_background->get_image_width()/2 - m_scrollbar->get_x() - m_scrollbar->get_image_width() + RIGHT_PADDING, m_background->get_image_height() - m_background->get_row_height(0) - 30,10,m_scrollbar);
 	m_scrollarea->set_priority(TEXT_LAYER);
 	m_scrollarea->get_group()->set_priority(TEXT_LAYER);
-	m_scrollarea->set_x(m_background->get_x() - LINE_SPACING);
+	m_scrollarea->set_x(m_background->get_x() - RIGHT_PADDING);
 	m_scrollarea->set_y(m_background->get_y() + m_background->get_row_height(0) + 15);
 	m_scrollarea->set_center_x(m_scrollarea->get_width()/2);
 	m_scrollarea->set_center_y(0);

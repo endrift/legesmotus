@@ -40,6 +40,7 @@ namespace LM {
 	private:
 		const static int TEXT_LAYER;
 		const static int LINE_SPACING;
+		const static int RIGHT_PADDING;
 		GameController& m_parent;
 		GameWindow*	m_window;
 		TextManager*	m_text_manager;
