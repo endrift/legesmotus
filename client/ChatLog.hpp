@@ -39,6 +39,7 @@ namespace LM {
 	class ChatLog {
 	private:
 		const static int TEXT_LAYER;
+		const static int LINE_SPACING;
 		GameController& m_parent;
 		GameWindow*	m_window;
 		TextManager*	m_text_manager;

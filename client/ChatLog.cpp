@@ -34,6 +34,7 @@ using namespace LM;
 using namespace std;
 
 const int ChatLog::TEXT_LAYER = -4;
+const int ChatLog::LINE_SPACING = 15;
 
 ChatLog::ChatLog(GameController& parent, GameWindow* window, TextManager* textmanager, int screenwidth, 
 				int screenheight, Font* standardfont, Font* mediumfont, Font* menufont) : m_parent(parent) {
@@ -70,10 +71,10 @@ ChatLog::ChatLog(GameController& parent, GameWindow* window, TextManager* textma
 	m_scrollbar->set_section_color(ScrollBar::TRACKER, Color(0.2,0.2,0.4));
 	m_scrollbar->set_scroll_speed(3);
 	
-	m_scrollarea = new ScrollArea(m_background->get_x() - m_background->get_image_width()/2 - m_scrollbar->get_x() - m_scrollbar->get_image_width() + 25, m_background->get_image_height() - m_background->get_row_height(0) - 30,10,m_scrollbar);
+	m_scrollarea = new ScrollArea(m_background->get_x() - m_background->get_image_width()/2 - m_scrollbar->get_x() - m_scrollbar->get_image_width() + LINE_SPACING, m_background->get_image_height() - m_background->get_row_height(0) - 30,10,m_scrollbar);
 	m_scrollarea->set_priority(TEXT_LAYER);
 	m_scrollarea->get_group()->set_priority(TEXT_LAYER);
-	m_scrollarea->set_x(m_background->get_x() - 25);
+	m_scrollarea->set_x(m_background->get_x() - LINE_SPACING);
 	m_scrollarea->set_y(m_background->get_y() + m_background->get_row_height(0) + 15);
 	m_scrollarea->set_center_x(m_scrollarea->get_width()/2);
 	m_scrollarea->set_center_y(0);
@@ -109,11 +110,11 @@ void ChatLog::set_visible(bool visible) {
 
 void ChatLog::add_message(string message, Color color) {
 	double old_progress = m_scrollbar->get_scroll_progress();
-	m_items.push_back(m_text_manager->place_string(message, m_background->get_x() - m_background->get_image_width()/2 - m_scrollarea->get_x() + m_scrollarea->get_width()/2 + 10, 25 * m_items.size(), TextManager::LEFT, TextManager::LAYER_HUD));
+	m_items.push_back(m_text_manager->place_string(message, m_background->get_x() - m_background->get_image_width()/2 - m_scrollarea->get_x() + m_scrollarea->get_width()/2 + 10, LINE_SPACING * m_items.size(), TextManager::LEFT, TextManager::LAYER_HUD));
 	m_items[m_items.size()-1]->set_priority(TEXT_LAYER);
 	m_window->unregister_hud_graphic(m_items[m_items.size()-1]);
 	m_scrollarea->get_group()->add_graphic(m_items[m_items.size()-1], message);
-	m_scrollarea->set_content_height(25 * (m_items.size()));
+	m_scrollarea->set_content_height(LINE_SPACING * (m_items.size()));
 	if (old_progress == 1) {
 		m_scrollbar->scroll(1);
 	}
