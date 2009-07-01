@@ -23,6 +23,7 @@
  */
 
 #include "network.hpp"
+#include "StringTokenizer.hpp"
 #ifdef __WIN32
 #include <Winsock2.h>
 #else
@@ -34,6 +35,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sstream>
+#include <string>
 
 using namespace LM;
 using namespace std;
@@ -60,6 +62,13 @@ string	LM::format_ip_address(const IPAddress& addr, bool resolve) {
                                         (int)port_no);
 
 	return buffer;
+}
+
+bool	LM::resolve_hostname(IPAddress& resolved_addr, const char* hostname_port_string) {
+	string		hostname;
+	uint16_t	portno;
+	StringTokenizer(hostname_port_string, ':', 2) >> hostname >> portno;
+	return resolve_hostname(resolved_addr, hostname.c_str(), portno);
 }
 
 bool	LM::resolve_hostname(IPAddress& resolved_addr, const char* hostname_to_resolve, uint16_t portno) {

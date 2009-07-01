@@ -530,11 +530,15 @@ void GameController::init(GameWindow* window) {
 	m_radar->register_with_window(m_window);
 
 	m_current_scan_id = 0;
-	if (!resolve_hostname(m_metaserver_address, METASERVER_HOSTNAME, METASERVER_PORTNO)) {
-		// TODO: better error message
-		cerr << "Unable to resolve metaserver hostname.  Internet-wide server browsing will not be enabled." << std::endl;
+	// TODO: better error messages if meta server address can't be resolved
+	if (const char* metaserver_address = getenv("LM_METASERVER")) {
+		// Address specified by $LM_METASERVER environment avariable
+		if (!resolve_hostname(m_metaserver_address, metaserver_address)) {
+			cerr << "Unable to resolve metaserver hostname, `" << metaserver_address << "' as specified in the $LM_METASERVER environment variable.  Internet-wide server browsing will not be enabled." << endl;
+		}
+	} else if (!resolve_hostname(m_metaserver_address, METASERVER_HOSTNAME, METASERVER_PORTNO)) {
+		cerr << "Unable to resolve metaserver hostname.  Internet-wide server browsing will not be enabled." << endl;
 	}
-	scan_all();
 }
 
 /*

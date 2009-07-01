@@ -634,10 +634,18 @@ void	Server::start()
 
 	m_register_with_metaserver = m_config.get<bool>("register_server");
 
-	if (m_register_with_metaserver && !resolve_hostname(m_metaserver_address, METASERVER_HOSTNAME, METASERVER_PORTNO)) {
-		// TODO: better error message
-		std::cerr << "Unable to resolve metaserver hostname.  This server will NOT be registered with the meta server." << std::endl;
-		m_register_with_metaserver = false;
+	if (m_register_with_metaserver) {
+		// TODO: better error messages if meta server address can't be resolved
+		if (const char* metaserver_address = getenv("LM_METASERVER")) {
+			// Address specified by $LM_METASERVER environment avariable
+			if (!resolve_hostname(m_metaserver_address, metaserver_address)) {
+				std::cerr << "Unable to resolve metaserver hostname, `" << metaserver_address << "' as specified in the $LM_METASERVER environment variable.  This server will NOT be registered with the meta server." << std::endl;
+				m_register_with_metaserver = false;
+			}
+		} else if (!resolve_hostname(m_metaserver_address, METASERVER_HOSTNAME, METASERVER_PORTNO)) {
+			std::cerr << "Unable to resolve metaserver hostname.  This server will NOT be registered with the meta server." << std::endl;
+			m_register_with_metaserver = false;
+		}
 	}
 	if (m_register_with_metaserver) {
 		register_with_metaserver();

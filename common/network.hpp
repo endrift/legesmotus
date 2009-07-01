@@ -74,6 +74,7 @@ namespace LM {
 		GAME_PARAM_PACKET = 24
 	};
 
+	bool		resolve_hostname(IPAddress& resolved_addr, const char* hostname_port_string); // hostname_port_string should be in form "hostname:portno" (i.e. colon separator)
 	bool		resolve_hostname(IPAddress& resolved_addr, const char* hostname_to_resolve, uint16_t portno); // portno must be in host-byte order
 	bool		resolve_ip_address(std::string& resolved_hostname, uint16_t* portno, const IPAddress& address_to_resolve); // portno will be in host-byte order
 
