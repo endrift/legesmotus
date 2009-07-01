@@ -75,6 +75,7 @@ namespace LM {
 		int		get_count();
 		void		set_count(int count);
 		void		deselect();
+		bool		contains_ip(IPAddress ip);
 		IPAddress	get_server_info(int num);
 	};
 }

@@ -202,9 +202,9 @@ void ServerBrowser::clear() {
 		m_text_manager->remove_string(m_items[printer.str()]);
 		m_scrollarea->get_group()->remove_graphic(printer.str());
 		m_items.erase(printer.str());
-	
-		m_server_list.erase(m_server_list.begin() + num);
 	}
+	
+	m_server_list.clear();
 	
 	m_server_list_count = 0;
 }
@@ -384,4 +384,13 @@ IPAddress ServerBrowser::get_server_info(int num) {
 	} else {
 		return m_server_list[num];
 	}
+}
+
+bool ServerBrowser::contains_ip(IPAddress ip) {
+	for (unsigned int i = 0; i < m_server_list.size(); i++) {
+		if (m_server_list[i] == ip) {
+			return true;
+		}
+	}
+	return false;
 }
