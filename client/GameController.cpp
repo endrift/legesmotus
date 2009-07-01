@@ -1276,9 +1276,7 @@ void GameController::process_mouse_click(SDL_Event event) {
 			m_server_browser->deselect();
 		} else if (button == "Refresh") {
 			// Refresh.
-			for (int i = 0; i < m_server_browser->get_count(); i++) {
-				m_server_browser->delete_entry(i);
-			}
+			m_server_browser->clear();
 			m_server_browser->deselect();
 			scan_all();
 		} else if (button == "Connect") {

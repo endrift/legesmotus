@@ -63,7 +63,7 @@ namespace LM {
 		ServerBrowser(GameController& parent, GameWindow* window, TextManager* textmanager, int screenwidth, int screenheight, Font* standardfont, Font* mediumfont, Font* menufont);
 		~ServerBrowser();
 		void		set_visible(bool visible);
-		void		delete_entry(int num);
+		void		clear();
 		void		add_entry(IPAddress server_address, std::string current_map_name, int team_count[2], int max_players, unsigned int uptime, unsigned int ping);
 		std::string	check_button_press(int mouse_x, int mouse_y);
 		int		check_item_select(int mouse_x, int mouse_y);

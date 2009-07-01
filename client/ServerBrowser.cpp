@@ -128,10 +128,7 @@ void ServerBrowser::set_visible(bool visible) {
 	m_is_invisible = !visible;
 	// If we're opening the browser, clear the list and re-scan.
 	if (m_background->is_invisible() == visible && m_background->is_invisible() == true) {
-		for (int i = 0; i < m_server_list_count; i++) {
-			delete_entry(i);
-		}
-		m_server_list_count = 0;
+		clear();
 		m_parent.scan_all();
 	}
 
@@ -154,64 +151,62 @@ void ServerBrowser::set_visible(bool visible) {
 	}
 }
 
-void ServerBrowser::delete_entry(int num) {
-	if (num >= m_server_list_count || num < 0) {
-		return;
+void ServerBrowser::clear() {
+	for (int num = 0; num < m_server_list_count; num++) {
+		ostringstream printer;
+		printer << "name";
+		printer << num;
+		if (m_items.find(printer.str()) == m_items.end()) {
+			return;
+		}
+		m_text_manager->remove_string(m_items[printer.str()]);
+		m_scrollarea->get_group()->remove_graphic(printer.str());
+		m_items.erase(printer.str());
+	
+		printer.clear();
+		printer << "map";
+		printer << num;
+		if (m_items.find(printer.str()) == m_items.end()) {
+			return;
+		}
+		m_text_manager->remove_string(m_items[printer.str()]);
+		m_scrollarea->get_group()->remove_graphic(printer.str());
+		m_items.erase(printer.str());
+	
+		printer.clear();
+		printer << "uptime";
+		printer << num;
+		if (m_items.find(printer.str()) == m_items.end()) {
+			return;
+		}
+		m_text_manager->remove_string(m_items[printer.str()]);
+		m_scrollarea->get_group()->remove_graphic(printer.str());
+		m_items.erase(printer.str());
+	
+		printer.clear();
+		printer << "players";
+		printer << num;
+		if (m_items.find(printer.str()) == m_items.end()) {
+			return;
+		}
+		m_text_manager->remove_string(m_items[printer.str()]);
+		m_scrollarea->get_group()->remove_graphic(printer.str());
+		m_items.erase(printer.str());
+	
+		printer.clear();
+		printer << "ping";
+		printer << num;
+		if (m_items.find(printer.str()) == m_items.end()) {
+			return;
+		}
+		m_text_manager->remove_string(m_items[printer.str()]);
+		m_scrollarea->get_group()->remove_graphic(printer.str());
+		m_items.erase(printer.str());
+	
+		m_server_list.erase(m_server_list.begin() + num);
 	}
 	
-	ostringstream printer;
-	printer << "name";
-	printer << num;
-	if (m_items.find(printer.str()) == m_items.end()) {
-		return;
-	}
-	m_text_manager->remove_string(m_items[printer.str()]);
-	m_scrollarea->get_group()->remove_graphic(printer.str());
-	m_items.erase(printer.str());
-	
-	printer.clear();
-	printer << "map";
-	printer << num;
-	if (m_items.find(printer.str()) == m_items.end()) {
-		return;
-	}
-	m_text_manager->remove_string(m_items[printer.str()]);
-	m_scrollarea->get_group()->remove_graphic(printer.str());
-	m_items.erase(printer.str());
-	
-	printer.clear();
-	printer << "uptime";
-	printer << num;
-	if (m_items.find(printer.str()) == m_items.end()) {
-		return;
-	}
-	m_text_manager->remove_string(m_items[printer.str()]);
-	m_scrollarea->get_group()->remove_graphic(printer.str());
-	m_items.erase(printer.str());
-	
-	printer.clear();
-	printer << "players";
-	printer << num;
-	if (m_items.find(printer.str()) == m_items.end()) {
-		return;
-	}
-	m_text_manager->remove_string(m_items[printer.str()]);
-	m_scrollarea->get_group()->remove_graphic(printer.str());
-	m_items.erase(printer.str());
-	
-	printer.clear();
-	printer << "ping";
-	printer << num;
-	if (m_items.find(printer.str()) == m_items.end()) {
-		return;
-	}
-	m_text_manager->remove_string(m_items[printer.str()]);
-	m_scrollarea->get_group()->remove_graphic(printer.str());
-	m_items.erase(printer.str());
-	
-	m_server_list.erase(m_server_list.begin() + num);
-	
-	m_server_list_count--;
+	m_server_list_count = 0;
 }
 
 void ServerBrowser::add_entry(IPAddress server_address, string current_map_name, int team_count[2], int max_players, unsigned int uptime, unsigned int ping) {
