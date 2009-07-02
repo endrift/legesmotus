@@ -31,6 +31,7 @@
 #include "GateStatus.hpp"
 #include "common/AckManager.hpp"
 #include "common/GameParameters.hpp"
+#include "common/team.hpp"
 #include <stdint.h>
 #include <math.h>
 #include <map>
@@ -93,6 +94,7 @@ namespace LM {
 		ServerPlayer::Queue	m_timeout_queue;	// A list of players in the order in which they will timeout
 		int			m_team_count[2];	// [0] = # of players on team A  [1] == # of players on team B
 		int			m_team_score[2];	// [0] = team A's score  [1] = team B's score
+		bool			m_autobalance_teams;
 	
 	
 		//
@@ -163,6 +165,7 @@ namespace LM {
 		void			send_spawn_packet(const ServerPlayer& player, Point spawnpoint, bool is_alive);
 	
 		// Server command support
+		void			broadcast_system_message(const char* message);
 		void			send_system_message(const ServerPlayer& recipient, const char* message);
 		void			send_map_list(const ServerPlayer& recipient);
 		void			command_server(uint32_t player_id, const char* command);
@@ -202,6 +205,15 @@ namespace LM {
 	
 		bool			waiting_to_spawn() const; // Return true if we're waiting to spawn players
 		uint64_t		time_until_spawn() const; // Time in ms until players should spawn
+
+		// For rebalancing teams:
+		void			balance_teams();
+		void			shakeup_teams();
+		char			get_unbalanced_team() const;	// Returns the larger of the teams if teams are unbalanced, returns 0 if teams are not unbalanced
+
+		ServerPlayer*		get_random_player(char team);
+
+		void			change_team(ServerPlayer& player, char new_team);
 	
 		// Returns the player with given player_id, NULL if not found
 		ServerPlayer*		get_player(uint32_t player_id);
@@ -221,6 +233,7 @@ namespace LM {
 
 		// How many players are in the game?
 		int			nbr_players() const { return m_team_count[0] + m_team_count[1]; }
+		int			get_team_count(char team) const { return is_valid_team(team) ? m_team_count[team - 'A'] : 0; }
 	
 		//
 		// Main Loop Helpers

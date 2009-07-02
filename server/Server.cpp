@@ -65,6 +65,7 @@ Server::Server (ServerConfig& config, PathManager& path_manager) : m_config(conf
 
 	m_team_count[0] = m_team_count[1] = 0;
 	m_team_score[0] = m_team_score[1] = 0;
+	m_autobalance_teams = false;
 }
 
 void	Server::ack(const IPAddress& /*address*/, PacketReader& ack_packet) {
@@ -152,6 +153,13 @@ void	Server::team_change(const IPAddress& address, PacketReader& packet)
 		return;
 	}
 
+	// If team autobalancing is enabled, make sure this team change won't upset the balance
+	if (m_autobalance_teams && get_team_count(new_team) >= get_team_count(player->get_team())) {
+		// TODO: use a REJECT packet instead of sending a system message
+		send_system_message(*player, "You may not change teams right now because it would cause an imbalance.");
+		return;
+	}
+
 	// Make sure the player isn't changing teams too soon
 	if (m_players_have_spawned && player->get_team_change_time() >= m_game_start_time && get_ticks() - player->get_team_change_time() < m_params.team_change_period) {
 		// TODO: use a REJECT packet instead of sending a system message
@@ -165,25 +173,29 @@ void	Server::team_change(const IPAddress& address, PacketReader& packet)
 		return;
 	}
 
+	change_team(*player, new_team);
+}
+
+void	Server::change_team(ServerPlayer& player, char new_team) {
 	// Move the player to the new team
-	release_player_resources(*player);
-	player->set_team(new_team);
+	release_player_resources(player);
+	player.set_team(new_team);
 	++m_team_count[new_team - 'A'];
 
 	if (m_players_have_spawned) {
-		player->set_team_change_time();
+		player.set_team_change_time();
 
 		// Hide and freeze the player
-		send_spawn_packet(*player, Point(0, 0), false);
+		send_spawn_packet(player, Point(0, 0), false);
 
 		// Add them to the waiting to spawn list
-		player->reset_join_time();
-		m_waiting_players.push_back(player);
+		player.reset_join_time();
+		m_waiting_players.push_back(&player);
 	}
 
 	// Notify all players that this player has switched teams:
 	PacketWriter		outbound_packet(TEAM_CHANGE_PACKET);
-	outbound_packet << player->get_id() << player->get_team();
+	outbound_packet << player.get_id() << player.get_team();
 	broadcast_packet(outbound_packet);
 }
 
@@ -227,6 +239,12 @@ void	Server::send_system_message(const ServerPlayer& recipient_player, const cha
 	m_network.send_packet(recipient_player.get_address(), outbound_packet);
 }
 
+void	Server::broadcast_system_message(const char* message) {
+	PacketWriter	outbound_packet(MESSAGE_PACKET);
+	outbound_packet << 0L << 0L << message;
+	broadcast_packet(outbound_packet);
+}
+
 void	Server::send_map_list(const ServerPlayer& player) {
 	list<string>			files;
 	scan_directory(files, m_path_manager.data_path("", "maps"));
@@ -256,6 +274,8 @@ void	Server::command_server(uint32_t player_id, const char* command) {
 		send_system_message(*player, "/server teamcount - Return the number of players on each team");
 		send_system_message(*player, "/server maps - Display the maps installed on the server");
 		if (player->is_op()) {
+			send_system_message(*player, "/server balance - Balance the teams [op]");
+			send_system_message(*player, "/server shakeup - Randomize the teams [op]");
 			send_system_message(*player, "/server reset - Reset the scores [op]");
 			send_system_message(*player, "/server map <mapname> - Load the given map [op]");
 			send_system_message(*player, "/server newgame - Start new game [op]");
@@ -286,6 +306,14 @@ void	Server::command_server(uint32_t player_id, const char* command) {
 
 	} else if (strcmp(command, "maps") == 0) {
 		send_map_list(*player);
+
+	} else if (strcmp(command, "shakeup") == 0 && player->is_op()) {
+		game_over(0);
+		shakeup_teams();
+		new_game();
+
+	} else if (strcmp(command, "balance") == 0 && player->is_op()) {
+		balance_teams();
 
 	} else if (strcmp(command, "reset") == 0 && player->is_op()) {
 		m_team_score[0] = m_team_score[1] = 0;
@@ -419,15 +447,16 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 		return;
 	}
 
-	if (!is_valid_team(team)) {
+	if (m_autobalance_teams || !is_valid_team(team)) {
 		// Assign to team equitably.
 		if (m_team_count[0] < m_team_count[1]) {
 			team = 'A';
 		} else if (m_team_count[0] > m_team_count[1]) {
 			team = 'B';
-		} else {
+		} else if (!is_valid_team(team)) {
 			team = 'A' + rand() % 2;
 		}
+		// Note that if autobalancing is enabled but the teams are equal in size, the server will honor the player's team request, if there was one.
 	}
 
 	// Check to make sure there is space in the game
@@ -596,6 +625,11 @@ void	Server::remove_player(ServerPlayer& player, const char* leave_message) {
 
 	// Fully remove the player
 	m_players.erase(player_id);
+
+	// Rebalance the teams, if autobalance is on
+	if (m_autobalance_teams) {
+		balance_teams();
+	}
 }
 
 void	Server::release_player_resources(ServerPlayer& player) {
@@ -634,6 +668,8 @@ void	Server::start()
 
 	m_server_name = m_config.get<string>("server_name");
 	m_server_location = m_config.get<string>("server_location");
+
+	m_autobalance_teams = m_config.get<bool>("autobalance");
 
 	m_register_with_metaserver = m_config.get<bool>("register_server");
 
@@ -1086,5 +1122,70 @@ void	Server::broadcast_params(const ServerPlayer* player) {
 	broadcast_param(player, "radar_blip_duration", m_params.radar_blip_duration);
 	broadcast_param(player, "firing_recoil", m_params.firing_recoil);
 	broadcast_param(player, "firing_delay", m_params.firing_delay);
+}
+
+void	Server::balance_teams() {
+	if (!get_unbalanced_team()) {
+		// Teams are balanced as they are
+		return;
+	}
+
+	broadcast_system_message("Team auto-balancing in effect...");
+	char	unbalanced_team;
+	while (is_valid_team(unbalanced_team = get_unbalanced_team())) {
+		if (ServerPlayer* victim = get_random_player(unbalanced_team)) {
+			change_team(*victim, get_other_team(unbalanced_team));
+		}
+	}
+}
+
+void	Server::shakeup_teams() {
+	broadcast_system_message("Random team shakeup in effect...");
+
+	size_t		players_left = nbr_players();
+	size_t		blue_allotment = players_left / 2;
+
+	for (PlayerMap::iterator it(m_players.begin()); it != m_players.end(); ++it) {
+		char	new_team;
+		if (rand() % players_left < blue_allotment) {
+			new_team = 'A';
+			--blue_allotment;
+		} else {
+			new_team = 'B';
+		}
+
+		if (it->second.get_team() != new_team) {
+			change_team(it->second, new_team);
+		}
+
+		--players_left;
+	}
+}
+
+char	Server::get_unbalanced_team() const {
+	if (m_team_count[0] > m_team_count[1] + 1) {
+		return 'A';
+	} else if (m_team_count[1] > m_team_count[0] + 1) {
+		return 'B';
+	}
+	
+	return 0;
+}
+
+ServerPlayer*	Server::get_random_player(char team) {
+	if (m_team_count[team - 'A'] == 0) {
+		return NULL;
+	}
+
+	size_t	player_index = rand() % m_team_count[team - 'A'];
+
+	for (PlayerMap::iterator it(m_players.begin()); it != m_players.end(); ++it) {
+		if (it->second.get_team() == team) {
+			if (player_index-- == 0) {
+				return &it->second;
+			}
+		}
+	}
+	return NULL; // Should *NOT* get here
 }
 
