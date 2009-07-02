@@ -2854,8 +2854,10 @@ void	GameController::server_info(const IPAddress& server_address, PacketReader& 
 		string		current_map_name;
 		int		team_count[2];
 		int		max_players;
-		unsigned int	uptime;
-		info_packet >> server_protocol_version >> current_map_name >> team_count[0] >> team_count[1] >> max_players >> uptime;
+		uint64_t	uptime;
+		string		server_name;
+		string		server_location;
+		info_packet >> server_protocol_version >> current_map_name >> team_count[0] >> team_count[1] >> max_players >> uptime >> server_name >> server_location;
 		
 		m_ping = get_ticks() - scan_start_time;
 		if (request_packet_id == m_current_ping_id) {
@@ -2874,7 +2876,7 @@ void	GameController::server_info(const IPAddress& server_address, PacketReader& 
 			return;
 		}
 		
-		m_server_browser->add_entry(server_address, current_map_name, team_count, max_players, uptime, m_ping);
+		m_server_browser->add_entry(server_address, current_map_name, team_count, max_players, uptime, m_ping, server_name, server_location);
 	}
 }
 

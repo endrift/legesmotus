@@ -209,7 +209,7 @@ void ServerBrowser::clear() {
 	m_server_list_count = 0;
 }
 
-void ServerBrowser::add_entry(IPAddress server_address, string current_map_name, int team_count[2], int max_players, unsigned int uptime, unsigned int ping) {
+void ServerBrowser::add_entry(IPAddress server_address, const string& current_map_name, int team_count[2], int max_players, uint64_t uptime, uint64_t ping, const string& server_name, const string& server_location) {
 	m_server_list.insert(m_server_list.begin() + m_server_list_count, server_address);
 	
 	m_text_manager->set_active_font(m_font);

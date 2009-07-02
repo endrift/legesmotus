@@ -531,7 +531,7 @@ void	Server::info(const IPAddress& address, PacketReader& request_packet) {
 	request_packet >> client_protocol_version >> scan_id >> scan_start_time;
 
 	PacketWriter	response_packet(INFO_PACKET);
-	response_packet << scan_id << scan_start_time << SERVER_PROTOCOL_VERSION << m_current_map.get_name() << m_team_count[0] << m_team_count[1] << m_params.max_players << get_ticks();
+	response_packet << scan_id << scan_start_time << SERVER_PROTOCOL_VERSION << m_current_map.get_name() << m_team_count[0] << m_team_count[1] << m_params.max_players << get_ticks() << m_server_name << m_server_location;
 	m_network.send_packet(address, response_packet);
 }
 
@@ -631,6 +631,9 @@ void	Server::start()
 	if (!m_network.start(m_listen_address)) {
 		throw Exception("Failed to start server network on interface and port.");
 	}
+
+	m_server_name = m_config.get<string>("server_name");
+	m_server_location = m_config.get<string>("server_location");
 
 	m_register_with_metaserver = m_config.get<bool>("register_server");
 

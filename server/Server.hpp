@@ -79,6 +79,8 @@ namespace LM {
 		GameParameters		m_params;
 		bool			m_is_running;		// When this is false, run() stops its main loop
 		IPAddress		m_listen_address;	// The address the server's listening on
+		std::string		m_server_name;		// Informative name to display in server browser
+		std::string		m_server_location;	// Informative location to display in server browser
 		ServerNetwork		m_network;
 		ServerAckManager	m_ack_manager;
 		uint32_t		m_next_player_id;	// Used to allocate next player ID

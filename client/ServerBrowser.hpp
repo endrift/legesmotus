@@ -64,7 +64,7 @@ namespace LM {
 		~ServerBrowser();
 		void		set_visible(bool visible);
 		void		clear();
-		void		add_entry(IPAddress server_address, std::string current_map_name, int team_count[2], int max_players, unsigned int uptime, unsigned int ping);
+		void		add_entry(IPAddress server_address, const std::string& current_map_name, int team_count[2], int max_players, uint64_t uptime, uint64_t ping, const std::string& server_name, const std::string& server_location);
 		std::string	check_button_press(int mouse_x, int mouse_y);
 		int		check_item_select(int mouse_x, int mouse_y);
 		int		get_selected_item();
