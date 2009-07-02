@@ -350,7 +350,6 @@ void GameController::init(GameWindow* window) {
 	int supported_heights[m_num_resolutions];
 	bool found_res = false;
 	m_window->supported_resolutions(supported_widths, supported_heights, depths, &m_num_resolutions);
-	cerr << "Num resolutions: " << m_num_resolutions << endl;
 	for (size_t i = 0; i < m_num_resolutions; i++) {
 		if (m_screen_width == supported_widths[i] && m_screen_height == supported_heights[i]) {
 			found_res = true;
@@ -1231,12 +1230,10 @@ void GameController::process_mouse_click(SDL_Event event) {
 					if (m_sound_controller->is_sound_on()) {
 						m_sound_controller->set_sound_on(false);
 						m_configuration->set_bool_value("sound", false);
-						display_message("Sound is now OFF.");
 						sound = "Sound: Off";
 					} else {
 						m_sound_controller->set_sound_on(true);
 						m_configuration->set_bool_value("sound", true);
-						display_message("Sound is now ON.");
 						sound = "Sound: On";
 					}
 					m_text_manager->remove_string(m_options_menu_items["Toggle Sound"]);
