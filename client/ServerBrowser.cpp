@@ -218,9 +218,9 @@ void ServerBrowser::add_entry(IPAddress server_address, const string& current_ma
 	ostringstream printer;
 	printer << "name";
 	printer << m_server_list_count;
-	if (server_name != "") {
+	if (server_address.is_localhost()) {
 		m_items[printer.str()] = m_text_manager->place_string(server_name, m_items["namelabel"]->get_x() - m_scrollarea->get_x() + m_scrollarea->get_width()/2, 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
-	} else if (server_address.is_localhost()) {
+	} else if (server_name != "") {
 		string hostname = "";
 		uint16_t portno = 0;
 		resolve_ip_address(hostname, &portno, server_address);

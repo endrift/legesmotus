@@ -291,7 +291,7 @@ void GameController::init(GameWindow* window) {
 	m_logo = new Sprite(m_path_manager.data_path("legesmotuslogo.png", "sprites"));
 	m_logo->set_x(m_screen_width/2);
 	m_logo->set_y(100);
-	m_logo->set_priority(-1);
+	m_logo->set_priority(0);
 	m_window->register_hud_graphic(m_logo);
 	
 	m_main_menu_items.clear();
@@ -327,7 +327,7 @@ void GameController::init(GameWindow* window) {
 	
 	// Options menu
 	m_text_manager->set_active_font(m_menu_font);
-	m_options_menu_items["Back"] = m_text_manager->place_string("Back", 50, 200, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_options_menu_items["Back"] = m_text_manager->place_string("Back", 50, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_options_menu_items["Enter Name"] = m_text_manager->place_string("Enter Name", 50, 250, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_options_menu_items["Toggle Sound"] = m_text_manager->place_string("Toggle Sound", 50, 300, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_options_menu_items["Resolution"] = m_text_manager->place_string("Screen Resolution: ", 50, 350, TextManager::LEFT, TextManager::LAYER_HUD);
