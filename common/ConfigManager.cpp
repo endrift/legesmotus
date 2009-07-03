@@ -31,6 +31,10 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
+#ifdef __WIN32
+#include <Windows.h>
+#include <shlobj.h>
+#endif
 
 using namespace LM;
 using namespace std;
@@ -142,20 +146,34 @@ template<> void ConfigManager::set(const char* option_name, const char* const& o
 	m_options[option_name] = option_value;
 }
 
-const char*	ConfigManager::personal_config_path() { // TODO: make cross platform
+const char*	ConfigManager::personal_config_path() {
 	static string	path;
 	if (path.empty()) {
+#ifdef __WIN32
+		TCHAR	appdata_path[MAX_PATH];
+		if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, appdata_path))) {
+			path = appdata_path;
+			path += "\\legesmotusrc.txt";
+		} else {
+			return NULL;
+		}
+#else
 		if (const char* home_dir = getenv("HOME")) {
 			path = home_dir;
 			path += "/.legesmotusrc";
 		} else {
 			return NULL;
 		}
+#endif
 	}
 	return path.c_str();
 }
 
-const char*	ConfigManager::system_config_path() { // TODO: make cross platform, use PREFIX/etc/legesmotusrc on UNIX
+const char*	ConfigManager::system_config_path() { // TODO: use PREFIX/etc/legesmotusrc on UNIX
+#ifdef __WIN32
+	return NULL;
+#else
 	return "/etc/legesmotusrc";
+#endif
 }
 
