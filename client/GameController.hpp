@@ -94,6 +94,7 @@ namespace LM {
 		const static int NETWORK_TIMEOUT_LIMIT;
 		const static int TEXT_LAYER;
 		const static unsigned int PING_FREQUENCY;
+		const static unsigned int CHAT_TRANSITION_TIME;
 		
 		PathManager& 	m_path_manager;
 		ClientConfiguration* m_configuration;
