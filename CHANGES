@@ -1,0 +1,63 @@
+Leges Motus Version History:
+--------------------------
+v. 0.2.0 (Beta 2) - 07/07/09:
+ New Features:
+  - Persistent configuration files for client and server.
+  - New map format.
+  - Map obstacle tiling.
+  - Maps can now be downloaded from a server.
+  - New sounds and improved sound handling.
+  - Servers now use UDP hole punching to allow connections through firewalls.
+  - New chat log shows old chat messages.
+  - Spawning improvements, auto team balancing.
+    - Teams can be manually balanced with /server balance and /server shakeup.
+  - Menu look and feel improved.
+  - Graphical menu options for resolution and full screen.
+  - New transition manager will allow for more interesting animations.
+  - Servers can now be named.
+  - There is now a mandatory waiting period between team changes.
+  - Messages have been added when players are shot or gates engaged/disengaged.
+  - Configurable radar "aural" mode: enemies only show on radar when they fire.
+  - There is now a notification when a new game update is available.
+  - Map now caches sprites, reducing memory usage.
+  - Server can now drop privileges to certain users.
+  - New server command: /server maps (lists the maps on the server).
+  - New high-resolution icon.
+  - New logo.
+  - The client can now be built without sound support.
+  - New 64x64 pixel metal background tile.
+  - Client now sends ping requests to the server.
+  - The client now has a /quit command.
+  - Team chat now has a separate prompt, rather than /tchat on a normal prompt.
+    - /tchat still works, however.
+  - Maps now have revision information.
+  - Metaserver address can now be specified by $LM_METASERVER environment var.
+  
+  
+ Bug Fixes:
+  - Table background will no longer act strangely when row height approaches 0.
+  - Muzzle flashes no longer show on the menu.
+  - Gate status bars now scale properly and do not go negative.
+  - Client now disconnects if it times out.
+  - Frozen status bar no longer jitters when player moves.
+  - Name changes when the score display is showing work properly.
+  - Players now change velocity when shot even if frozen.
+  - Empty chat messages are no longer sent.
+  - The config script now checks for g++.
+  - Time until spawn now displays in seconds.
+  - Replaced SDL_GetTicks() with our own timer.
+  - Fixed bugs preventing compilation on Solaris.
+  - Empty messages are no longer sent, and whitespace is stripped.
+  - Server no longer allows packets from unauthorized sources.
+  - All code is now encapsulated in a namespace to prevent conflicts.
+  - Improved Windows support, including signal handling.
+  - Gates now count as obstacles.
+  - Fixed server bug when players switched teams rapidly.
+  - Fixed client crash on trying to display an empty message.
+  - Server browser will no longer show the same server twice if it gets two
+    responses from the same IP and port.
+
+--------------------------
+v. 0.1.0 (Beta 1) - 06/07/09:
+ - Initial release.
+
