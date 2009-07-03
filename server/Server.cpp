@@ -1124,6 +1124,21 @@ void	Server::broadcast_params(const ServerPlayer* player) {
 	broadcast_param(player, "firing_delay", m_params.firing_delay);
 }
 
+void	Server::hole_punch_packet(const IPAddress& address, PacketReader& packet) {
+	if (!m_register_with_metaserver || address != m_metaserver_address) {
+		return;
+	}
+
+	IPAddress	client_address;
+	uint32_t	scan_id;
+	packet >> client_address >> scan_id;
+
+	PacketWriter	client_packet(HOLE_PUNCH_PACKET);
+	client_packet << scan_id;
+
+	m_network.send_packet(client_address, client_packet);
+}
+
 void	Server::balance_teams() {
 	if (!get_unbalanced_team()) {
 		// Teams are balanced as they are

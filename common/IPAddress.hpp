@@ -53,6 +53,9 @@ namespace LM {
 	
 		bool		is_localhost() const;
 	
+		bool		operator!=(const IPAddress& other) const {
+			return host != other.host || port != other.port;
+		}
 		bool		operator==(const IPAddress& other) const {
 			return host == other.host && port == other.port;
 		}

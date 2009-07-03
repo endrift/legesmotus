@@ -302,6 +302,7 @@ namespace LM {
 		void		game_param_packet(PacketReader& reader);
 		void		server_info(const IPAddress& server_address, PacketReader& reader);
 		void		upgrade_available(const IPAddress& server_address, PacketReader& reader);
+		void		hole_punch_packet(const IPAddress& server_address, PacketReader& reader);
 	
 		// Sound callbacks:
 		void		sound_finished(int channel);

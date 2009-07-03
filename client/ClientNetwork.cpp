@@ -211,6 +211,9 @@ void	ClientNetwork::process_unbound_packet(GameController& controller, const UDP
 	case UPGRADE_AVAILABLE_PACKET:
 		controller.upgrade_available(raw_packet.get_address(), reader);
 		break;
+	case HOLE_PUNCH_PACKET:
+		controller.hole_punch_packet(raw_packet.get_address(), reader);
+		break;
 	}
 }
 

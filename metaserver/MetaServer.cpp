@@ -168,7 +168,7 @@ void	MetaServer::request_info(const IPAddress& address, PacketReader& request_pa
 	int		client_protocol_version;
 	uint32_t	scan_id;
 	uint64_t	scan_start_time;
-	Version	client_version;
+	Version		client_version;
 	request_packet >> client_protocol_version >> scan_id >> scan_start_time >> client_version;
 
 	if (client_version < m_latest_client_version) {
@@ -181,6 +181,7 @@ void	MetaServer::request_info(const IPAddress& address, PacketReader& request_pa
 		PacketWriter	response_packet(INFO_PACKET);
 		response_packet << scan_id << scan_start_time << it->get_address();
 		send_packet(response_packet, address);
+		send_hole_punch(it->get_address(), address, scan_id);
 	}
 }
 
@@ -194,5 +195,11 @@ void	MetaServer::send_packet(const PacketWriter& packet_data, const IPAddress& a
 MetaServer::ServerInfo*	MetaServer::get_server(const IPAddress& server_address) {
 	ServerMap::iterator it(m_servers_by_address.find(server_address));
 	return it != m_servers_by_address.end() ? it->second : NULL;
+}
+
+void	MetaServer::send_hole_punch(const IPAddress& server_address, const IPAddress& client_address, uint32_t scan_id) {
+	PacketWriter	packet(HOLE_PUNCH_PACKET);
+	packet << client_address << scan_id;
+	send_packet(packet, server_address);
 }
 

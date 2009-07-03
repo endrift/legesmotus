@@ -267,6 +267,7 @@ namespace LM {
 		void		team_change(const IPAddress& address, PacketReader& packet);
 		void		register_server_packet(const IPAddress& address, PacketReader& packet);
 		void		map_info_packet(const IPAddress& address, PacketReader& packet);
+		void		hole_punch_packet(const IPAddress& address, PacketReader& packet);
 	
 		void		start();
 		void		run();

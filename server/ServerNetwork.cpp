@@ -160,6 +160,10 @@ void	ServerNetwork::process_packet(Server& server, const UDPPacket& raw_packet) 
 	case MAP_INFO_PACKET:
 		server.map_info_packet(address, reader);
 		break;
+
+	case HOLE_PUNCH_PACKET:
+		server.hole_punch_packet(address, reader);
+		break;
 	}
 }
 

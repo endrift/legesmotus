@@ -71,7 +71,8 @@ namespace LM {
 		UPGRADE_AVAILABLE_PACKET = 21,
 		MAP_INFO_PACKET = 22,
 		MAP_OBJECT_PACKET = 23,
-		GAME_PARAM_PACKET = 24
+		GAME_PARAM_PACKET = 24,
+		HOLE_PUNCH_PACKET = 25		// UDP hole punching for NAT traversal
 	};
 
 	bool		resolve_hostname(IPAddress& resolved_addr, const char* hostname_port_string); // hostname_port_string should be in form "hostname:portno" (i.e. colon separator)

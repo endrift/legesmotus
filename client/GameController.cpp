@@ -2881,8 +2881,22 @@ void	GameController::server_info(const IPAddress& server_address, PacketReader& 
 			return;
 		}
 		
-		m_server_browser->add_entry(server_address, current_map_name, team_count, max_players, uptime, m_ping, server_name, server_location);
+		if (!m_server_browser->contains_ip(server_address)) {
+			m_server_browser->add_entry(server_address, current_map_name, team_count, max_players, uptime, m_ping, server_name, server_location);
+		}
 	}
+}
+
+
+void	GameController::hole_punch_packet(const IPAddress& server_address, PacketReader& packet) {
+	uint32_t	scan_id;
+	packet >> scan_id;
+
+	if (scan_id != m_current_scan_id || m_server_browser->contains_ip(server_address)) {
+		return;
+	}
+
+	scan_server(server_address);
 }
 
 
