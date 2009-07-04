@@ -98,25 +98,25 @@ else
 ifneq ($(PREFIX),)
 ifneq ($(MACHINE),Windows)
 install:
-	install -d $(DATADIR)/fonts
-	install -m 0644 $(BASEDIR)/data/fonts/* $(DATADIR)/fonts
-	install -d $(DATADIR)/maps
-	install -m 0644 $(BASEDIR)/data/maps/* $(DATADIR)/maps
-	install -d $(DATADIR)/sounds
-	install -m 0644 $(BASEDIR)/data/sounds/* $(DATADIR)/sounds
-	install -d $(DATADIR)/sprites
-	install -m 0644 $(BASEDIR)/data/sprites/* $(DATADIR)/sprites
-	install -d $(MANDIR)/man6
-	install -m 0644 $(BASEDIR)/man/man6/* $(MANDIR)/man6
-	install -d $(BINDIR)
-	install $(BASEDIR)/server/lmserver $(BASEDIR)/client/legesmotus $(BINDIR)
-	strip $(BINDIR)/legesmotus
-	strip $(BINDIR)/lmserver
+	install -d $(DESTDIR)$(DATADIR)/fonts
+	install -m 0644 $(BASEDIR)/data/fonts/* $(DESTDIR)$(DATADIR)/fonts
+	install -d $(DESTDIR)$(DATADIR)/maps
+	install -m 0644 $(BASEDIR)/data/maps/* $(DESTDIR)$(DATADIR)/maps
+	install -d $(DESTDIR)$(DATADIR)/sounds
+	install -m 0644 $(BASEDIR)/data/sounds/* $(DESTDIR)$(DATADIR)/sounds
+	install -d $(DESTDIR)$(DATADIR)/sprites
+	install -m 0644 $(BASEDIR)/data/sprites/* $(DESTDIR)$(DATADIR)/sprites
+	install -d $(DESTDIR)$(MANDIR)/man6
+	install -m 0644 $(BASEDIR)/man/man6/* $(DESTDIR)$(MANDIR)/man6
+	install -d $(DESTDIR)$(BINDIR)
+	install $(BASEDIR)/server/lmserver $(BASEDIR)/client/legesmotus $(DESTDIR)$(BINDIR)
+	strip $(DESTDIR)$(BINDIR)/legesmotus
+	strip $(DESTDIR)$(BINDIR)/lmserver
 
 uninstall:
-	rm -rf $(DATADIR)
-	rm -f $(BINDIR)/lmserver $(BINDIR)/legesmotus
-	rm -f $(MANDIR)/man6/lmserver.6 $(MANDIR)/man6/legesmotus.6
+	rm -rf $(DESTDIR)$(DATADIR)
+	rm -f $(DESTDIR)$(BINDIR)/lmserver $(DESTDIR)$(BINDIR)/legesmotus
+	rm -f $(DESTDIR)$(MANDIR)/man6/lmserver.6 $(DESTDIR)$(MANDIR)/man6/legesmotus.6
 endif
 endif
 
