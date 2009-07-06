@@ -15,6 +15,7 @@ Leges Motus is a networked, team\-based, 2D shooter set in zero\-gravity. Using 
 This is the server program for Leges Motus.  It listens on a UDP port for packets from clients, and relays them to other connected clients.  In addition, the server is responsible for scorekeeping, team assignment, timing the gates, and notifying the clients of the map and rules in play.
 .SH "OPTIONS"
 .LP 
+The following command line options are supported.  Note that some options can also be specified in the server configuration file (see \fBCONFIGURATION\fR below).  Option values specified on the command line \fIalways\fP override option values specified in the configuration file.
 .TP 
 \fB\-c <\fIconffile\fP>\fR
 Load server configuration options (see \fBCONFIGURATION\fR below) from <\fIconffile\fP>.
@@ -26,10 +27,10 @@ Daemonize (i.e. run in background) the server program (does not work on Windows)
 (Local server) Do not register the server with the meta server.
 .TP 
 \fB\-m\fR <\fImapname\fP>\fR
-Sets the server map to <\fImapname\fP> (defaults to alpha1).
+Sets the server map to <\fImapname\fP>.  (config option: \fBmap\fR) (default: alpha1)
 .TP 
 \fB\-P\fR <\fIpassword\fP>\fR
-Enables operator mode and sets the operator password to <\fIpassword\fP>.
+Enables operator mode and sets the operator password to <\fIpassword\fP>.  Warning: using this option will expose the operator password to other users of the system using a command such as \fIps\fR\|(1).  You should use the \fBpassword\fR configuration option instead.
 .TP 
 \fB\-u\fR <\fIuser\fP>\fR
 Drop privileges to <\fIuser\fP> (e.g. nobody).  By default, privileges are not dropped.  Only the super user may use this option.  Not supported on Windows.
@@ -37,11 +38,11 @@ Drop privileges to <\fIuser\fP> (e.g. nobody).  By default, privileges are not d
 \fB\-g\fR <\fIgroup\fP>\fR
 Drop group privileges to <\fIgroup\fP> (e.g. nogroup).  By default, privileges are not dropped.  Only the super user may use this option.  Not supported on Windows.
 .TP 
-\fB\-p\fR <\fIportno\fP>\fR
-Listen on port <\fIportno\fP> (defaults to 16877).
-.TP 
 \fB\-i\fR <\fIinterface\fP>\fR
-Listen only on the interface with address <\fIinterface\fP> (by default, listen on all interfaces).
+Listen only on the interface with address <\fIinterface\fP>.  (config option: \fBinterface\fR) (by default, listen on all interfaces)
+.TP 
+\fB\-p\fR <\fIportno\fP>\fR
+Listen on port <\fIportno\fP>.  (config option: \fBportno\fR) (default: 16877)
 .TP 
 \fB\-?\fR, \fB\-\-help\fR
 Output help information and exit.
@@ -88,7 +89,40 @@ Immediately shutdown the server.  [op]
 \fB/server help\fR
 Display a summary of commands supported by the server.
 .SH "CONFIGURATION"
-TODO
+.LP 
+Various aspects of the server can be configured by a standard text file which has one configuration directive per line.  Blank lines and lines starting with a \fB#\fR or \fB;\fR are ignored.  Each configuration directive has the following syntax:
+.LP
+\fBoption_name option_value\fR
+.LP 
+At least one space or tab character must separate the \fBoption_name\fR from the \fBoption_value\fR.
+.LP
+The path to the server configuration file is specified by passing the \fB-c\fR command line option.  If no \fB-c\fR option is present, then no configuration file is loaded, and the defaults are used.  Note that some configuration options can also be specified using command line options.  Values specified on the command line \fIalways\fP override values specified in the configuration file.
+.LP
+The following options are supported.  Configuration directives containing an unrecognized option name are ignored.  Unless otherwise specified, all option values that specify times are in milliseconds.
+.TP 
+\fBpassword <\fIpassword\fP>\fR
+Enable operator mode and set the operator password to <\fIpassword\fP>.  (command line option: \fB\-P\fR)
+.TP 
+\fBmap <\fImapname\fP>\fR
+Set the server map to <\fImapname\fP>.  (command line option: \fB\-m\fR) (default: alpha1)
+.TP 
+\fBinterface <\fIinterface\fP>\fR
+Listen only on the interface with address <\fIinterface\fP>.  (command line option: \fB\-i\fR) (by default, listen on all interfaces)
+.TP 
+\fBportno <\fIportno\fP>\fR
+Listen on port <\fIportno\fP>.  (command line option: \fB\-p\fR) (default: 16877)
+.TP 
+\fBserver_name <\fIname\fP>\fR
+Set the human\-readable server name to <\fIname\fP>.  If set, appears in the server browser in lieu of the hostname.
+.TP 
+\fBserver_location <\fIlocation\fP>\fR
+Set the human\-readable geographic location of the server to <\fIlocation\fP>.  Not presently used, but in the future will appear in the server browser.
+.TP 
+\fBautobalance [\fI yes \fP|\fI no \fP]\fR
+Specifies whether to enforce balanced teams.  When enabled, players are not permitted to switch teams if it would cause an imbalance, and when imbalances are caused by player departures, random players are switched until the teams are balanced.  (default: disabled)
+.TP 
+\fBregister_server [\fI yes \fP|\fI no \fP]\fR
+Specifies whether to register the server with the global meta server.  When enabled, the server will appear in the server browsers of Internet players.  When disabled, the server will only appear in the server browsers of LAN users.  (default: enabled)
 .SH "NOTES"
 .LP 
 If no operator password is set on the command line, then any player connecting from the localhost (127.0.0.1) will be given operator status.  If this is undesirable behavior, then be sure to set an operator password.  (However, see \fBBUGS\fR below.)
