@@ -42,12 +42,11 @@ v. 0.2.0 (Beta 2) - 07/07/09:
   - Frozen status bar no longer jitters when player moves.
   - Name changes when the score display is showing work properly.
   - Players now change velocity when shot even if frozen.
-  - Empty chat messages are no longer sent.
+  - Empty chat messages are no longer sent, and whitespace is stripped.
   - The config script now checks for g++.
   - Time until spawn now displays in seconds.
   - Replaced SDL_GetTicks() with our own timer.
   - Fixed bugs preventing compilation on Solaris.
-  - Empty messages are no longer sent, and whitespace is stripped.
   - Server no longer allows packets from unauthorized sources.
   - All code is now encapsulated in a namespace to prevent conflicts.
   - Improved Windows support, including signal handling.

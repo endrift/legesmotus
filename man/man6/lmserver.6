@@ -123,9 +123,53 @@ Specifies whether to enforce balanced teams.  When enabled, players are not perm
 .TP 
 \fBregister_server [\fI yes \fP|\fI no \fP]\fR
 Specifies whether to register the server with the global meta server.  When enabled, the server will appear in the server browsers of Internet players.  When disabled, the server will only appear in the server browsers of LAN users.  (default: enabled)
+.SH "GAME PARAMETERS"
+.LP 
+Various aspects of gameplay can be adjusted by setting game parameters.  Game parameters can be set either as server configuration options (see above), or in the header of map files.  When specified in map files, the values act as defaults for that map, and game parameters in the server configuration take precedence.
+.LP
+The following game parameters are supported.  Unless otherwise specified, all values that specify times are in milliseconds.
+.TP 
+\fBmax_players <\fInumber\fP>\fR
+The maximum number of players allowed at any given time.  After this number is reached, players will not be allowed to join.  (default: 32)
+.TP 
+\fBgate_open_time <\fItime\fP>\fR
+The time required to open the gate when one player is engaging it.  (default: 15000 ms)
+.TP 
+\fBgate_close_time <\fItime\fP>\fR
+The time that the gate takes to fully close from being fully open when no players are engaging it.  (default: 5000 ms)
+.TP 
+\fBfreeze_time <\fItime\fP>\fR
+The time for which players are frozen after being shot.  (default: 10000 ms)
+.TP 
+\fBfriendly_fire [ \fIon\fP | \fIoff\fP ]\fR
+When off, players are immune to shots from their teammates.   (default: on)
+.TP 
+\fBradar_mode [ \fIon\fP | \fIoff\fP | \fIaural\fP ]\fR
+Determines how the radar (minimap) operates.  When \fIon\fP, all players within range (see \fBradar_scale\fR below) are visible on radar.  When \fIoff\fP, no other players are visible on radar.  When set to \fIaural\fP, only players who are in range and have fired recently (see \fBradar_blip_duration\fR below) are visible.  (default: on)
+.TP 
+\fBradar_scale <\fIdecimal\fP>\fR
+Distances on the radar are displayed at <\fIdecimal\fP> times the size of their actual distances.  (For example, a value of 0.1 means that distances on the radar are one-tenth of their actual distances.)  (default: 0.1)
+.TP 
+\fBradar_blip_duration <\fItime\fP>\fR
+The time for which players are visible on an aural radar after firing.  (default: 1000 ms)
+.TP 
+\fBgame_start_delay <\fItime\fP>\fR
+The time before a new game starts.  The countdown starts either after the previous game ends or after the first player joins.  (default: 5000 ms)
+.TP 
+\fBlate_join_delay <\fItime\fP>\fR
+The time which a player who joins mid-game must wait before spawning.  (default: 5000 ms)
+.TP 
+\fBteam_change_period <\fItime\fP>\fR
+The minimum time that a player must wait after switching teams before being allowed to switch again.  (default: 30000 ms)
+.TP 
+\fBfiring_recoil <\fIdecimal\fP>\fR
+The affect on a player's velocity when firing his gun.  (default: 1.5)
+.TP 
+\fBfiring_delay <\fItime\fP>\fR
+The minimum time permitted between gunfire.  (default: 700 ms)
 .SH "NOTES"
 .LP 
-If no operator password is set on the command line, then any player connecting from the localhost (127.0.0.1) will be given operator status.  If this is undesirable behavior, then be sure to set an operator password.  (However, see \fBBUGS\fR below.)
+If no operator password is set, then any player connecting from the localhost (127.0.0.1) will be given operator status.  If this is undesirable behavior, then be sure to set an operator password.
 .LP 
 By default, the Leges Motus server will contact the meta server so other players on the Internet can connect to and play on the server.  If you would NOT like your server to appear in server browsers of other Internet users, pass the \-l ("local") option to lmserver, or set the server configuration option "\fBregister_server\fR" to "no" (See  \fBCONFIGURATION\fR above).
 .LP 
@@ -199,9 +243,7 @@ Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 02111\-1307  USA
 .SH "BUGS"
 .LP 
-The operator password is set on the command line, meaning it's visible to any user on the system through a call to \fIps\fR\|(1).
-.LP 
-The protocol documentation is very out\-of\-date.
+The map format and protocol are still completely undocumented.
 .SH "SEE ALSO"
 .LP 
 legesmotus(6)
