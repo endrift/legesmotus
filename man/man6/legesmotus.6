@@ -1,4 +1,4 @@
-.TH "legesmotus" "6" "0.1" "AGWA, Greywhind, Archaemic" "Games"
+.TH "legesmotus" "6" "0.2" "AGWA, Greywhind, Archaemic" "Games"
 .SH "NAME"
 .LP 
 legesmotus \- A team\-based, networked, 2D shooter set in zero\-gravity
@@ -56,7 +56,7 @@ Open chat.
 Open team chat.
 .TP 
 \fB~\fR
-Open console/chat.
+Open chat log.
 .TP 
 \fBESC\fR
 Return to the main menu / close chat console.
@@ -65,10 +65,10 @@ Return to the main menu / close chat console.
 Show the scoreboard.
 .SH "COMMANDS"
 .LP 
-These commands are entered in the client's chat bar (press ~ to show):
+These commands are entered in the client's chat bar (press t or ~ to show):
 .TP 
 \fB/tchat <\fImessage\fP>\fR
-Send <\fImessage\fP> privately to your teammates.
+Send <\fImessage\fP> privately to your teammates (you may also use the y control to open a dedicated team chat bar).
 .TP 
 \fB/name <\fIname\fP>\fR
 Change your player name to <\fIname\fP>.
@@ -76,8 +76,14 @@ Change your player name to <\fIname\fP>.
 \fB/team \fIred|blue\fP\fR
 Change to the specified team.
 .TP 
+\fB/quit\fR
+Quit the game.
+.TP 
 \fB/server <\fIcommand\fP>\fR
 Send <\fIcommand\fP> to the server (see \fIlmserver\fR\|(6) for a list of commands supported by the server).
+.TP 
+\fB/legal\fR
+Display legal information (copyright and warranty).
 .TP 
 \fB<\fIname\fP>: <\fImessage\fP>\fR
 Send <\fImessage\fP> privately to the player named <\fIname\fP>.
@@ -97,11 +103,18 @@ You can move by jumping off of any obstacle, and you will jump in the direction 
 \fI$LM_DATA_DIR/sounds\fP 
 .br 
 \fI$LM_DATA_DIR/sprites\fP 
+.br 
+\fI$HOME/.legesmotusrc\fP
+.br 
+\fI/etc/legesmotusrc\fP
 .SH "ENVIRONMENT VARIABLES"
 .LP 
 .TP 
 \fBLM_DATA_DIR\fP
 Specifies the location of the directory containing Leges Motus data files.
+.TP 
+\fBLM_METASERVER\fP
+Specifies the address to use for connecting to the meta server (which allows the Internet\-wide server browser to work).  This is useful only for testing alternative meta servers, and should not be used generally.
 .SH "EXAMPLES"
 .LP 
 To just run the game:
@@ -152,7 +165,7 @@ Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 02111\-1307  USA
 .SH "BUGS"
 .LP 
-If the client can't contact the server, no error message is displayed.  In fact, nothing happens.
+Nothing major known at this time.
 .SH "SEE ALSO"
 .LP 
 lmserver(6)

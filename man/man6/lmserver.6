@@ -4,7 +4,7 @@
 lmserver \- The server for Leges Motus, a team\-based, networked, 2D shooter set in zero\-gravity
 .SH "SYNTAX"
 .LP 
-lmserver [\-d] [\-l] [\-m \fImapname\fP] [\-P \fIpassword\fP] [\-p \fIportno\fP]
+lmserver [\-c \fIconffile\fP] [\-d] [\-l] [\-m \fImapname\fP] [\-P \fIpassword\fP] [\-p \fIportno\fP]
 .br 
 
 Only the most useful options are listed here; see below for the remainder.
@@ -15,6 +15,9 @@ Leges Motus is a networked, team\-based, 2D shooter set in zero\-gravity. Using 
 This is the server program for Leges Motus.  It listens on a UDP port for packets from clients, and relays them to other connected clients.  In addition, the server is responsible for scorekeeping, team assignment, timing the gates, and notifying the clients of the map and rules in play.
 .SH "OPTIONS"
 .LP 
+.TP 
+\fB\-c <\fIconffile\fP>\fR
+Load server configuration options (see \fBCONFIGURATION\fR below) from <\fIconffile\fP>.
 .TP 
 \fB\-d\fR
 Daemonize (i.e. run in background) the server program (does not work on Windows).
@@ -58,6 +61,15 @@ Display the score of each team.
 \fB/server teamcount\fR
 Display the number of players on each team.
 .TP 
+\fB/server maps\fR
+Display a list of maps available on the server.
+.TP 
+\fB/server balance\fR
+Balance the teams by reassigning players as necessary.  (See also the \fBautobalance\fR configuration option below.)  [op]
+.TP 
+\fB/server shakeup\fR
+Randomly reform the teams.  [op]
+.TP 
 \fB/server reset\fR
 Reset the scores.  [op]
 .TP 
@@ -75,13 +87,15 @@ Immediately shutdown the server.  [op]
 .TP 
 \fB/server help\fR
 Display a summary of commands supported by the server.
+.SH "CONFIGURATION"
+TODO
 .SH "NOTES"
 .LP 
 If no operator password is set on the command line, then any player connecting from the localhost (127.0.0.1) will be given operator status.  If this is undesirable behavior, then be sure to set an operator password.  (However, see \fBBUGS\fR below.)
 .LP 
-By default, the Leges Motus server will contact the meta server so other players on the Internet can connect to and play on the server (provided no firewalls are in the way).  If you would NOT like your server to appear in server browsers of other Internet users, pass the \-l ("local") option to lmserver.
+By default, the Leges Motus server will contact the meta server so other players on the Internet can connect to and play on the server.  If you would NOT like your server to appear in server browsers of other Internet users, pass the \-l ("local") option to lmserver, or set the server configuration option "\fBregister_server\fR" to "no" (See  \fBCONFIGURATION\fR above).
 .LP 
-If you are behind a firewall and would like to make your server accessible to the Internet at large, you must allow/forward UDP port 16877.
+If a server is run behind a firewall, and it is registered with the meta server, the meta server will attempt to pierce the firewall so that clients outside the firewall are able to connect to the server.  However, this technique does not work with all firewalls, and is not 100% reliable.  If you intend to host a long\-running server behind a firewall, you are strongly recommended to modify your firewall settings to allow/forward UDP port 16877.
 .SH "FILES"
 .LP 
 \fI$LM_DATA_DIR/maps\fP
@@ -91,6 +105,9 @@ If you are behind a firewall and would like to make your server accessible to th
 .TP 
 \fBLM_DATA_DIR\fP
 Specifies the location of the directory containing Leges Motus data files.
+.TP 
+\fBLM_METASERVER\fP
+Specifies the address to use for registering with the meta server.  This is useful only for testing alternative meta servers, and should not be used generally. 
 .SH "EXAMPLES"
 .LP 
 To run the server in the background:

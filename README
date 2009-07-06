@@ -50,10 +50,12 @@ The following libraries must be installed in order to build and run the Leges Mo
  SDL
  SDL_image
  SDL_ttf
- SDL_mixer
+ SDL_mixer (optional)
  OpenGL
 
-All of these are bundled in Windows and Mac OS X, except for OpenGL, which should already be installed on the system. No additional libraries are needed to build or run the server.
+All of these are bundled in the Windows and Mac OS X packages, except for OpenGL, which should already be installed on the system. No additional libraries are needed to build or run the server.
+
+If you do not have SDL_mixer installed and/or you would like to build without sound support, you may pass the --disable-sound option to configure.
 
 
 RUNNING THE SERVER
@@ -61,6 +63,7 @@ RUNNING THE SERVER
 To run the server, run the 'lmserver' command, or double click on lmserver.exe on Windows.
 
 The server supports the following command-line options:
+  -c CONFFILE	load server configuration options from the given file (default: no config file)
   -m MAPNAME	set the map name (default: alpha1)
   -p PORTNO	set the port number to listen on (default: 16877)
   -P PASSWORD	set the admin password (default: admin mode is disabled)
@@ -72,9 +75,9 @@ The server supports the following command-line options:
   -?, --help	display this help, and exit
       --version	display version information and exit
 
-By default, the Leges Motus server will contact the meta server so other players on the Internet can connect to and play on the server (provided no firewalls are in the way).  If you would NOT like your server to appear in server browsers of other Internet users, pass the -l ("local") option to lmserver.
+By default, the Leges Motus server will contact the meta server so other players on the Internet can connect to and play on the server.  If you would NOT like your server to appear in server browsers of other Internet users, pass the -l ("local") option to lmserver, or set the server configuration option "register_server" to "no".
 
-If you are behind a firewall and would like to make your server accessible to the Internet at large, you must allow/forward UDP port 16877.
+If a server is run behind a firewall, and it is registered with the meta server, the meta server will attempt to pierce the firewall so that clients outside the firewall are able to connect to the server.  However, this technique does not work with all firewalls, and is not 100% reliable.  If you intend to host a long-running server behind a firewall, you are strongly recommended to modify your firewall settings to allow/forward UDP port 16877.
 
 
 SPECIFYING THE DATA DIRECTORY
@@ -88,7 +91,7 @@ CONTROLS
 	left click	Fire in direction of mouse pointer
 	t		Open chat
 	y		Open team chat
-	~		Open console/chat
+	~		Open chat log
 	ESC		Return to main menu / close chat console
 	tab		Show the scoreboard
 
@@ -101,6 +104,8 @@ These commands are entered in the client's chat bar:
 	/name NEWNAME	Change your name
 	/team red|blue	Change teams
 	/server COMMAND	Send the command to the server (see below for list of server commands)
+	/quit		Quit the game
+	/legal		Show legal information (copyright and warranty)
 	NAME: MESSAGE	Send message to specified player only
 
 
@@ -111,6 +116,9 @@ These commands are entered in the client's chat bar.  Some commands (marked as [
 	/server auth PASSWORD	Authenticate with given password
 	/server teamscore 	Return the score for each team
 	/server teamcount	Return the number of players on each team
+	/server maps		Retrieve a list of maps
+	/server balance		Balance the teams [op]
+	/server shakeup		Randomly reform the teams [op]
 	/server reset		Reset the scores [op]
 	/server map MAPNAME	Load the given map [op]
 	/server newgame		Start new game [op]
@@ -147,6 +155,17 @@ The data for the program are located in the data directory, and are divided into
 	data/sprites	Sprites
 
 
+ON THE INTERNET
+
+Home Page (News, Screenshots):	http://legesmotus.cs.brown.edu/
+Project Page (Downloads):	http://sourceforge.net/projects/legesmotus/
+Trac Page (Bugs, Wiki):		http://sourceforge.net/apps/trac/legesmotus/
+IRC Channel:			irc.freenode.net #legesmotus
+Subversion Repository:		http://legesmotus.svn.sourceforge.net/svnroot/legesmotus
+
+For documentation and to report bugs and feature requests, visit Trac.  For immediate help or to try to find a game, stop by our IRC channel.
+
+
 ADVANCED BUILDING
 
 By default, Leges Motus will install to /usr/local.  You may change this by specifying a --prefix argument to configure.  To install into your home directory, you could use:
@@ -168,6 +187,10 @@ To build only the server or client, use one of:
 	make server
 	make client
 
+To install in a different directory (useful for making packages):
+
+	make install DESTDIR=/path/to/package/root
+
 
 CREDITS
 
@@ -181,6 +204,7 @@ Thanks:
 	Kenny Coane		Official project mentor
 	Robert Mustacchi	Shadow mentor
 	Jon Silverman		All-around great guy
+	Hayden Greif-Neill	Loyal advocacy and an endless list of excellent suggestions
 	All our testers in the Sun Lab at Brown University's Department of Computer Science
 
 Public Domain Sounds From:

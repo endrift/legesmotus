@@ -1,0 +1,10 @@
+A new map format has been introduced in Beta 2.  Unfortunately, as of release time, the format is still undocumented.  Check back at http://sourceforge.net/apps/trac/legesmotus/ for documentation in the weeks following the release.
+
+In case you have written maps in the old format, an awk script has been provided in the tools directory to convert to the new format.  Use the script as follows:
+
+awk -f tools/migrate_map_file.awk < oldmapfile.map > newmapfile.map
+
+(where oldmapfile.map is the name of the old map file, and newmapfile.map will be the name of the new file)
+
+This script will produce map files that act the same and that are object-by-object identical with the original map.  However, it will not refactor the map to take advantage of new features, such as tiling obstacles.
+
