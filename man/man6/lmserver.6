@@ -30,13 +30,13 @@ Daemonize (i.e. run in background) the server program (does not work on Windows)
 Sets the server map to <\fImapname\fP>.  (config option: \fBmap\fR) (default: alpha1)
 .TP 
 \fB\-P\fR <\fIpassword\fP>\fR
-Enables operator mode and sets the operator password to <\fIpassword\fP>.  Warning: using this option will expose the operator password to other users of the system using a command such as \fIps\fR\|(1).  You should use the \fBpassword\fR configuration option instead.
+Enables operator mode and sets the operator password to <\fIpassword\fP>.  Warning: using this option will expose the operator password to other users of the system through commands like \fIps\fR\|(1).  You should use the \fBpassword\fR configuration option instead.
 .TP 
 \fB\-u\fR <\fIuser\fP>\fR
 Drop privileges to <\fIuser\fP> (e.g. nobody).  By default, privileges are not dropped.  Only the super user may use this option.  Not supported on Windows.
 .TP 
 \fB\-g\fR <\fIgroup\fP>\fR
-Drop group privileges to <\fIgroup\fP> (e.g. nogroup).  By default, privileges are not dropped.  Only the super user may use this option.  Not supported on Windows.
+Drop group privileges to <\fIgroup\fP> (e.g. nogroup).  By default, if no \fB-u\fR or \fB-g\fR options are specified, privileges are not dropped.  If only \fB-u\fR is specified, then group privileges are dropped to the user's primary group.  Only the super user may use this option.  Not supported on Windows.
 .TP 
 \fB\-i\fR <\fIinterface\fP>\fR
 Listen only on the interface with address <\fIinterface\fP>.  (config option: \fBinterface\fR) (by default, listen on all interfaces)
@@ -96,7 +96,7 @@ Various aspects of the server can be configured by a standard text file which ha
 .LP 
 At least one space or tab character must separate the \fBoption_name\fR from the \fBoption_value\fR.
 .LP
-The path to the server configuration file is specified by passing the \fB-c\fR command line option.  If no \fB-c\fR option is present, then no configuration file is loaded, and the defaults are used.  Note that some configuration options can also be specified using command line options.  Values specified on the command line \fIalways\fP override values specified in the configuration file.
+The path to the server configuration file is specified by passing the \fB-c\fR command line option.  If no \fB-c\fR option is passed, then no configuration file is loaded, and the defaults are used.  Note that some configuration options can also be specified using command line options.  Values specified on the command line \fIalways\fP override values specified in the configuration file.
 .LP
 The following options are supported.  Configuration directives containing an unrecognized option name are ignored.  Unless otherwise specified, all option values that specify times are in milliseconds.
 .TP 
@@ -173,7 +173,7 @@ If no operator password is set, then any player connecting from the localhost (1
 .LP 
 By default, the Leges Motus server will contact the meta server so other players on the Internet can connect to and play on the server.  If you would NOT like your server to appear in server browsers of other Internet users, pass the \-l ("local") option to lmserver, or set the server configuration option "\fBregister_server\fR" to "no" (See  \fBCONFIGURATION\fR above).
 .LP 
-If a server is run behind a firewall, and it is registered with the meta server, the meta server will attempt to pierce the firewall so that clients outside the firewall are able to connect to the server.  However, this technique does not work with all firewalls, and is not 100% reliable.  If you intend to host a long\-running server behind a firewall, you are strongly recommended to modify your firewall settings to allow/forward UDP port 16877.
+If a server is run behind a firewall, and it is registered with the meta server, the meta server will attempt to traverse the firewall so that clients outside the firewall are able to connect to the server.  However, this technique does not work with all firewalls, and is not 100% reliable.  If you intend to host a long\-running server behind a firewall, you are strongly recommended to modify your firewall settings to allow/forward UDP port 16877.
 .SH "FILES"
 .LP 
 \fI$LM_DATA_DIR/maps\fP

@@ -77,7 +77,7 @@ The server supports the following command-line options:
 
 By default, the Leges Motus server will contact the meta server so other players on the Internet can connect to and play on the server.  If you would NOT like your server to appear in server browsers of other Internet users, pass the -l ("local") option to lmserver, or set the server configuration option "register_server" to "no".
 
-If a server is run behind a firewall, and it is registered with the meta server, the meta server will attempt to pierce the firewall so that clients outside the firewall are able to connect to the server.  However, this technique does not work with all firewalls, and is not 100% reliable.  If you intend to host a long-running server behind a firewall, you are strongly recommended to modify your firewall settings to allow/forward UDP port 16877.
+If a server is run behind a firewall, and it is registered with the meta server, the meta server will attempt to traverse the firewall so that clients outside the firewall are able to connect to the server.  However, this technique does not work with all firewalls, and is not 100% reliable.  If you intend to host a long-running server behind a firewall, you are strongly recommended to modify your firewall settings to allow/forward UDP port 16877.
 
 
 SPECIFYING THE DATA DIRECTORY
