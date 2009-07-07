@@ -32,6 +32,10 @@
 #include <stddef.h>
 #include <string.h>
 #ifdef __WIN32
+// Necessary to get SHGFP_TYPE_CURRENT
+#ifndef _WIN32_IE
+#define _WIN32_IE 0x0600
+#endif
 #include <Windows.h>
 #include <shlobj.h>
 #endif

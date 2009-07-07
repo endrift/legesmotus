@@ -38,7 +38,7 @@ README.rtf: README
 	echo '{\\fonttbl\\f0 Courier;}' >> README.rtf # Set font to Courier
 	echo '\\f0\\fs20' >> README.rtf # Set font size to 10pt
 	echo '\\tx960\\tx1920\\tx2880\\tx3840\\tx4800\\tx5760\\tx6720\\tx7680\\tx8640\\tx9600' >> README.rtf # Set tabstop to 8
-	cat README | sed -e 's/\(\\|$$\)/\\&/g' -e 's/\($$\)/\\\1/g' >> README.rtf # Parse file
+	cat README | sed -e 's/\\/\\\\/g' -e 's/$$/\\/g' >> README.rtf # Parse file
 	echo '}' >> README.rtf # Footer
 
 ifeq ($(MACHINE)$(UNIXSTYLE),Darwin)
@@ -59,7 +59,7 @@ Leges\ Motus.app: client server
 	test -d "Leges Motus.app/Contents/Frameworks/SDL_ttf.framework" || cp -Rf /Library/Frameworks/SDL_ttf.framework "Leges Motus.app/Contents/Frameworks"
 	test -d "Leges Motus.app/Contents/Frameworks/SDL_mixer.framework" || cp -Rf /Library/Frameworks/SDL_mixer.framework "Leges Motus.app/Contents/Frameworks"
 
-legesmotus$(VERSION).pkg: bundle README.rtf
+legesmotus-$(VERSION).pkg: bundle README.rtf
 	rm -Rf tmp
 	mkdir -p tmp/Leges\ Motus/Applications
 	mkdir -p tmp/Leges\ Motus/usr/bin
@@ -73,15 +73,15 @@ legesmotus$(VERSION).pkg: bundle README.rtf
 	cp -f COPYING tmp/Resources/en.lproj/License.txt
 	/Developer/usr/bin/packagemaker --root tmp/Leges\ Motus --id org.legesmotus.legesmotus \
 		--title "Leges Motus $(VERSION)" --version "$(VERSION)" --resources tmp/Resources \
-		--target 10.4 --root-volume-only --out legesmotus$(VERSION).pkg
+		--target 10.4 --root-volume-only --out legesmotus-$(VERSION).pkg
 	# The following two lines are a hack to prevent the installer from thinking the packages are relocatable
-	rm -f legesmotus$(VERSION).pkg/Contents/Resources/TokenDefinitions.plist
-	defaults delete "`pwd`/legesmotus$(VERSION).pkg/Contents/Info" IFPkgPathMappings
+	rm -f legesmotus-$(VERSION).pkg/Contents/Resources/TokenDefinitions.plist
+	defaults delete "`pwd`/legesmotus-$(VERSION).pkg/Contents/Info" IFPkgPathMappings
 	rm -Rf tmp
 
 bundle: Leges\ Motus.app
 
-package: legesmotus$(VERSION).pkg
+package: legesmotus-$(VERSION).pkg
 
 install:
 	cp -Rf Leges\ Motus.app /Applications/

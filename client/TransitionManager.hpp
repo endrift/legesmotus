@@ -30,6 +30,11 @@
 #include <map>
 #include <string>
 
+// More Windows brutality
+#ifdef DELETE
+#undef DELETE
+#endif
+
 namespace LM {
 	class TransitionManager {
 	public:

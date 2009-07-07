@@ -181,7 +181,13 @@ void GameWindow::supported_resolutions(int* widths, int* heights, int* depth, si
 	} else {
 		*depth = vidInfo->vfmt->BitsPerPixel;
 	}
-	SDL_Rect **res = SDL_ListModes(NULL,SDL_OPENGL|SDL_FULLSCREEN);
+
+	SDL_Rect **res = SDL_ListModes(NULL, SDL_HWSURFACE|SDL_FULLSCREEN);
+	if (res == NULL) {
+		cerr << "Could not detect resolutions: " << SDL_GetError() << endl;
+		*num_modes = 0;
+		return;
+	}
 
 	size_t real_num;
 	if(widths == NULL || heights == NULL) {
