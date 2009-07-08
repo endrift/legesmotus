@@ -1215,12 +1215,47 @@ void GameController::process_mouse_click(SDL_Event event) {
 			if (event.button.x >= x && event.button.x <= x + thisitem->get_image_width()
 			    && event.button.y >= y && event.button.y <= y + thisitem->get_image_height()) {
 				if ((*it).first == "Back") {
+					string fullscreen = "";
+					string sound = "";
+					if (m_configuration->get_bool_value("fullscreen")) {
+						m_fullscreen = true;
+						fullscreen = "Fullscreen: Yes";
+					} else {
+						m_fullscreen = false;
+						fullscreen = "Fullscreen: No";
+					}
+					if (m_configuration->get_bool_value("sound")) {
+						m_sound_controller->set_sound_on(true);
+						sound = "Sound: On";
+					} else {
+						m_sound_controller->set_sound_on(false);
+						sound = "Sound: Off";
+					}
+					m_text_manager->remove_string(m_options_menu_items["Toggle Sound"]);
+					m_text_manager->set_active_font(m_menu_font);
+					m_options_menu_items["Toggle Sound"] = m_text_manager->place_string(sound, 50, 250, TextManager::LEFT, TextManager::LAYER_HUD);
+					m_text_manager->remove_string(m_options_menu_items["Fullscreen"]);
+					m_text_manager->set_active_font(m_menu_font);
+					m_options_menu_items["Fullscreen"] = m_text_manager->place_string(fullscreen, 50, 350, TextManager::LEFT, TextManager::LAYER_HUD);
+					m_text_manager->remove_string(m_options_menu_items["CurrResolution"]);
+					stringstream resolution;
+					for (size_t i = 0; i < m_num_resolutions; i++) {
+						int width = m_resolutions[i].first;
+						int height = m_resolutions[i].second;
+						stringstream resolution;
+						resolution << width << "x" << height;
+						if (m_screen_width == width && m_screen_height == height) {
+							m_resolution_selected = i;
+							m_options_menu_items["CurrResolution"] = m_text_manager->place_string(resolution.str(), 410, 300, TextManager::LEFT, TextManager::LAYER_HUD);
+						}
+					}
 					m_game_state = SHOW_MENUS;
 				} else if ((*it).first == "Enter Name") {
 					// Open the input bar and allow the name to be entered.
 					// Should replace later, to use a separate text entry location.
 					SDL_EnableUNICODE(1);
 					m_text_manager->set_active_color(Color::WHITE);
+					m_text_manager->set_active_font(m_font);
 					m_input_text = "> /name ";
 					m_text_manager->remove_string(m_input_bar);
 					m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
@@ -1230,11 +1265,9 @@ void GameController::process_mouse_click(SDL_Event event) {
 					string sound = "";
 					if (m_sound_controller->is_sound_on()) {
 						m_sound_controller->set_sound_on(false);
-						m_configuration->set_bool_value("sound", false);
 						sound = "Sound: Off";
 					} else {
 						m_sound_controller->set_sound_on(true);
-						m_configuration->set_bool_value("sound", true);
 						sound = "Sound: On";
 					}
 					m_text_manager->remove_string(m_options_menu_items["Toggle Sound"]);
@@ -1247,8 +1280,6 @@ void GameController::process_mouse_click(SDL_Event event) {
 					}
 					int width = m_resolutions[m_resolution_selected].first;
 					int height = m_resolutions[m_resolution_selected].second;
-					m_configuration->set_int_value("screen_width", width);
-					m_configuration->set_int_value("screen_height", height);
 					stringstream resolution;
 					resolution << width << "x" << height;
 					m_text_manager->remove_string(m_options_menu_items["CurrResolution"]);
@@ -1256,17 +1287,23 @@ void GameController::process_mouse_click(SDL_Event event) {
 					m_options_menu_items["CurrResolution"] = m_text_manager->place_string(resolution.str(), 410, 300, TextManager::LEFT, TextManager::LAYER_HUD);
 				} else if ((*it).first == "Fullscreen") {
 					string fullscreen = "";
-					if (m_configuration->get_bool_value("fullscreen")) {
-						m_configuration->set_bool_value("fullscreen", false);
+					if (m_fullscreen) {
+						m_fullscreen = false;
 						fullscreen = "Fullscreen: No";
 					} else {
-						m_configuration->set_bool_value("fullscreen", true);
+						m_fullscreen = true;
 						fullscreen = "Fullscreen: Yes";
 					}
 					m_text_manager->remove_string(m_options_menu_items["Fullscreen"]);
 					m_text_manager->set_active_font(m_menu_font);
 					m_options_menu_items["Fullscreen"] = m_text_manager->place_string(fullscreen, 50, 350, TextManager::LEFT, TextManager::LAYER_HUD);
 				} else if ((*it).first == "Apply") {
+					int width = m_resolutions[m_resolution_selected].first;
+					int height = m_resolutions[m_resolution_selected].second;
+					m_configuration->set_bool_value("sound", m_sound_controller->is_sound_on());
+					m_configuration->set_int_value("screen_width", width);
+					m_configuration->set_int_value("screen_height", height);
+					m_configuration->set_bool_value("fullscreen", m_fullscreen);
 					m_restart = true;
 					m_quit_game = true;
 				}
