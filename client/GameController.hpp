@@ -276,6 +276,7 @@ namespace LM {
 		void		set_player_name(std::string name);
 		void		clear_players();
 		bool		wants_restart();
+		void		reset_options();
 		std::string	get_server_address();
 		std::string	format_time_from_millis(uint64_t milliseconds);
 		

@@ -1006,6 +1006,7 @@ void GameController::process_input() {
 						} else if (m_game_state == SHOW_MENUS && !m_players.empty()) {
 							m_game_state = GAME_IN_PROGRESS;
 						} else {
+							reset_options();
 							m_game_state = SHOW_MENUS;
 						}
 					}
@@ -1215,40 +1216,7 @@ void GameController::process_mouse_click(SDL_Event event) {
 			if (event.button.x >= x && event.button.x <= x + thisitem->get_image_width()
 			    && event.button.y >= y && event.button.y <= y + thisitem->get_image_height()) {
 				if ((*it).first == "Back") {
-					string fullscreen = "";
-					string sound = "";
-					if (m_configuration->get_bool_value("fullscreen")) {
-						m_fullscreen = true;
-						fullscreen = "Fullscreen: Yes";
-					} else {
-						m_fullscreen = false;
-						fullscreen = "Fullscreen: No";
-					}
-					if (m_configuration->get_bool_value("sound")) {
-						m_sound_controller->set_sound_on(true);
-						sound = "Sound: On";
-					} else {
-						m_sound_controller->set_sound_on(false);
-						sound = "Sound: Off";
-					}
-					m_text_manager->remove_string(m_options_menu_items["Toggle Sound"]);
-					m_text_manager->set_active_font(m_menu_font);
-					m_options_menu_items["Toggle Sound"] = m_text_manager->place_string(sound, 50, 250, TextManager::LEFT, TextManager::LAYER_HUD);
-					m_text_manager->remove_string(m_options_menu_items["Fullscreen"]);
-					m_text_manager->set_active_font(m_menu_font);
-					m_options_menu_items["Fullscreen"] = m_text_manager->place_string(fullscreen, 50, 350, TextManager::LEFT, TextManager::LAYER_HUD);
-					m_text_manager->remove_string(m_options_menu_items["CurrResolution"]);
-					stringstream resolution;
-					for (size_t i = 0; i < m_num_resolutions; i++) {
-						int width = m_resolutions[i].first;
-						int height = m_resolutions[i].second;
-						stringstream resolution;
-						resolution << width << "x" << height;
-						if (m_screen_width == width && m_screen_height == height) {
-							m_resolution_selected = i;
-							m_options_menu_items["CurrResolution"] = m_text_manager->place_string(resolution.str(), 410, 300, TextManager::LEFT, TextManager::LAYER_HUD);
-						}
-					}
+					reset_options();
 					m_game_state = SHOW_MENUS;
 				} else if ((*it).first == "Enter Name") {
 					// Open the input bar and allow the name to be entered.
@@ -1380,6 +1348,47 @@ void GameController::process_mouse_click(SDL_Event event) {
 		}
 	}
 	m_last_clicked = get_ticks();
+}
+
+/*
+ * Reset the options menu, without applying the changes.
+ */
+void GameController::reset_options() {
+	string fullscreen = "";
+	string sound = "";
+	m_text_manager->set_active_color(Color::WHITE);
+	if (m_configuration->get_bool_value("fullscreen")) {
+		m_fullscreen = true;
+		fullscreen = "Fullscreen: Yes";
+	} else {
+		m_fullscreen = false;
+		fullscreen = "Fullscreen: No";
+	}
+	if (m_configuration->get_bool_value("sound")) {
+		m_sound_controller->set_sound_on(true);
+		sound = "Sound: On";
+	} else {
+		m_sound_controller->set_sound_on(false);
+		sound = "Sound: Off";
+	}
+	m_text_manager->remove_string(m_options_menu_items["Toggle Sound"]);
+	m_text_manager->set_active_font(m_menu_font);
+	m_options_menu_items["Toggle Sound"] = m_text_manager->place_string(sound, 50, 250, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_text_manager->remove_string(m_options_menu_items["Fullscreen"]);
+	m_text_manager->set_active_font(m_menu_font);
+	m_options_menu_items["Fullscreen"] = m_text_manager->place_string(fullscreen, 50, 350, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_text_manager->remove_string(m_options_menu_items["CurrResolution"]);
+	stringstream resolution;
+	for (size_t i = 0; i < m_num_resolutions; i++) {
+		int width = m_resolutions[i].first;
+		int height = m_resolutions[i].second;
+		stringstream resolution;
+		resolution << width << "x" << height;
+		if (m_screen_width == width && m_screen_height == height) {
+			m_resolution_selected = i;
+			m_options_menu_items["CurrResolution"] = m_text_manager->place_string(resolution.str(), 410, 300, TextManager::LEFT, TextManager::LAYER_HUD);
+		}
+	}
 }
 
 /*
