@@ -33,7 +33,7 @@
 using namespace LM;
 using namespace std;
 
-const int ChatLog::TEXT_LAYER = -4;
+const int ChatLog::TEXT_LAYER = -7;
 const int ChatLog::LINE_SPACING = 15;
 const int ChatLog::RIGHT_PADDING = 25;
 
@@ -51,7 +51,7 @@ ChatLog::ChatLog(GameController& parent, GameWindow* window, TextManager* textma
 	m_background = new TableBackground(2, m_screen_width * .70);
 	m_background->set_row_height(0, 43);
 	m_background->set_row_height(1, m_screen_height * .70 - m_background->get_row_height(0));
-	m_background->set_priority(-2);
+	m_background->set_priority(-5);
 	m_background->set_border_color(Color(1,1,1,0.8));
 	m_background->set_border_width(2);
 	m_background->set_cell_color(0, Color(0.2,0.1,0.1,0.8));
@@ -63,7 +63,7 @@ ChatLog::ChatLog(GameController& parent, GameWindow* window, TextManager* textma
 	m_window->register_hud_graphic(m_background);
 	
 	m_scrollbar = new ScrollBar();
-	m_scrollbar->set_priority(-3);
+	m_scrollbar->set_priority(-6);
 	m_scrollbar->set_height(m_background->get_image_height() - m_background->get_row_height(0) - 20);
 	m_scrollbar->set_x(m_background->get_x() + m_background->get_image_width()/2 - 20);
 	m_scrollbar->set_y(m_background->get_y() + m_background->get_row_height(0) + 5 + m_scrollbar->get_height()/2);
