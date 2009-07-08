@@ -83,11 +83,36 @@ void	Server::player_update(const IPAddress& address, PacketReader& inbound_packe
 
 	if (is_authorized(address, player_id)) {
 		// Mark the player as seen
-		get_player(player_id)->seen(m_timeout_queue);
+		ServerPlayer* player = get_player(player_id);
+		player->seen(m_timeout_queue);
+		
+		long x;
+		long y;
+		double velocity_x;
+		double velocity_y;
+		double rotation;
+		string flags;
+		inbound_packet >> x >> y >> velocity_x >> velocity_y >> rotation >> flags;
+		
+		player->set_position(x, y);
+		player->set_velocity(velocity_x, velocity_y);
+		player->set_rotation_degrees(rotation);
 
+		if (flags.find_first_of('I') == string::npos) {
+			player->set_is_invisible(false);
+		} else {
+			player->set_is_invisible(true);
+		}
+
+		if (flags.find_first_of('F') == string::npos) {
+			player->set_is_frozen(false);
+		} else {
+			player->set_is_frozen(true);
+		}
+		
 		// Re-broadcast the packet to all _other_ players
 		PacketWriter	outbound_packet(PLAYER_UPDATE_PACKET);
-		outbound_packet << player_id << inbound_packet;
+		outbound_packet << player_id << x << y << velocity_x << velocity_y << rotation << flags;
 		broadcast_packet_except(outbound_packet, player_id);
 	}
 }
@@ -373,16 +398,18 @@ void	Server::player_shot(const IPAddress& address, PacketReader& inbound_packet)
 	int			score_change = 0;
 	uint64_t		freeze_time = 0;
 
-	if (shooter->get_team() != shot_player->get_team()) {
-		// Shot an enemy
-		// Results in a +1 score
-		score_change = 1;
-		freeze_time = m_params.freeze_time;
-	} else if (m_params.friendly_fire) {
-		// Shot a teammate and friendly fire is enabled!
-		// Results in a -1 scoring penalty
-		score_change = -1;
-		freeze_time = m_params.freeze_time;
+	if (!shot_player->is_frozen()) {
+		if (shooter->get_team() != shot_player->get_team()) {
+			// Shot an enemy
+			// Results in a +1 score
+			score_change = 1;
+			freeze_time = m_params.freeze_time;
+		} else if (m_params.friendly_fire) {
+			// Shot a teammate and friendly fire is enabled!
+			// Results in a -1 scoring penalty
+			score_change = -1;
+			freeze_time = m_params.freeze_time;
+		}
 	}
 
 	// Inform all players that this player has been shot
