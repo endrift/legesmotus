@@ -885,6 +885,11 @@ void GameController::process_input() {
 				
 				// If we're typing into the input bar...
 				if (m_input_bar != NULL) {
+					if (event.key.keysym.sym == m_key_bindings.show_overlay || event.key.keysym.sym == m_alt_key_bindings.show_overlay) {
+						parse_key_input();
+						break;
+					}
+				
 					m_text_manager->set_active_color(Color::WHITE);
 					// If we're going back to the menu, remove the input bar.
 					if (event.key.keysym.sym == m_key_bindings.show_menu || event.key.keysym.sym == m_alt_key_bindings.show_menu) {
@@ -1148,7 +1153,7 @@ void GameController::parse_key_input() {
 	}
 	
 	if ((m_key_bindings.show_overlay != -1 && m_keys[m_key_bindings.show_overlay]) || (m_alt_key_bindings.show_overlay != -1 && m_keys[m_alt_key_bindings.show_overlay])) {
-		if (m_game_state == GAME_IN_PROGRESS && m_input_bar == NULL) {
+		if (m_game_state == GAME_IN_PROGRESS) {
 			if (m_overlay_background->is_invisible() == true) {
 				toggle_score_overlay(true);
 			}
