@@ -1,0 +1,70 @@
+name gamma3-ai
+revision 1
+width 2048
+height 1024
+
+# Background
+SPRITE	0,0		TB	metal_bgtile	2048	1024	0,0
+SPRITE	-64,448		TB	metal_bgtile	64	128	0,0
+SPRITE	2048,448	TB	metal_bgtile	64	128	0,0
+
+# Walls
+SPRITE	0,1024		TB	metal_wall_s32	2048	32	0,0
+SPRITE	0,-32		TB	metal_wall_n32	2048	32	0,0
+SPRITE	2048,0		TB	metal_wall_e32	32	448	0,0
+SPRITE	2048,448	B	metal_gate_e
+SPRITE	2048,576	TB	metal_wall_e32	32	448	0,0
+SPRITE	-32,0		TB	metal_wall_w32	32	448	0,0
+SPRITE	-64,448		B	metal_gate_w
+SPRITE	-32,576		TB	metal_wall_w32	32	448	0,0
+
+# Wall Corners
+SPRITE	2048,-32	B	metal_wall_ne32
+SPRITE	-32,-32		B	metal_wall_nw32
+SPRITE	-32,1024	B	metal_wall_sw32
+SPRITE	2048,1024	B	metal_wall_se32
+
+# Gates
+GATE	-15,456		BLUE
+GATE	2055,456	RED
+
+# Spawnpoints
+SPAWN	0,512		BLUE
+SPAWN	2048,512	RED
+
+# Upper and lower wall stubs by the blue gate
+SPRITE	192,128		TO	metal_obstacle64	64	128
+SPRITE	192,768		TO	metal_obstacle64	64	128
+
+# Upper and lower wall stubs by the red gate
+SPRITE	1792,128	TO	metal_obstacle64	64	128
+SPRITE	1792,768	TO	metal_obstacle64	64	128
+
+# Big/small obstacle combo adjacent to upper and lower walls
+SPRITE	384,0		O	metal_obstacle64	 0,0;0,64;64,64;64,0
+SPRITE	448,0		O	metal_obstacle128	 0,0;0,128;128,128;128,0
+
+SPRITE	384,960		O	metal_obstacle64	 0,0;0,64;64,64;64,0
+SPRITE	448,896		O	metal_obstacle128	 0,0;0,128;128,128;128,0
+
+SPRITE	1600,0		O	metal_obstacle64	 0,0;0,64;64,64;64,0
+SPRITE	1472,0		O	metal_obstacle128	 0,0;0,128;128,128;128,0
+
+SPRITE	1600,960	O	metal_obstacle64	 0,0;0,64;64,64;64,0
+SPRITE	1472,896	O	metal_obstacle128	 0,0;0,128;128,128;128,0
+
+# Big center obstacles
+SPRITE	896,448		TO	metal_obstacle128	256	128
+SPRITE	576,384		TO	metal_obstacle128	128	256
+SPRITE	1344,384	TO	metal_obstacle128	128	256
+
+# Upper and lower wall stubs in middle of map
+SPRITE	992,0		TO	metal_obstacle64	64	256
+SPRITE	992,768		TO	metal_obstacle64	64	128
+
+# Random small obstacles
+SPRITE	1152,256	O	metal_obstacle64	 0,0;0,64;64,64;64,0
+SPRITE	1152,704	O	metal_obstacle64	 0,0;0,64;64,64;64,0
+SPRITE	832,256		O	metal_obstacle64	 0,0;0,64;64,64;64,0
+SPRITE	832,704		O	metal_obstacle64	 0,0;0,64;64,64;64,0
+
