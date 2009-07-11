@@ -1,5 +1,13 @@
 Leges Motus Version History:
 --------------------------
+v. 0.2.1 - 07/11/09:
+ Bug Fixes:
+  - Fixed displaying the chat log on top of the score overlay.
+  - Fixed showing the score overlay when the input bar is shown.
+  - Options now only apply themselves when "Apply" is clicked, not "Back".
+  - Server no longer gives points for shooting frozen players.
+  - Added a global configuration file for Windows.
+--------------------------
 v. 0.2.0 (Beta 2) - 07/07/09:
  New Features:
   - Persistent configuration files for client and server.
