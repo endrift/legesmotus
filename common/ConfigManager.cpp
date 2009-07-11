@@ -175,7 +175,7 @@ const char*	ConfigManager::personal_config_path() {
 
 const char*	ConfigManager::system_config_path() { // TODO: use PREFIX/etc/legesmotusrc on UNIX
 #ifdef __WIN32
-	return NULL;
+	return "legesmotusrc.txt";
 #else
 	return "/etc/legesmotusrc";
 #endif
