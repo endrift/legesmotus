@@ -213,7 +213,7 @@ namespace LM {
 
 		ServerPlayer*		get_random_player(char team);
 
-		void			change_team(ServerPlayer& player, char new_team);
+		void			change_team(ServerPlayer& player, char new_team, bool respawn_player, bool respawn_immediately);
 	
 		// Returns the player with given player_id, NULL if not found
 		ServerPlayer*		get_player(uint32_t player_id);
