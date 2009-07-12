@@ -28,10 +28,17 @@ clean:
 	$(MAKE) -C common clean
 	$(MAKE) -C server clean
 	$(MAKE) -C client clean
+	$(MAKE) -C metaserver clean
 	$(MAKE) -C tests clean
 	rm -rf "Leges Motus.app"
 	rm -rf legesmotus*.pkg
 	rm -f README.rtf
+
+deps:
+	$(MAKE) -C common deps
+	$(MAKE) -C server deps
+	$(MAKE) -C client deps
+	$(MAKE) -C metaserver deps
 
 README.rtf: README
 	echo '{\\rtf1\\ansi' > README.rtf # Header

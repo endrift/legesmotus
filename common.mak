@@ -5,7 +5,7 @@ SERVER = $(BASEDIR)/server
 FRAMEWORKS = /Library/Frameworks
 
 # Version strings
-VERSION = 0.2.1
+VERSION = 0.3.0-svn
 
 # These may be overridden by config.mak
 DATADIR = data
@@ -84,17 +84,13 @@ CLIENTLIBS = $(LIBS_GL) $(LIBS) $(LIBS_SDL)
 
 CXXFLAGS += $(CFLAGS) -fno-rtti
 
-H_GL	= $(CLIENT)/compat_gl.h
-
-H_LMEXCEPTION	= $(COMMON)/Exception.hpp
-
-H_CLIENTNETWORK		= $(CLIENT)/ClientNetwork.hpp
-H_CLIENTSDL		= $(CLIENT)/ClientSDL.hpp
-H_GAMECONTROLLER	= $(CLIENT)/GameController.hpp
-H_GAMEWINDOW		= $(CLIENT)/GameWindow.hpp
-
-H_GAMEWINDOW		+= $(H_GL)
-H_GAMECONTROLLER	+= $(H_GAMEWINDOW) $(H_CLIENTNETWORK)
-
 %.o: %.rc
 	windres $< -o $@
+
+.deps/%.d: %.cpp .deps
+	$(CXX) -M $(CXXFLAGS) $< | sed -e 's,^\([^:]*\)\.o:,\1.o $@:,' > $@
+
+common-deps: $(PHONY) .deps
+
+.deps:
+	mkdir -p .deps

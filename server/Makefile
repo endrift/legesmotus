@@ -1,6 +1,7 @@
 BASEDIR = ..
 include ../common.mak
 OBJS = GateStatus.o Server.o ServerConfig.o ServerMap.o ServerNetwork.o ServerPlayer.o Spawnpoint.o #put .o filenames here (DO NOT PUT .cpp!)
+-include $(OBJS:%.o=.deps/%.d)
 
 all: lmserver
 
@@ -12,3 +13,5 @@ lmserver: ../liblmserver.a ../liblmcommon.a main.o
 
 clean:
 	rm -f $(OBJS) main.o ../liblmserver.a *~
+
+deps: common-deps

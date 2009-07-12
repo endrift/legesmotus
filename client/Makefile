@@ -6,6 +6,7 @@ OBJS = ClientNetwork.o ClientSDL.o GameController.o GameWindow.o MapObject.o Spr
 	ClientConfiguration.o MapReceiver.o ServerBrowser.o ChatLog.o \
 	#put .o filenames here (DO NOT PUT .cpp!)
 CXXFLAGS += $(CLIENTFLAGS)
+-include $(OBJS:%.o=.deps/%.d)
 
 ifeq ($(NOSOUND),)
 OBJS += SoundController.o
@@ -32,9 +33,4 @@ legesmotus: ../liblmclient.a ../liblmcommon.a main.o $(PLATFORM_DEP)
 clean:
 	rm -f $(OBJS) *~ main.o ../liblmclient.a legesmotus $(PLATFORM_DEP)
 
-# ==================================== #
-
-ClientNetwork.o: $(H_CLIENTNETWORK)
-ClientSDL.o: $(H_CLIENTSDL)
-GameController.o: $(H_GAMECONTROLLER) $(H_GAMEWINDOW) $(H_CLIENTNETWORK)
-GameWindow.o: $(H_EXCEPTION) $(H_GAMEWINDOW) $(H_GL)
+deps: common-deps
