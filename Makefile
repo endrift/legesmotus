@@ -1,3 +1,4 @@
+legesmotus:
 BASEDIR = .
 include common.mak
 
@@ -5,7 +6,7 @@ ifeq ($(MACHINE)$(UNIXSTYLE),Darwin)
 MACBUNDLE = bundle
 endif
 
-all: legesmotus $(MACBUNDLE)
+all: deps legesmotus $(MACBUNDLE)
 
 legesmotus: common server client
 
