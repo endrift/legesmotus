@@ -29,6 +29,7 @@
 #include <string>
 #include <sstream>
 #include <iosfwd>
+#include <stdint.h>
 
 /*
  * Example of use:
@@ -105,12 +106,18 @@ namespace LM {
 		void			clear() { m_options.clear(); }
 	};
 	
+	// Specializations for strings
 	template<> std::string	ConfigManager::get(const char* option_name) const;
 	template<> const char*	ConfigManager::get(const char* option_name) const;
 	template<> void	ConfigManager::set(const char* option_name, const char* const& option_value);
 	
+	// Specializations for bools
 	template<> bool	ConfigManager::get(const char* option_name) const;
 	template<> void	ConfigManager::set(const char* option_name, const bool& option_value);
+
+	// Specializations for uint64_t (typically used to specify time values)
+	template<> uint64_t	ConfigManager::get(const char* option_name) const;
+	template<> void	ConfigManager::set(const char* option_name, const uint64_t& option_value);
 	
 	template<class T> T	ConfigManager::get(const char* option_name) const {
 		T	option_value = T();

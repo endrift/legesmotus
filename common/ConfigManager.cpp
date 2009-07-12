@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
+#include <limits>
 #ifdef __WIN32
 // Necessary to get SHGFP_TYPE_CURRENT
 #ifndef _WIN32_IE
@@ -145,6 +146,29 @@ template<> bool ConfigManager::get(const char* option_name) const {
 template<> void ConfigManager::set(const char* option_name, const bool& option_value) {
 	m_options[option_name] = option_value ? "yes" : "no";
 }
+
+template<> uint64_t	ConfigManager::get(const char* option_name) const {
+	uint64_t	value = uint64_t();
+	const string*	raw_value = lookup(option_name);
+	if (raw_value && strcasecmp(raw_value->c_str(), "forever") == 0) {
+		value = numeric_limits<uint64_t>::max();
+	} else if (raw_value) {
+		istringstream(*raw_value) >> value;
+	}
+	return value;
+}
+
+template<> void	ConfigManager::set(const char* option_name, const uint64_t& option_value) {
+	m_options[option_name] = option_value == numeric_limits<uint64_t>::max() ? "inf" : "no";
+	if (option_value == numeric_limits<uint64_t>::max()) {
+		m_options[option_name] = "forever";
+	} else {
+		ostringstream	out;
+		out << option_value;
+		m_options[option_name] = out.str();
+	}
+}
+
 
 template<> void ConfigManager::set(const char* option_name, const char* const& option_value) {
 	m_options[option_name] = option_value;

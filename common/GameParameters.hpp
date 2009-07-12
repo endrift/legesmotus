@@ -37,7 +37,8 @@ namespace LM {
 	enum GameMode {
 		CLASSIC,
 		DEATHMATCH,
-		RACE
+		RACE,
+		ZOMBIE
 	};
 	enum RadarMode {
 		RADAR_OFF,

@@ -2532,7 +2532,7 @@ void GameController::game_start(PacketReader& reader) {
 	string 		map_name;
 	int 		map_revision;
 	bool		game_started;
-	uint32_t	timeleft;
+	uint64_t	timeleft;
 	reader >> map_name >> map_revision >> game_started >> timeleft;
 
 	send_ack(reader);
@@ -2545,18 +2545,23 @@ void GameController::game_start(PacketReader& reader) {
 		if (m_game_state == GAME_OVER) {
 			m_game_state = GAME_IN_PROGRESS;
 		}
-		message << "Game started!";
-		if (timeleft > 0) {
-			message << ' ' << timeleft / 1000 << " seconds until spawn.";
+		if (timeleft == numeric_limits<uint64_t>::max()) {
+			message << "Game in progress.  You will spawn when the next game starts.";
+		} else if (timeleft/1000 > 0) {
+			message << "Game started! " << timeleft / 1000 << " seconds until spawn.";
+		} else {
+			message << "Game started!";
 		}
 		m_sound_controller->play_sound("begin");
 			
 		toggle_score_overlay(false);
-	} else {
+	} else if (timeleft/1000 > 0) {
 		message << "Game starts in " << timeleft/1000 << " seconds.";
 	}
 	
-	display_message(message.str().c_str());
+	if (!message.str().empty()) {
+		display_message(message.str().c_str());
+	}
 
 	/*
 	 * Load the map, if it has changed

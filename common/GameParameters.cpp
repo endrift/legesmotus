@@ -117,6 +117,7 @@ GameMode	LM::parse_game_mode(const char* str) {
 		if (strcasecmp(str, "CLASSIC") == 0)	return CLASSIC;
 		if (strcasecmp(str, "DEATHMATCH") == 0)	return DEATHMATCH;
 		if (strcasecmp(str, "RACE") == 0)	return RACE;
+		if (strcasecmp(str, "ZOMBIE") == 0)	return ZOMBIE;
 	}
 
 	return CLASSIC;
@@ -137,6 +138,7 @@ const char*	LM::format_game_mode(GameMode mode) {
 	case CLASSIC:	return "CLASSIC";
 	case DEATHMATCH:return "DEATHMATCH";
 	case RACE:	return "RACE";
+	case ZOMBIE:	return "ZOMBIE";
 	}
 	return "";
 }
