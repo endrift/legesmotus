@@ -543,6 +543,8 @@ void GameController::init(GameWindow* window) {
 	} else if (!resolve_hostname(m_metaserver_address, METASERVER_HOSTNAME, METASERVER_PORTNO)) {
 		cerr << "Unable to resolve metaserver hostname.  Internet-wide server browsing will not be enabled." << endl;
 	}
+
+	check_for_upgrade();
 }
 
 /*
@@ -2979,6 +2981,12 @@ void	GameController::scan_all() {
 		m_network.send_packet_to(localhostip, info_request_packet);
 	}
 	m_network.send_packet_to(m_metaserver_address, info_request_packet);
+}
+
+void    GameController::check_for_upgrade() {
+	PacketWriter packet(UPGRADE_AVAILABLE_PACKET);
+	packet << m_client_version;
+	m_network.send_packet_to(m_metaserver_address, packet);
 }
 
 void	GameController::scan_local_network() {

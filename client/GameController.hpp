@@ -282,6 +282,9 @@ namespace LM {
 		
 		// Scan both the local network and the meta server for servers:
 		void		scan_all();
+
+		// Contact the meta server to check for upgrades
+		void		check_for_upgrade();
 		
 		// Network callbacks:
 		void		welcome(PacketReader& reader);
