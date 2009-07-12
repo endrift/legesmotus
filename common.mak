@@ -12,8 +12,7 @@ DATADIR = data
 #UNIVERSAL = 1
 #UNIXSTYLE = 1
 
-OPTS = $(shell test -r $(BASEDIR)/config.mak && echo 1)
-ifneq ($(OPTS),)
+ifneq ($(shell test -r $(BASEDIR)/config.mak && echo 1),)
 include $(BASEDIR)/config.mak
 endif
 
@@ -90,7 +89,19 @@ CXXFLAGS += $(CFLAGS) -fno-rtti
 .deps/%.d: %.cpp .deps
 	$(CXX) -M $(CXXFLAGS) $< | sed -e 's,^\([^:]*\)\.o:,\1.o $@:,' > $@
 
-common-deps: $(PHONY) .deps
+common-deps: $(PHONY) .deps .deps/deps.mak
+
+common-clean: $(PHONY)
+	rm -rf .deps
 
 .deps:
 	mkdir -p .deps
+
+.deps/deps.mak: $(OBJS:%.o=.deps/%.d)
+	cat .deps/*.d > .deps/deps.mak
+
+ifneq ($(OBJS),)
+ifneq ($(shell test -r .deps/deps.mak && echo 1),)
+include .deps/deps.mak
+endif
+endif
