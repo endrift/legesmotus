@@ -753,6 +753,11 @@ void	Server::run()
 				game_over('A');
 				new_game();
 			}
+
+			if (m_params.game_timeout && time_since_spawn() > m_params.game_timeout) {
+				game_over(0);
+				new_game();
+			}
 			
 			// Spawn any players who joined after the game started and are now ready to join:
 			spawn_waiting_players();
@@ -995,6 +1000,13 @@ uint64_t Server::time_until_spawn() const {
 		return m_waiting_players.front()->time_until_spawn(m_params.late_join_delay);
 	}
 	return std::numeric_limits<uint64_t>::max();
+}
+
+uint64_t Server::time_since_spawn() const {
+	if (m_players_have_spawned) {
+		return get_ticks() - m_game_start_time - m_params.game_start_delay;
+	}
+	return 0;
 }
 
 ServerPlayer*		Server::get_player(uint32_t player_id) {

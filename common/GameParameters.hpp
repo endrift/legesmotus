@@ -53,10 +53,10 @@ namespace LM {
 		int		max_players;
 		uint64_t	gate_open_time;
 		uint64_t	gate_close_time;
-		uint64_t	gate_stick_time;	// NOT YET IMPLEMENTED
+		uint64_t	gate_stick_time;
 		uint64_t	freeze_time;
 		bool		friendly_fire;
-		uint64_t	game_timeout;		// 0 for no timeout  NOT YET IMPLEMENTED
+		uint64_t	game_timeout;		// 0 for no timeout
 		GameMode	game_mode;		// NOT YET IMPLEMENTED
 		RadarMode	radar_mode;
 		double		radar_scale;
