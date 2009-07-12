@@ -190,6 +190,22 @@ void SoundController::halt_sound(int channel) {
 }
 
 void SoundController::set_sound_on(bool on) {
+	if (on != m_sound_on) {
+		if (on) {
+			SDL_InitSubSystem(SDL_INIT_AUDIO);
+			if(Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 1024) == -1) {
+				cerr << "Error calling Mix_OpenAudio" << endl;
+			}
+		} else {
+			int numtimesopened, frequency, channels;
+			Uint16 format;
+			numtimesopened=Mix_QuerySpec(&frequency, &format, &channels);
+			for (int i = 0; i <= numtimesopened; i++) {
+				Mix_CloseAudio();
+			}
+			SDL_QuitSubSystem(SDL_INIT_AUDIO);
+		}
+	}
 	m_sound_on = on;
 }
 
