@@ -737,14 +737,18 @@ void	Server::run()
 
 		if (m_players_have_spawned) {
 			// Update the status of the gates
-			get_gate('A').update();
-			get_gate('B').update();
+			if (get_gate('A').update()) {
+				report_gate_status('A', 0, 0);
+			}
+			if (get_gate('B').update()) {
+				report_gate_status('B', 0, 0);
+			}
 
-			if (get_gate('A').get_status() == GateStatus::OPEN) {
+			if (get_gate('A').is_open()) {
 				// A's gate is open => B wins
 				game_over('B');
 				new_game();
-			} else if (get_gate('B').get_status() == GateStatus::OPEN) {
+			} else if (get_gate('B').is_open()) {
 				// B's gate is open => A wins
 				game_over('A');
 				new_game();
@@ -752,14 +756,6 @@ void	Server::run()
 			
 			// Spawn any players who joined after the game started and are now ready to join:
 			spawn_waiting_players();
-
-			// If a gate is moving, broadcast a status report on it
-			if (get_gate('A').is_moving()) {
-				report_gate_status('A', 0, 0);
-			}
-			if (get_gate('B').is_moving()) {
-				report_gate_status('B', 0, 0);
-			}
 
 		} else if (waiting_to_spawn()) {
 			if (time_until_spawn() == 0) {
@@ -956,12 +952,8 @@ uint32_t	Server::server_sleep_time() const {
 
 	if (m_players_have_spawned) {
 		// Take into account gate changes, and gate status updates
-
-		if (get_gate('A').is_moving() || get_gate('B').is_moving()) {
-			sleep_time = std::min(sleep_time, uint64_t(GATE_UPDATE_FREQUENCY));
-		}
-		sleep_time = std::min(sleep_time, get_gate('A').time_remaining());
-		sleep_time = std::min(sleep_time, get_gate('B').time_remaining());
+		sleep_time = std::min(sleep_time, get_gate('A').next_update_time());
+		sleep_time = std::min(sleep_time, get_gate('B').next_update_time());
 	}
 
 	if (waiting_to_spawn()) {

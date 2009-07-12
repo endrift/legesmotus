@@ -43,34 +43,34 @@ namespace LM {
 		};
 	private:
 		const Server&		m_server;	// The server that this gate is part of
-		int			m_status;	// CLOSED, OPENING, or CLOSING
+		double			m_progress;	// [0..1] (0==fully closed, 1==fully open)
+		uint64_t		m_update_time;	// The tick time at which the gate was last updated
+		uint64_t		m_change_time;	// The tick time at which the gate was last changed (i.e. player engaged or disengaged)
 		std::set<uint32_t>	m_players;	// The players who are engaging the gate
-		uint64_t		m_start_time;	// The tick time at which the gate started to be moved
 
-		void			set_progress(double progress);
 		uint64_t		get_open_time() const;
 		uint64_t		get_close_time() const;
+		uint64_t		get_stick_time() const;
 
 	public:
 		explicit GateStatus(const Server& server);
 
 		// Get basic information about the gate:
-		bool		is_moving() const { return m_status == OPENING || m_status == CLOSING; }
-		bool		is_engaged() const { return m_status == OPENING || m_status == OPEN; }
-		int		get_status() const { return m_status; }
+		bool		is_open () const { return m_progress == 1.0; }
+		bool		is_closed () const { return m_progress == 0.0; }
 		size_t		get_nbr_players() const { return m_players.size(); }
-		// TODO: which player ID should I return above?  Right now this information isn't being used (it's sent to the client, which ignores it), but if the client ever provides information about who is lowering the gate, this would be important.
 
-		uint64_t	time_elapsed() const;	// If moving, how many milliseconds since the gate started moving?
-		uint64_t	time_remaining() const;	// If moving, how many milliseconds until the gate finishes moving?
+		uint64_t	next_update_time() const;	// The maximum number of ticks until the gate MUST be updated again
 
 		// Return a number in range [0,1] to indicate progress of gate:
 		//  (0.0 == fully closed, 1.0 == fully open)
-		double		get_progress() const;
+		double		get_progress() const { return m_progress; }
 
-		// Update the status of the gate based on how much time has elapsed:
-		//  Call every GATE_UPDATE_FREQUENCY milliseconds when gate is moving
-		void		update();
+		// Update the progress of the gate based on how much time has elapsed:
+		//  Returns true if the gate changed (meaning a GATE_UPDATE packet should be sent)
+		//  Returns false if nothing changed about the gate
+		//  Use next_update_time() to determine how often update() must be called
+		bool		update();
 
 		// Reset the gate to fully closed:
 		//  Call at beginning of new games to fully reset the gate
