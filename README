@@ -64,6 +64,7 @@ To run the server, run the 'lmserver' command, or double click on lmserver.exe o
 
 The server supports the following command-line options:
   -c CONFFILE	load server configuration options from the given file (default: no config file)
+  -o OPT=VALUE  set the configuration option named OPT to VALUE
   -m MAPNAME	set the map name (default: alpha1)
   -p PORTNO	set the port number to listen on (default: 16877)
   -P PASSWORD	set the admin password (default: admin mode is disabled)

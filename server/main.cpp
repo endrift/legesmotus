@@ -27,6 +27,7 @@
 #include "common/Exception.hpp"
 #include "common/network.hpp"
 #include "common/PathManager.hpp"
+#include "common/StringTokenizer.hpp"
 #include "common/misc.hpp"
 #include "common/timer.hpp"
 #include <iostream>
@@ -45,6 +46,7 @@ namespace {
 		cout << "Usage: " << progname << " [OPTION]" << endl;
 		cout << "Options:" << endl;
 		cout << "  -c CONFFILE	load the given configuration file" << endl;
+		cout << "  -o OPT=VALUE	set the configuration option named OPT to VALUE" << endl;
 		cout << "  -m MAPNAME	set the map name [default: alpha1]" << endl;
 		cout << "  -P PASSWORD	set the admin password [default: DISABLED]" << endl;
 		cout << "  -p PORTNO	set the port number to listen on [default: " << DEFAULT_PORTNO << "]" << endl;
@@ -130,6 +132,14 @@ extern "C" int main(int argc, char* argv[]) try {
 				cerr << argv[i+1] << ": failed to load configuration file" << endl;
 				return 1;
 			}
+			++i;
+		} else if (strcmp(argv[i], "-o") == 0 && argc > i+1) {
+			// Note: saving argv[i+1] to arg is necessary to work around some weird gcc 3.3.4 bug
+			const char*	arg = argv[i+1];
+			string		option_name;
+			string		option_value;
+			StringTokenizer(arg, '=', 2) >> option_name >> option_value;
+			config.set(option_name.c_str(), option_value.c_str());
 			++i;
 		} else if (strcmp(argv[i], "-i") == 0 && argc > i+1) {
 			config.set("interface", argv[i+1]);
