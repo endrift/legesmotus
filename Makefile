@@ -50,6 +50,9 @@ README.rtf: README
 	echo '}' >> README.rtf # Footer
 
 ifeq ($(MACHINE)$(UNIXSTYLE),Darwin)
+
+CLI_INSTALLER = Install\ Command\ Line\ Tools.app
+
 Leges\ Motus.app: client server
 	mkdir -p "Leges Motus.app/Contents/MacOS"
 	mkdir -p "Leges Motus.app/Contents/Resources"
@@ -87,9 +90,16 @@ legesmotus-$(VERSION).pkg: bundle README.rtf
 	defaults delete "`pwd`/legesmotus-$(VERSION).pkg/Contents/Info" IFPkgPathMappings
 	rm -Rf tmp
 
+$(CLI_INSTALLER): mac/install.applescript mac/install.sh
+	osacompile -o $(CLI_INSTALLER) mac/install.applescript
+	cp -f man/man6/* $(CLI_INSTALLER)/Contents/Resources
+	cp -f mac/install.sh $(CLI_INSTALLER)/Contents/Resources
+
 bundle: Leges\ Motus.app
 
 package: legesmotus-$(VERSION).pkg
+
+cli-installer: $(CLI_INSTALLER)
 
 install:
 	cp -Rf Leges\ Motus.app /Applications/
