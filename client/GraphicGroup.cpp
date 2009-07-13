@@ -53,27 +53,30 @@ GraphicGroup* GraphicGroup::clone() const {
 	return new GraphicGroup(*this);
 }
 
-void GraphicGroup::add_graphic(Graphic* graphic) {
-	for (list<Graphic*>::iterator iter = m_graphics.begin(); iter != m_graphics.end(); ++iter) {
-		if ((*iter)->get_priority() < graphic->get_priority()) {
-			m_graphics.insert(iter,graphic->clone());
-			return;
-		}
-	}
-	m_graphics.push_back(graphic->clone());
-}
-
-void GraphicGroup::add_graphic(Graphic* graphic, const string& name) {
+Graphic* GraphicGroup::add_graphic(Graphic* graphic) {
 	Graphic* g = graphic->clone();
 	for (list<Graphic*>::iterator iter = m_graphics.begin(); iter != m_graphics.end(); ++iter) {
 		if ((*iter)->get_priority() < graphic->get_priority()) {
-			m_graphics.insert(iter,g);
+			m_graphics.insert(iter, g);
+			return g;
+		}
+	}
+	m_graphics.push_back(g);
+	return g;
+}
+
+Graphic* GraphicGroup::add_graphic(Graphic* graphic, const string& name) {
+	Graphic* g = graphic->clone();
+	for (list<Graphic*>::iterator iter = m_graphics.begin(); iter != m_graphics.end(); ++iter) {
+		if ((*iter)->get_priority() < graphic->get_priority()) {
+			m_graphics.insert(iter, g);
 			m_names[name] = g;
-			return;
+			return g;
 		}
 	}
 	m_graphics.push_back(g);
 	m_names[name] = g;
+	return g;
 }
 
 Graphic* GraphicGroup::get_graphic(const string& name) {
@@ -85,7 +88,9 @@ Graphic* GraphicGroup::get_graphic(const string& name) {
 }
 
 void GraphicGroup::remove_graphic(const string& name) {
-	m_graphics.remove(get_graphic(name));
+	Graphic* g = get_graphic(name);
+	m_graphics.remove(g);
+	delete g;
 }
 
 void GraphicGroup::set_alpha(double alpha) {

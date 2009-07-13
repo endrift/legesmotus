@@ -42,8 +42,8 @@ namespace LM {
 		virtual GraphicGroup* clone() const;
 	
 		// Adding a graphic to the group clones it
-		void		add_graphic(Graphic* graphic); // If this method is used, the graphic is inaccessable outside of the object
-		void		add_graphic(Graphic* graphic, const std::string& name);
+		Graphic*	add_graphic(Graphic* graphic); // If this method is used, the graphic is inaccessable outside of the object
+		Graphic*	add_graphic(Graphic* graphic, const std::string& name);
 		Graphic*	get_graphic(const std::string& name);
 		void		remove_graphic(const std::string& name); // Removing the graphic doesn't delete it -- you must delete it yourself
 	

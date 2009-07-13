@@ -74,7 +74,7 @@ const int GameController::DOUBLE_CLICK_TIME = 300;
 const int GameController::NETWORK_TIMEOUT_LIMIT = 10000;
 const int GameController::TEXT_LAYER = -4;
 const unsigned int GameController::PING_FREQUENCY = 2000;
-const unsigned int GameController::CHAT_TRANSITION_TIME = 1;
+const unsigned int GameController::CHAT_TRANSITION_TIME = 200;
 
 static bool	sort_resolution(pair<int, int> pairone, pair<int, int> pairtwo) {
 	if (pairone.first == pairtwo.first) {
@@ -646,7 +646,9 @@ void GameController::run(int lockfps) {
 				double max_w = 0;
 				for (unsigned int i = 0; i < m_messages.size(); i++) {
 					int y = 20 + (m_font->ascent() + m_font->descent() + 5) * i;
-					m_text_manager->reposition_string(m_messages[i].first, 20, y, TextManager::LEFT);
+					Transition* message_transition = new Transition(m_messages[i].first, &Graphic::set_y,
+						new LinearCurve(m_messages[i].first->get_y(), y), currframe, CHAT_TRANSITION_TIME);
+					m_transition_manager.add_transition(message_transition, false, TransitionManager::DELETE);
 					max_w = max<double>(m_messages[i].first->get_image_width() + 6, max_w);
 				}
 				m_chat_window_transition_x->change_curve(currframe, new LinearCurve(0, max_w), CHAT_TRANSITION_TIME);
@@ -2854,12 +2856,10 @@ void GameController::display_message(string message, Color color) {
 	}
 	m_messages.push_back(pair<Graphic*, int>(message_sprite, get_ticks() + MESSAGE_DISPLAY_TIME));
 	uint64_t currframe = get_ticks();
-	m_chat_window_transition_y->change_curve(currframe, new LinearCurve(0, y + message_sprite->get_image_height() + 6 - m_chat_window_back->get_y()), CHAT_TRANSITION_TIME);
-	//m_chat_window_back->set_row_height(0, y + message_sprite->get_image_height() + 6 - m_chat_window_back->get_y());
+	m_chat_window_transition_y->change_curve(currframe, new LinearCurve(0, y + message_sprite->get_image_height() + 6 - m_chat_window_back->get_y()), 1);
 	double max_w = m_chat_window_transition_x->get_curve()->get_end();
 	if (max_w < message_sprite->get_image_width() + 6) {
-		m_chat_window_transition_x->change_curve(currframe, new LinearCurve(0, message_sprite->get_image_width() + 6), CHAT_TRANSITION_TIME);
-		//m_chat_window_back->set_image_width(message_sprite->get_image_width() + 6);
+		m_chat_window_transition_x->change_curve(currframe, new LinearCurve(0, message_sprite->get_image_width() + 6), 1);
 	}
 	m_chat_log->add_message(message, color);
 	m_chat_window_back->set_invisible(false);

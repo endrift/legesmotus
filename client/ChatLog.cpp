@@ -100,21 +100,17 @@ void ChatLog::set_visible(bool visible) {
 	
 	m_background->set_invisible(!visible);
 	m_title->set_invisible(!visible);
-	
-//	for (unsigned int i = 0; i < m_items.size(); i++) {
-//		m_items[i]->set_invisible(!visible);
-//	}
-	
 	m_scrollbar->set_invisible(!visible);
 	m_scrollarea->set_invisible(!visible);
 }
 
 void ChatLog::add_message(string message, Color color) {
 	double old_progress = m_scrollbar->get_scroll_progress();
-	m_items.push_back(m_text_manager->place_string(message, m_background->get_x() - m_background->get_image_width()/2 - m_scrollarea->get_x() + m_scrollarea->get_width()/2 + 10, LINE_SPACING * m_items.size(), TextManager::LEFT, TextManager::LAYER_HUD));
-	m_items[m_items.size()-1]->set_priority(TEXT_LAYER);
-	m_window->unregister_hud_graphic(m_items[m_items.size()-1]);
-	m_scrollarea->get_group()->add_graphic(m_items[m_items.size()-1], message);
+	Text* new_message = m_text_manager->place_string(message, m_background->get_x() - m_background->get_image_width()/2 -
+		m_scrollarea->get_x() + m_scrollarea->get_width()/2 + 10, LINE_SPACING * m_items.size(), TextManager::LEFT, TextManager::LAYER_HUD);
+	new_message->set_priority(TEXT_LAYER);
+	m_items.push_back(static_cast<Text*>(m_scrollarea->get_group()->add_graphic(new_message, message)));
+	m_text_manager->remove_string(new_message);
 	m_scrollarea->set_content_height(LINE_SPACING * (m_items.size()));
 	if (old_progress == 1) {
 		m_scrollbar->scroll(1);
@@ -122,6 +118,7 @@ void ChatLog::add_message(string message, Color color) {
 }
 
 void ChatLog::delete_message(int num) {
+	// TODO: stub
 }
 
 void ChatLog::scrollbar_button_event(const SDL_MouseButtonEvent& event) {
