@@ -42,8 +42,8 @@ namespace LM {
 		virtual GraphicGroup* clone() const;
 	
 		// Adding a graphic to the group clones it
-		Graphic*	add_graphic(Graphic* graphic); // If this method is used, the graphic is inaccessable outside of the object
-		Graphic*	add_graphic(Graphic* graphic, const std::string& name);
+		template<class T> T*	add_graphic(T* graphic);
+		template<class T> T*	add_graphic(T* graphic, const std::string& name);
 		Graphic*	get_graphic(const std::string& name);
 		void		remove_graphic(const std::string& name); // Removing the graphic doesn't delete it -- you must delete it yourself
 	
@@ -55,6 +55,22 @@ namespace LM {
 	
 		void		draw(const GameWindow* window) const;
 	};
+
+	template<class T> T* GraphicGroup::add_graphic(T* graphic, const std::string& name) {
+		T* g = add_graphic(graphic);
+		m_names[name] = g;
+		return g;
+	}
+	
+	template<class T> T* GraphicGroup::add_graphic(T* graphic) {
+		T* g = graphic->clone();
+		std::list<Graphic*>::iterator iter = m_graphics.begin();
+		while (iter != m_graphics.end() && (*iter)->get_priority() >= graphic->get_priority()) {
+			++iter;
+		}
+		m_graphics.insert(iter, g);
+		return g;
+	}
 }
 
 #endif

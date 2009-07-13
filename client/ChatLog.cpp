@@ -109,7 +109,7 @@ void ChatLog::add_message(string message, Color color) {
 	Text* new_message = m_text_manager->place_string(message, m_background->get_x() - m_background->get_image_width()/2 -
 		m_scrollarea->get_x() + m_scrollarea->get_width()/2 + 10, LINE_SPACING * m_items.size(), TextManager::LEFT, TextManager::LAYER_HUD);
 	new_message->set_priority(TEXT_LAYER);
-	m_items.push_back(static_cast<Text*>(m_scrollarea->get_group()->add_graphic(new_message, message)));
+	m_items.push_back(m_scrollarea->get_group()->add_graphic(new_message, message));
 	m_text_manager->remove_string(new_message);
 	m_scrollarea->set_content_height(LINE_SPACING * (m_items.size()));
 	if (old_progress == 1) {

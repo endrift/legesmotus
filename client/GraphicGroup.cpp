@@ -53,32 +53,6 @@ GraphicGroup* GraphicGroup::clone() const {
 	return new GraphicGroup(*this);
 }
 
-Graphic* GraphicGroup::add_graphic(Graphic* graphic) {
-	Graphic* g = graphic->clone();
-	for (list<Graphic*>::iterator iter = m_graphics.begin(); iter != m_graphics.end(); ++iter) {
-		if ((*iter)->get_priority() < graphic->get_priority()) {
-			m_graphics.insert(iter, g);
-			return g;
-		}
-	}
-	m_graphics.push_back(g);
-	return g;
-}
-
-Graphic* GraphicGroup::add_graphic(Graphic* graphic, const string& name) {
-	Graphic* g = graphic->clone();
-	for (list<Graphic*>::iterator iter = m_graphics.begin(); iter != m_graphics.end(); ++iter) {
-		if ((*iter)->get_priority() < graphic->get_priority()) {
-			m_graphics.insert(iter, g);
-			m_names[name] = g;
-			return g;
-		}
-	}
-	m_graphics.push_back(g);
-	m_names[name] = g;
-	return g;
-}
-
 Graphic* GraphicGroup::get_graphic(const string& name) {
 	if (m_names.find(name) != m_names.end()) {
 		return m_names[name];
@@ -89,6 +63,10 @@ Graphic* GraphicGroup::get_graphic(const string& name) {
 
 void GraphicGroup::remove_graphic(const string& name) {
 	Graphic* g = get_graphic(name);
+	if (g == NULL) {
+		return;
+	}
+	m_names.erase(name);
 	m_graphics.remove(g);
 	delete g;
 }
