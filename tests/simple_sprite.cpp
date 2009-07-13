@@ -5,6 +5,7 @@
 #include "common/PathManager.hpp"
 #include "client/Mask.hpp"
 #include "client/TableBackground.hpp"
+#include "client/RadialBackground.hpp"
 #include <cmath>
 
 using namespace LM;
@@ -50,6 +51,16 @@ extern "C" int main(int argc, char* argv[]) {
 	tb.set_center_y(48);
 	tb.set_corner_radius(16);
 	tb.set_border_collapse(true);
+	RadialBackground rb(8);
+	rb.set_border_color(Color(1,1,1,0.8));
+	rb.set_inner_radius(50.0);
+	rb.set_outer_radius(50.0);
+	rb.set_border_radius(10.0);
+	rb.set_border_angle(8);
+	rb.set_x(250);
+	rb.set_y(250);
+	rb.set_priority(1);
+	rb.set_rotation(-90);
 	Mask m(&mask,&tg);
 	m.set_priority(1);
 	m.set_x(250);
@@ -60,6 +71,7 @@ extern "C" int main(int argc, char* argv[]) {
 	g.add_graphic(&tb);
 	window->register_graphic(&g);
 	window->register_graphic(&m);
+	window->register_graphic(&rb);
 	bool running = true;
 	int frame = 0;
 	while(running) {

@@ -1,5 +1,5 @@
 /*
- * client/Text.hpp
+ * client/RadialBackground.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,41 +22,40 @@
  * 
  */
 
-#ifndef LM_CLIENT_TEXT_HPP
-#define LM_CLIENT_TEXT_HPP
+#ifndef LM_CLIENT_RADIALBACKGROUND_HPP
+#define LM_CLIENT_RADIALBACKGROUND_HPP
 
-#include <string>
-#include "Font.hpp"
 #include "Graphic.hpp"
-#include "Sprite.hpp"
+#include <vector>
 
 namespace LM {
-	class Text : public Graphic {
+	class RadialBackground : public Graphic {
 	private:
-		Sprite* m_fg;
-		Sprite* m_shadow;
-		bool	m_shadow_enabled;
-	
-		void	touch_shadow(); // Makes sure the shadow exists
+		static const int RESOLUTION;
+
+		int	m_num_segments;
+		std::vector<Color>	m_segment_colors;
+
+		Color	m_border_color;
+		double	m_border_radius;
+		double	m_border_angle;
+		double	m_outer_radius;
+		double	m_inner_radius;
+
 	public:
-		Text(const std::string& text, Font* font);
-		Text(const Text& other);
-		virtual ~Text();
-		virtual Text* clone() const;
+		RadialBackground(int num_segments);
+		virtual RadialBackground* clone() const;
+
+		int	get_num_segments() const;
 	
-		void		set_color(double r, double g, double b); // Only sets FG color
-		void		set_color(const Color& color);
-		virtual void	set_alpha(double alpha); // Only sets FG alpha
-		void		set_shadow_color(double r, double g, double b);
-		void		set_shadow_color(const Color& color);
-		void		set_shadow_alpha(double a);
-		void		set_shadow_offset(double x, double y);
-		void		set_shadow(bool enable);
-	
-		virtual void	set_red_intensity(double r);
-		virtual void	set_green_intensity(double g);
-		virtual void	set_blue_intensity(double b);
-	
+		void	set_num_segments(int num_rows);
+		void	set_border_radius(double radius);
+		void	set_border_angle(double degrees);
+		void	set_border_color(Color color);
+		void	set_segment_color(int segment, Color color);
+		void	set_outer_radius(double radius);
+		void	set_inner_radius(double radius);
+
 		virtual void	draw(const GameWindow* window) const;
 	};
 }

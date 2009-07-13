@@ -44,11 +44,6 @@ namespace LM {
 		void		set_mask(Graphic* mask);
 		void		set_masked(Graphic* masked);
 	
-		virtual void	set_alpha(double alpha) { (void)(alpha); }
-		virtual void	set_red_intensity(double r) { (void)(r); }
-		virtual void	set_green_intensity(double g) { (void)(g); }
-		virtual void	set_blue_intensity(double b) { (void)(b); }
-	
 		virtual void	draw(const GameWindow* window) const;
 	};
 }

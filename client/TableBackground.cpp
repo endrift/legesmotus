@@ -154,6 +154,9 @@ double TableBackground::get_row_height(int row) const {
 }
 
 void TableBackground::set_num_rows(int num_rows) {
+	if (num_rows < 1) {
+		return;
+	}
 	int old_num_rows = m_num_rows;
 	m_cell_colors.resize(num_rows);
 	m_row_heights.resize(num_rows);
