@@ -105,6 +105,7 @@ install:
 	cp -Rf Leges\ Motus.app /Applications/
 	ln -sf /Applications/Leges\ Motus.app/Contents/MacOS/lmserver $(BINDIR)
 	install -d $(MANDIR)/man6
+	install -m 0644 $(BASEDIR)/man/man6/legesmotus.6 $(MANDIR)/man6
 	install -m 0644 $(BASEDIR)/man/man6/lmserver.6 $(MANDIR)/man6
 
 uninstall:
@@ -140,13 +141,8 @@ endif
 
 endif
 
-define all_sources_cscope
-     ( find . -follow -name SCCS -prune -o -name '*.[chS]' -print | grep -v svn > cscope.files ; \
-       find . -follow -name SCCS -prune -o -name '*.[chS][pp]*' -print | grep -v svn >> cscope.files )
-endef
-
 cscope: 
-	$(all_sources_cscope)
+	find . -follow -name SCCS -prune -o -name '*.[ch]pp' -print | grep -v svn > cscope.files
 	cscope -v -q
 
 .PHONY: clean common server client bundle package metaserver install uninstall
