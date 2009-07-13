@@ -157,12 +157,9 @@ void Radar::activate_blip(uint32_t id, uint64_t current, uint64_t duration) {
 }
 
 void Radar::remove_blip(uint32_t id) {
-	Graphic *blip;
 	stringstream s;
 	s << id;
-	blip = m_minigroup->get_graphic(s.str());
 	m_minigroup->remove_graphic(s.str());
-	delete blip;
 }
 
 void Radar::recenter(double x, double y) {
