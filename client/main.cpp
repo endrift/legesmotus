@@ -188,6 +188,7 @@ extern "C" int main(int argc, char* argv[]) try {
 				portno = atoi(server.substr(portdelim+1).c_str());
 				server = server.substr(0, portdelim);
 			}
+			name = game_controller->get_player_name();
 			game_controller->disconnect();
 		} else {
 			restart = false;

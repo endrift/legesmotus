@@ -274,6 +274,7 @@ namespace LM {
 		void 		update_individual_score_line(int count, const GraphicalPlayer& currplayer);
 		void		delete_individual_score(const GraphicalPlayer& currplayer);
 		void		set_player_name(std::string name);
+		std::string	get_player_name() const { return m_name; };
 		void		clear_players();
 		bool		wants_restart();
 		void		reset_options();
