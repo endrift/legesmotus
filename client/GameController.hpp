@@ -81,7 +81,13 @@ namespace LM {
 			SHOW_OPTIONS_MENU = 3,
 			SHOW_SERVER_BROWSER = 4
 		};
-	
+
+		struct Message {
+			Text*		message;
+			Transition*	transition;
+			uint64_t	timeout;
+		};
+
 		const static int MESSAGE_DISPLAY_TIME;
 		const static unsigned int MAX_MESSAGES_TO_DISPLAY;
 		const static int SHOT_DISPLAY_TIME;
@@ -113,7 +119,7 @@ namespace LM {
 		std::string	m_name;
 		std::string 	m_client_version;
 		std::string	m_input_text;
-		std::vector<std::pair<Graphic*, unsigned int> > m_messages;
+		std::vector<Message> m_messages;
 		std::vector<std::pair<Graphic*, unsigned int> > m_shots;
 		int		m_protocol_number;
 		int 		m_screen_width;

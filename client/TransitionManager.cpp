@@ -94,13 +94,9 @@ void TransitionManager::update(uint64_t time) {
 					iter->transition->set_start(iter->transition->get_start() + iter->transition->get_duration());
 				} while (iter->transition->update(time));
 			} else {
-				switch (iter->removal) {
-				case DELETE:
-				case REMOVE:
+				if (iter->removal != KEEP) {
 					iter = remove_transition(iter);
 					continue;
-				case KEEP:
-					break;
 				}
 			}
 		}

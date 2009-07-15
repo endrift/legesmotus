@@ -119,11 +119,13 @@ GameController::~GameController() {
 
 	for (unsigned int i = 0; i < m_shots.size(); i++) {
 		m_window->unregister_graphic(m_shots[i].first);
+		delete m_shots[i].first;
 		m_shots.erase(m_shots.begin() + i);
 	}
 
 	for (unsigned int i = 0; i < m_messages.size(); i++) {
-		m_text_manager->remove_string(m_messages[i].first);
+		m_text_manager->remove_string(m_messages[i].message);
+		m_transition_manager.remove_transition(m_messages[i].transition);
 		m_messages.erase(m_messages.begin() + i);
 	}
 	
@@ -629,12 +631,17 @@ void GameController::run(int lockfps) {
 			bool erasedone = false;
 			// Erase messages that are too old.
 			double height = m_chat_window_transition_y->get_curve()->get_end();
-			for (unsigned int i = 0; i < m_messages.size(); i++) {
-				if (m_messages[i].second < currframe || m_messages.size() > MAX_MESSAGES_TO_DISPLAY) {
-					height -= m_messages[i].first->get_image_height();
-					m_text_manager->remove_string(m_messages[i].first);
-					m_messages.erase(m_messages.begin() + i);
+			for (vector<Message>::iterator iter = m_messages.begin();
+					iter != m_messages.end();) {
+				if (iter->timeout < currframe || m_messages.size() > MAX_MESSAGES_TO_DISPLAY) {
+					height -= iter->message->get_image_height();
+					m_text_manager->remove_string(iter->message);
+					m_transition_manager.remove_transition(iter->transition);
+					delete iter->transition;
+					iter = m_messages.erase(iter);
 					erasedone = true;
+				} else {
+				 iter++;
 				}
 			}
 
@@ -646,10 +653,8 @@ void GameController::run(int lockfps) {
 				double max_w = 0;
 				for (unsigned int i = 0; i < m_messages.size(); i++) {
 					int y = 20 + (m_font->ascent() + m_font->descent() + 5) * i;
-					Transition* message_transition = new Transition(m_messages[i].first, &Graphic::set_y,
-						new LinearCurve(m_messages[i].first->get_y(), y), currframe, CHAT_TRANSITION_TIME);
-					m_transition_manager.add_transition(message_transition, false, TransitionManager::DELETE);
-					max_w = max<double>(m_messages[i].first->get_image_width() + 6, max_w);
+					m_messages[i].transition->change_curve(currframe, new LinearCurve(0, y), CHAT_TRANSITION_TIME);
+					max_w = max<double>(m_messages[i].message->get_image_width() + 6, max_w);
 				}
 				m_chat_window_transition_x->change_curve(currframe, new LinearCurve(0, max_w), CHAT_TRANSITION_TIME);
 				if (m_messages.size() == 0) {
@@ -2857,12 +2862,17 @@ void GameController::display_message(string message, Color color) {
 	m_text_manager->set_active_color(color);
 	m_text_manager->set_active_font(m_font);
 	int y = 20 + (m_font->ascent() + m_font->descent() + 5) * m_messages.size();
-	Graphic* message_sprite = m_text_manager->place_string(message, 20, y, TextManager::LEFT, TextManager::LAYER_HUD);
+	Text* message_sprite = m_text_manager->place_string(message, 20, y, TextManager::LEFT, TextManager::LAYER_HUD);
 	if (!message_sprite) {
 		return;
 	}
-	m_messages.push_back(pair<Graphic*, int>(message_sprite, get_ticks() + MESSAGE_DISPLAY_TIME));
 	uint64_t currframe = get_ticks();
+	Message new_message;
+	new_message.message = message_sprite;
+	new_message.transition = new Transition(new_message.message, &Graphic::set_y, new LinearCurve(y, y), currframe, 1);
+	new_message.timeout = currframe + MESSAGE_DISPLAY_TIME;
+	m_transition_manager.add_transition(new_message.transition, false, TransitionManager::KEEP);
+	m_messages.push_back(new_message);
 	m_chat_window_transition_y->change_curve(currframe, new LinearCurve(0, y + message_sprite->get_image_height() + 6 - m_chat_window_back->get_y()), 1);
 	double max_w = m_chat_window_transition_x->get_curve()->get_end();
 	if (max_w < message_sprite->get_image_width() + 6) {
