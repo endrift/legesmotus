@@ -26,6 +26,9 @@
 #include "ServerConfig.hpp"
 #include "ServerNetwork.hpp"
 #include "Spawnpoint.hpp"
+#include "ClassicMode.hpp"
+#include "DeathmatchMode.hpp"
+#include "ZombieMode.hpp"
 #include "common/Exception.hpp"
 #include "common/IPAddress.hpp"
 #include "common/PacketWriter.hpp"
@@ -175,6 +178,12 @@ void	Server::team_change(const IPAddress& address, PacketReader& packet)
 	ServerPlayer*		player = get_player(sender_id);
 
 	if (player->get_team() == new_team) {
+		return;
+	}
+
+	if (!m_game_mode->is_team_play()) {
+		// TODO: use a REJECT packet instead of sending a system message
+		send_system_message(*player, "This game mode does not support team play.");
 		return;
 	}
 
@@ -401,36 +410,13 @@ void	Server::player_shot(const IPAddress& address, PacketReader& inbound_packet)
 		return;
 	}
 
-	int			score_change = 0;
-	uint64_t		freeze_time = 0;
-
-	if (!shot_player->is_frozen()) {
-		if (shooter->get_team() != shot_player->get_team()) {
-			// Shot an enemy
-			// Results in a +1 score
-			score_change = 1;
-			freeze_time = m_params.freeze_time;
-		} else if (m_params.friendly_fire) {
-			// Shot a teammate and friendly fire is enabled!
-			// Results in a -1 scoring penalty
-			score_change = -1;
-			freeze_time = m_params.freeze_time;
-		}
-	}
+	uint64_t		freeze_time = m_game_mode->player_shot(*shooter, *shot_player);
 
 	// Inform all players that this player has been shot
 	PacketWriter		outbound_packet(PLAYER_SHOT_PACKET);
 	outbound_packet << shooter_id << shot_player_id << freeze_time << angle;
 	broadcast_packet(outbound_packet);
 	// TODO: REQUIRE ACK
-
-	if (score_change) {
-		// Change the score
-		shooter->add_score(score_change);
-
-		// And inform all players of the score update
-		broadcast_score_update(*shooter);
-	}
 }
 
 void	Server::gun_fired(const IPAddress& address, PacketReader& inbound_packet)
@@ -480,7 +466,9 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 		return;
 	}
 
-	if (m_autobalance_teams || !is_valid_team(team)) {
+	if (!m_game_mode->is_team_play()) {
+		team = 'A';
+	} else if (m_autobalance_teams || !is_valid_team(team)) {
 		// Assign to team equitably.
 		if (m_team_count[0] < m_team_count[1]) {
 			team = 'A';
@@ -580,7 +568,7 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 
 	// Announce the new player
 	PacketWriter		announce_packet(ANNOUNCE_PACKET);
-	announce_packet << player_id << name << team;
+	announce_packet << new_player.get_id() << new_player.get_name() << new_player.get_team();
 	m_ack_manager.add_broadcast_packet(announce_packet);
 	broadcast_packet(announce_packet);
 
@@ -735,7 +723,7 @@ void	Server::run()
 			register_with_metaserver();
 		}
 
-		if (m_players_have_spawned) {
+		if (m_players_have_spawned && !m_players.empty()) {
 			// Update the status of the gates
 			if (get_gate('A').update()) {
 				report_gate_status('A', 0, 0);
@@ -744,19 +732,16 @@ void	Server::run()
 				report_gate_status('B', 0, 0);
 			}
 
+			m_game_mode->check_state();
+
 			if (get_gate('A').is_open()) {
-				// A's gate is open => B wins
-				game_over('B');
-				new_game();
+				m_game_mode->gate_open('A');
 			} else if (get_gate('B').is_open()) {
-				// B's gate is open => A wins
-				game_over('A');
-				new_game();
+				m_game_mode->gate_open('B');
 			}
 
 			if (m_params.game_timeout && time_since_spawn() > m_params.game_timeout) {
-				game_over(0);
-				new_game();
+				m_game_mode->game_timeout();
 			}
 			
 			// Spawn any players who joined after the game started and are now ready to join:
@@ -848,6 +833,7 @@ void	Server::new_game() {
 	m_gates[0].reset();
 	m_gates[1].reset();
 	m_waiting_players.clear(); // Waiting players get cleared out and put in general queue...
+	m_game_mode->new_game();
 
 	PacketWriter		packet(GAME_START_PACKET);
 	packet << m_current_map.get_name() << m_current_map.get_revision() << 0 << m_params.game_start_delay;
@@ -1058,6 +1044,9 @@ bool	Server::load_map(const char* map_name) {
 	// 3. Set game parameters that are specified in the server-wide config
 	m_params.init_from_config(m_config);
 
+	// 4. Initialize the game mode for this map
+	init_game_mode();
+
 	return true;
 }
 
@@ -1177,6 +1166,11 @@ void	Server::hole_punch_packet(const IPAddress& address, PacketReader& packet) {
 }
 
 void	Server::balance_teams() {
+	if (!m_game_mode->is_team_play()) {
+		// Game mode doesn't have teams
+		return;
+	}
+
 	if (!get_unbalanced_team()) {
 		// Teams are balanced as they are
 		return;
@@ -1192,6 +1186,11 @@ void	Server::balance_teams() {
 }
 
 void	Server::shakeup_teams() {
+	if (!m_game_mode->is_team_play()) {
+		// Game mode doesn't have teams
+		return;
+	}
+
 	broadcast_system_message("Random team shakeup in effect...");
 
 	size_t		players_left = nbr_players();
@@ -1239,5 +1238,32 @@ ServerPlayer*	Server::get_random_player(char team) {
 		}
 	}
 	return NULL; // Should *NOT* get here
+}
+
+void	Server::init_game_mode() {
+	if (!m_game_mode.get() || m_game_mode->get_type() != m_params.game_mode) {
+		switch (m_params.game_mode) {
+		case CLASSIC:
+			m_game_mode.reset(new ClassicMode(*this));
+			break;
+		case DEATHMATCH:
+			m_game_mode.reset(new DeathmatchMode(*this));
+			break;
+		case RACE:
+			//m_game_mode.reset(new RaceMode(*this));
+			break;
+		case ZOMBIE:
+			m_game_mode.reset(new ZombieMode(*this));
+			break;
+		}
+	}
+}
+
+void	Server::change_score(ServerPlayer& player, int score_change) {
+	// Change the score
+	player.add_score(score_change);
+
+	// And inform all players of the score update
+	broadcast_score_update(player);
 }
 

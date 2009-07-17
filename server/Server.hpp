@@ -29,6 +29,7 @@
 #include "ServerPlayer.hpp"
 #include "ServerMap.hpp"
 #include "GateStatus.hpp"
+#include "GameModeHelper.hpp"
 #include "common/AckManager.hpp"
 #include "common/GameParameters.hpp"
 #include "common/team.hpp"
@@ -39,6 +40,7 @@
 #include <list>
 #include <utility>
 #include <vector>
+#include <memory>
 
 namespace LM {
 	class PacketReader;
@@ -71,6 +73,11 @@ namespace LM {
 			void		add_broadcast_packet(const PacketWriter& packet);
 		};
 		friend class ServerAckManager;
+
+		friend class GameModeHelper;
+		friend class ClassicMode;
+		friend class DeathmatchMode;
+		friend class ZombieMode;
 	
 		//
 		// Game State
@@ -87,6 +94,7 @@ namespace LM {
 		uint32_t		m_next_player_id;	// Used to allocate next player ID
 		PlayerMap		m_players;
 		ServerMap		m_current_map;
+		std::auto_ptr<GameModeHelper>	m_game_mode;
 		std::vector<GateStatus>	m_gates;		// [0] = Team A's gate  [1] = Team B's gate
 		uint64_t		m_game_start_time;	// Time at which the game started
 		bool			m_players_have_spawned;	// True if any players have spawned
@@ -158,6 +166,9 @@ namespace LM {
 	
 		// Report to given player the team scores
 		void			report_team_scores(const ServerPlayer& recipient_player);
+
+		// Increase (or decrease if negative) the score for a player
+		void			change_score(ServerPlayer& player, int score_change);
 	
 		// Send a packet to spawn a player at specified point
 		// If is_alive is true, the player will be un-frozen and visible.
@@ -235,7 +246,10 @@ namespace LM {
 		// How many players are in the game?
 		int			nbr_players() const { return m_team_count[0] + m_team_count[1]; }
 		int			get_team_count(char team) const { return is_valid_team(team) ? m_team_count[team - 'A'] : 0; }
-	
+
+		// Game Mode
+		void			init_game_mode();
+
 		//
 		// Main Loop Helpers
 		//
