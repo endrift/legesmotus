@@ -186,7 +186,7 @@ void Player::write_update_packet (PacketWriter& packet) const {
 	if (is_invisible())	{ flags.push_back('I'); }
 	if (is_frozen())	{ flags.push_back('F'); }
 
-	packet << get_id() << get_x() << get_y() << get_x_vel() << get_y_vel() << get_rotation_degrees() << flags;
+	packet << get_id() << get_x() << get_y() << get_x_vel() << get_y_vel() << get_rotation_degrees() << get_health() << flags;
 }
 
 void Player::read_update_packet (PacketReader& packet) {
@@ -195,13 +195,16 @@ void Player::read_update_packet (PacketReader& packet) {
 	double	x_vel;
 	double	y_vel;
 	double	rotation;
+	int	health;
 	string	flags;
 
-	packet >> x >> y >> x_vel >> y_vel >> rotation >> flags;
+	packet >> x >> y >> x_vel >> y_vel >> rotation >> health >> flags;
 
+	// Note: We must use the setter functions, and not set the values directly, since a derived class may have overridden a setter.  (GraphicalPlayer overrides nearly all of them.)
 	set_position(x, y);
 	set_velocity(x_vel, y_vel);
 	set_rotation_degrees(rotation);
+	set_health(health);
 	set_is_invisible(flags.find_first_of('I') != string::npos);
 	set_is_frozen(flags.find_first_of('F') != string::npos);
 }

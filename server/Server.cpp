@@ -50,7 +50,7 @@ using namespace LM;
 using namespace std;
 
 // This can't be an enum because we want overloading of operator<< to work OK.
-const int	Server::SERVER_PROTOCOL_VERSION = 2;
+const int	Server::SERVER_PROTOCOL_VERSION = 3;
 
 const char	Server::SERVER_VERSION[] = LM_VERSION;
 
@@ -376,8 +376,9 @@ void	Server::player_shot(const IPAddress& address, PacketReader& inbound_packet)
 	uint32_t		shooter_id;
 	uint32_t		shot_player_id;
 	double			angle;
+	string			weapon;
 
-	inbound_packet >> shooter_id >> shot_player_id >> angle;
+	inbound_packet >> shooter_id >> shot_player_id >> weapon >> angle;
 
 	if (!is_authorized(address, shooter_id)) {
 		return;
@@ -390,11 +391,17 @@ void	Server::player_shot(const IPAddress& address, PacketReader& inbound_packet)
 		return;
 	}
 
-	uint64_t		freeze_time = m_game_mode->player_shot(*shooter, *shot_player);
+	shot_player->change_health(-100); // TODO: base off of weapon's damage
+
+	uint64_t		freeze_time = 0;
+	
+	if (shot_player->get_health() == 0) {
+		freeze_time = m_game_mode->player_shot(*shooter, *shot_player);
+	}
 
 	// Inform all players that this player has been shot
 	PacketWriter		outbound_packet(PLAYER_SHOT_PACKET);
-	outbound_packet << shooter_id << shot_player_id << freeze_time << angle;
+	outbound_packet << shooter_id << shot_player_id << freeze_time << shot_player->get_health() << angle;
 	broadcast_packet(outbound_packet);
 	// TODO: REQUIRE ACK
 }
@@ -563,6 +570,13 @@ void	Server::info(const IPAddress& address, PacketReader& request_packet) {
 	PacketWriter	response_packet(INFO_PACKET);
 	response_packet << scan_id << scan_start_time << SERVER_PROTOCOL_VERSION << m_current_map.get_name() << m_team_count[0] << m_team_count[1] << m_params.max_players << get_ticks() << m_server_name << m_server_location;
 	m_network.send_packet(address, response_packet);
+}
+
+// Reset the health for all players
+void	Server::reset_player_health() {
+	for (PlayerMap::iterator it(m_players.begin()); it != m_players.end(); ++it) {
+		it->second.reset_health();
+	}
 }
 
 // Reset the scores for all players, broadcasting score updates for each one
@@ -843,6 +857,8 @@ void	Server::game_over(char winning_team) {
 void	Server::start_game() {
 	// Only reset player scores when players spawn, so players have an opportunity between rounds to check the leader board for the prior round
 	reset_player_scores();
+
+	reset_player_health();
 
 	m_players_have_spawned = true;
 	m_current_map.reset();

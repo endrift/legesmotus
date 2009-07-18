@@ -190,7 +190,7 @@ void GameController::init(GameWindow* window) {
 	m_last_ping_sent = 0;
 	
 	m_client_version = LM_VERSION;
-	m_protocol_number = 2;
+	m_protocol_number = 3;
 	
 	m_pixel_depth = window->get_depth();
 	m_fullscreen = window->is_fullscreen();
@@ -582,6 +582,7 @@ void GameController::run(int lockfps) {
 		// Check if my player is set to unfreeze.
 		if (!m_players.empty() && m_time_to_unfreeze < get_ticks() && m_time_to_unfreeze != 0) {
 			m_sound_controller->play_sound("unfreeze");
+			m_players[m_player_id].reset_health();
 			m_players[m_player_id].set_is_frozen(false);
 			if (m_radar->get_mode() == RADAR_ON) {
 				m_radar->set_blip_alpha(m_player_id, 1.0);
@@ -1985,6 +1986,7 @@ void GameController::send_player_shot(uint32_t shooter_id, uint32_t hit_player_i
 	PacketWriter player_shot(PLAYER_SHOT_PACKET);
 	player_shot << shooter_id;
 	player_shot << hit_player_id;
+	player_shot << "default"; // TODO: send weapon name here
 	player_shot << angle;
 	
 	m_network.send_packet(player_shot);
@@ -2333,15 +2335,18 @@ void GameController::player_shot(PacketReader& reader) {
 	unsigned int shooter_id;
 	unsigned int shot_id;
 	unsigned long time_to_unfreeze;
+	int new_health;
 	double shot_angle;
 	
-	reader >> shooter_id >> shot_id >> time_to_unfreeze >> shot_angle;
+	reader >> shooter_id >> shot_id >> time_to_unfreeze >> new_health >> shot_angle;
 	
 	GraphicalPlayer* shooter = get_player_by_id(shooter_id);
 	GraphicalPlayer* shotplayer = get_player_by_id(shot_id);
 	if (shooter == NULL || shotplayer == NULL) {
 		return;
 	}
+
+	shotplayer->set_health(new_health);
 	
 	if (!shotplayer->is_frozen() && time_to_unfreeze != 0) {
 		ostringstream message;
