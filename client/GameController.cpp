@@ -2310,7 +2310,6 @@ void GameController::leave(PacketReader& reader) {
 		delete_individual_score(*player);
 		delete player->get_sprite();
 		m_players.erase(playerid);
-		delete player;
 	}
 }
 
