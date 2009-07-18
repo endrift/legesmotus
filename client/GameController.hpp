@@ -59,6 +59,10 @@ namespace LM {
 	public:
 		static const Color		BLUE_COLOR;
 		static const Color		RED_COLOR;
+		static const Color		BLUE_SHADOW;
+		static const Color		RED_SHADOW;
+		static const Color		TEXT_COLOR;
+		static const Color		TEXT_SHADOW;
 		static const Color		GREYED_OUT;
 		static const Color		TEXT_BG_COLOR;
 		static const Color		BUTTON_HOVER_COLOR;
@@ -262,8 +266,8 @@ namespace LM {
 		void		send_player_shot(uint32_t shooter_id, uint32_t hit_player_id, double angle);
 		void		send_message(std::string message);
 		void		send_team_message(std::string message);
-		void		display_message(std::string message) { display_message(message, Color::WHITE); }
-		void		display_message(std::string message, Color);
+		void		display_message(std::string message) { display_message(message, TEXT_COLOR, TEXT_SHADOW); }
+		void		display_message(std::string message, Color, Color);
 		void		send_gate_hold(bool holding);
 		void		set_players_visible(bool visible);
 		void		process_mouse_click(SDL_Event event);

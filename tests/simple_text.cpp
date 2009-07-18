@@ -15,6 +15,7 @@ extern "C" int main(int argc, char* argv[]) {
 	PathManager pman(argv[0]);
 	Font font(pman.data_path("JuraMedium.ttf","fonts"),12);
 	TextManager texts(&font,window);
+	ConstantCurve curve(0, 1);
 	texts.place_string("FIRST POST",150.0,0.0,TextManager::CENTER);
 	texts.set_active_color(0x87/255.0,0x68/255.0,0x16/255.0);
 	texts.place_string("That bag is brown",0.0,15.0,TextManager::LEFT);
@@ -30,6 +31,7 @@ extern "C" int main(int argc, char* argv[]) {
 	texts.set_active_alpha(1.0);
 	texts.set_active_color(1.0,0.0,0.0);
 	texts.set_shadow_color(0.5,1.0,0.5);
+	texts.set_shadow_convolve(&curve, 8, 1);
 	texts.place_string("Shadow",150.0,60.0,TextManager::CENTER);
 	bool running = true;
 	while(running) {

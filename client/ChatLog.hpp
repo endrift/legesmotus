@@ -62,7 +62,7 @@ namespace LM {
 		void		set_visible(bool visible);
 		bool		is_invisible();
 		void		delete_message(int num);
-		void		add_message(std::string message, Color color);
+		void		add_message(std::string message, Color color, Color shadow);
 		void		scrollbar_button_event(const SDL_MouseButtonEvent& event);
 		void		scrollbar_motion_event(const SDL_MouseMotionEvent& event);
 		void		autoscroll(double scale);

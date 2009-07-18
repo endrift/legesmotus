@@ -1,5 +1,5 @@
 /*
- * client/Font.hpp
+ * client/ConvolveKernel.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,28 +22,28 @@
  * 
  */
 
-#ifndef LM_CLIENT_FONT_HPP
-#define LM_CLIENT_FONT_HPP
+#ifndef LM_CLIENT_CONVOLVEKERNEL_HPP
+#define LM_CLIENT_CONVOLVEKERNEL_HPP
 
-#include "SDL_ttf.h"
-#include "Sprite.hpp"
-#include "Sprite.hpp"
-#include "ConvolveKernel.hpp"
-#include <string>
-#include <map>
+#include "Curve.hpp"
+#include "SDL.h"
 
 namespace LM {
-	class Font {
+	class ConvolveKernel {
 	private:
-		TTF_Font*	m_font;
+		static const int	SUPERSAMPLE;
+		double*	m_data;
+		double	m_normalization;
+		int	m_width;
+		int	m_height;
+		bool	m_extend;
 	public:
-		Font(const char* filename, int size);
-		~Font();
-	
-		Sprite*	render_string(const std::string& text, const ConvolveKernel* kernel = NULL);
-		int	line_skip() const;
-		int	ascent() const;
-		int	descent() const;
+		ConvolveKernel(Curve* curve, int kwidth, int kheight, double normalization = 0);
+		~ConvolveKernel();
+		SDL_Surface* convolve(SDL_Surface* source) const;
+
+		int get_width() const;
+		int get_height() const;
 	};
 }
 

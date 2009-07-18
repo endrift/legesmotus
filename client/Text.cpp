@@ -29,7 +29,7 @@
 using namespace LM;
 using namespace std;
 
-Text::Text(const string& text, Font* font) : Graphic() {
+Text::Text(const string& text, Font* font, const ConvolveKernel* kernel) : Graphic() {
 	m_fg = font->render_string(text);
 	if (m_fg == NULL) {
 		throw Exception("Cannot render text");
@@ -39,7 +39,14 @@ Text::Text(const string& text, Font* font) : Graphic() {
 	m_fg->set_center_y(0);
 	m_image_width = m_fg->get_image_width();
 	m_image_height = m_fg->get_image_height();
-	m_shadow_enabled = false;
+	if (kernel != NULL) {
+		m_shadow_enabled = true;
+		m_shadow = font->render_string(text, kernel);
+		m_shadow->set_center_x((kernel->get_width())/2+1);
+		m_shadow->set_center_y((kernel->get_height())/2+1);
+	} else {
+		m_shadow_enabled = false;
+	}
 }
 
 Text::Text(const Text& other) : Graphic(other) {
@@ -125,18 +132,9 @@ void Text::set_blue_intensity(double b) {
 void Text::draw(const GameWindow* window) const {
 	glPushMatrix();
 	transform_gl();
-	GLfloat vec[4] = { 0.0, 0.0, 0.0, 0.8 };
-	glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_COMBINE);
-	glTexEnvi(GL_TEXTURE_ENV,GL_COMBINE_ALPHA,GL_INTERPOLATE);
-	glTexEnvfv(GL_TEXTURE_ENV,GL_TEXTURE_ENV_COLOR,vec);
-	glEnable(GL_ALPHA_TEST);
 	if (m_shadow_enabled) {
-		glAlphaFunc(GL_GREATER,m_shadow->get_alpha()*0.2);
 		m_shadow->draw(window);
 	}
-	glAlphaFunc(GL_GREATER,m_fg->get_alpha()*0.2);
 	m_fg->draw(window);
-	glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
-	glDisable(GL_ALPHA_TEST);
 	glPopMatrix();
 }

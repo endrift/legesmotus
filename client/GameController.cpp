@@ -63,8 +63,12 @@ const int GameController::SHOT_DISPLAY_TIME = 180;
 const int GameController::MUZZLE_FLASH_LENGTH = 80;
 const int GameController::GATE_WARNING_FLASH_LENGTH = 3000;
 const double GameController::RANDOM_ROTATION_SCALE = 1.0;
-const Color GameController::BLUE_COLOR(0.4, 0.4, 1.0);
-const Color GameController::RED_COLOR(1.0, 0.4, 0.4);
+const Color GameController::BLUE_COLOR(0.6, 0.6, 1.0);
+const Color GameController::RED_COLOR(1.0, 0.6, 0.6);
+const Color GameController::BLUE_SHADOW(0.1, 0.1, 0.3);
+const Color GameController::RED_SHADOW(0.3, 0.1, 0.1);
+const Color GameController::TEXT_COLOR(1.0, 1.0, 1.0);
+const Color GameController::TEXT_SHADOW(0.1, 0.1, 0.1);
 const Color GameController::GREYED_OUT(0.5, 0.5, 0.5);
 const Color GameController::TEXT_BG_COLOR(0.0, 0.0, 0.0, 0.7);
 const Color GameController::BUTTON_HOVER_COLOR(0.5, 0.5, 1.0);
@@ -301,10 +305,12 @@ void GameController::init(GameWindow* window) {
 	m_options_menu_items.clear();
 	
 	// Set the text manager to draw a shadow behind everything.
+	ConstantCurve curve(0, 1);
 	m_text_manager->set_active_font(m_menu_font);
-	m_text_manager->set_shadow_color(Color::BLACK);
-	m_text_manager->set_shadow_alpha(0.7);
+	m_text_manager->set_shadow_alpha(1.0);
 	m_text_manager->set_shadow_offset(1.0, 1.0);
+	m_text_manager->set_shadow_convolve(&curve, 5, 1.0);
+	m_text_manager->set_shadow_color(TEXT_SHADOW);
 	m_text_manager->set_shadow(true);
 	
 	// Initialize all of the menu items.
@@ -318,7 +324,7 @@ void GameController::init(GameWindow* window) {
 	m_main_menu_items["Thanks"] = m_text_manager->place_string("Thanks for playing! Please visit", 50, 500, TextManager::LEFT, TextManager::LAYER_HUD);
  	m_text_manager->set_active_color(0.4, 1.0, 0.4);
  	m_main_menu_items["Thanks2"] = m_text_manager->place_string("http://legesmotus.cs.brown.edu", 50, 540, TextManager::LEFT, TextManager::LAYER_HUD);
- 	m_text_manager->set_active_color(Color::WHITE);
+ 	m_text_manager->set_active_color(TEXT_COLOR);
  	m_main_menu_items["Thanks3"] = m_text_manager->place_string("to leave feedback for us!", 50, 580, TextManager::LEFT, TextManager::LAYER_HUD);
 	
 	m_text_manager->set_active_font(m_font);
@@ -475,7 +481,7 @@ void GameController::init(GameWindow* window) {
 	m_window->register_hud_graphic(m_red_gate_status_rect_back);
 	
 	// Initialize the gate status bar labels.
-	m_text_manager->set_active_color(Color::WHITE);
+	m_text_manager->set_active_color(TEXT_COLOR);
 	m_text_manager->set_active_font(m_font);
 	m_blue_gate_status_text = m_text_manager->place_string("Blue Gate", m_blue_gate_status_rect->get_x() + 1, m_blue_gate_status_rect->get_y() + m_blue_gate_status_rect->get_image_height()/4, TextManager::CENTER, TextManager::LAYER_HUD, TEXT_LAYER);
 	m_red_gate_status_text = m_text_manager->place_string("Red Gate", m_red_gate_status_rect->get_x() + 2, m_red_gate_status_rect->get_y() + m_red_gate_status_rect->get_image_height()/4, TextManager::CENTER, TextManager::LAYER_HUD, TEXT_LAYER);
@@ -574,7 +580,7 @@ void GameController::run(int lockfps) {
 		}
 		
 		if (m_join_sent_time != 0 && m_join_sent_time + 5000 < get_ticks()) {
-			display_message("Error: Could not connect to server.", RED_COLOR);
+			display_message("Error: Could not connect to server.", RED_COLOR, RED_SHADOW);
 			disconnect();
 			m_join_sent_time = 0;
 		}
@@ -613,7 +619,7 @@ void GameController::run(int lockfps) {
 				}
 				
 				if (m_network.get_last_packet_time() + NETWORK_TIMEOUT_LIMIT < currframe) {
-					display_message("Connection to the server has timed out.", RED_COLOR);
+					display_message("Connection to the server has timed out.", RED_COLOR, RED_SHADOW);
 					disconnect();
 					continue;
 				}
@@ -900,7 +906,7 @@ void GameController::process_input() {
 						break;
 					}
 				
-					m_text_manager->set_active_color(Color::WHITE);
+					m_text_manager->set_active_color(TEXT_COLOR);
 					// If we're going back to the menu, remove the input bar.
 					if (event.key.keysym.sym == m_key_bindings.show_menu || event.key.keysym.sym == m_alt_key_bindings.show_menu) {
 						if (!m_chat_log->is_invisible()) {
@@ -931,7 +937,7 @@ void GameController::process_input() {
 							} else {
 								ostringstream	msg;
 								msg << "You are now known as " << new_name;
-								display_message(msg.str(), Color::WHITE);
+								display_message(msg.str());
 								set_player_name(new_name);
 							}
 						} else if (message.find("/team ") == 0) {
@@ -967,11 +973,11 @@ void GameController::process_input() {
 						}
 						m_input_text.erase(m_input_text.length() - 1);
 						m_text_manager->remove_string(m_input_bar);
-						m_text_manager->set_active_color(Color::WHITE);
+						m_text_manager->set_active_color(TEXT_COLOR);
 						m_text_manager->set_active_font(m_font);
 						m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
 						m_input_bar_back->set_image_width(m_input_bar->get_image_width() + 6);
-						m_input_bar_back->set_invisible(false);
+						//m_input_bar_back->set_invisible(false);
 					} else {
 						// Otherwise, it's a regular character. Type it in.
 						if ( (event.key.keysym.unicode & 0xFF80) == 0 && event.key.keysym.unicode != 0) {
@@ -981,11 +987,11 @@ void GameController::process_input() {
 						}
 						// Replace the text display with the new one.
 						m_text_manager->remove_string(m_input_bar);
-						m_text_manager->set_active_color(Color::WHITE);
+						m_text_manager->set_active_color(TEXT_COLOR);
 						m_text_manager->set_active_font(m_font);
 						m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
 						m_input_bar_back->set_image_width(m_input_bar->get_image_width() + 6);
-						m_input_bar_back->set_invisible(false);
+						//m_input_bar_back->set_invisible(false);
 					}
 				} else {
 					//Check which key using: event.key.keysym.sym == SDLK_<SOMETHING>
@@ -994,12 +1000,12 @@ void GameController::process_input() {
 					} else if (event.key.keysym.sym == m_key_bindings.open_chat || event.key.keysym.sym == m_key_bindings.open_console || event.key.keysym.sym == m_alt_key_bindings.open_chat || event.key.keysym.sym == m_alt_key_bindings.open_console) {
 						SDL_EnableUNICODE(1);
 						SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
-						m_text_manager->set_active_color(Color::WHITE);
+						m_text_manager->set_active_color(TEXT_COLOR);
 						if (m_input_bar == NULL) {
 							m_text_manager->set_active_font(m_font);
 							m_input_bar = m_text_manager->place_string("> ", 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
 							m_input_bar_back->set_image_width(m_input_bar->get_image_width() + 6);
-							m_input_bar_back->set_invisible(false);
+							//m_input_bar_back->set_invisible(false);
 						}
 						if (event.key.keysym.sym == m_key_bindings.open_console || event.key.keysym.sym == m_alt_key_bindings.open_console) {
 							m_chat_log->set_visible(true);
@@ -1007,13 +1013,13 @@ void GameController::process_input() {
 					} else if (event.key.keysym.sym == m_key_bindings.open_team_chat || event.key.keysym.sym == m_alt_key_bindings.open_team_chat) {
 						SDL_EnableUNICODE(1);
 						SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
-						m_text_manager->set_active_color(Color::WHITE);
+						m_text_manager->set_active_color(TEXT_COLOR);
 						m_text_manager->set_active_font(m_font);
 						m_input_text = "[TEAM]> ";
 						if (m_input_bar == NULL) {
 							m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
 							m_input_bar_back->set_image_width(m_input_bar->get_image_width() + 6);
-							m_input_bar_back->set_invisible(false);
+							//m_input_bar_back->set_invisible(false);
 						}
 					} else if (event.key.keysym.sym == m_key_bindings.show_menu || event.key.keysym.sym == m_alt_key_bindings.show_menu) {
 						if (!m_chat_log->is_invisible()) {
@@ -1064,7 +1070,7 @@ void GameController::process_input() {
 							// We're hovering over this menu item.
 							thisitem->set_color(BUTTON_HOVER_COLOR);
 						} else {
-							thisitem->set_color(Color::WHITE);
+							thisitem->set_color(TEXT_COLOR);
 						}
 					}
 					if (!m_network.is_connected() || !m_join_sent_time == 0) {
@@ -1082,7 +1088,7 @@ void GameController::process_input() {
 							// We're hovering over this menu item.
 							thisitem->set_color(BUTTON_HOVER_COLOR);
 						} else {
-							thisitem->set_color(Color::WHITE);
+							thisitem->set_color(TEXT_COLOR);
 						}
 					}
 				}
@@ -1237,13 +1243,13 @@ void GameController::process_mouse_click(SDL_Event event) {
 					// Open the input bar and allow the name to be entered.
 					// Should replace later, to use a separate text entry location.
 					SDL_EnableUNICODE(1);
-					m_text_manager->set_active_color(Color::WHITE);
+					m_text_manager->set_active_color(TEXT_COLOR);
 					m_text_manager->set_active_font(m_font);
 					m_input_text = "> /name ";
 					m_text_manager->remove_string(m_input_bar);
 					m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
 					m_input_bar_back->set_image_width(m_input_bar->get_image_width() + 6);
-					m_input_bar_back->set_invisible(false);
+					//m_input_bar_back->set_invisible(false);
 				} else if ((*it).first == "Toggle Sound") {
 					string sound = "";
 					if (m_sound_controller->is_sound_on()) {
@@ -1378,7 +1384,7 @@ void GameController::process_mouse_click(SDL_Event event) {
 void GameController::reset_options() {
 	string fullscreen = "";
 	string sound = "";
-	m_text_manager->set_active_color(Color::WHITE);
+	m_text_manager->set_active_color(TEXT_COLOR);
 	if (m_configuration->get_bool_value("fullscreen")) {
 		m_fullscreen = true;
 		fullscreen = "Fullscreen: Yes";
@@ -1854,7 +1860,7 @@ void GameController::toggle_options_menu(bool visible) {
  */
 void GameController::change_team_scores(int bluescore, int redscore) {
 	m_text_manager->set_active_font(m_menu_font);
-	m_text_manager->set_active_color(Color::WHITE);
+	m_text_manager->set_active_color(TEXT_COLOR);
 	
 	if (redscore != -1) {
 		if (m_overlay_items.count("red score") != 0) {
@@ -1903,7 +1909,7 @@ void GameController::update_individual_scores() {
 	red_players.sort(Player::compare_by_score());
 
 	m_text_manager->set_active_font(m_medium_font);
-	m_text_manager->set_active_color(Color::WHITE);
+	m_text_manager->set_active_color(TEXT_COLOR);
 	
 	int count = 0;
 	
@@ -1931,6 +1937,7 @@ void GameController::update_individual_score_line(int count, const GraphicalPlay
 	string playerscore = playernameforscore.append("score");
 
 	m_text_manager->set_active_color(currplayer.get_team() == 'A' ? BLUE_COLOR : RED_COLOR);
+	m_text_manager->set_shadow_color(currplayer.get_team() == 'A' ? BLUE_SHADOW : RED_SHADOW);
 
 	if (m_overlay_items.count(playerscore) != 0) {
 		m_text_manager->remove_string(m_overlay_items[playerscore]);
@@ -1957,6 +1964,8 @@ void GameController::update_individual_score_line(int count, const GraphicalPlay
 	if (m_overlay_items[playerid]->get_y() + m_overlay_items[playerid]->get_image_height() + 2 > m_overlay_scrollarea->get_content_height()) {
 		m_overlay_scrollarea->set_content_height(m_overlay_items[playerid]->get_y() + m_overlay_items[playerid]->get_image_height() + 2);
 	}
+
+	m_text_manager->set_shadow_color(TEXT_SHADOW);
 }
 
 void GameController::delete_individual_score(const GraphicalPlayer& currplayer) {
@@ -2079,8 +2088,8 @@ void GameController::welcome(PacketReader& reader) {
 	
 	m_join_sent_time = 0;
 	
-	m_main_menu_items["Resume Game"]->set_color(Color::WHITE);
-	m_main_menu_items["Disconnect"]->set_color(Color::WHITE);
+	m_main_menu_items["Resume Game"]->set_color(TEXT_COLOR);
+	m_main_menu_items["Disconnect"]->set_color(TEXT_COLOR);
 	
 	clear_players();
 	
@@ -2088,10 +2097,12 @@ void GameController::welcome(PacketReader& reader) {
 	if (team == 'A') {
 		m_players.insert(pair<int, GraphicalPlayer>(m_player_id,GraphicalPlayer(m_name.c_str(), m_player_id, team, new GraphicGroup(blue_player), blue_sprite->get_width()/2, blue_sprite->get_height()/2)));
 		m_text_manager->set_active_color(BLUE_COLOR);
+		m_text_manager->set_shadow_color(BLUE_SHADOW);
 		m_window->register_graphic(&blue_player);
 	} else {
 		m_players.insert(pair<int, GraphicalPlayer>(m_player_id,GraphicalPlayer(m_name.c_str(), m_player_id, team, new GraphicGroup(red_player), red_sprite->get_width()/2, red_sprite->get_height()/2)));
 		m_text_manager->set_active_color(RED_COLOR);
+		m_text_manager->set_shadow_color(RED_SHADOW);
 		m_window->register_graphic(&red_player);
 	}
 	m_window->register_graphic(m_players[m_player_id].get_sprite());
@@ -2105,6 +2116,8 @@ void GameController::welcome(PacketReader& reader) {
 	send_my_player_update();
 	
 	m_game_state = GAME_IN_PROGRESS;
+	
+	m_text_manager->set_shadow_color(TEXT_SHADOW);
 }
 
 /*
@@ -2128,8 +2141,12 @@ void GameController::announce(PacketReader& reader) {
 	string joinmsg = "";
 	joinmsg.append(playername);
 	joinmsg.append(" has joined the game!");
-	display_message(joinmsg, team == 'A' ? BLUE_COLOR : RED_COLOR);
-	
+	if (team == 'A') {
+		display_message(joinmsg, BLUE_COLOR, BLUE_SHADOW);
+	} else {
+		display_message(joinmsg, RED_COLOR, RED_SHADOW);
+	}
+
 	// Ignore announce packet for ourself, but still display join message (above)
 	if (playerid == m_player_id) {
 		return;
@@ -2139,9 +2156,11 @@ void GameController::announce(PacketReader& reader) {
 	if (team == 'A') {
 		m_players.insert(pair<int, GraphicalPlayer>(playerid,GraphicalPlayer((const char*)playername.c_str(), playerid, team, new GraphicGroup(blue_player))));
 		m_text_manager->set_active_color(BLUE_COLOR);
+		m_text_manager->set_shadow_color(BLUE_SHADOW);
 	} else {
 		m_players.insert(pair<int, GraphicalPlayer>(playerid,GraphicalPlayer((const char*)playername.c_str(), playerid, team, new GraphicGroup(red_player))));
 		m_text_manager->set_active_color(RED_COLOR);
+		m_text_manager->set_shadow_color(RED_SHADOW);
 	}
 	m_radar->add_blip(playerid,team,0,0);
 	
@@ -2149,6 +2168,7 @@ void GameController::announce(PacketReader& reader) {
 	m_window->register_graphic(m_players[playerid].get_sprite());
 	m_players[playerid].set_name_sprite(m_text_manager->place_string(m_players[playerid].get_name(), m_players[playerid].get_x(), m_players[playerid].get_y()-(m_players[playerid].get_radius()+30), TextManager::CENTER, TextManager::LAYER_MAIN));
 	m_players[playerid].set_radius(40);
+	m_text_manager->set_shadow_color(TEXT_SHADOW);
 }
 
 /*
@@ -2282,9 +2302,9 @@ void GameController::leave(PacketReader& reader) {
 	
 	// Display a message based on their team.
 	if (m_players[playerid].get_team() == 'A') {
-		display_message(leavemsg, BLUE_COLOR);
+		display_message(leavemsg, BLUE_COLOR, BLUE_SHADOW);
 	} else {
-		display_message(leavemsg, RED_COLOR);
+		display_message(leavemsg, RED_COLOR, RED_SHADOW);
 	}
 	
 	m_text_manager->remove_string(m_players[playerid].get_name_sprite());
@@ -2368,9 +2388,9 @@ void GameController::player_shot(PacketReader& reader) {
 		message << ".";
 		
 		if (shooter->get_team() == 'A') {
-			display_message(message.str(), BLUE_COLOR);
+			display_message(message.str(), BLUE_COLOR, BLUE_COLOR);
 		} else if (shooter->get_team() == 'B') {
-			display_message(message.str(), RED_COLOR);
+			display_message(message.str(), RED_COLOR, RED_COLOR);
 		}
 	}
 	
@@ -2422,9 +2442,9 @@ void GameController::message(PacketReader& reader) {
 		
 		// Show the message in a color depending on the sender's team.
 		if (sender->get_team() == 'A') {
-			display_message(message, BLUE_COLOR);
+			display_message(message, BLUE_COLOR, BLUE_SHADOW);
 		} else {
-			display_message(message, RED_COLOR);
+			display_message(message, RED_COLOR, RED_SHADOW);
 		}
 	}
 }
@@ -2461,10 +2481,10 @@ void GameController::gate_update(PacketReader& reader) {
 	if (change_in_players != 0) {
 		if (team == 'A') {
 			message << "blue gate!";
-			display_message(message.str(), RED_COLOR);
+			display_message(message.str(), RED_COLOR, RED_SHADOW);
 		} else if (team == 'B') {
 			message << "red gate!";
-			display_message(message.str(), BLUE_COLOR);
+			display_message(message.str(), BLUE_COLOR, BLUE_SHADOW);
 		}
 	}
 	
@@ -2737,14 +2757,17 @@ void GameController::name_change(PacketReader& reader) {
 
 		// Re-create the name sprite.
 		if (player->get_team() == 'A') {
-			display_message(msg.str().c_str(), BLUE_COLOR);
+			display_message(msg.str().c_str(), BLUE_COLOR, BLUE_SHADOW);
 			m_text_manager->set_active_color(BLUE_COLOR);
+			m_text_manager->set_shadow_color(BLUE_SHADOW);
 		} else {
-			display_message(msg.str().c_str(), RED_COLOR);
+			display_message(msg.str().c_str(), RED_COLOR, RED_SHADOW);
 			m_text_manager->set_active_color(RED_COLOR);
+			m_text_manager->set_shadow_color(RED_SHADOW);
 		}
 		m_text_manager->remove_string(player->get_name_sprite());
 		player->set_name_sprite(m_text_manager->place_string(player->get_name(), player->get_x(), player->get_y()-(player->get_radius()+30), TextManager::CENTER, TextManager::LAYER_MAIN));
+		m_text_manager->set_shadow_color(TEXT_SHADOW);
 		update_individual_scores();
 	}
 }
@@ -2774,12 +2797,10 @@ void GameController::team_change(PacketReader& reader) {
 		// Generate new graphics for it.
 		if (team == 'A') {
 			player->set_sprite(new GraphicGroup(blue_player));
-			m_text_manager->set_active_color(BLUE_COLOR);
-			display_message(msg.str().c_str(), BLUE_COLOR);
+			display_message(msg.str().c_str(), BLUE_COLOR, BLUE_SHADOW);
 		} else {
 			player->set_sprite(new GraphicGroup(red_player));
-			m_text_manager->set_active_color(RED_COLOR);
-			display_message(msg.str().c_str(), RED_COLOR);
+			display_message(msg.str().c_str(), RED_COLOR, RED_SHADOW);
 		}
 		m_radar->add_blip(playerid,team,0,0);
 		
@@ -2833,8 +2854,9 @@ void GameController::send_team_change_packet(char new_team) {
 /*
  * Display a message on the screen.
  */
-void GameController::display_message(string message, Color color) {
+void GameController::display_message(string message, Color color, Color shadow) {
 	m_text_manager->set_active_color(color);
+	m_text_manager->set_shadow_color(shadow);
 	m_text_manager->set_active_font(m_font);
 	int y = 20 + (m_font->ascent() + m_font->descent() + 5) * m_messages.size();
 	Text* message_sprite = m_text_manager->place_string(message, 20, y, TextManager::LEFT, TextManager::LAYER_HUD);
@@ -2853,8 +2875,8 @@ void GameController::display_message(string message, Color color) {
 	if (max_w < message_sprite->get_image_width() + 6) {
 		m_chat_window_transition_x->change_curve(currframe, new LinearCurve(0, message_sprite->get_image_width() + 6), 1);
 	}
-	m_chat_log->add_message(message, color);
-	m_chat_window_back->set_invisible(false);
+	m_chat_log->add_message(message, color, shadow);
+	//m_chat_window_back->set_invisible(false);
 }
 
 /*

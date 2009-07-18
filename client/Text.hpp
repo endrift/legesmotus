@@ -29,6 +29,7 @@
 #include "Font.hpp"
 #include "Graphic.hpp"
 #include "Sprite.hpp"
+#include "ConvolveKernel.hpp"
 
 namespace LM {
 	class Text : public Graphic {
@@ -39,7 +40,7 @@ namespace LM {
 	
 		void	touch_shadow(); // Makes sure the shadow exists
 	public:
-		Text(const std::string& text, Font* font);
+		Text(const std::string& text, Font* font, const ConvolveKernel* convolve = NULL);
 		Text(const Text& other);
 		virtual ~Text();
 		virtual Text* clone() const;

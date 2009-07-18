@@ -104,11 +104,14 @@ void ChatLog::set_visible(bool visible) {
 	m_scrollarea->set_invisible(!visible);
 }
 
-void ChatLog::add_message(string message, Color color) {
+void ChatLog::add_message(string message, Color color, Color shadow) {
 	double old_progress = m_scrollbar->get_scroll_progress();
+	m_text_manager->set_active_color(color);
+	m_text_manager->set_shadow_color(shadow);
 	Text* new_message = m_text_manager->place_string(message, m_background->get_x() - m_background->get_image_width()/2 -
 		m_scrollarea->get_x() + m_scrollarea->get_width()/2 + 10, LINE_SPACING * m_items.size(), TextManager::LEFT, TextManager::LAYER_HUD);
 	new_message->set_priority(TEXT_LAYER);
+	m_text_manager->set_shadow_color(GameController::TEXT_SHADOW);
 	m_items.push_back(m_scrollarea->get_group()->add_graphic(new_message, message));
 	m_text_manager->remove_string(new_message);
 	m_scrollarea->set_content_height(LINE_SPACING * (m_items.size()));

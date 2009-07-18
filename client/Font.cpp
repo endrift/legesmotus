@@ -44,10 +44,17 @@ Font::~Font() {
 	}
 }
 
-Sprite* Font::render_string(const string& text) {
+Sprite* Font::render_string(const string& text, const ConvolveKernel* kernel) {
 	SDL_Color white = { 255, 255, 255, 0 };
 	SDL_Surface* rendered = TTF_RenderUTF8_Blended(m_font,text.c_str(),white);
-	if(!rendered) return NULL;
+	if (rendered == NULL) {
+		return NULL;
+	}
+	if (kernel != NULL) {
+		SDL_Surface* convolved = kernel->convolve(rendered);
+		SDL_FreeSurface(rendered);
+		rendered = convolved;
+	}
 	Sprite* text_sprite = new Sprite(rendered);
 	SDL_FreeSurface(rendered);
 	return text_sprite;

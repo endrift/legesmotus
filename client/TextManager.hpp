@@ -27,6 +27,7 @@
 
 #include "Font.hpp"
 #include "Text.hpp"
+#include "ConvolveKernel.hpp"
 #include <vector>
 
 namespace LM {
@@ -49,6 +50,7 @@ namespace LM {
 		double			m_shadow_green;
 		double			m_shadow_blue;
 		double			m_shadow_alpha;
+		ConvolveKernel*	m_shadow_kernel;
 	public:
 		enum Align {
 			LEFT = 0,
@@ -75,6 +77,7 @@ namespace LM {
 		void	set_shadow_color(Color c);
 		void	set_shadow_alpha(double a);
 		void	set_shadow_offset(double x, double y);
+		void	set_shadow_convolve(Curve* curve, int diameter, double normalization = 0.0);
 		void	set_shadow(bool enable);
 	};
 }

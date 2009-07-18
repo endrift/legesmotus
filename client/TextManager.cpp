@@ -43,18 +43,20 @@ TextManager::TextManager(Font* font, GameWindow* window) {
 	m_shadow_alpha = 1.0;
 	m_shadow_x = 1.0;
 	m_shadow_y = 1.0;
+	m_shadow_kernel = NULL;
 	m_shadow = false;
 	m_window = window;
 }
 
 TextManager::~TextManager() {
 	remove_all_strings();
+	delete m_shadow_kernel;
 }
 
 Text* TextManager::place_string(const std::string& text, double x, double y, Align align, Layer layer, int priority) {
 	Text *rendered;
 	try {
-		rendered = new Text(text, m_font);
+		rendered = new Text(text, m_font, m_shadow_kernel);
 	} catch(Exception e) {
 		cerr << "Error placing string: " << e.what() << endl;
 		return NULL;
@@ -164,6 +166,10 @@ void TextManager::set_shadow_alpha(double a) {
 void TextManager::set_shadow_offset(double x, double y) {
 	m_shadow_x = x;
 	m_shadow_y = y;
+}
+
+void TextManager::set_shadow_convolve(Curve* curve, int diameter, double normalization) {
+	m_shadow_kernel = new ConvolveKernel(curve, diameter, diameter, normalization);
 }
 
 void TextManager::set_shadow(bool enable) {
