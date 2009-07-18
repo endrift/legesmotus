@@ -2330,21 +2330,23 @@ void GameController::gun_fired(PacketReader& reader) {
 		return;
 	}
 	
-	// Show a graphic for the shot.
-	Graphic* this_shot = new Sprite(*m_shot);
-	this_shot->set_x(end_x);
-	this_shot->set_y(end_y);
-	this_shot->set_invisible(false);
-	this_shot->set_scale_x(.1);
-	this_shot->set_scale_y(.1);
-	pair<Graphic*, unsigned int> new_shot(this_shot, get_ticks() + SHOT_DISPLAY_TIME);
-	m_shots.push_back(new_shot);
-	m_window->register_graphic(this_shot);
+	if (GraphicalPlayer* player = get_player_by_id(playerid)) {
+		// Show a graphic for the shot.
+		Graphic* this_shot = new Sprite(*m_shot);
+		this_shot->set_x(end_x);
+		this_shot->set_y(end_y);
+		this_shot->set_invisible(false);
+		this_shot->set_scale_x(.1);
+		this_shot->set_scale_y(.1);
+		pair<Graphic*, unsigned int> new_shot(this_shot, get_ticks() + SHOT_DISPLAY_TIME);
+		m_shots.push_back(new_shot);
+		m_window->register_graphic(this_shot);
 	
-	m_sound_controller->play_sound("fire");
-	m_radar->activate_blip(playerid, get_ticks(), m_params.radar_blip_duration);
+		m_sound_controller->play_sound("fire");
+		m_radar->activate_blip(playerid, get_ticks(), m_params.radar_blip_duration);
 	
-	player_fired(playerid, start_x, start_y, rotation);
+		player_fired(playerid, start_x, start_y, rotation);
+	}
 }
 
 /*
