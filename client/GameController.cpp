@@ -74,6 +74,8 @@ const Color GameController::TEXT_BG_COLOR(0.0, 0.0, 0.0, 0.7);
 const Color GameController::BUTTON_HOVER_COLOR(0.5, 0.5, 1.0);
 const int GameController::GATE_STATUS_RECT_WIDTH = 80;
 const int GameController::FROZEN_STATUS_RECT_WIDTH = 60;
+const int GameController::HEALTH_BAR_WIDTH = 100;
+const int GameController::STATUS_BAR_HEIGHT = 40;
 const int GameController::DOUBLE_CLICK_TIME = 300;
 const int GameController::NETWORK_TIMEOUT_LIMIT = 10000;
 const int GameController::TEXT_LAYER = -4;
@@ -146,6 +148,8 @@ GameController::~GameController() {
 	delete m_red_gate_status_rect_back;
 	delete m_frozen_status_rect;
 	delete m_frozen_status_rect_back;
+	delete m_health_bar;
+	delete m_health_bar_back;
 	
 	delete m_input_bar_back;
 	delete m_chat_window_back;
@@ -451,14 +455,14 @@ void GameController::init(GameWindow* window) {
 	
 	// Initialize the gate status bars.
 	m_blue_gate_status_rect = new TableBackground(1, GATE_STATUS_RECT_WIDTH);
-	m_blue_gate_status_rect->set_row_height(0, 40);
+	m_blue_gate_status_rect->set_row_height(0, STATUS_BAR_HEIGHT);
 	m_blue_gate_status_rect->set_priority(-1);
 	m_blue_gate_status_rect->set_cell_color(0, Color(0.0, 0.0, 1.0, 0.5));
 	m_blue_gate_status_rect->set_x(m_screen_width - 2 * m_blue_gate_status_rect->get_image_width() - 20);
 	m_blue_gate_status_rect->set_y(m_screen_height - m_blue_gate_status_rect->get_image_height() - 20);
 	m_window->register_hud_graphic(m_blue_gate_status_rect);
 	m_blue_gate_status_rect_back = new TableBackground(1, GATE_STATUS_RECT_WIDTH);
-	m_blue_gate_status_rect_back->set_row_height(0, 40);
+	m_blue_gate_status_rect_back->set_row_height(0, STATUS_BAR_HEIGHT);
 	m_blue_gate_status_rect_back->set_priority(0);
 	m_blue_gate_status_rect_back->set_cell_color(0, Color(0.1, 0.1, 0.1, 0.5));
 	m_blue_gate_status_rect_back->set_x(m_screen_width - 2 * m_blue_gate_status_rect->get_image_width() - 20);
@@ -466,14 +470,14 @@ void GameController::init(GameWindow* window) {
 	m_window->register_hud_graphic(m_blue_gate_status_rect_back);
 	
 	m_red_gate_status_rect = new TableBackground(1, GATE_STATUS_RECT_WIDTH);
-	m_red_gate_status_rect->set_row_height(0, 40);
+	m_red_gate_status_rect->set_row_height(0, STATUS_BAR_HEIGHT);
 	m_red_gate_status_rect->set_priority(-1);
 	m_red_gate_status_rect->set_cell_color(0, Color(1.0, 0.0, 0.0, 0.5));
 	m_red_gate_status_rect->set_x(m_screen_width - m_red_gate_status_rect->get_image_width() - 10);
 	m_red_gate_status_rect->set_y(m_screen_height - m_red_gate_status_rect->get_image_height() - 20);
 	m_window->register_hud_graphic(m_red_gate_status_rect);
 	m_red_gate_status_rect_back = new TableBackground(1, GATE_STATUS_RECT_WIDTH);
-	m_red_gate_status_rect_back->set_row_height(0, 40);
+	m_red_gate_status_rect_back->set_row_height(0, STATUS_BAR_HEIGHT);
 	m_red_gate_status_rect_back->set_priority(0);
 	m_red_gate_status_rect_back->set_cell_color(0, Color(0.1, 0.1, 0.1, 0.5));
 	m_red_gate_status_rect_back->set_x(m_screen_width - m_red_gate_status_rect->get_image_width() - 10);
@@ -506,6 +510,24 @@ void GameController::init(GameWindow* window) {
 	m_text_manager->set_active_color(1.0, 1.0, 1.0);
 	m_text_manager->set_active_font(m_font);
 	m_frozen_status_text = m_text_manager->place_string("Frozen", m_frozen_status_rect->get_x() + 1, m_frozen_status_rect->get_y() + 2, TextManager::CENTER, TextManager::LAYER_HUD, TEXT_LAYER);
+
+	// Initialize the frozen status bar.
+	m_health_bar = new TableBackground(1, HEALTH_BAR_WIDTH);
+	m_health_bar->set_row_height(0, STATUS_BAR_HEIGHT);
+	m_health_bar->set_priority(-1);
+	m_health_bar->set_cell_color(0, Color(1.0, 0.0, 0.0, 0.5));
+	m_health_bar->set_x(HEALTH_BAR_WIDTH);
+	m_health_bar->set_y(m_screen_height - m_health_bar->get_image_height() - 20);
+	m_window->register_hud_graphic(m_health_bar);
+	m_health_bar_back = new TableBackground(1, HEALTH_BAR_WIDTH);
+	m_health_bar_back->set_row_height(0, STATUS_BAR_HEIGHT);
+	m_health_bar_back->set_priority(0);
+	m_health_bar_back->set_cell_color(0, Color(0.1, 0.1, 0.1, 0.5));
+	m_health_bar_back->set_x(m_health_bar->get_x());
+	m_health_bar_back->set_y(m_health_bar->get_y());
+	m_window->register_hud_graphic(m_health_bar_back);
+	
+	update_health_bar(100);
 
 	// Initialize the input bar background
 	m_input_bar_back = new TableBackground(1, 0);
@@ -589,6 +611,7 @@ void GameController::run(int lockfps) {
 		if (!m_players.empty() && m_time_to_unfreeze < get_ticks() && m_time_to_unfreeze != 0) {
 			m_sound_controller->play_sound("unfreeze");
 			m_players[m_player_id].reset_health();
+			update_health_bar();
 			m_players[m_player_id].set_is_frozen(false);
 			if (m_radar->get_mode() == RADAR_ON) {
 				m_radar->set_blip_alpha(m_player_id, 1.0);
@@ -755,117 +778,74 @@ void GameController::run(int lockfps) {
 				if (m_map != NULL) {
 					m_map->set_visible(false);
 				}
-				set_players_visible(false);
 				
+				set_players_visible(false);
 				
 				for ( unsigned int i = 0; i < m_shots.size(); i++ ) {
 					m_shots[i].first->set_invisible(true);
 				}
 				
-				m_radar->set_invisible(true);
+				set_hud_visible(false);
 				
 				m_logo->set_invisible(false);
 				
 				toggle_main_menu(true);
 				toggle_options_menu(false);
 				m_server_browser->set_visible(false);
-				
-				m_blue_gate_status_rect->set_invisible(true);
-				m_blue_gate_status_text->set_invisible(true);
-				m_blue_gate_status_rect_back->set_invisible(true);
-				m_red_gate_status_rect->set_invisible(true);
-				m_red_gate_status_text->set_invisible(true);
-				m_red_gate_status_rect_back->set_invisible(true);
-				m_frozen_status_rect->set_invisible(true);
-				m_frozen_status_text->set_invisible(true);
-				m_frozen_status_rect_back->set_invisible(true);
 			} else if (m_game_state == SHOW_OPTIONS_MENU) {
 				if (m_map != NULL) {
 					m_map->set_visible(false);
 				}
+				
 				set_players_visible(false);
 				
 				for ( unsigned int i = 0; i < m_shots.size(); i++ ) {
 					m_shots[i].first->set_invisible(true);
 				}
 				
-				m_radar->set_invisible(true);
+				set_hud_visible(false);
 				
 				m_logo->set_invisible(false);
 				
 				toggle_main_menu(false);
 				toggle_options_menu(true);
 				m_server_browser->set_visible(false);
-				
-				m_blue_gate_status_rect->set_invisible(true);
-				m_blue_gate_status_text->set_invisible(true);
-				m_blue_gate_status_rect_back->set_invisible(true);
-				m_red_gate_status_rect->set_invisible(true);
-				m_red_gate_status_text->set_invisible(true);
-				m_red_gate_status_rect_back->set_invisible(true);
-				m_frozen_status_rect->set_invisible(true);
-				m_frozen_status_text->set_invisible(true);
-				m_frozen_status_rect_back->set_invisible(true);
 			} else if (m_game_state == SHOW_SERVER_BROWSER) {
 				if (m_map != NULL) {
 					m_map->set_visible(false);
 				}
+				
 				set_players_visible(false);
 				
 				for ( unsigned int i = 0; i < m_shots.size(); i++ ) {
 					m_shots[i].first->set_invisible(true);
 				}
 				
-				m_radar->set_invisible(true);
+				set_hud_visible(false);
 				
 				m_logo->set_invisible(false);
 				
 				toggle_main_menu(false);
 				toggle_options_menu(false);
 				m_server_browser->set_visible(true);
-				
-				m_blue_gate_status_rect->set_invisible(true);
-				m_blue_gate_status_text->set_invisible(true);
-				m_blue_gate_status_rect_back->set_invisible(true);
-				m_red_gate_status_rect->set_invisible(true);
-				m_red_gate_status_text->set_invisible(true);
-				m_red_gate_status_rect_back->set_invisible(true);
-				m_frozen_status_rect->set_invisible(true);
-				m_frozen_status_text->set_invisible(true);
-				m_frozen_status_rect_back->set_invisible(true);
 			} else {
 				if (m_map != NULL) {
 					m_map->set_visible(true);
 				}
+				
 				set_players_visible(true);
 				
 				for ( unsigned int i = 0; i < m_shots.size(); i++ ) {
 					m_shots[i].first->set_invisible(false);
 				}
 				
-				m_radar->set_invisible(false);
+				set_hud_visible(true);
 				
 				m_logo->set_invisible(true);
 				
 				toggle_main_menu(false);
 				toggle_options_menu(false);
 				m_server_browser->set_visible(false);
-				
-				m_blue_gate_status_rect->set_invisible(false);
-				m_blue_gate_status_text->set_invisible(false);
-				m_blue_gate_status_rect_back->set_invisible(false);
-				m_red_gate_status_rect->set_invisible(false);
-				m_red_gate_status_text->set_invisible(false);
-				m_red_gate_status_rect_back->set_invisible(false);
-				if (m_players[m_player_id].is_frozen() && !m_players[m_player_id].is_invisible()) {
-					m_frozen_status_rect->set_invisible(false);
-					m_frozen_status_text->set_invisible(false);
-					m_frozen_status_rect_back->set_invisible(false);
-				} else {
-					m_frozen_status_rect->set_invisible(true);
-					m_frozen_status_text->set_invisible(true);
-					m_frozen_status_rect_back->set_invisible(true);
-				}
 			}
 			
 			m_window->redraw();
@@ -876,6 +856,76 @@ void GameController::run(int lockfps) {
 	if (!m_restart) {
 		disconnect();
 	}
+}
+
+/*
+ * Set the HUD visible or invisible.
+ */
+void GameController::set_hud_visible(bool visible) {
+	m_radar->set_invisible(!visible);
+	
+	m_blue_gate_status_rect->set_invisible(!visible);
+	m_blue_gate_status_text->set_invisible(!visible);
+	m_blue_gate_status_rect_back->set_invisible(!visible);
+	m_red_gate_status_rect->set_invisible(!visible);
+	m_red_gate_status_text->set_invisible(!visible);
+	m_red_gate_status_rect_back->set_invisible(!visible);
+	
+	GraphicalPlayer* player = get_player_by_id(m_player_id);
+	
+	if (player == NULL) {
+		m_frozen_status_rect->set_invisible(true);
+		m_frozen_status_text->set_invisible(true);
+		m_frozen_status_rect_back->set_invisible(true);
+		m_health_bar->set_invisible(true);
+		m_health_bar_back->set_invisible(true);
+		m_health_text->set_invisible(true);
+		return;
+	}
+	
+	m_health_bar->set_invisible(!visible);
+	m_health_bar_back->set_invisible(!visible);
+	m_health_text->set_invisible(!visible);
+	
+	if (player->is_frozen() && !player->is_invisible()) {
+		m_frozen_status_rect->set_invisible(!visible);
+		m_frozen_status_text->set_invisible(!visible);
+		m_frozen_status_rect_back->set_invisible(!visible);
+	} else {
+		m_frozen_status_rect->set_invisible(true);
+		m_frozen_status_text->set_invisible(true);
+		m_frozen_status_rect_back->set_invisible(true);
+	}
+}
+
+/*
+ * Update the health bar.
+ */
+void GameController::update_health_bar(int new_health) {
+	if (GraphicalPlayer* player = get_player_by_id(m_player_id)) {
+		if (new_health != -1) {
+			player->set_health(new_health);
+		} else {
+			new_health = player->get_health();
+		}
+	} else {
+		new_health = 100;
+	}
+	
+	m_health_bar->set_image_width(HEALTH_BAR_WIDTH * ((double)new_health/GraphicalPlayer::MAX_HEALTH));
+	
+	if (m_health_text != NULL) {
+		m_text_manager->remove_string(m_health_text);
+	}
+	
+	// Re-initialize the label.
+	m_text_manager->set_active_color(1.0, 1.0, 1.0);
+	m_text_manager->set_active_font(m_font);
+	
+	ostringstream healthstring;
+	healthstring << "H: " << new_health;
+	m_health_text = m_text_manager->place_string(healthstring.str(), m_health_bar->get_x(), m_health_bar->get_y() + STATUS_BAR_HEIGHT/2, TextManager::CENTER, TextManager::LAYER_HUD, TEXT_LAYER);
+	m_health_text->set_y(m_health_bar->get_y() + STATUS_BAR_HEIGHT/2 - m_health_text->get_image_height()/2);
 }
 
 /*
@@ -2344,7 +2394,7 @@ void GameController::gun_fired(PacketReader& reader) {
 		m_sound_controller->play_sound("fire");
 		m_radar->activate_blip(playerid, get_ticks(), m_params.radar_blip_duration);
 	
-		player_fired(playerid, start_x, start_y, rotation);
+		player_fired(player->get_id(), start_x, start_y, rotation);
 	}
 }
 
@@ -2408,6 +2458,7 @@ void GameController::player_shot(PacketReader& reader) {
 			m_time_to_unfreeze = get_ticks() + time_to_unfreeze;
 			m_total_time_frozen = time_to_unfreeze;
 		}
+		update_health_bar();
 		if (shot_angle != 0) {
 			m_players[m_player_id].set_velocity(m_players[m_player_id].get_x_vel() - m_params.firing_recoil * cos((shot_angle) * DEGREES_TO_RADIANS), m_players[m_player_id].get_y_vel() - m_params.firing_recoil * sin((shot_angle) * DEGREES_TO_RADIANS));
 		}
