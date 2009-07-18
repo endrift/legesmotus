@@ -198,24 +198,30 @@ void	Server::team_change(const IPAddress& address, PacketReader& packet)
 		return;
 	}
 
-	change_team(*player, new_team);
+	if (m_players_have_spawned) {
+		player->set_team_change_time();
+	}
+
+	change_team(*player, new_team, true, false);
 }
 
-void	Server::change_team(ServerPlayer& player, char new_team) {
+void	Server::change_team(ServerPlayer& player, char new_team, bool respawn_player, bool respawn_immediately) {
 	// Move the player to the new team
 	release_player_resources(player);
 	player.set_team(new_team);
 	++m_team_count[new_team - 'A'];
 
-	if (m_players_have_spawned) {
-		player.set_team_change_time();
+	if (respawn_player && m_players_have_spawned) {
+		if (respawn_immediately) {
+			spawn_player(player);
+		} else {
+			// Hide and freeze the player
+			send_spawn_packet(player, Point(0, 0), false);
 
-		// Hide and freeze the player
-		send_spawn_packet(player, Point(0, 0), false);
-
-		// Add them to the waiting to spawn list
-		player.reset_join_time();
-		m_waiting_players.push_back(&player);
+			// Add them to the waiting to spawn list
+			player.reset_join_time();
+			m_waiting_players.push_back(&player);
+		}
 	}
 
 	// Notify all players that this player has switched teams:
@@ -1176,7 +1182,7 @@ void	Server::balance_teams() {
 	char	unbalanced_team;
 	while (is_valid_team(unbalanced_team = get_unbalanced_team())) {
 		if (ServerPlayer* victim = get_random_player(unbalanced_team)) {
-			change_team(*victim, get_other_team(unbalanced_team));
+			change_team(*victim, get_other_team(unbalanced_team), true, true);
 		}
 	}
 }
@@ -1197,7 +1203,7 @@ void	Server::shakeup_teams() {
 		}
 
 		if (it->second.get_team() != new_team) {
-			change_team(it->second, new_team);
+			change_team(it->second, new_team, true, true);
 		}
 
 		--players_left;

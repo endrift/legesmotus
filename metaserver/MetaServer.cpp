@@ -88,6 +88,9 @@ void	MetaServer::process_packet(const UDPPacket& packet) {
 	case UNREGISTER_SERVER_PACKET:
 		unregister_server(packet.get_address(), reader);
 		break;
+	case UPGRADE_AVAILABLE_PACKET:
+		upgrade_available(packet.get_address(), reader);
+		break;
 	}
 }
 
@@ -182,6 +185,17 @@ void	MetaServer::request_info(const IPAddress& address, PacketReader& request_pa
 		response_packet << scan_id << scan_start_time << it->get_address();
 		send_packet(response_packet, address);
 		send_hole_punch(it->get_address(), address, scan_id);
+	}
+}
+
+void	MetaServer::upgrade_available(const IPAddress& address, PacketReader& request_packet) {
+	Version		client_version;
+	request_packet >> client_version;
+
+	if (client_version < m_latest_client_version) {
+		PacketWriter	upgrade_packet(UPGRADE_AVAILABLE_PACKET);
+		upgrade_packet << m_latest_client_version;
+		send_packet(upgrade_packet, address);
 	}
 }
 

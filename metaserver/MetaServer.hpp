@@ -73,6 +73,7 @@ namespace LM {
 		void		request_info(const IPAddress& address, PacketReader& packet);
 		void		register_server(const IPAddress& address, PacketReader& packet);
 		void		unregister_server(const IPAddress& address, PacketReader& packet);
+		void		upgrade_available(const IPAddress& address, PacketReader& packet);
 		void		send_hole_punch(const IPAddress& server_address, const IPAddress& client_address, uint32_t scan_id);
 	
 		void		send_packet(const PacketWriter& packet, const IPAddress& address);

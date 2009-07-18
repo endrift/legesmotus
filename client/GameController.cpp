@@ -328,7 +328,7 @@ void GameController::init(GameWindow* window) {
 	
 	// Options menu
 	m_text_manager->set_active_font(m_menu_font);
-	m_options_menu_items["Back"] = m_text_manager->place_string("Back", 50, m_screen_height-50, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_options_menu_items["Back"] = m_text_manager->place_string("Cancel", 50, m_screen_height-50, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_options_menu_items["Enter Name"] = m_text_manager->place_string("Enter Name", 50, 200, TextManager::LEFT, TextManager::LAYER_HUD);
 	if (m_sound_controller->is_sound_on()) {
 		m_options_menu_items["Toggle Sound"] = m_text_manager->place_string("Sound: On", 50, 250, TextManager::LEFT, TextManager::LAYER_HUD);
@@ -543,6 +543,8 @@ void GameController::init(GameWindow* window) {
 	} else if (!resolve_hostname(m_metaserver_address, METASERVER_HOSTNAME, METASERVER_PORTNO)) {
 		cerr << "Unable to resolve metaserver hostname.  Internet-wide server browsing will not be enabled." << endl;
 	}
+
+	check_for_upgrade();
 }
 
 /*
@@ -1274,11 +1276,18 @@ void GameController::process_mouse_click(SDL_Event event) {
 					int width = m_resolutions[m_resolution_selected].first;
 					int height = m_resolutions[m_resolution_selected].second;
 					m_configuration->set_bool_value("sound", m_sound_controller->is_sound_on());
-					m_configuration->set_int_value("screen_width", width);
-					m_configuration->set_int_value("screen_height", height);
-					m_configuration->set_bool_value("fullscreen", m_fullscreen);
-					m_restart = true;
-					m_quit_game = true;
+					
+					if (width != m_configuration->get_int_value("screen_width") || 
+							height != m_configuration->get_int_value("screen_height") ||
+							m_fullscreen != m_configuration->get_bool_value("fullscreen")) {
+						m_configuration->set_int_value("screen_width", width);
+						m_configuration->set_int_value("screen_height", height);
+						m_configuration->set_bool_value("fullscreen", m_fullscreen);
+						m_restart = true;
+						m_quit_game = true;
+					} else {
+						m_game_state = SHOW_MENUS;
+					}
 				}
 				m_sound_controller->play_sound("click");
 			}
@@ -2979,6 +2988,12 @@ void	GameController::scan_all() {
 		m_network.send_packet_to(localhostip, info_request_packet);
 	}
 	m_network.send_packet_to(m_metaserver_address, info_request_packet);
+}
+
+void    GameController::check_for_upgrade() {
+	PacketWriter packet(UPGRADE_AVAILABLE_PACKET);
+	packet << m_client_version;
+	m_network.send_packet_to(m_metaserver_address, packet);
 }
 
 void	GameController::scan_local_network() {
