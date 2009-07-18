@@ -2281,38 +2281,36 @@ void GameController::leave(PacketReader& reader) {
 	string		leave_message;
 	reader >> playerid >> leave_message;
 	
-	 // If it's for ourselves, we were kicked. Quit with a message.
-	if (playerid == m_player_id) {
-		string leavemsg = "You were kicked!  Reason: ";
-		leavemsg.append(leave_message);
-		display_message(leavemsg);
-		cout << "You were kicked!  Reason: " << leave_message << endl;
-		disconnect();
-		m_game_state = SHOW_MENUS;
-		return;
+	if (GraphicalPlayer* player = get_player_by_id(playerid)) {
+		 // If it's for ourselves, we were kicked. Quit with a message.
+		if (playerid == m_player_id) {
+			string leavemsg = "You were kicked!  Reason: ";
+			leavemsg.append(leave_message);
+			display_message(leavemsg);
+			cout << "You were kicked!  Reason: " << leave_message << endl;
+			disconnect();
+			m_game_state = SHOW_MENUS;
+			return;
+		}
+	
+		string leavemsg = "";
+		leavemsg.append(player->get_name());
+		leavemsg.append(" has left the game.");
+	
+		// Display a message based on their team.
+		if (player->get_team() == 'A') {
+			display_message(leavemsg, BLUE_COLOR, BLUE_SHADOW);
+		} else {
+			display_message(leavemsg, RED_COLOR, RED_SHADOW);
+		}
+	
+		m_text_manager->remove_string(player->get_name_sprite());
+		m_window->unregister_graphic(player->get_sprite());
+		m_radar->remove_blip(playerid);
+		delete_individual_score(*player);
+		delete player->get_sprite();
+		m_players.erase(playerid);
 	}
-	
-	if (m_players.empty()) {
-		return;
-	}
-	
-	string leavemsg = "";
-	leavemsg.append(m_players[playerid].get_name());
-	leavemsg.append(" has left the game.");
-	
-	// Display a message based on their team.
-	if (m_players[playerid].get_team() == 'A') {
-		display_message(leavemsg, BLUE_COLOR, BLUE_SHADOW);
-	} else {
-		display_message(leavemsg, RED_COLOR, RED_SHADOW);
-	}
-	
-	m_text_manager->remove_string(m_players[playerid].get_name_sprite());
-	m_window->unregister_graphic(m_players[playerid].get_sprite());
-	m_radar->remove_blip(playerid);
-	delete_individual_score(m_players[playerid]);
-	delete m_players[playerid].get_sprite();
-	m_players.erase(playerid);
 }
 
 /*
