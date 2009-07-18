@@ -37,12 +37,19 @@
  * The client should derive a GraphicalPlayer class that implements client-specific functionality.
  */
 namespace LM {
+	class PacketReader;
+	class PacketWriter;
+
 	class Player {
+	public:
+		enum { MAX_HEALTH = 100 };
+
 	protected:
 		std::string	m_name;		// Specified by the client; should be unique
 		uint32_t	m_id;		// Is assigned by the server; should be unique
 		char		m_team;		// Should be 'A' or 'B'
 		int		m_score;	// How many times has this player shot someone else?
+		int		m_health;	// From 0 to 100, inclusive (where 0 is dead)
 		double		m_x;		// The x-coordinate of the upper left point of this player, relative to upper-left of arena
 		double		m_y;		// The y-coordinate of the upper left point of this player, relative to upper-left of arena
 		double		m_x_vel;	// The x-component of the player's velocity
@@ -63,6 +70,7 @@ namespace LM {
 		uint32_t get_id() const { return m_id; }
 		char get_team() const { return m_team; }
 		int get_score() const { return m_score; }
+		int get_health() const { return m_health; }
 		double get_x() const { return m_x; }
 		double get_y() const { return m_y; }
 		double get_x_vel() const { return m_x_vel; }
@@ -88,6 +96,8 @@ namespace LM {
 		virtual void set_team(char team);
 		virtual void set_score(int score);
 		virtual void add_score(int score_increase);	// Increase the player's score by the given amount
+		virtual void set_health(int health);
+		virtual void change_health(int health_increase);// Increase the player's health by the given amount
 		virtual void set_x(double x);
 		virtual void set_y(double y);
 		virtual void set_position(double x, double y);
@@ -108,12 +118,19 @@ namespace LM {
 	
 		// Reset the player's score to 0
 		void reset_score() { set_score(0); }
+
+		// Reset the player's health to 100
+		void reset_health() { set_health(MAX_HEALTH); }
 	
 		struct compare_by_score {
 			bool operator() (const Player* a, const Player* b) const {
 				return a->get_score() > b->get_score();
 			}
 		};
+
+		// Read and write PLAYER_UPDATE packets
+		void	write_update_packet (PacketWriter& packet) const;
+		void	read_update_packet (PacketReader& packet);
 	};
 }
 

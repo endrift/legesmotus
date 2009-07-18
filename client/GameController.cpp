@@ -2158,79 +2158,49 @@ void GameController::player_update(PacketReader& reader) {
 	}
 
 	uint32_t player_id;
-	long x;
-	long y;
-	double velocity_x;
-	double velocity_y;
-	double rotation;
-	string flags;
-	reader >> player_id >> x >> y >> velocity_x >> velocity_y >> rotation >> flags;
+	reader >> player_id;
 
 	if (player_id == m_player_id) {
 		// If the player update packet is for this player, send an ACK for it
 		send_ack(reader);
 	}
-	
+
 	GraphicalPlayer* currplayer = get_player_by_id(player_id);
 	if (currplayer == NULL) {
 		cerr << "Error: Received update packet for non-existent player " << player_id << endl;
 		return;
 	}
-	
-	currplayer->set_position(x, y);
-	m_radar->move_blip(player_id, x, y);
-	currplayer->set_velocity(velocity_x, velocity_y);
-	currplayer->set_rotation_degrees(rotation);
+
+	currplayer->read_update_packet(reader);
+
+	// Update the radar and name sprite
+	m_radar->move_blip(player_id, currplayer->get_x(), currplayer->get_y());
+	m_radar->set_blip_invisible(player_id, currplayer->is_invisible());
+	currplayer->get_name_sprite()->set_invisible(currplayer->is_invisible());
 	
 	// If invisible or frozen, set these things appropriately and show/hide the sprite.
-	if (flags.find_first_of('I') == string::npos) {
-		currplayer->set_is_invisible(false);
-		m_text_manager->reposition_string(m_players[player_id].get_name_sprite(), x, y - (m_players[player_id].get_radius()+30), TextManager::CENTER);
-		m_players[player_id].get_name_sprite()->set_invisible(false);
-		m_radar->set_blip_invisible(player_id,false);
+	if (currplayer->is_invisible()) {
+		currplayer->set_velocity(0, 0);
 	} else {
-		currplayer->set_is_invisible(true);
-		m_players[player_id].get_name_sprite()->set_invisible(true);
-		m_players[player_id].set_velocity(0, 0);
-		m_radar->set_blip_invisible(player_id,true);
+		// Reposition the name sprite to reflect the player's new position
+		m_text_manager->reposition_string(currplayer->get_name_sprite(), currplayer->get_x(), currplayer->get_y() - (currplayer->get_radius()+30), TextManager::CENTER);
 	}
 	
-	if (flags.find_first_of('F') == string::npos) {
-		currplayer->set_is_frozen(false);
-		if (m_radar->get_mode() == RADAR_ON) {
-			m_radar->set_blip_alpha(player_id, 1.0);
-		}
-	} else {
-		currplayer->set_is_frozen(true);
-		if (m_radar->get_mode() == RADAR_ON) {
-			m_radar->set_blip_alpha(player_id, 0.5);
-		}
+	if (m_radar->get_mode() == RADAR_ON) {
+		m_radar->set_blip_alpha(player_id, currplayer->is_frozen() ? 0.5 : 1.0);
 	}
-	
 }
 
 /*
  * Send a player update packet.
  */
 void GameController::send_my_player_update() {
-	PacketWriter player_update(PLAYER_UPDATE_PACKET);
 	if (m_players.empty()) {
 		return;
 	}
-	
-	GraphicalPlayer* my_player = &m_players[m_player_id];
-	string flags;
-	
-	if (my_player->is_invisible()) {
-		flags.push_back('I');
-	}
-	if (my_player->is_frozen()) {
-		flags.push_back('F');
-	}
-	
-	player_update << m_player_id << my_player->get_x() << my_player->get_y() << my_player->get_x_vel() 
-		<< my_player->get_y_vel() << my_player->get_rotation_degrees() << flags;
-		
+
+	PacketWriter player_update(PLAYER_UPDATE_PACKET);
+	m_players[m_player_id].write_update_packet(player_update);
 	m_network.send_packet(player_update);
 }
 

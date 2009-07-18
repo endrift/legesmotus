@@ -24,10 +24,14 @@
 
 #include "Player.hpp"
 
+#include <string>
 #include <cmath>
 #include "common/math.hpp"
+#include "common/PacketReader.hpp"
+#include "common/PacketWriter.hpp"
 
 using namespace LM;
+using namespace std;
 
 // See .hpp file for extensive comments.
 
@@ -35,6 +39,7 @@ Player::Player() {
 	m_id = 0;
 	m_team = 0;
 	m_score = 0;
+	m_health = MAX_HEALTH;
 	m_x = 0;
 	m_y = 0;
 	m_x_vel = 0;
@@ -50,6 +55,7 @@ Player::Player(const char* name, uint32_t id, char team, double x, double y, dou
 	m_id = id;
 	m_team = team;
 	m_score = 0;
+	m_health = MAX_HEALTH;
 	m_x = x;
 	m_y = y;
 	m_x_vel = xvel;
@@ -94,6 +100,19 @@ void Player::set_score(int score) {
 
 void Player::add_score(int score_increase) {
 	m_score += score_increase;
+}
+
+void Player::set_health(int health) {
+	m_health = health;
+	if (m_health > MAX_HEALTH) {
+		m_health = MAX_HEALTH;
+	} else if (m_health < 0) {
+		m_health = 0;
+	}
+}
+
+void Player::change_health(int health_change) {
+	set_health(m_health + health_change);
 }
 
 void Player::set_x(double x) {
@@ -160,4 +179,30 @@ void Player::set_is_frozen(bool is_frozen) {
 	m_is_frozen = is_frozen;
 }
 
+
+void Player::write_update_packet (PacketWriter& packet) const {
+	string	flags;
+	
+	if (is_invisible())	{ flags.push_back('I'); }
+	if (is_frozen())	{ flags.push_back('F'); }
+
+	packet << get_id() << get_x() << get_y() << get_x_vel() << get_y_vel() << get_rotation_degrees() << flags;
+}
+
+void Player::read_update_packet (PacketReader& packet) {
+	double	x;
+	double	y;
+	double	x_vel;
+	double	y_vel;
+	double	rotation;
+	string	flags;
+
+	packet >> x >> y >> x_vel >> y_vel >> rotation >> flags;
+
+	set_position(x, y);
+	set_velocity(x_vel, y_vel);
+	set_rotation_degrees(rotation);
+	set_is_invisible(flags.find_first_of('I') != string::npos);
+	set_is_frozen(flags.find_first_of('F') != string::npos);
+}
 

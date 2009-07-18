@@ -85,37 +85,17 @@ void	Server::player_update(const IPAddress& address, PacketReader& inbound_packe
 	inbound_packet >> player_id;
 
 	if (is_authorized(address, player_id)) {
-		// Mark the player as seen
 		ServerPlayer* player = get_player(player_id);
+
+		// Mark the player as seen
 		player->seen(m_timeout_queue);
-		
-		long x;
-		long y;
-		double velocity_x;
-		double velocity_y;
-		double rotation;
-		string flags;
-		inbound_packet >> x >> y >> velocity_x >> velocity_y >> rotation >> flags;
-		
-		player->set_position(x, y);
-		player->set_velocity(velocity_x, velocity_y);
-		player->set_rotation_degrees(rotation);
 
-		if (flags.find_first_of('I') == string::npos) {
-			player->set_is_invisible(false);
-		} else {
-			player->set_is_invisible(true);
-		}
-
-		if (flags.find_first_of('F') == string::npos) {
-			player->set_is_frozen(false);
-		} else {
-			player->set_is_frozen(true);
-		}
+		// Process the update packet
+		player->read_update_packet(inbound_packet);
 		
 		// Re-broadcast the packet to all _other_ players
 		PacketWriter	outbound_packet(PLAYER_UPDATE_PACKET);
-		outbound_packet << player_id << x << y << velocity_x << velocity_y << rotation << flags;
+		player->write_update_packet(outbound_packet);
 		broadcast_packet_except(outbound_packet, player_id);
 	}
 }
@@ -1082,9 +1062,15 @@ void	Server::ServerAckManager::add_broadcast_packet(const PacketWriter& packet) 
 	AckManager::add_broadcast_packet(player_ids, packet);
 }
 
-void	Server::send_spawn_packet(const ServerPlayer& player, Point spawnpoint, bool is_alive) {
+void	Server::send_spawn_packet(ServerPlayer& player, Point spawnpoint, bool is_alive) {
+	player.set_position(spawnpoint.x, spawnpoint.y);
+	player.set_velocity(0, 0);
+	player.set_rotation_degrees(0);
+	player.set_is_frozen(!is_alive);
+	player.set_is_invisible(!is_alive);
+
 	PacketWriter	spawn_packet(PLAYER_UPDATE_PACKET);
-	spawn_packet << player.get_id() << spawnpoint.x << spawnpoint.y << 0 << 0 << 0 << (is_alive ? "" : "IF");
+	player.write_update_packet(spawn_packet);
 	m_ack_manager.add_packet(player.get_id(), spawn_packet);
 	m_network.send_packet(player.get_address(), spawn_packet);
 }
