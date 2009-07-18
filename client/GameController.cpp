@@ -2388,9 +2388,9 @@ void GameController::player_shot(PacketReader& reader) {
 		message << ".";
 		
 		if (shooter->get_team() == 'A') {
-			display_message(message.str(), BLUE_COLOR, BLUE_COLOR);
+			display_message(message.str(), BLUE_COLOR, BLUE_SHADOW);
 		} else if (shooter->get_team() == 'B') {
-			display_message(message.str(), RED_COLOR, RED_COLOR);
+			display_message(message.str(), RED_COLOR, RED_SHADOW);
 		}
 	}
 	
@@ -2798,9 +2798,11 @@ void GameController::team_change(PacketReader& reader) {
 		if (team == 'A') {
 			player->set_sprite(new GraphicGroup(blue_player));
 			display_message(msg.str().c_str(), BLUE_COLOR, BLUE_SHADOW);
+			m_text_manager->set_shadow_color(BLUE_SHADOW);
 		} else {
 			player->set_sprite(new GraphicGroup(red_player));
 			display_message(msg.str().c_str(), RED_COLOR, RED_SHADOW);
+			m_text_manager->set_shadow_color(RED_SHADOW);
 		}
 		m_radar->add_blip(playerid,team,0,0);
 		
