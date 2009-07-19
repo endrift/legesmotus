@@ -1,5 +1,13 @@
 Leges Motus Version History:
 --------------------------
+v. 0.2.2 - 07/19/09:
+ Bug Fixes:
+  - Fix potential client crashes when receiving packets for non-existent players.
+  - Client now saves the player name when you click "Apply" in the options menu.
+  - Options menu is more intuitive and more seamless.
+  - Client now checks for updates when it starts, instead of when opening the server browser.
+  - Server now respawns players immediately when they are forcibly switched by team auto-balancing.
+--------------------------
 v. 0.2.1 - 07/11/09:
  Bug Fixes:
   - Fixed displaying the chat log on top of the score overlay.
