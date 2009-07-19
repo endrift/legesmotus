@@ -1,5 +1,5 @@
 /*
- * mac.h
+ * mac_bridge.h
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,14 +22,11 @@
  * 
  */
 
-#import <Cocoa/Cocoa.h>
+#ifndef LM_CLIENT_MAC_BRIDGE_H
+#define LM_CLIENT_MAC_BRIDGE_H
 
-#include "mac_bridge.h"
+void clean_exit(void);
+void toplevel_exception(const char* text);
 
-extern int SDL_main(int argc, const char** argv);
+#endif
 
-@interface LMMain : NSObject
-@end
-
-@interface LMApplication : NSApplication
-@end

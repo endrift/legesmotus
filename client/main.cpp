@@ -32,6 +32,12 @@
 #include "common/team.hpp"
 #include <iostream>
 
+#ifdef __APPLE__
+extern "C" {
+#include "mac_bridge.h"
+}
+#endif
+
 using namespace LM;
 using namespace std;
 
@@ -42,6 +48,8 @@ extern "C" void clean_exit() {
 }
 
 namespace {
+	bool run_from_finder = false;
+
 	void display_usage(const char* progname) {
 		cout << "Usage: " << progname << " [OPTION]" << endl;
 		cout << "Options:" << endl;
@@ -115,7 +123,7 @@ extern "C" int main(int argc, char* argv[]) try {
 			display_usage(argv[0]);
 			return 0;
 		} else if (strncmp(argv[i], "-psn", 4) == 0) {
-			//Ignore -psn for Macs
+			run_from_finder = true;
 		} else {
 			cerr << argv[0] << ": Unrecognized option `" << argv[i] << "'" << endl;
 			display_usage(argv[0]);
@@ -207,6 +215,12 @@ extern "C" int main(int argc, char* argv[]) try {
 	cerr << "Error: " << e.what() << endl;
 	cerr << "1. If on X11, check that your $DISPLAY environment variable is set properly." << endl;
 	cerr << "2. Make sure that you are running Leges Motus from the top-level source directory, OR that your $LM_DATA_DIR environment variable is set to the directory containing the game resources." << endl;
-	       
+
+	#ifdef __APPLE__
+	if (run_from_finder) {
+		toplevel_exception(e.what());
+	}
+	#endif
+
 	return 1;
 }
