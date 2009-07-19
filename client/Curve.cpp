@@ -76,3 +76,12 @@ SinusoidalCurve::SinusoidalCurve(double start, double end, double frequency, dou
 double SinusoidalCurve::map_progress(double t) const {
 	return (sin(m_frequency*2.0*M_PI*t + m_phase) + 1.0)*0.5;
 }
+
+LogisticCurve::LogisticCurve(double start, double end, double width) : Curve(start, end) {
+	m_coeff = 1 + pow(M_E, width*-0.5);
+	m_width = width;
+}
+
+double LogisticCurve::map_progress(double t) const {
+	return m_coeff/(1 + pow(M_E, m_width*(0.5 - t)));
+}

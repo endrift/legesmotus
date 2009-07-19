@@ -68,6 +68,16 @@ namespace LM {
 	public:
 		SinusoidalCurve(double start, double end, double frequency, double phase);
 	};
+
+	class LogisticCurve : public Curve {
+	private:
+		double m_coeff;
+		double m_width;
+	protected:
+		virtual double	map_progress(double t) const;
+	public:
+		LogisticCurve(double start, double end, double width);
+	};
 }
 
 #endif
