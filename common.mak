@@ -5,7 +5,7 @@ SERVER = $(BASEDIR)/server
 FRAMEWORKS = /Library/Frameworks
 
 # Version strings
-VERSION = 0.2.1
+VERSION = 0.2.2
 
 # These may be overridden by config.mak
 DATADIR = data
