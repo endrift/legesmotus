@@ -105,7 +105,7 @@ void Graphic::init(SDL_Surface* image) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, hw_image->pixels);
-	SDL_FreeSurface(hw_image); // Note: this line depends on OpenGL copying texture to VRAM--if graphical corruption occurs, change this back
+	SDL_FreeSurface(hw_image);
 }
 
 GLuint Graphic::get_texture_id() const {

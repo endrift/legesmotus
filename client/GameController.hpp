@@ -228,7 +228,8 @@ namespace LM {
 		// Server Browsing/Scanning
 		IPAddress	m_metaserver_address;
 		uint32_t	m_current_scan_id;
-		
+
+		void		preinit(ClientConfiguration* config);
 		void		init(GameWindow* window);
 		void		process_input();
 		GraphicalPlayer* get_player_by_id(uint32_t player_id);

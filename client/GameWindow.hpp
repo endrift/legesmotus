@@ -46,7 +46,7 @@ namespace LM {
 		double			m_offset_x;
 		double			m_offset_y;
 	
-		GameWindow(int width, int height, int depth, bool fullscreen);
+		GameWindow(int width, int height, int depth, bool fullscreen, int msaa = 0);
 		~GameWindow();
 	public:
 	
@@ -61,10 +61,10 @@ namespace LM {
 		// Will get the current GameWindow, adjusted to these dimensions, if one exists
 		// If it doesn't exist, it will construct it
 		// Depth cannot be changed while running
-		static GameWindow*	get_instance(int width, int height, int depth, bool fullscreen);
+		static GameWindow*	get_instance(int width, int height, int depth, bool fullscreen, int msaa = 0);
 		// Get the current instance, or NULL if there is no such instance
 		static GameWindow*	get_instance();
-		static GameWindow*	get_optimal_instance();
+		static GameWindow*	get_optimal_instance(int msaa = 0);
 		static void		destroy_instance();
 	
 		// Pass NULL, NULL to get depth and number of modes, or pointers for all to get all the modes

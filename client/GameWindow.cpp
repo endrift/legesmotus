@@ -34,7 +34,7 @@ using namespace std;
 GameWindow* GameWindow::m_instance = NULL;
 SDL_Surface* GameWindow::m_icon = NULL;
 
-GameWindow::GameWindow(int width, int height, int depth, bool fullscreen) {
+GameWindow::GameWindow(int width, int height, int depth, bool fullscreen, int msaa) {
 	m_width = width;
 	m_height = height;
 	m_depth = depth;
@@ -65,6 +65,10 @@ GameWindow::GameWindow(int width, int height, int depth, bool fullscreen) {
 	}
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1);
+	if (msaa > 0) {
+		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, msaa);
+	}
 #if SDL_VERSION_ATLEAST(1, 2, 10)
 	// Enable VSYNC
 	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1); // Deprecated in SDL 1.3
@@ -81,6 +85,9 @@ GameWindow::GameWindow(int width, int height, int depth, bool fullscreen) {
 	}
 	glEnable(GL_BLEND);
 	glEnable(GL_TEXTURE_2D);
+	if (msaa > 0) {
+		glEnable(GL_MULTISAMPLE);
+	}
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
@@ -129,14 +136,14 @@ void GameWindow::set_icon(SDL_Surface* icon) {
 	SDL_WM_SetIcon(icon, NULL);
 }
 
-GameWindow* GameWindow::get_instance(int width, int height, int depth, bool fullscreen) {
+GameWindow* GameWindow::get_instance(int width, int height, int depth, bool fullscreen, int msaa) {
 	if (m_instance == NULL) {
 		if (!init_video()) {
 			throw Exception(SDL_GetError());
 		}
-		m_instance = new GameWindow(width, height, depth, fullscreen);
+		m_instance = new GameWindow(width, height, depth, fullscreen, msaa);
 	} else {
-		m_instance->set_dimensions(width,height);
+		m_instance->set_dimensions(width, height);
 		m_instance->set_fullscreen(fullscreen);
 	}
 	return m_instance;
@@ -146,7 +153,7 @@ GameWindow* GameWindow::get_instance() {
 	return m_instance;
 }
 
-GameWindow* GameWindow::get_optimal_instance() {
+GameWindow* GameWindow::get_optimal_instance(int msaa) {
 	int depth;
 	size_t num_modes;
 	if (!init_video()) {
@@ -166,7 +173,7 @@ GameWindow* GameWindow::get_optimal_instance() {
 	}
 	delete[] w;
 	delete[] h;
-	return get_instance(max_w, max_h, depth, true);
+	return get_instance(max_w, max_h, depth, true, msaa);
 }
 
 void GameWindow::destroy_instance() {
@@ -175,6 +182,9 @@ void GameWindow::destroy_instance() {
 }
 
 void GameWindow::supported_resolutions(int* widths, int* heights, int* depth, size_t* num_modes) {
+	if (!init_video()) {
+		throw Exception(SDL_GetError());
+	}
 	const SDL_VideoInfo *vidInfo = SDL_GetVideoInfo();
 	if (vidInfo == NULL) {
 		*depth = 24; // Hopefully they have a modern display

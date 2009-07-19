@@ -90,23 +90,13 @@ static bool	sort_resolution(pair<int, int> pairone, pair<int, int> pairtwo) {
 }
 
 GameController::GameController(PathManager& path_manager, ClientConfiguration* config) : m_path_manager(path_manager) {
-#ifndef __WIN32
-	GameWindow::set_icon(IMG_Load(path_manager.data_path("blue_head512.png", "sprites")));
-#else
-	GameWindow::set_icon(IMG_Load(path_manager.data_path("blue_head32.png", "sprites")));
-#endif
-	m_configuration = config;
-	init(GameWindow::get_optimal_instance());
+	preinit(config);
+	init(GameWindow::get_optimal_instance(config->get_int_value("multisample")));
 }
 
 GameController::GameController(PathManager& path_manager, ClientConfiguration* config, int width, int height, bool fullscreen, int depth) : m_path_manager(path_manager) {
-#ifndef __WIN32
-	GameWindow::set_icon(IMG_Load(path_manager.data_path("blue_head512.png", "sprites")));
-#else
-	GameWindow::set_icon(IMG_Load(path_manager.data_path("blue_head32.png", "sprites")));
-#endif
-	m_configuration = config;
-	init(GameWindow::get_instance(width, height, depth, fullscreen));
+	preinit(config);
+	init(GameWindow::get_instance(width, height, depth, fullscreen, config->get_int_value("multisample")));
 }
 
 /*
@@ -172,6 +162,18 @@ GameController::~GameController() {
 	// The GameWindow instance should always be destroyed last, since other stuff may depend on it.
 	m_window->deinit_video();
 	m_window->destroy_instance();
+}
+
+/*
+ * Initialize the base of the game controller before the Window gets created
+ */
+void GameController::preinit(ClientConfiguration* config) {
+#ifndef __WIN32
+	GameWindow::set_icon(IMG_Load(m_path_manager.data_path("blue_head512.png", "sprites")));
+#else
+	GameWindow::set_icon(IMG_Load(m_path_manager.data_path("blue_head32.png", "sprites")));
+#endif
+	m_configuration = config;
 }
 
 /*
@@ -313,7 +315,9 @@ void GameController::init(GameWindow* window) {
 	m_text_manager->set_active_font(m_menu_font);
 	m_text_manager->set_shadow_alpha(1.0);
 	m_text_manager->set_shadow_offset(1.0, 1.0);
-	m_text_manager->set_shadow_convolve(&curve, 5, 1.0);
+	if (m_configuration->get_bool_value("text_shadow")) {
+		m_text_manager->set_shadow_convolve(&curve, 5, 1.0);
+	}
 	m_text_manager->set_shadow_color(TEXT_SHADOW);
 	m_text_manager->set_shadow(true);
 	
@@ -356,13 +360,14 @@ void GameController::init(GameWindow* window) {
 	}
 	m_options_menu_items["Fullscreen"] = m_text_manager->place_string(fullscreen, 50, 350, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_options_menu_items["Apply"] = m_text_manager->place_string("Apply", m_screen_width - 200, m_screen_height-50, TextManager::LEFT, TextManager::LAYER_HUD);
-	
-	int depths[100];
-	m_window->supported_resolutions(NULL, NULL, depths, &m_num_resolutions);
+
+	// TODO: move this to preinit--it doesn't require a GameWindow, and should be done before one is made
+	int depth;
+	m_window->supported_resolutions(NULL, NULL, &depth, &m_num_resolutions);
 	int supported_widths[m_num_resolutions];
 	int supported_heights[m_num_resolutions];
 	bool found_res = false;
-	m_window->supported_resolutions(supported_widths, supported_heights, depths, &m_num_resolutions);
+	m_window->supported_resolutions(supported_widths, supported_heights, &depth, &m_num_resolutions);
 	for (size_t i = 0; i < m_num_resolutions; i++) {
 		if (m_screen_width == supported_widths[i] && m_screen_height == supported_heights[i]) {
 			found_res = true;
@@ -512,6 +517,7 @@ void GameController::init(GameWindow* window) {
 	m_frozen_status_text = m_text_manager->place_string("Frozen", m_frozen_status_rect->get_x() + 1, m_frozen_status_rect->get_y() + 2, TextManager::CENTER, TextManager::LAYER_HUD, TEXT_LAYER);
 
 	// Initialize the frozen status bar.
+	m_health_text = NULL;
 	m_health_bar = new TableBackground(1, HEALTH_BAR_WIDTH);
 	m_health_bar->set_row_height(0, STATUS_BAR_HEIGHT);
 	m_health_bar->set_priority(-1);
@@ -1027,7 +1033,9 @@ void GameController::process_input() {
 						m_text_manager->set_active_font(m_font);
 						m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
 						m_input_bar_back->set_image_width(m_input_bar->get_image_width() + 6);
-						//m_input_bar_back->set_invisible(false);
+						if (m_configuration->get_bool_value("text_background")) {
+							m_input_bar_back->set_invisible(false);
+						}
 					} else {
 						// Otherwise, it's a regular character. Type it in.
 						if ( (event.key.keysym.unicode & 0xFF80) == 0 && event.key.keysym.unicode != 0) {
@@ -1041,7 +1049,9 @@ void GameController::process_input() {
 						m_text_manager->set_active_font(m_font);
 						m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
 						m_input_bar_back->set_image_width(m_input_bar->get_image_width() + 6);
-						//m_input_bar_back->set_invisible(false);
+						if (m_configuration->get_bool_value("text_background")) {
+							m_input_bar_back->set_invisible(false);
+						}
 					}
 				} else {
 					//Check which key using: event.key.keysym.sym == SDLK_<SOMETHING>
@@ -1055,7 +1065,9 @@ void GameController::process_input() {
 							m_text_manager->set_active_font(m_font);
 							m_input_bar = m_text_manager->place_string("> ", 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
 							m_input_bar_back->set_image_width(m_input_bar->get_image_width() + 6);
-							//m_input_bar_back->set_invisible(false);
+							if (m_configuration->get_bool_value("text_background")) {
+								m_input_bar_back->set_invisible(false);
+							}
 						}
 						if (event.key.keysym.sym == m_key_bindings.open_console || event.key.keysym.sym == m_alt_key_bindings.open_console) {
 							m_chat_log->set_visible(true);
@@ -1069,7 +1081,9 @@ void GameController::process_input() {
 						if (m_input_bar == NULL) {
 							m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
 							m_input_bar_back->set_image_width(m_input_bar->get_image_width() + 6);
-							//m_input_bar_back->set_invisible(false);
+							if (m_configuration->get_bool_value("text_background")) {
+								m_input_bar_back->set_invisible(false);
+							}
 						}
 					} else if (event.key.keysym.sym == m_key_bindings.show_menu || event.key.keysym.sym == m_alt_key_bindings.show_menu) {
 						if (!m_chat_log->is_invisible()) {
@@ -1299,7 +1313,9 @@ void GameController::process_mouse_click(SDL_Event event) {
 					m_text_manager->remove_string(m_input_bar);
 					m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
 					m_input_bar_back->set_image_width(m_input_bar->get_image_width() + 6);
-					//m_input_bar_back->set_invisible(false);
+					if (m_configuration->get_bool_value("text_background")) {
+						m_input_bar_back->set_invisible(false);
+					}
 				} else if ((*it).first == "Toggle Sound") {
 					string sound = "";
 					if (m_sound_controller->is_sound_on()) {
@@ -2929,7 +2945,9 @@ void GameController::display_message(string message, Color color, Color shadow) 
 		m_chat_window_transition_x->change_curve(currframe, new LinearCurve(0, message_sprite->get_image_width() + 6), 1);
 	}
 	m_chat_log->add_message(message, color, shadow);
-	//m_chat_window_back->set_invisible(false);
+	if (m_configuration->get_bool_value("text_background")) {
+		m_chat_window_back->set_invisible(false);
+	}
 }
 
 /*
