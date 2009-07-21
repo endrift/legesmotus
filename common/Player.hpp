@@ -118,10 +118,14 @@ namespace LM {
 		virtual void set_is_invisible(bool is_invisible);
 		virtual void set_is_frozen(bool is_frozen);
 	
-		// Update the player's position as if the specified number of units time have elapsed
+		// Update the player's position as if the specified amount of time has elapsed
 		virtual void update_position(float timescale);
-		virtual void bounce(double angle_of_incidence, double velocity_scale);
+		// Do the same, but with rotation
+		virtual void update_rotation(float timescale);
+		// Set the player's velocity to 0
 		virtual void stop();
+		// Update the player's velocity as if it were bouncing off a wall with given angle of incidence (90 == horizontal wall, 180 == vertical wall)
+		virtual void bounce(double angle_of_incidence, double velocity_scale);
 	
 		// Reset the player's score to 0
 		void reset_score() { set_score(0); }

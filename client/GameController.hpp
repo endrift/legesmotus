@@ -232,6 +232,7 @@ namespace LM {
 		void		preinit(ClientConfiguration* config);
 		void		init(GameWindow* window);
 		void		process_input();
+		const GraphicalPlayer* get_player_by_id(uint32_t player_id) const;
 		GraphicalPlayer* get_player_by_id(uint32_t player_id);
 		GraphicalPlayer* get_player_by_name(const char* name);
 		void		send_my_player_update();
@@ -255,6 +256,12 @@ namespace LM {
 		void		display_legalese();
 	
 		void		send_ack(const PacketReader& packet);
+
+		// Misc. helpers
+
+		// Return the current angle (in radians) from the player to the crosshairs
+		//  Doesn't take into account the player rotation
+		double		get_crosshairs_angle() const;
 		
 	public:
 		explicit GameController(PathManager& pathman, ClientConfiguration* config);
@@ -269,7 +276,7 @@ namespace LM {
 		void		connect_to_server(const IPAddress& server_address, char team =0);
 		void		connect_to_server(int servernum);
 		void		disconnect();
-		void		player_fired(uint32_t player_id, double start_x, double start_y, double direction);
+		void		fire_weapon(double start_x, double start_y, double direction);
 		void		send_player_shot(uint32_t shooter_id, uint32_t hit_player_id, double angle);
 		void		send_message(std::string message);
 		void		send_team_message(std::string message);

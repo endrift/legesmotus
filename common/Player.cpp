@@ -131,7 +131,15 @@ void Player::set_position(double x, double y) {
 void Player::update_position(float timescale) {
 	set_x(m_x + m_x_vel * timescale);
 	set_y(m_y + m_y_vel * timescale);
+}
+
+void Player::update_rotation(float timescale) {
 	set_rotation_degrees(m_rotation + m_rotational_vel * timescale);
+}
+
+void Player::stop() {
+	set_velocity(0, 0);
+	set_rotational_vel(0);
 }
 
 void Player::bounce(double angle_of_incidence, double velocity_scale) {
@@ -140,11 +148,6 @@ void Player::bounce(double angle_of_incidence, double velocity_scale) {
 	double		new_angle = get_normalized_angle(angle_of_incidence + (angle_of_incidence - curr_angle) - 180);
 
 	set_velocity(Vector::make_from_magnitude(curr_magnitude * velocity_scale, to_radians(new_angle)));
-}
-
-void Player::stop() {
-	set_velocity(0, 0);
-	set_rotational_vel(0);
 }
 
 void Player::set_x_vel(double xvel) {

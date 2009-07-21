@@ -749,12 +749,7 @@ void GameController::run(int lockfps) {
 				
 				// Turn arm of player to face crosshairs.
 				if (!m_players[m_player_id].is_frozen()) {
-					double x_dist;
-					double y_dist;
-					double angle;
-					x_dist = (m_crosshairs->get_x() + m_offset_x) - m_players[m_player_id].get_x();
-					y_dist = (m_crosshairs->get_y() + m_offset_y) - m_players[m_player_id].get_y();
-					angle = get_normalized_angle(atan2(y_dist, x_dist) * RADIANS_TO_DEGREES - m_players[m_player_id].get_rotation_degrees());
+					double	angle = get_normalized_angle(to_degrees(get_crosshairs_angle()) - m_players[m_player_id].get_rotation_degrees());
 					
 					if (angle < 90 || angle > 270) {
 						m_players[m_player_id].get_sprite()->set_scale_x(-1);
@@ -1433,11 +1428,12 @@ void GameController::process_mouse_click(SDL_Event event) {
 			double y_dist = (event.button.y + m_offset_y) - m_players[m_player_id].get_y();
 			double direction = atan2(y_dist, x_dist) * RADIANS_TO_DEGREES;
 			// Cause recoil if the player is not hanging onto a wall.
+			// XXX: This is bad test to see if a player's hanging onto a wall, since a player could be hovering in mid-space with no velocity.  In fact, that would be really bad, because then the player couldn't use recoil to get moving again.  We'll probably need to keep a flag in the Player class that specifies whether the player is hanging onto a wall or not. (-- andrew)
 			if (m_players[m_player_id].get_x_vel() != 0 || m_players[m_player_id].get_y_vel() != 0) {
 				m_players[m_player_id].set_velocity(m_players[m_player_id].get_x_vel() - m_params.firing_recoil * cos((direction) * DEGREES_TO_RADIANS), m_players[m_player_id].get_y_vel() - m_params.firing_recoil * sin((direction) * DEGREES_TO_RADIANS));
 			}
 			m_last_fired = get_ticks();
-			player_fired(m_player_id, m_players[m_player_id].get_x(), m_players[m_player_id].get_y(), direction);
+			fire_weapon(m_players[m_player_id].get_x(), m_players[m_player_id].get_y(), direction);
 			m_sound_controller->play_sound("fire");
 		}
 	}
@@ -1660,49 +1656,40 @@ void GameController::attempt_jump() {
 	if (m_players.empty()) {
 		return;
 	}
+
+	GraphicalPlayer& player = m_players[m_player_id];
 	
-	if (m_players[m_player_id].is_frozen()) {
+	if (player.is_frozen() || player.is_invisible()) {
 		return;
 	}
 	
-	GraphicalPlayer* player = &m_players[m_player_id];
-	
-	double new_rotation = (((double)rand() / ((double)(RAND_MAX)+1)) - 0.5) * RANDOM_ROTATION_SCALE;
-	
-	double half_width = m_players[m_player_id].get_radius();
-	double half_height = m_players[m_player_id].get_radius();
-	
-	double x_dist = (m_crosshairs->get_x() + m_offset_x) - player->get_x();
-	double y_dist = (m_crosshairs->get_y() + m_offset_y) - player->get_y();
-	double x_vel = 6 * cos(atan2(y_dist, x_dist));
-	double y_vel = 6 * sin(atan2(y_dist, x_dist));
+	// The new velocities
+	Vector	new_velocity(Vector::make_from_magnitude(6.0, get_crosshairs_angle()));
+	double	new_rotation = (((double)rand() / ((double)(RAND_MAX)+1)) - 0.5) * RANDOM_ROTATION_SCALE;
 	
 	// Check if we're next to the side of the map.
-	if (player->get_x() - (half_width) <= 5) {
-		player->set_x_vel(x_vel);
-		player->set_y_vel(y_vel);
-		m_players[m_player_id].set_rotational_vel(new_rotation);
-	} else if (player->get_x() + (half_width) >= m_map_width - 5) {
-		player->set_x_vel(x_vel);
-		player->set_y_vel(y_vel);
-		m_players[m_player_id].set_rotational_vel(new_rotation);
+	double half_width = player.get_radius();
+	double half_height = player.get_radius();
+
+	if (player.get_x() - half_width <= 5) {
+		player.set_velocity(new_velocity);
+		player.set_rotational_vel(new_rotation);
+	} else if (player.get_x() + half_width >= m_map_width - 5) {
+		player.set_velocity(new_velocity);
+		player.set_rotational_vel(new_rotation);
 	}
 	
-	if (player->get_y() - (half_height) <= 5) {
-		player->set_x_vel(x_vel);
-		player->set_y_vel(y_vel);
-		m_players[m_player_id].set_rotational_vel(1);
-	} else if (player->get_y() + (half_height) >= m_map_height - 5) {
-		player->set_x_vel(x_vel);
-		player->set_y_vel(y_vel);
-		m_players[m_player_id].set_rotational_vel(new_rotation);
+	if (player.get_y() - half_height <= 5) {
+		player.set_velocity(new_velocity);
+		player.set_rotational_vel(new_rotation);
+	} else if (player.get_y() + half_height >= m_map_height - 5) {
+		player.set_velocity(new_velocity);
+		player.set_rotational_vel(new_rotation);
 	}
 
-	list<MapObject>::const_iterator thisobj;
-	const list<MapObject>& map_objects(m_map->get_objects());
-	Point currpos = Point(player->get_x(), player->get_y());
-	
 	// Check if we're near any obstacles.
+	const list<MapObject>& map_objects(m_map->get_objects());
+	list<MapObject>::const_iterator thisobj;
 	for (thisobj = map_objects.begin(); thisobj != map_objects.end(); thisobj++) {
 		if (thisobj->get_sprite() == NULL) {
 			continue;
@@ -1712,19 +1699,18 @@ void GameController::attempt_jump() {
 			continue;
 		}
 		const Polygon& poly(thisobj->get_bounding_polygon());
-		double newdist = poly.intersects_circle(currpos, player->get_radius()+5, NULL);
+		double newdist = poly.intersects_circle(player.get_position(), player.get_radius()+5, NULL);
 		if (newdist != -1) {
-			player->set_x_vel(x_vel);
-			player->set_y_vel(y_vel);	
-			m_players[m_player_id].set_rotational_vel(new_rotation);
+			player.set_velocity(new_velocity);
+			player.set_rotational_vel(new_rotation);
 		}
 	}
 }
 
 /*
- * Called when a player (including you) fires.
+ * Called when the current player fires his weapon.
  */
-void GameController::player_fired(uint32_t player_id, double start_x, double start_y, double direction) {
+void GameController::fire_weapon(double start_x, double start_y, double direction) {
 	if (m_players.empty()) {
 		return;
 	}
@@ -1740,7 +1726,7 @@ void GameController::player_fired(uint32_t player_id, double start_x, double sta
 	
 	// Find the closest object that the shot will hit, if any.
 	for (thisobj = map_objects.begin(); thisobj != map_objects.end(); thisobj++) {
-		if (thisobj->get_sprite() == NULL) {
+		if (!thisobj->is_obstacle()) {
 			continue;
 		}
 		const Polygon& poly(thisobj->get_bounding_polygon());
@@ -1764,99 +1750,97 @@ void GameController::player_fired(uint32_t player_id, double start_x, double sta
 	}
 	
 	// Now check if any players are closer.
-	if (player_id == m_player_id) {
-		const GraphicalPlayer* hit_player = NULL;
+	const GraphicalPlayer* hit_player = NULL;
+	
+	map<uint32_t, GraphicalPlayer>::iterator it;
+	for ( it=m_players.begin() ; it != m_players.end(); it++ ) {
+		const GraphicalPlayer& currplayer = (*it).second;
+		if (currplayer.get_id() == m_player_id) {
+			continue;
+		}
+		double playerdist = Point::distance(Point(start_x, start_y), Point(currplayer.get_x(), currplayer.get_y()));
 		
-		map<uint32_t, GraphicalPlayer>::iterator it;
-		for ( it=m_players.begin() ; it != m_players.end(); it++ ) {
-			const GraphicalPlayer& currplayer = (*it).second;
-			if (currplayer.get_id() == player_id) {
-				continue;
-			}
-			double playerdist = Point::distance(Point(start_x, start_y), Point(currplayer.get_x(), currplayer.get_y()));
-			
-			if (playerdist > shortestdist) {
-				continue;
-			}
-			
-			double end_x = start_x + playerdist * cos(direction * DEGREES_TO_RADIANS);
-			double end_y = start_y + playerdist * sin(direction * DEGREES_TO_RADIANS);
-			vector<double> closestpoint = closest_point_on_line(start_x, start_y, end_x, end_y, currplayer.get_x(), currplayer.get_y());
-			
-			if (closestpoint.size() == 0) {
-				continue;
-			}
-			
-			double dist = Point::distance(Point(currplayer.get_x(), currplayer.get_y()), Point(closestpoint.at(0), closestpoint.at(1)));
-			
-			// If the closest point was behind the beginning of the shot, it's not a hit.
-			if (closestpoint.at(2) < 0) {
-				continue;
-			}
-			
-			// If the shot hit the player:
-			if (dist < currplayer.get_radius()) {
-				shortestdist = playerdist;
-				wallhitpoint = Point(0, 0);
-				hit_player = &currplayer;
-				end_x = closestpoint.at(0);
-				end_y = closestpoint.at(1);
-			}
+		if (playerdist > shortestdist) {
+			continue;
 		}
 		
-		// If we're still not hitting anything, find the nearest map edge where the shot will hit.
-		if (end_x == -1 && end_y == -1) {
-			double dist_to_obstacle = m_map_width + m_map_height;
-			Point endpos = Point(start_x + dist_to_obstacle * cos(direction * DEGREES_TO_RADIANS), start_y + dist_to_obstacle * sin(direction * DEGREES_TO_RADIANS));
-			Point newpoint = m_map_polygon.intersects_line(startpos, endpos);
+		double this_end_x = start_x + playerdist * cos(direction * DEGREES_TO_RADIANS);
+		double this_end_y = start_y + playerdist * sin(direction * DEGREES_TO_RADIANS);
+		vector<double> closestpoint = closest_point_on_line(start_x, start_y, this_end_x, this_end_y, currplayer.get_x(), currplayer.get_y());
 		
-			if (newpoint.x != -1 || newpoint.y != -1) {		
-				double newdist = Point::distance(Point(start_x, start_y), newpoint);
+		if (closestpoint.size() == 0) {
+			continue;
+		}
 		
-				if (newdist != -1 && newdist < shortestdist) {
-					shortestdist = newdist;
-					wallhitpoint = newpoint;
-					end_x = newpoint.x;
-					end_y = newpoint.y;
-				}
+		double dist = Point::distance(Point(currplayer.get_x(), currplayer.get_y()), Point(closestpoint.at(0), closestpoint.at(1)));
+		
+		// If the closest point was behind the beginning of the shot, it's not a hit.
+		if (closestpoint.at(2) < 0) {
+			continue;
+		}
+		
+		// If the shot hit the player:
+		if (dist < currplayer.get_radius()) {
+			shortestdist = playerdist;
+			wallhitpoint = Point(0, 0);
+			hit_player = &currplayer;
+			end_x = closestpoint.at(0);
+			end_y = closestpoint.at(1);
+		}
+	}
+	
+	// If we're still not hitting anything, find the nearest map edge where the shot will hit.
+	if (end_x == -1 && end_y == -1) {
+		double dist_to_obstacle = m_map_width + m_map_height;
+		Point endpos = Point(start_x + dist_to_obstacle * cos(direction * DEGREES_TO_RADIANS), start_y + dist_to_obstacle * sin(direction * DEGREES_TO_RADIANS));
+		Point newpoint = m_map_polygon.intersects_line(startpos, endpos);
+	
+		if (newpoint.x != -1 || newpoint.y != -1) {		
+			double newdist = Point::distance(Point(start_x, start_y), newpoint);
+	
+			if (newdist != -1 && newdist < shortestdist) {
+				shortestdist = newdist;
+				wallhitpoint = newpoint;
+				end_x = newpoint.x;
+				end_y = newpoint.y;
 			}
 		}
-		
-		// Create the gun fired packet and send it, and display the shot hit point.
-		PacketWriter gun_fired(GUN_FIRED_PACKET);
-		gun_fired << player_id;
-		gun_fired << start_x;
-		gun_fired << start_y;
-		gun_fired << direction;
-		if (end_x != -1 || end_y != -1) {
-			gun_fired << end_x;
-			gun_fired << end_y;
-			Graphic* this_shot = new Sprite(*m_shot);
-			this_shot->set_x(end_x);
-			this_shot->set_y(end_y);
-			this_shot->set_scale_x(.1);
-			this_shot->set_scale_y(.1);
-			this_shot->set_invisible(false);
-			pair<Graphic*, unsigned int> new_shot(this_shot, get_ticks() + SHOT_DISPLAY_TIME);
-			m_shots.push_back(new_shot);
-			m_window->register_graphic(this_shot);
+	}
+	
+	// Create the gun fired packet and send it, and display the shot hit point.
+	PacketWriter gun_fired(GUN_FIRED_PACKET);
+	gun_fired << m_player_id;
+	gun_fired << start_x;
+	gun_fired << start_y;
+	gun_fired << direction;
+	if (end_x != -1 || end_y != -1) {
+		gun_fired << end_x;
+		gun_fired << end_y;
+		Graphic* this_shot = new Sprite(*m_shot);
+		this_shot->set_x(end_x);
+		this_shot->set_y(end_y);
+		this_shot->set_scale_x(.1);
+		this_shot->set_scale_y(.1);
+		this_shot->set_invisible(false);
+		pair<Graphic*, unsigned int> new_shot(this_shot, get_ticks() + SHOT_DISPLAY_TIME);
+		m_shots.push_back(new_shot);
+		m_window->register_graphic(this_shot);
+	}
+	
+	// Switch to the gun with the muzzle flash.
+	GraphicGroup* frontarm = (GraphicGroup*)m_players[m_player_id].get_sprite()->get_graphic("frontarm");
+	frontarm->get_graphic("gun")->set_invisible(true);
+	send_animation_packet("frontarm/gun", "invisible", true);
+	frontarm->get_graphic("gun_fired")->set_invisible(false);
+	send_animation_packet("frontarm/gun_fired", "invisible", false);
+	
+	m_network.send_packet(gun_fired);
+	
+	if (hit_player != NULL) {
+		if (!hit_player->is_frozen()) {
+			m_sound_controller->play_sound("hit");
 		}
-		
-		// Switch to the gun with the muzzle flash.
-		GraphicGroup* frontarm = (GraphicGroup*)m_players[m_player_id].get_sprite()->get_graphic("frontarm");
-		frontarm->get_graphic("gun")->set_invisible(true);
-		send_animation_packet("frontarm/gun", "invisible", true);
-		frontarm->get_graphic("gun_fired")->set_invisible(false);
-		send_animation_packet("frontarm/gun_fired", "invisible", false);
-		
-		m_network.send_packet(gun_fired);
-		
-		if (hit_player != NULL) {
-			if (!hit_player->is_frozen()) {
-				m_sound_controller->play_sound("hit");
-			}
-			send_player_shot(player_id, hit_player->get_id(), direction-180);
-		}
+		send_player_shot(m_player_id, hit_player->get_id(), direction-180);
 	}
 }
 
@@ -2409,8 +2393,6 @@ void GameController::gun_fired(PacketReader& reader) {
 	
 		m_sound_controller->play_sound("fire");
 		m_radar->activate_blip(playerid, get_ticks(), m_params.radar_blip_duration);
-	
-		player_fired(player->get_id(), start_x, start_y, rotation);
 	}
 }
 
@@ -2957,6 +2939,10 @@ GraphicalPlayer* GameController::get_player_by_id(uint32_t player_id) {
 	map<uint32_t, GraphicalPlayer>::iterator it(m_players.find(player_id));
 	return it == m_players.end() ? NULL : &it->second;
 }
+const GraphicalPlayer* GameController::get_player_by_id(uint32_t player_id) const {
+	map<uint32_t, GraphicalPlayer>::const_iterator it(m_players.find(player_id));
+	return it == m_players.end() ? NULL : &it->second;
+}
 
 /*
  * Get a player by name.
@@ -3277,5 +3263,14 @@ void GameController::set_radar_mode(RadarMode mode) {
 			}
 		}
 	}
+}
+
+double	GameController::get_crosshairs_angle() const {
+	if (m_players.empty()) {
+		return 0;
+	}
+
+	Point	crosshairs_location(m_crosshairs->get_x() + m_offset_x, m_crosshairs->get_y() + m_offset_y);
+	return Vector(crosshairs_location - get_player_by_id(m_player_id)->get_position()).get_angle();
 }
 
