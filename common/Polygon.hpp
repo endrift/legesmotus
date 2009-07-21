@@ -42,8 +42,8 @@ namespace LM {
 		void			clear() { m_lines.clear(); }
 	
 		// Set the polygon to a rectangle of the given width and height
-		void			make_rectangle(int width, int height);
-		void			make_rectangle(int width, int height, Point upper_left); // make the rectangle starting at given upper left corner
+		void			make_rectangle(double width, double height);
+		void			make_rectangle(double width, double height, Point upper_left); // make the rectangle starting at given upper left corner
 	
 		// Return the distance if this bounding polygon intersects with the circle. Otherwise returns -1.
 		double			intersects_circle(Point point, double radius, double* angle) const;

@@ -28,7 +28,6 @@
 #include <stdint.h>
 #include <cmath>
 #include <vector>
-#include "common/Point.hpp"
 
 #ifndef M_PI
 #define M_PI (3.141592653589793)
@@ -57,7 +56,11 @@ namespace LM {
 	// Get a value in the range [0,360)
 	double get_normalized_angle(double angle);
 
-	double dot_product(Point a, Point b);
+	// Go from degrees to radians
+	inline double to_radians(double degrees) { return degrees * DEGREES_TO_RADIANS; }
+
+	// Go from radians to degrees
+	inline double to_degrees(double radians) { return radians * RADIANS_TO_DEGREES; }
 }
 
 #endif

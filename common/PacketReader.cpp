@@ -24,7 +24,6 @@
 
 #include "PacketReader.hpp"
 #include "UDPPacket.hpp"
-#include "Point.hpp"
 #include <cstring>
 #include <cstdlib>
 #include <ostream>

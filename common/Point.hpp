@@ -26,25 +26,30 @@
 #define LM_COMMON_POINT_HPP
 
 #include <iosfwd>
-#include <math.h>
 
-// A simple class which represents a point in the Cartesian plane.
-// Has an x and y component.
+// A simple class which represents a point or a vector in the Cartesian plane.
+// Has x and y components.
 namespace LM {
 	class Point {
 	public:
-		int		x;
-		int		y;
+		double		x;
+		double		y;
 	
 		Point() { clear(); }
-		Point(int arg_x, int arg_y) { x = arg_x; y = arg_y; }
-		Point(double arg_x, double arg_y) { x = int(round(arg_x)); y = int(round(arg_y)); }
+		Point(double arg_x, double arg_y) { x = arg_x; y = arg_y; }
 	
-		// Given a string of the from "x,y" initialize this point to it
-		void		init_from_string(const char* str);
 		void		clear() { x = y = 0; }
+		void		scale(double factor);
+		double		get_angle() const;	// In radians
+		double		get_magnitude() const;
+		Point		get_unit_vector() const;
 	
-		inline static int dot_product(Point a, Point b) {
+		// Given a string of the from "x,y", make a point from it
+		static Point	make_from_string(const char* str);
+		// Given a magnitude and an angle (in radians), make a point from it
+		static Point	make_from_magnitude(double magnitude, double angle);
+
+		inline static double dot_product(Point a, Point b) {
 			return a.x * b.x + a.y * b.y;
 		}
 	
@@ -58,7 +63,7 @@ namespace LM {
 	Point	operator+(Point a, Point b);
 	Point	operator-(Point a, Point b);
 	
-	
+	typedef Point Vector;
 }
 
 #endif

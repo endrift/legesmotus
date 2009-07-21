@@ -29,6 +29,7 @@
 #include <string>
 #include <string.h>
 #include <stdint.h>
+#include "common/Point.hpp"
 
 /*
  * A Player represents a player in the game.
@@ -73,8 +74,10 @@ namespace LM {
 		int get_health() const { return m_health; }
 		double get_x() const { return m_x; }
 		double get_y() const { return m_y; }
+		Point get_position() const { return Point(m_x, m_y); }
 		double get_x_vel() const { return m_x_vel; }
 		double get_y_vel() const { return m_y_vel; }
+		Vector get_velocity() const { return Point(m_x_vel, m_y_vel); }
 		double get_rotational_vel() const { return m_rotational_vel; }
 		double get_rotational_vel_radians() const;
 		double get_rotation_degrees() const { return m_rotation; }
@@ -101,9 +104,11 @@ namespace LM {
 		virtual void set_x(double x);
 		virtual void set_y(double y);
 		virtual void set_position(double x, double y);
+		void set_position(Point p) { set_position(p.x, p.y); }
 		virtual void set_x_vel(double xvel);
 		virtual void set_y_vel(double yvel);
 		virtual void set_velocity(double xvel, double yvel);
+		void set_velocity(Vector v) { set_velocity(v.x, v.y); }
 		virtual void set_rotation_degrees(double rotation);
 		virtual void set_rotation_radians(double rotation);
 		virtual void set_rotational_vel(double rotation);
@@ -114,7 +119,9 @@ namespace LM {
 		virtual void set_is_frozen(bool is_frozen);
 	
 		// Update the player's position as if the specified number of units time have elapsed
-		virtual void update_position(unsigned long timediff);
+		virtual void update_position(float timescale);
+		virtual void bounce(double angle_of_incidence, double velocity_scale);
+		virtual void stop();
 	
 		// Reset the player's score to 0
 		void reset_score() { set_score(0); }

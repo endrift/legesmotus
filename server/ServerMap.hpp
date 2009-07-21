@@ -27,7 +27,6 @@
 
 #include "common/Map.hpp"
 #include "common/MapReader.hpp"
-#include "common/Point.hpp"
 #include "Spawnpoint.hpp"
 #include <list>
 

@@ -64,6 +64,3 @@ double LM::get_normalized_angle(double angle) {
 	return angle;
 }
 
-double LM::dot_product(Point a, Point b) {
-	return a.x * b.x + a.y * b.y;
-}

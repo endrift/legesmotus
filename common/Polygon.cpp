@@ -38,7 +38,7 @@ void	Polygon::add_line(Point a, Point b) {
 	m_lines.push_back(make_pair(a, b));
 }
 
-void	Polygon::make_rectangle(int width, int height) {
+void	Polygon::make_rectangle(double width, double height) {
 	clear();
 	add_line(Point(0, 0), Point(width, 0));
 	add_line(Point(width, 0), Point(width, height));
@@ -46,7 +46,7 @@ void	Polygon::make_rectangle(int width, int height) {
 	add_line(Point(0, height), Point(0, 0));
 }
 
-void	Polygon::make_rectangle(int width, int height, Point upper_left) {
+void	Polygon::make_rectangle(double width, double height, Point upper_left) {
 	clear();
 	add_line(upper_left, upper_left + Point(width, 0));
 	add_line(upper_left + Point(width, 0), upper_left + Point(width, height));
@@ -62,10 +62,10 @@ double	Polygon::intersects_circle(Point p, double radius, double* angle) const {
 	double x2res = 0;
 	double y2res = 0;
 	for ( it=m_lines.begin() ; it != m_lines.end(); it++ ) {
-		int x1 = it->first.x;
-		int y1 = it->first.y;
-		int x2 = it->second.x;
-		int y2 = it->second.y;
+		double x1 = it->first.x;
+		double y1 = it->first.y;
+		double x2 = it->second.x;
+		double y2 = it->second.y;
 		double dtoline = dist_from_line_to_point(x1, y1, x2, y2, p.x, p.y);
 		double partofline = ((p.x - x1) * (x2 - x1) + (p.y - y1) * (y2 - y1)) / fabs(double(((x2-x1) * (x2-x1)) + ((y2-y1) * (y2-y1))));
 		if (dtoline < radius && partofline > 0 && partofline < 1 && dtoline < min_dist) {
@@ -154,7 +154,7 @@ double Polygon::dist_from_line_to_point(double x1, double y1, double x2, double 
 Point Polygon::closest_point_on_line_to_point(Point start, Point end, Point p) const {
 	Point v = end - start;
 	Point w = p - start;
-	double projection = dot_product(v, w) / dot_product(v, v);
+	double projection = Point::dot_product(v, w) / Point::dot_product(v, v);
 	if (projection < 0 || projection > 1) {
 		return Point(-1, -1);
 	} else {
@@ -166,10 +166,10 @@ double	Polygon::dist_from_circle(Point p, double radius) const {
 	list<pair<Point, Point> >::const_iterator it;
 	double min_dist = numeric_limits<double>::max();
 	for ( it=m_lines.begin() ; it != m_lines.end(); it++ ) {
-		int x1 = it->first.x;
-		int y1 = it->first.y;
-		int x2 = it->second.x;
-		int y2 = it->second.y;
+		double x1 = it->first.x;
+		double y1 = it->first.y;
+		double x2 = it->second.x;
+		double y2 = it->second.y;
 		double dtoline = fabs(double((x2-x1)*(y1-p.y) - (x1-p.x)*(y2-y1) ) / sqrt(double((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1))));
 		double partofline = ((p.x - x1) * (x2 - x1) + (p.y - y1) * (y2 - y1)) / fabs(double(((x2-x1) * (x2-x1)) + ((y2-y1) * (y2-y1))));
 		if (dtoline < min_dist && partofline > 0 && partofline < 1) {

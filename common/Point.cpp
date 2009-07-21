@@ -23,6 +23,7 @@
  */
 
 #include "common/Point.hpp"
+#include "common/StringTokenizer.hpp"
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
@@ -33,19 +34,36 @@ using namespace std;
 
 // See .hpp file for extensive comments.
 
-void	Point::init_from_string(const char* str) {
-	// Look for a comma
-	if (const char* comma = strchr(str, ',')) {
-		x = atoi(str);		// x starts from beginning of string
-		y = atoi(comma + 1);	// y starts after the comma
-	} else {
-		// No comma found.
-		clear();
-	}
+Point	Point::make_from_string(const char* str) {
+	double x;
+	double y;
+	StringTokenizer(str, ',', 2) >> x >> y;
+	return Point(x, y);
+}
+
+Point	Point::make_from_magnitude(double magnitude, double angle) {
+	return Point(magnitude * cos(angle), magnitude * sin(angle));
+}
+
+void	Point::scale(double factor) {
+	x *= factor;
+	y *= factor;
+}
+
+double	Point::get_angle() const {
+	return atan2(y, x);
+}
+
+double	Point::get_magnitude() const {
+	return hypot(x, y);
+}
+
+Point	Point::get_unit_vector() const {
+	return make_from_magnitude(1.0, get_angle());
 }
 
 double	Point::distance(Point a, Point b) {
-	return sqrt(double((b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y)));
+	return sqrt((b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y));
 }
 
 ostream&	LM::operator<<(ostream& out, Point point) {

@@ -100,8 +100,8 @@ void	GraphicalMap::add_object(MapReader& object_data) {
 
 			bool		is_tiled = flags.find('T') != string::npos;
 			bool		is_obstacle = flags.find('O') != string::npos;
-			int		width = 0;
-			int		height = 0;
+			double		width = 0;
+			double		height = 0;
 
 			if (is_tiled) {
 				// Tiled graphic
@@ -122,8 +122,8 @@ void	GraphicalMap::add_object(MapReader& object_data) {
 				}
 			} else {
 				Sprite*	sprite = load_graphic<Sprite>(sprite_name);
-				width = int(sprite->get_image_width());
-				height = int(sprite->get_image_height());
+				width = sprite->get_image_width();
+				height = sprite->get_image_height();
 				map_object.set_sprite(sprite);
 			}
 
@@ -184,7 +184,7 @@ void	GraphicalMap::add_object(MapReader& object_data) {
 			sprite->set_antialiasing(false);
 			map_object.set_sprite(sprite);
 
-			map_object.get_bounding_polygon().make_rectangle(int(sprite->get_image_width()) + GATE_EXTENT * 2, GATE_HEIGHT, upper_left - Point(GATE_EXTENT, 0)); // XXX: casting double to int here
+			map_object.get_bounding_polygon().make_rectangle(sprite->get_image_width() + GATE_EXTENT * 2, GATE_HEIGHT, upper_left - Point(GATE_EXTENT, 0));
 		}
 
 		break;

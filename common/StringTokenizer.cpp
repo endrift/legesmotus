@@ -248,7 +248,7 @@ StringTokenizer&	StringTokenizer::operator>> (string& s) {
 
 StringTokenizer&	StringTokenizer::operator>> (Point& point) {
 	if (const char* p = get_next()) {
-		point.init_from_string(p);
+		point = Point::make_from_string(p);
 	} else {
 		point.clear();
 	}

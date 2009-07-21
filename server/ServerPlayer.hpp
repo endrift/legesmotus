@@ -26,7 +26,6 @@
 #define LM_SERVER_SERVERPLAYER_HPP
 
 #include "common/Player.hpp"
-#include "common/Point.hpp"
 #include "common/IPAddress.hpp"
 #include <stdint.h>
 #include <list>
