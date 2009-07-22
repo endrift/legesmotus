@@ -138,7 +138,7 @@ Point Polygon::intersects_line(Point start, Point end) const {
 	}
 	
 	if (mindist != numeric_limits<double>::max()) {
-		Point scale = Point(int(round(mindist * r.x)), int(round(mindist * r.y)));
+		Point scale = Point(mindist * r.x, mindist * r.y);
 		return start + scale;
 	}
 	return Point(-1, -1);
