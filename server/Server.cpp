@@ -391,12 +391,20 @@ void	Server::player_shot(const IPAddress& address, PacketReader& inbound_packet)
 		return;
 	}
 
-	shot_player->change_health(-100); // TODO: base off of weapon's damage
-
 	uint64_t		freeze_time = 0;
 	
-	if (shot_player->get_health() == 0) {
-		freeze_time = m_game_mode->player_shot(*shooter, *shot_player);
+	if (m_game_mode->player_shot(*shooter, *shot_player)) {
+		// Deal damage
+		shot_player->change_health(-100); // TODO: base off of weapon's damage
+
+		if (shot_player->get_health() == 0) {
+			// Player died
+			freeze_time = m_game_mode->player_died(*shooter, *shot_player);
+
+			if (freeze_time == 0) {
+				shot_player->reset_health();
+			}
+		}
 	}
 
 	// Inform all players that this player has been shot
@@ -1084,6 +1092,7 @@ void	Server::send_spawn_packet(ServerPlayer& player, Point spawnpoint, bool is_a
 	player.set_rotation_degrees(0);
 	player.set_is_frozen(!is_alive);
 	player.set_is_invisible(!is_alive);
+	player.reset_health();
 
 	PacketWriter	spawn_packet(PLAYER_UPDATE_PACKET);
 	player.write_update_packet(spawn_packet);

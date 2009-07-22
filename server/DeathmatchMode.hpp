@@ -34,7 +34,8 @@ namespace LM {
 	public:
 		virtual void		check_state();
 		virtual void		gate_open(char team);
-		virtual uint64_t	player_shot(ServerPlayer& shooter, ServerPlayer& shot_player);
+		virtual bool		player_shot(ServerPlayer& shooter, ServerPlayer& shot_player);
+		virtual uint64_t	player_died(ServerPlayer& killer, ServerPlayer& killed);
 		virtual void		game_timeout();
 		virtual void		new_game();
 

@@ -38,28 +38,28 @@ void	ClassicMode::gate_open(char team) {
 	m_server.new_game();
 }
 
-uint64_t	ClassicMode::player_shot(ServerPlayer& shooter, ServerPlayer& shot_player) {
+bool	ClassicMode::player_shot(ServerPlayer& shooter, ServerPlayer& shot_player) {
+	return !shot_player.is_frozen() &&
+		(m_server.m_params.friendly_fire || shooter.get_team() != shot_player.get_team());
+}
+
+uint64_t	ClassicMode::player_died(ServerPlayer& killer, ServerPlayer& killed) {
 	int			score_change = 0;
 	uint64_t		freeze_time = 0;
 
-	if (!shot_player.is_frozen()) {
-		if (shooter.get_team() != shot_player.get_team()) {
-			// Shot an enemy
-			// Results in a +1 score
-			score_change = 1;
-			freeze_time = m_server.m_params.freeze_time;
-		} else if (m_server.m_params.friendly_fire) {
-			// Shot a teammate and friendly fire is enabled!
-			// Results in a -1 scoring penalty
-			score_change = -1;
-			freeze_time = m_server.m_params.freeze_time;
-		}
+	if (killer.get_team() != killed.get_team()) {
+		// Killed an enemy
+		// Results in a +1 score
+		score_change = 1;
+		freeze_time = m_server.m_params.freeze_time;
+	} else {
+		// Killed a teammate
+		// Results in a -1 scoring penalty
+		score_change = -1;
+		freeze_time = m_server.m_params.freeze_time;
 	}
 
-	if (score_change) {
-		m_server.change_score(shooter, score_change);
-	}
-
+	m_server.change_score(killer, score_change);
 	return freeze_time;
 }
 
