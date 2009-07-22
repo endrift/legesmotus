@@ -49,9 +49,13 @@ namespace LM {
 		// Given a magnitude and an angle (in radians), make a point from it
 		static Point	make_from_magnitude(double magnitude, double angle);
 
-		inline static double dot_product(Point a, Point b) {
-			return a.x * b.x + a.y * b.y;
+		inline static double dot_product(Point u, Point v) {
+			return u.x * v.x + u.y * v.y;
 		}
+		inline static double cross_product(Point u, Point v) {
+			return u.x * v.y - u.y * v.x;
+		}
+
 	
 		static double distance(Point a, Point b);
 	};

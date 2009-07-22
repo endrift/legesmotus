@@ -64,3 +64,25 @@ double LM::get_normalized_angle(double angle) {
 	return angle;
 }
 
+Point LM::closest_point_on_line_to_point(Point start, Point end, Point p) {
+	Point v = end - start;
+	Point w = p - start;
+	double projection = Point::dot_product(v, w) / Point::dot_product(v, v);
+	if (projection < 0 || projection > 1) {
+		return Point(-1, -1);
+	} else {
+		return start + Point(v.x * projection, v.y * projection);
+	}
+}
+
+double LM::dist_from_line_to_point(Point start, Point end, Point p) {
+	const double x1 = start.x;
+	const double y1 = start.y;
+	const double x2 = end.x;
+	const double y2 = end.y;
+	const double px = p.x;
+	const double py = p.y;
+
+	return fabs(double((x2-x1)*(y1-py) - (x1-px)*(y2-y1) ) / sqrt(double((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1))));
+}
+

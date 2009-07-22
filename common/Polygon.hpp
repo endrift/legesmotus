@@ -51,14 +51,10 @@ namespace LM {
 		// Return the point of intersection if the bounding polygon intersects with the line. Otherwise return -1.
 		Point			intersects_line(Point start, Point end) const;
 		
-		double			cross_product(Point start, Point end) const;
-		
+		// Return the distance of this polygon from the given circle, 
 		double			dist_from_circle(Point point, double radius) const;
-	
-		double			dist_from_line_to_point(double x1, double y1, double x2, double y2, double px, double py) const;
-		
-		Point			closest_point_on_line_to_point(Point start, Point end, Point p) const;
-		
+
+
 		// Are there any lines in this polygon?
 		// An empty polygon would be used (for example) in a non-intersectable map object (i.e. a decoration or background)
 		bool			is_empty() const { return m_lines.empty(); }

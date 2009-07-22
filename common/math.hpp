@@ -28,6 +28,7 @@
 #include <stdint.h>
 #include <cmath>
 #include <vector>
+#include "common/Point.hpp"
 
 #ifndef M_PI
 #define M_PI (3.141592653589793)
@@ -61,6 +62,10 @@ namespace LM {
 
 	// Go from radians to degrees
 	inline double to_degrees(double radians) { return radians * RADIANS_TO_DEGREES; }
+
+	double	dist_from_line_to_point(Point start, Point end, Point p);
+	Point	closest_point_on_line_to_point(Point start, Point end, Point p);
+		
 }
 
 #endif

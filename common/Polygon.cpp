@@ -62,11 +62,12 @@ double	Polygon::intersects_circle(Point p, double radius, double* angle) const {
 	double x2res = 0;
 	double y2res = 0;
 	for ( it=m_lines.begin() ; it != m_lines.end(); it++ ) {
-		double x1 = it->first.x;
-		double y1 = it->first.y;
-		double x2 = it->second.x;
-		double y2 = it->second.y;
-		double dtoline = dist_from_line_to_point(x1, y1, x2, y2, p.x, p.y);
+		const double x1 = it->first.x;
+		const double y1 = it->first.y;
+		const double x2 = it->second.x;
+		const double y2 = it->second.y;
+
+		double dtoline = dist_from_line_to_point(it->first, it->second, p);
 		double partofline = ((p.x - x1) * (x2 - x1) + (p.y - y1) * (y2 - y1)) / fabs(double(((x2-x1) * (x2-x1)) + ((y2-y1) * (y2-y1))));
 		if (dtoline < radius && partofline > 0 && partofline < 1 && dtoline < min_dist) {
 			min_dist = dtoline;
@@ -126,8 +127,8 @@ Point Polygon::intersects_line(Point start, Point end) const {
 		Point q = it->first;
 		Point s = it->second - it->first;
 		Point zeroedstart = q - p;
-		double t = cross_product(zeroedstart, s) / cross_product(r, s);
-		double u = cross_product(zeroedstart, r) / cross_product(r, s);
+		double t = Point::cross_product(zeroedstart, s) / Point::cross_product(r, s);
+		double u = Point::cross_product(zeroedstart, r) / Point::cross_product(r, s);
 		
 		if (t >= 0 && t <= 1 && u >= 0 && u <= 1) {
 			if (t < mindist) {
@@ -141,25 +142,6 @@ Point Polygon::intersects_line(Point start, Point end) const {
 		return start + scale;
 	}
 	return Point(-1, -1);
-}
-
-double Polygon::cross_product(Point start, Point end) const {
-	return start.x * end.y - start.y * end.x;
-}
-
-double Polygon::dist_from_line_to_point(double x1, double y1, double x2, double y2, double px, double py) const {
-	return fabs(double((x2-x1)*(y1-py) - (x1-px)*(y2-y1) ) / sqrt(double((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1))));
-}
-
-Point Polygon::closest_point_on_line_to_point(Point start, Point end, Point p) const {
-	Point v = end - start;
-	Point w = p - start;
-	double projection = Point::dot_product(v, w) / Point::dot_product(v, v);
-	if (projection < 0 || projection > 1) {
-		return Point(-1, -1);
-	} else {
-		return start + Point(int(round(v.x * projection)), int(round(v.y * projection)));
-	}
 }
 
 double	Polygon::dist_from_circle(Point p, double radius) const {
