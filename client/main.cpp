@@ -31,11 +31,14 @@
 #include "common/network.hpp"
 #include "common/team.hpp"
 #include <iostream>
+#include <sstream>
 
 #ifdef __APPLE__
 extern "C" {
 #include "mac_bridge.h"
 }
+#elif defined(__WIN32)
+#include <Windows.h>
 #endif
 
 using namespace LM;
@@ -220,6 +223,11 @@ extern "C" int main(int argc, char* argv[]) try {
 	if (run_from_finder) {
 		toplevel_exception(e.what());
 	}
+	#elif defined(__WIN32)
+	stringstream s;
+	s << e.what() << endl;
+	s << "Please ensure that you are running Leges Motus from the proper working directory" << flush;
+	MessageBox(NULL, s.str().c_str(), NULL, MB_OK|MB_ICONERROR);
 	#endif
 
 	return 1;
