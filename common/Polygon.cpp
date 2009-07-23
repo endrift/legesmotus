@@ -28,6 +28,7 @@
 #include <iostream>
 #include <limits>
 #include "common/math.hpp"
+#include "common/Circle.hpp"
 
 // See .hpp file for extensive comments.
 
@@ -55,6 +56,13 @@ void	Polygon::make_rectangle(double width, double height, Point upper_left) {
 }
 
 double	Polygon::intersects_circle(Point p, double radius, double* angle) const {
+	return boundary_intersects_circle(Circle(p, radius), angle);
+}
+
+double	Polygon::boundary_intersects_circle(const Circle& circle, double* angle) const {
+	const Point&	p(circle.center);
+	const double	radius(circle.radius);
+
 	list<pair<Point, Point> >::const_iterator it;
 	double min_dist = numeric_limits<double>::max();
 	double x1res = 0;
@@ -115,6 +123,27 @@ double	Polygon::intersects_circle(Point p, double radius, double* angle) const {
 		return min_dist;
 	}
 	return -1;
+}
+
+double	Polygon::solid_intersects_circle(const Circle& circle, double* angle) const {
+	double	boundary_distance = boundary_intersects_circle(circle, angle);
+	if (boundary_distance != -1) {
+		// An intersection was found with the boundary
+		return boundary_distance;
+	}
+
+	// Check to see if the center of the circle lies within the polygon.
+	// If the circle isn't intersecting the boundary (as determined by check above), but the center of the circle is inside the polygon, then the circle must be wholly inside the polygon.
+	// If the center of the circle is outside the polygon, but part of the circle is inside the polygon, then it's intersecting the boundary and the check above already reported an intersection.
+	bool		inside = false;
+	for (list<pair<Point, Point> >::const_iterator line(m_lines.begin()); line != m_lines.end(); ++line) {
+		if ((line->second.y > circle.center.y) != (line->first.y > circle.center.y) &&
+			circle.center.x < (line->first.x - line->second.x) * (circle.center.y - line->second.y) / (line->first.y - line->second.y) + line->second.x) {
+			inside = !inside;
+		}
+	}
+
+	return inside ? 0 : -1;
 }
 
 Point Polygon::intersects_line(Point start, Point end) const {

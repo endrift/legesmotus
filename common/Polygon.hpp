@@ -26,12 +26,13 @@
 #define LM_COMMON_POLYGON_HPP
 
 #include "common/Point.hpp"
+#include "common/Shape.hpp"
 #include <list>
 #include <utility>
 
 // A polygon is collection of lines which should all join together to create a polygon
 namespace LM {
-	class Polygon {
+	class Polygon : public Shape {
 	private:
 		std::list<std::pair<Point, Point> >	m_lines;
 	
@@ -44,12 +45,15 @@ namespace LM {
 		// Set the polygon to a rectangle of the given width and height
 		void			make_rectangle(double width, double height);
 		void			make_rectangle(double width, double height, Point upper_left); // make the rectangle starting at given upper left corner
+
+
+		virtual double		boundary_intersects_circle(const Circle& circle, double* angle) const;
+		virtual double		solid_intersects_circle(const Circle& circle, double* angle) const;
+		virtual Point		intersects_line(Point start, Point end) const;
 	
-		// Return the distance if this bounding polygon intersects with the circle. Otherwise returns -1.
+
+		// XXX: depreciated function - use boundary_intersects_circle instead
 		double			intersects_circle(Point point, double radius, double* angle) const;
-		
-		// Return the point of intersection if the bounding polygon intersects with the line. Otherwise return -1.
-		Point			intersects_line(Point start, Point end) const;
 		
 		// Return the distance of this polygon from the given circle, 
 		double			dist_from_circle(Point point, double radius) const;
