@@ -4,6 +4,14 @@ CLIENT = $(BASEDIR)/client
 SERVER = $(BASEDIR)/server
 FRAMEWORKS = /Library/Frameworks
 
+ifeq ($(SDL_CONFIG),)
+SDL_CONFIG = sdl-config
+endif
+
+ifeq ($(XDIR),)
+XDIR = /usr/X11
+endif
+
 # Version strings
 VERSION = 0.3.0-svn
 
@@ -42,8 +50,8 @@ else
 ifeq ($(MACHINE),SunOS)
 LIBS += -lnsl -lsocket -lresolv
 endif
-FLAGS_SDL = $(shell sdl-config --cflags)
-LIBS_SDL = $(shell sdl-config --libs) -lSDL_image -lSDL_ttf
+FLAGS_SDL = $(shell $(SDL_CONFIG) --cflags)
+LIBS_SDL = $(shell $(SDL_CONFIG) --libs) -lSDL_image -lSDL_ttf
 ifeq ($(NOSOUND),)
 LIBS_SDL += -lSDL_mixer
 endif
@@ -59,7 +67,7 @@ else
 ifeq ($(MACHINE),Windows)
 LIBS_GL = -lopengl32
 else
-LIBS_GL = -L/usr/X11/lib/ -lGL
+LIBS_GL = -L$(XDIR)/lib/ -lGL
 endif
 endif
 
