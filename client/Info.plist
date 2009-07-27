@@ -20,6 +20,8 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$VERSION</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$VERSION</string>
 	<key>NSMainNibFile</key>
 	<string>legesmotus</string>
 	<key>NSPrincipalClass</key>
