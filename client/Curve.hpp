@@ -76,7 +76,7 @@ namespace LM {
 	protected:
 		virtual double	map_progress(double t) const;
 	public:
-		LogisticCurve(double start, double end, double width);
+		LogisticCurve(double start, double end, double width = 6.0);
 	};
 }
 
