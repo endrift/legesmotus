@@ -34,23 +34,36 @@
 namespace LM {
 	class Polygon : public Shape {
 	private:
-		std::list<std::pair<Point, Point> >	m_lines;
+		typedef std::list<std::pair<Point, Point> > LineList;
+
+		Point			m_upper_left;
+		LineList		m_lines;
+		// Note: all lines are stored ABSOLUTELY from the origin
+		// (and not relatively from m_upper_left)
+		// m_upper_left is only kept so that scaling and rotating work
 	
 	public:
-	
+		Polygon() { }
+		explicit Polygon(Point upper_left);
+
 		// Add a line from point a to point b:
+		// The line will be added relative to m_upper_left
 		void			add_line(Point a, Point b);
 		void			clear() { m_lines.clear(); }
 	
 		// Set the polygon to a rectangle of the given width and height
+		// The rectangle will be made relative to m_upper_left
 		void			make_rectangle(double width, double height);
-		void			make_rectangle(double width, double height, Point upper_left); // make the rectangle starting at given upper left corner
 
 
 		virtual double		boundary_intersects_circle(const Circle& circle, double* angle) const;
 		virtual double		solid_intersects_circle(const Circle& circle, double* angle) const;
 		virtual Point		intersects_line(Point start, Point end) const;
 	
+		virtual void		rotate (double angle);
+		virtual void		scale (double factor);
+	
+		virtual bool		is_centered () const { return false; }
 
 		// XXX: depreciated function - use boundary_intersects_circle instead
 		double			intersects_circle(Point point, double radius, double* angle) const;
@@ -63,7 +76,6 @@ namespace LM {
 		// An empty polygon would be used (for example) in a non-intersectable map object (i.e. a decoration or background)
 		bool			is_empty() const { return m_lines.empty(); }
 		bool			is_filled() const { return !m_lines.empty(); }
-	
 	};
 }
 

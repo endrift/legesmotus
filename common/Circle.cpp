@@ -96,3 +96,11 @@ double	Circle::get_angle_of_incidence (const Circle& other_circle) const {
 	return Vector(center - other_circle.center).get_angle();
 }
 
+void	Circle::rotate (double angle) {
+	// Rotating a circle is easy :-)
+}
+
+void	Circle::scale (double factor) {
+	radius *= factor;
+}
+

@@ -35,8 +35,11 @@
 using namespace LM;
 using namespace std;
 
+Polygon::Polygon(Point upper_left) : m_upper_left(upper_left) {
+}
+
 void	Polygon::add_line(Point a, Point b) {
-	m_lines.push_back(make_pair(a, b));
+	m_lines.push_back(make_pair(m_upper_left + a, m_upper_left + b));
 }
 
 void	Polygon::make_rectangle(double width, double height) {
@@ -47,14 +50,6 @@ void	Polygon::make_rectangle(double width, double height) {
 	add_line(Point(0, height), Point(0, 0));
 }
 
-void	Polygon::make_rectangle(double width, double height, Point upper_left) {
-	clear();
-	add_line(upper_left, upper_left + Point(width, 0));
-	add_line(upper_left + Point(width, 0), upper_left + Point(width, height));
-	add_line(upper_left + Point(width, height), upper_left + Point(0, height));
-	add_line(upper_left + Point(0, height), upper_left);
-}
-
 double	Polygon::intersects_circle(Point p, double radius, double* angle) const {
 	return boundary_intersects_circle(Circle(p, radius), angle);
 }
@@ -63,13 +58,12 @@ double	Polygon::boundary_intersects_circle(const Circle& circle, double* angle) 
 	const Point&	p(circle.center);
 	const double	radius(circle.radius);
 
-	list<pair<Point, Point> >::const_iterator it;
 	double min_dist = numeric_limits<double>::max();
 	double x1res = 0;
 	double y1res = 0;
 	double x2res = 0;
 	double y2res = 0;
-	for ( it=m_lines.begin() ; it != m_lines.end(); it++ ) {
+	for (LineList::const_iterator it(m_lines.begin()); it != m_lines.end(); ++it) {
 		const double x1 = it->first.x;
 		const double y1 = it->first.y;
 		const double x2 = it->second.x;
@@ -136,7 +130,7 @@ double	Polygon::solid_intersects_circle(const Circle& circle, double* angle) con
 	// If the circle isn't intersecting the boundary (as determined by check above), but the center of the circle is inside the polygon, then the circle must be wholly inside the polygon.
 	// If the center of the circle is outside the polygon, but part of the circle is inside the polygon, then it's intersecting the boundary and the check above already reported an intersection.
 	bool		inside = false;
-	for (list<pair<Point, Point> >::const_iterator line(m_lines.begin()); line != m_lines.end(); ++line) {
+	for (LineList::const_iterator line(m_lines.begin()); line != m_lines.end(); ++line) {
 		if ((line->second.y > circle.center.y) != (line->first.y > circle.center.y) &&
 			circle.center.x < (line->first.x - line->second.x) * (circle.center.y - line->second.y) / (line->first.y - line->second.y) + line->second.x) {
 			inside = !inside;
@@ -151,8 +145,7 @@ Point Polygon::intersects_line(Point start, Point end) const {
 	
 	Point p = start;
 	Point r = end - start;
-	list<pair<Point, Point> >::const_iterator it;
-	for ( it=m_lines.begin() ; it != m_lines.end(); it++ ) {
+	for (LineList::const_iterator it(m_lines.begin()); it != m_lines.end(); ++it) {
 		Point q = it->first;
 		Point s = it->second - it->first;
 		Point zeroedstart = q - p;
@@ -174,9 +167,8 @@ Point Polygon::intersects_line(Point start, Point end) const {
 }
 
 double	Polygon::dist_from_circle(Point p, double radius) const {
-	list<pair<Point, Point> >::const_iterator it;
 	double min_dist = numeric_limits<double>::max();
-	for ( it=m_lines.begin() ; it != m_lines.end(); it++ ) {
+	for (LineList::const_iterator it(m_lines.begin()); it != m_lines.end(); ++it) {
 		double x1 = it->first.x;
 		double y1 = it->first.y;
 		double x2 = it->second.x;
@@ -199,3 +191,26 @@ double	Polygon::dist_from_circle(Point p, double radius) const {
 	}
 	return min_dist;
 }
+
+void	Polygon::rotate (double angle) {
+	for (LineList::iterator it(m_lines.begin()); it != m_lines.end(); ++it) {
+		it->first -= m_upper_left;
+		it->first.rotate(to_radians(angle));
+		it->first += m_upper_left;
+		it->second -= m_upper_left;
+		it->second.rotate(to_radians(angle));
+		it->second += m_upper_left;
+	}
+}
+
+void	Polygon::scale (double factor) {
+	for (LineList::iterator it(m_lines.begin()); it != m_lines.end(); ++it) {
+		it->first -= m_upper_left;
+		it->first.scale(factor);
+		it->first += m_upper_left;
+		it->second -= m_upper_left;
+		it->second.scale(factor);
+		it->second += m_upper_left;
+	}
+}
+

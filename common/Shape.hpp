@@ -50,6 +50,28 @@ namespace LM {
 		// Return the point of intersection if this shape intersects with the (finite) line.
 		// Otherwise return Point(-1, -1).
 		virtual Point		intersects_line(Point start, Point end) const = 0;
+
+
+		// Rotate the shape CW by the given angle (in degrees)
+		virtual void		rotate (double angle) = 0;
+
+		// Scale the shape by the given factor
+		virtual void		scale (double factor) = 0;
+
+		
+		// Returns true if this shape is oriented from its center (e.g. a circle),
+		//  false if the shape is oriented from its top left (e.g. a polygon)
+		virtual bool		is_centered () const = 0;
+
+
+		// Given a string describing a shape, construct the shape and return it:
+		// Construct the shape relative to the given position
+		// WARNING: Returns pointer to the free store (your responsibility to delete!)
+		// Format of recognized strings:
+		//  poly:x1,y1;x2,y2;x3,y3;...
+		//  circle:radius
+		//  rect:width,height
+		static Shape*		make_from_string(const char* str, Point position);
 	};
 }
 

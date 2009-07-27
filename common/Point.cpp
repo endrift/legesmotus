@@ -50,6 +50,10 @@ void	Point::scale(double factor) {
 	y *= factor;
 }
 
+void	Point::rotate(double change_in_angle) {
+	*this = make_from_magnitude(get_magnitude(), get_angle() + change_in_angle);
+}
+
 double	Point::get_angle() const {
 	return atan2(y, x);
 }
@@ -76,3 +80,14 @@ Point	LM::operator+(Point a, Point b) {
 Point	LM::operator-(Point a, Point b) {
 	return Point(a.x - b.x, a.y - b.y);
 }
+
+void	Point::operator+=(Point other) {
+	x += other.x;
+	y += other.y;
+}
+
+void	Point::operator-=(Point other) {
+	x -= other.x;
+	y -= other.y;
+}
+

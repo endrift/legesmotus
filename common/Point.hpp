@@ -40,6 +40,7 @@ namespace LM {
 	
 		void		clear() { x = y = 0; }
 		void		scale(double factor);
+		void		rotate(double angle);	// Rotate CW given number of _radians_
 		double		get_angle() const;	// In radians
 		double		get_magnitude() const;
 		Point		get_unit_vector() const;
@@ -56,6 +57,8 @@ namespace LM {
 			return u.x * v.y - u.y * v.x;
 		}
 
+		void		operator+=(Point other);
+		void		operator-=(Point other);
 	
 		static double distance(Point a, Point b);
 	};

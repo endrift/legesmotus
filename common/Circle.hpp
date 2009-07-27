@@ -48,6 +48,10 @@ namespace LM {
 		virtual double	solid_intersects_circle(const Circle& circle, double* angle) const;
 		virtual Point	intersects_line(Point start, Point end) const;
 
+		virtual void	rotate (double angle);
+		virtual void	scale (double factor);
+
+		virtual bool	is_centered () const { return true; }
 	};
 }
 
