@@ -1632,6 +1632,22 @@ void GameController::move_objects(float timescale) {
 
 void GameController::rotate_towards_angle(double angle_of_incidence, uint64_t duration) {
 	if (GraphicalPlayer* player = get_player_by_id(m_player_id)) {
+		double	currangle = player->get_sprite()->get_rotation();
+		double	adjusted_angle = get_normalized_angle(currangle + 90 - angle_of_incidence);
+		double	newangle = currangle;
+		if (adjusted_angle < 90) {
+			newangle = currangle + (90 - adjusted_angle);
+		} else if (adjusted_angle > 270) {
+			newangle = currangle - (adjusted_angle - 270);
+		}
+
+		if (newangle != currangle && !m_transition_manager.get_transition("player_rotation")) {
+			Transition* rotation_transition = new Transition(m_players[m_player_id].get_sprite(), &Graphic::set_rotation, new LinearCurve(currangle, newangle), get_ticks(), duration);
+			rotation_transition->set_curve_ownership(true);
+			m_transition_manager.add_transition(rotation_transition, "player_rotation", false, TransitionManager::DELETE);
+		}
+
+		/*
 		// Add 90 degrees to the angle so the player's feet hit the wall.
 		angle_of_incidence += 90;
 	
@@ -1659,6 +1675,7 @@ void GameController::rotate_towards_angle(double angle_of_incidence, uint64_t du
 			rotation_transition->set_curve_ownership(true);
 			m_transition_manager.add_transition(rotation_transition, "player_rotation", false, TransitionManager::DELETE);
 		}
+		*/
 		
 	}
 }
