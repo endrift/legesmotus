@@ -67,6 +67,24 @@ namespace LM {
 		static const Color		GREYED_OUT;
 		static const Color		TEXT_BG_COLOR;
 		static const Color		BUTTON_HOVER_COLOR;
+
+		const static int MESSAGE_DISPLAY_TIME;
+		const static unsigned int MAX_MESSAGES_TO_DISPLAY;
+		const static int SHOT_DISPLAY_TIME;
+		const static int MUZZLE_FLASH_LENGTH;
+		const static int GATE_WARNING_FLASH_LENGTH;
+		const static double RANDOM_ROTATION_SCALE;
+		const static int GATE_STATUS_RECT_WIDTH;
+		const static int FROZEN_STATUS_RECT_WIDTH;
+		const static int HEALTH_BAR_WIDTH;
+		const static int STATUS_BAR_HEIGHT;
+		const static int DOUBLE_CLICK_TIME;
+		const static int NETWORK_TIMEOUT_LIMIT;
+		const static int TEXT_LAYER;
+		const static unsigned int PING_FREQUENCY;
+		const static unsigned int CHAT_TRANSITION_TIME;
+		const static unsigned int ROTATION_ADJUST_SPEED;
+		
 	private:
 		struct KeyBindings {
 			int quit;
@@ -93,23 +111,6 @@ namespace LM {
 			uint64_t	timeout;
 		};
 
-		const static int MESSAGE_DISPLAY_TIME;
-		const static unsigned int MAX_MESSAGES_TO_DISPLAY;
-		const static int SHOT_DISPLAY_TIME;
-		const static int MUZZLE_FLASH_LENGTH;
-		const static int GATE_WARNING_FLASH_LENGTH;
-		const static double RANDOM_ROTATION_SCALE;
-		const static int GATE_STATUS_RECT_WIDTH;
-		const static int FROZEN_STATUS_RECT_WIDTH;
-		const static int HEALTH_BAR_WIDTH;
-		const static int STATUS_BAR_HEIGHT;
-		const static int DOUBLE_CLICK_TIME;
-		const static int NETWORK_TIMEOUT_LIMIT;
-		const static int TEXT_LAYER;
-		const static unsigned int PING_FREQUENCY;
-		const static unsigned int CHAT_TRANSITION_TIME;
-		const static unsigned int ROTATION_ADJUST_SPEED;
-		
 		PathManager& 	m_path_manager;
 		ClientConfiguration* m_configuration;
 	

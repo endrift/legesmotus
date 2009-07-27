@@ -1518,9 +1518,9 @@ void GameController::move_objects(float timescale) {
 			player.bounce(0, 0.9);
 		} else {
 			player.stop();
+			// Rotate to a good orientation:
+			rotate_towards_angle(0, ROTATION_ADJUST_SPEED);
 		}
-		// Rotate to a good orientation:
-		rotate_towards_angle(0, ROTATION_ADJUST_SPEED);
 	} else if (player.get_x() + half_width > m_map_width) {
 		player.set_x(m_map_width - half_width);
 		player.set_y(oldpos.y);
@@ -1528,9 +1528,9 @@ void GameController::move_objects(float timescale) {
 			player.bounce(180, 0.9);
 		} else {
 			player.stop();
+			// Rotate to a good orientation:
+			rotate_towards_angle(180, ROTATION_ADJUST_SPEED);
 		}
-		// Rotate to a good orientation:
-		rotate_towards_angle(180, ROTATION_ADJUST_SPEED);
 	}
 	
 	if (player.get_y() - half_height < 0) {
@@ -1540,9 +1540,9 @@ void GameController::move_objects(float timescale) {
 			player.bounce(90, 0.9);
 		} else {
 			player.stop();
+			// Rotate to a good orientation:
+			rotate_towards_angle(90, ROTATION_ADJUST_SPEED);
 		}
-		// Rotate to a good orientation:
-		rotate_towards_angle(90, ROTATION_ADJUST_SPEED);
 	} else if (player.get_y() + half_height > m_map_height) {
 		player.set_x(oldpos.x);
 		player.set_y(m_map_height - half_height);
@@ -1550,9 +1550,9 @@ void GameController::move_objects(float timescale) {
 			player.bounce(270, 0.9);
 		} else {
 			player.stop();
+			// Rotate to a good orientation:
+			rotate_towards_angle(270, ROTATION_ADJUST_SPEED);
 		}
-		// Rotate to a good orientation:
-		rotate_towards_angle(270, ROTATION_ADJUST_SPEED);
 	}
 
 	Point	newpos(player.get_x(), player.get_y());
@@ -1589,9 +1589,6 @@ void GameController::move_objects(float timescale) {
 				if (newdist < olddist) {
 					// We're moving closer to the object... COLLISION!
 					thisobj->collide(*this, player, oldpos, angle_of_incidence);
-					
-					// Rotate to a good orientation:
-					rotate_towards_angle(angle_of_incidence, ROTATION_ADJUST_SPEED);
 				}
 			}
 			if (thisobj->is_interactive()) {
