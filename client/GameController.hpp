@@ -108,6 +108,7 @@ namespace LM {
 		const static int TEXT_LAYER;
 		const static unsigned int PING_FREQUENCY;
 		const static unsigned int CHAT_TRANSITION_TIME;
+		const static unsigned int ROTATION_ADJUST_SPEED;
 		
 		PathManager& 	m_path_manager;
 		ClientConfiguration* m_configuration;
@@ -181,6 +182,7 @@ namespace LM {
 		TableBackground* m_chat_window_back;
 		Transition* m_chat_window_transition_x;
 		Transition* m_chat_window_transition_y;
+		Transition* m_rotation_transition;
 		
 		Sprite*		m_shot;
 	
@@ -274,6 +276,7 @@ namespace LM {
 		void		initialize_key_bindings();
 		void		parse_key_input();
 		void		move_objects(float timescale);
+		void		rotate_towards_angle(double angle_of_incidence, uint64_t duration);
 		void		connect_to_server(const IPAddress& server_address, char team =0);
 		void		connect_to_server(int servernum);
 		void		disconnect();

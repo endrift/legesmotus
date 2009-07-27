@@ -84,6 +84,7 @@ const int GameController::NETWORK_TIMEOUT_LIMIT = 10000;
 const int GameController::TEXT_LAYER = -4;
 const unsigned int GameController::PING_FREQUENCY = 2000;
 const unsigned int GameController::CHAT_TRANSITION_TIME = 200;
+const unsigned int GameController::ROTATION_ADJUST_SPEED = 500;
 
 static bool	sort_resolution(pair<int, int> pairone, pair<int, int> pairtwo) {
 	if (pairone.first == pairtwo.first) {
@@ -737,7 +738,9 @@ void GameController::run(int lockfps) {
 			m_transition_manager.update(currframe);
 			
 			if (!m_players.empty()) {
-			
+				//cerr << m_players[m_player_id].get_sprite()->get_rotation() << ", ";
+				m_players[m_player_id].set_rotation_degrees(m_players[m_player_id].get_sprite()->get_rotation());
+								
 				// Change gun sprite if muzzle flash is done.
 				Graphic* frontarm = m_players[m_player_id].get_sprite()->get_graphic("frontarm");
 				if (m_last_fired < get_ticks() - MUZZLE_FLASH_LENGTH && frontarm->get_graphic("gun")->is_invisible()) {
@@ -1516,6 +1519,8 @@ void GameController::move_objects(float timescale) {
 		} else {
 			player.stop();
 		}
+		// Rotate to a good orientation:
+		rotate_towards_angle(0, ROTATION_ADJUST_SPEED);
 	} else if (player.get_x() + half_width > m_map_width) {
 		player.set_x(m_map_width - half_width);
 		player.set_y(oldpos.y);
@@ -1524,6 +1529,8 @@ void GameController::move_objects(float timescale) {
 		} else {
 			player.stop();
 		}
+		// Rotate to a good orientation:
+		rotate_towards_angle(180, ROTATION_ADJUST_SPEED);
 	}
 	
 	if (player.get_y() - half_height < 0) {
@@ -1534,6 +1541,8 @@ void GameController::move_objects(float timescale) {
 		} else {
 			player.stop();
 		}
+		// Rotate to a good orientation:
+		rotate_towards_angle(90, ROTATION_ADJUST_SPEED);
 	} else if (player.get_y() + half_height > m_map_height) {
 		player.set_x(oldpos.x);
 		player.set_y(m_map_height - half_height);
@@ -1542,6 +1551,8 @@ void GameController::move_objects(float timescale) {
 		} else {
 			player.stop();
 		}
+		// Rotate to a good orientation:
+		rotate_towards_angle(270, ROTATION_ADJUST_SPEED);
 	}
 
 	Point	newpos(player.get_x(), player.get_y());
@@ -1578,6 +1589,9 @@ void GameController::move_objects(float timescale) {
 				if (newdist < olddist) {
 					// We're moving closer to the object... COLLISION!
 					thisobj->collide(*this, player, oldpos, angle_of_incidence);
+					
+					// Rotate to a good orientation:
+					rotate_towards_angle(angle_of_incidence, ROTATION_ADJUST_SPEED);
 				}
 			}
 			if (thisobj->is_interactive()) {
@@ -1613,6 +1627,34 @@ void GameController::move_objects(float timescale) {
 		
 		currplayer.update_position(timescale);
 		m_radar->move_blip(currplayer.get_id(), currplayer.get_x(), currplayer.get_y());
+	}
+}
+
+void GameController::rotate_towards_angle(double angle_of_incidence, uint64_t duration) {
+	if (GraphicalPlayer* player = get_player_by_id(m_player_id)) {
+		// Add 90 degrees to the angle so the player's feet hit the wall.
+		angle_of_incidence += 90;
+	
+		// Shift the angle of incidence until it's the closest it can be to the current angle.
+		double currangle = player->get_sprite()->get_rotation();
+		while (abs(currangle - angle_of_incidence) > 180.0) {
+			if (currangle < angle_of_incidence) {
+				angle_of_incidence -= 360;
+			} else {
+				angle_of_incidence += 360;
+			}
+		}
+	
+		if (abs(currangle - angle_of_incidence) > 90.0) {
+			if (currangle < angle_of_incidence) {
+				angle_of_incidence -= 90;
+			} else {
+				angle_of_incidence += 90;
+			}
+		}
+	
+		// Set the sprite to rotate towards that angle.
+		m_rotation_transition->change_curve(get_ticks(), new LinearCurve(0, angle_of_incidence), duration);
 	}
 }
 
@@ -2142,6 +2184,10 @@ void GameController::welcome(PacketReader& reader) {
 	
 	m_players[m_player_id].set_radius(30);
 	m_players[m_player_id].set_name_sprite(m_text_manager->place_string(m_players[m_player_id].get_name(), m_screen_width/2, (m_screen_height/2)-(m_players[m_player_id].get_radius()+30), TextManager::CENTER, TextManager::LAYER_MAIN));
+	
+	m_rotation_transition = new Transition(m_players[m_player_id].get_sprite(), &Graphic::set_rotation, new LinearCurve(0,0));
+	m_rotation_transition->set_curve_ownership(true);
+	m_transition_manager.add_transition(m_rotation_transition);
 	
 	send_my_player_update();
 	

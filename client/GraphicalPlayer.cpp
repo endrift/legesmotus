@@ -112,17 +112,17 @@ void GraphicalPlayer::set_y(double y) {
 }
 
 void GraphicalPlayer::set_rotation_degrees(double rotation) {
-	m_rotation = get_normalized_angle(rotation);
 	if (m_sprite != NULL) {
-		m_sprite->set_rotation(m_rotation);
+		m_sprite->set_rotation(rotation);
 	}
+	m_rotation = get_normalized_angle(rotation);
 }
 
 void GraphicalPlayer::set_rotation_radians(double rotation) {
-	m_rotation = get_normalized_angle(rotation * RADIANS_TO_DEGREES);
 	if (m_sprite != NULL) {
-		m_sprite->set_rotation(m_rotation);
+		m_sprite->set_rotation(rotation * RADIANS_TO_DEGREES);
 	}
+	m_rotation = get_normalized_angle(rotation * RADIANS_TO_DEGREES);
 }
 
 void GraphicalPlayer::set_is_frozen(bool is_frozen) {
