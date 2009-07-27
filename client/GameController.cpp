@@ -1601,7 +1601,10 @@ void GameController::move_objects(float timescale) {
 		}
 	}
 	
-	player.update_rotation(timescale);
+	// If the player rotation is presently being controlld by a transition, don't update it here
+	if (!m_transition_manager.get_transition("player_rotation")) {
+		player.update_rotation(timescale);
+	}
 	
 	// Set the player position and radar position.
 	m_radar->move_blip(m_player_id, player.get_x(), player.get_y());
@@ -1651,7 +1654,12 @@ void GameController::rotate_towards_angle(double angle_of_incidence, uint64_t du
 		}
 	
 		// Set the sprite to rotate towards that angle.
-		m_rotation_transition->change_curve(get_ticks(), new LinearCurve(0, angle_of_incidence), duration);
+		if (!m_transition_manager.get_transition("player_rotation")) {
+			Transition* rotation_transition = new Transition(m_players[m_player_id].get_sprite(), &Graphic::set_rotation, new LinearCurve(currangle, angle_of_incidence), get_ticks(), duration);
+			rotation_transition->set_curve_ownership(true);
+			m_transition_manager.add_transition(rotation_transition, "player_rotation", false, TransitionManager::DELETE);
+		}
+		
 	}
 }
 
@@ -1678,19 +1686,15 @@ void GameController::attempt_jump() {
 	double half_height = player.get_radius();
 
 	if (player.get_x() - half_width <= 5) {
-		player.set_velocity(new_velocity);
-		player.set_rotational_vel(new_rotation);
+		jump(new_velocity, new_rotation);
 	} else if (player.get_x() + half_width >= m_map_width - 5) {
-		player.set_velocity(new_velocity);
-		player.set_rotational_vel(new_rotation);
+		jump(new_velocity, new_rotation);
 	}
 	
 	if (player.get_y() - half_height <= 5) {
-		player.set_velocity(new_velocity);
-		player.set_rotational_vel(new_rotation);
+		jump(new_velocity, new_rotation);
 	} else if (player.get_y() + half_height >= m_map_height - 5) {
-		player.set_velocity(new_velocity);
-		player.set_rotational_vel(new_rotation);
+		jump(new_velocity, new_rotation);
 	}
 
 	// Check if we're near any obstacles.
@@ -1705,10 +1709,17 @@ void GameController::attempt_jump() {
 		const Shape& shape(*thisobj->get_bounding_shape());
 		double newdist = shape.boundary_intersects_circle(player_circle, NULL);
 		if (newdist != -1) {
-			player.set_velocity(new_velocity);
-			player.set_rotational_vel(new_rotation);
+			jump(new_velocity, new_rotation);
 		}
 	}
+}
+
+
+void GameController::jump(Vector new_velocity, double new_rotation) {
+	GraphicalPlayer& player = m_players[m_player_id];
+	player.set_velocity(new_velocity);
+	player.set_rotational_vel(new_rotation);
+	m_transition_manager.remove_transition(m_transition_manager.get_transition("player_rotation"));
 }
 
 /*
@@ -2181,10 +2192,6 @@ void GameController::welcome(PacketReader& reader) {
 	
 	m_players[m_player_id].set_radius(30);
 	m_players[m_player_id].set_name_sprite(m_text_manager->place_string(m_players[m_player_id].get_name(), m_screen_width/2, (m_screen_height/2)-(m_players[m_player_id].get_radius()+30), TextManager::CENTER, TextManager::LAYER_MAIN));
-	
-	m_rotation_transition = new Transition(m_players[m_player_id].get_sprite(), &Graphic::set_rotation, new LinearCurve(0,0));
-	m_rotation_transition->set_curve_ownership(true);
-	m_transition_manager.add_transition(m_rotation_transition);
 	
 	send_my_player_update();
 	
