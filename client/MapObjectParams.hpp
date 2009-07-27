@@ -1,5 +1,5 @@
 /*
- * client/GraphicalMap.hpp
+ * client/MapObjectParams.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,40 +22,32 @@
  * 
  */
 
-#ifndef LM_CLIENT_GRAPHICALMAP_HPP
-#define LM_CLIENT_GRAPHICALMAP_HPP
+#ifndef LM_CLIENT_MAPOBJECTPARAMS_HPP
+#define LM_CLIENT_MAPOBJECTPARAMS_HPP
 
-#include "client/ClientMap.hpp"
-#include <map>
+#include "common/Point.hpp"
 
 namespace LM {
-	class GameWindow;
-	class PathManager;
-	
-	/*
-	 * Derives from ClientMap, and implements the graphics stuff.
-	 */
-	class GraphicalMap : public ClientMap {
-	private:
-		PathManager&			m_path_manager;
-		GameWindow* 			m_window;
-		std::map<std::string, Graphic*>	m_cached_graphics;
-	
-		template<class T> T*		new_graphic(const std::string& sprite_name);
-
+	class MapObjectParams {
 	public:
-		GraphicalMap(PathManager&, GameWindow* window);
-	
-		virtual void			clear(); // Remove all objects
+		bool		is_tiled;
+		Vector		tile_dimensions;
+		bool		is_antialiased;
+		int		priority;
+		double		scale_x;
+		double		scale_y;
+		double		rotation;		// in degrees
 
-		// Read and parse the given input stream and load into the current map
-		bool				load(std::istream& in);
-	
-		void				set_visible(bool visible);
+		MapObjectParams();
 
-		virtual Graphic*		load_graphic(const std::string& graphic_name, bool is_centered,  Point position, const MapObjectParams& graphic_params);
-		virtual void			update_graphic(Graphic* g, Point position, const MapObjectParams& graphic_params);
-		virtual void			unregister_graphic(Graphic* g);
+		// Parses the string of the form:
+		//  tile=width,height
+		//  notile
+		//  scale=factor
+		//  rotate=degrees
+		// And saves into this record
+		// Returns false if the option string isn't recognized
+		bool		parse(const char* option_string);
 	};
 }
 

@@ -1,8 +1,9 @@
 BASEDIR = ..
-OBJS = ClientNetwork.o ClientSDL.o GameController.o GameWindow.o MapObject.o Sprite.o GraphicalPlayer.o \
+OBJS = ClientNetwork.o ClientSDL.o GameController.o GameWindow.o Sprite.o GraphicalPlayer.o \
 	Graphic.o TiledGraphic.o GraphicGroup.o GraphicalMap.o Font.o TextManager.o Text.o Mask.o \
 	Radar.o TableBackground.o ScrollArea.o ScrollBar.o Transition.o Curve.o TransitionManager.o \
 	ClientConfiguration.o MapReceiver.o ServerBrowser.o ChatLog.o RadialBackground.o ConvolveKernel.o \
+	MapObjectParams.o BaseMapObject.o Obstacle.o Decoration.o ClientGate.o ClientMap.o RepulsionField.o
 	#put .o filenames here (DO NOT PUT .cpp!)
 include ../common.mak
 CXXFLAGS += $(CLIENTFLAGS)

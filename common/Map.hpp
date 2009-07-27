@@ -44,9 +44,11 @@ namespace LM {
 	public:
 		enum ObjectType {
 			INVALID_OBJECT_TYPE = 0,
-			SPRITE = 1,
 			GATE = 2,
-			SPAWN_POINT = 3
+			SPAWN_POINT = 3,
+			OBSTACLE = 4,
+			DECORATION = 5,
+			REPULSION = 6
 		};
 		static ObjectType	parse_object_type(const char* type_string);
 	

@@ -124,12 +124,16 @@ void	Map::clear() {
 }
 
 Map::ObjectType	Map::parse_object_type(const char* type_string) {
-	if (strcasecmp(type_string, "SPRITE") == 0)
-		return SPRITE;
 	if (strcasecmp(type_string, "GATE") == 0)
 		return GATE;
 	if (strcasecmp(type_string, "SPAWN") == 0)
 		return SPAWN_POINT;
+	if (strcasecmp(type_string, "OBSTACLE") == 0)
+		return OBSTACLE;
+	if (strcasecmp(type_string, "DECORATION") == 0 || strcasecmp(type_string, "BACKGROUND") == 0)
+		return DECORATION;
+	if (strcasecmp(type_string, "REPULSION") == 0)
+		return REPULSION;
 	
 	return INVALID_OBJECT_TYPE;
 }

@@ -1,5 +1,5 @@
 /*
- * client/MapObject.cpp
+ * client/Decoration.cpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,31 +22,31 @@
  * 
  */
 
-#include "MapObject.hpp"
+#include "Decoration.hpp"
+#include <string>
+#include "common/MapReader.hpp"
+#include "GameController.hpp"
+#include "ClientMap.hpp"
 
 using namespace LM;
+using namespace std;
 
-MapObject::MapObject(Map::ObjectType type, Point upper_left) {
-	m_type = type;
-	m_upper_left = upper_left;
-	m_sprite = NULL;
-	m_team = 0;
+Decoration::Decoration (Point position) : BaseMapObject(position) {
+	m_graphic = NULL;
+	m_params.priority = 512; // TODO: use enum
 }
 
-void MapObject::set_sprite(Graphic* s) {
-	m_sprite = s;
-	if (m_sprite != NULL) {
-		m_sprite->set_x(m_upper_left.x);
-		m_sprite->set_y(m_upper_left.y);
+void	Decoration::init (MapReader& reader, ClientMap& map) {
+	reader >> m_graphic_name;
+
+	while (reader.has_more()) {
+		string		param_string;
+		reader >> param_string;
+		m_params.parse(param_string.c_str());
 	}
-}
 
-void MapObject::set_sprite(Sprite* s) {
-	// Make the sprite draw from the upper left, not the center
-	s->set_center_x(0.0);
-	s->set_center_y(0.0);
-
-	Graphic* g = s;
-	set_sprite(g);
+	if (!m_graphic) {
+		m_graphic = map.load_graphic(m_graphic_name, false, get_position(), m_params);
+	}
 }
 

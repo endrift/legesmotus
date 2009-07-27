@@ -32,6 +32,7 @@
 #include "ClientConfiguration.hpp"
 #include "ServerBrowser.hpp"
 #include "TransitionManager.hpp"
+#include "BaseMapObject.hpp"
 #include "common/PacketReader.hpp"
 #include "common/PacketWriter.hpp"
 #include "common/network.hpp"
@@ -41,6 +42,8 @@
 #include "common/IPAddress.hpp"
 #include "common/timer.hpp"
 #include "common/misc.hpp"
+#include "common/Shape.hpp"
+#include "common/Circle.hpp"
 
 #include "SDL_image.h"
 
@@ -1494,144 +1497,109 @@ void GameController::move_objects(float timescale) {
 	if (m_players.empty()) {
 		return;
 	}
+
+	GraphicalPlayer&	player(m_players[m_player_id]);
 	
-	double player_x_vel = m_players[m_player_id].get_x_vel() * timescale;
-	double player_y_vel = m_players[m_player_id].get_y_vel() * timescale;
-	
-	double new_x = m_players[m_player_id].get_x() + player_x_vel;
-	double new_y = m_players[m_player_id].get_y() + player_y_vel;
-	double half_width = m_players[m_player_id].get_radius();
-	double half_height = m_players[m_player_id].get_radius();
+	Point	oldpos(player.get_x(), player.get_y());
+
+	player.update_position(timescale);
+
+	double	half_width = player.get_radius();
+	double	half_height = player.get_radius();
 	
 	// Check if the player is hitting a map edge.
-	if (new_x - half_width < 0) {
-		new_x = half_width;
-		new_y = m_players[m_player_id].get_y();
-		if (m_players[m_player_id].is_frozen() && !m_players[m_player_id].is_invisible()) {
-			m_players[m_player_id].set_x_vel(-m_players[m_player_id].get_x_vel() * .9);
-			m_players[m_player_id].set_y_vel(m_players[m_player_id].get_y_vel() * .9);
+	if (player.get_x() - half_width < 0) {
+		player.set_x(half_width);
+		player.set_y(oldpos.y);
+		if (player.is_frozen() && !player.is_invisible()) {
+			player.bounce(0, 0.9);
 		} else {
-			m_players[m_player_id].set_velocity(0, 0);
-			m_players[m_player_id].set_rotational_vel(0);
+			player.stop();
 		}
-	} else if (new_x + half_width > m_map_width) {
-		new_x = m_map_width - half_width;
-		new_y = m_players[m_player_id].get_y();
-		if (m_players[m_player_id].is_frozen() && !m_players[m_player_id].is_invisible()) {
-			m_players[m_player_id].set_x_vel(-m_players[m_player_id].get_x_vel() * .9);
-			m_players[m_player_id].set_y_vel(m_players[m_player_id].get_y_vel() * .9);
+	} else if (player.get_x() + half_width > m_map_width) {
+		player.set_x(m_map_width - half_width);
+		player.set_y(oldpos.y);
+		if (player.is_frozen() && !player.is_invisible()) {
+			player.bounce(180, 0.9);
 		} else {
-			m_players[m_player_id].set_velocity(0, 0);
-			m_players[m_player_id].set_rotational_vel(0);
+			player.stop();
 		}
 	}
 	
-	if (new_y - half_height < 0) {
-		new_y = half_height;
-		new_x = m_players[m_player_id].get_x();
-		if (m_players[m_player_id].is_frozen() && !m_players[m_player_id].is_invisible()) {
-			m_players[m_player_id].set_x_vel(m_players[m_player_id].get_x_vel() * .9);
-			m_players[m_player_id].set_y_vel(-m_players[m_player_id].get_y_vel() * .9);
+	if (player.get_y() - half_height < 0) {
+		player.set_x(oldpos.x);
+		player.set_y(half_height);
+		if (player.is_frozen() && !player.is_invisible()) {
+			player.bounce(90, 0.9);
 		} else {
-			m_players[m_player_id].set_velocity(0, 0);
-			m_players[m_player_id].set_rotational_vel(0);
+			player.stop();
 		}
-	} else if (new_y + half_height > m_map_height) {
-		new_y = m_map_height - half_height;
-		new_x = m_players[m_player_id].get_x();
-		if (m_players[m_player_id].is_frozen() && !m_players[m_player_id].is_invisible()) {
-			m_players[m_player_id].set_x_vel(m_players[m_player_id].get_x_vel() * .9);
-			m_players[m_player_id].set_y_vel(-m_players[m_player_id].get_y_vel() * .9);
+	} else if (player.get_y() + half_height > m_map_height) {
+		player.set_x(oldpos.x);
+		player.set_y(m_map_height - half_height);
+		if (player.is_frozen() && !player.is_invisible()) {
+			player.bounce(270, 0.9);
 		} else {
-			m_players[m_player_id].set_velocity(0, 0);
-			m_players[m_player_id].set_rotational_vel(0);
+			player.stop();
 		}
 	}
-	
-	bool holdinggate = false;
-	
-	const list<MapObject>& map_objects(m_map->get_objects());
-	list<MapObject>::const_iterator thisobj;
-	double radius = m_players[m_player_id].get_radius();
-	Point currpos = Point(new_x, new_y);
-	Point oldpos = Point(m_players[m_player_id].get_x(), m_players[m_player_id].get_y());
+
+	Point	newpos(player.get_x(), player.get_y());
+	double	radius = player.get_radius();
+	Circle	player_circle(newpos, radius);
+	Circle	old_player_circle(oldpos, radius);
 	
 	// Check each object for collisions with the player.
-	for (thisobj = map_objects.begin(); thisobj != map_objects.end(); thisobj++) {
-		if (thisobj->get_sprite() == NULL) {
+	const list<BaseMapObject*>& map_objects(m_map->get_objects());
+	for (list<BaseMapObject*>::const_iterator it(map_objects.begin()); it != map_objects.end(); it++) {
+		BaseMapObject*	thisobj = *it;
+
+		if (!thisobj->is_intersectable()) {
 			continue;
 		}
-		const Polygon& poly(thisobj->get_bounding_polygon());
+
+		const Shape& shape(*thisobj->get_bounding_shape());
 		double angle_of_incidence = 0;
-		double newdist = poly.intersects_circle(currpos, radius, &angle_of_incidence);
-		angle_of_incidence = get_normalized_angle(get_normalized_angle(angle_of_incidence+180));
-		double olddist = poly.intersects_circle(oldpos, radius, NULL);
-	
-		// REPEL FROZEN PLAYERS AWAY FROM GATES.
-		if (thisobj->get_type() == Map::GATE && m_players[m_player_id].is_frozen() && !m_players[m_player_id].is_invisible()) {
-			double newdist_repulsion = poly.dist_from_circle(currpos, radius);
-			if (newdist_repulsion < 400) {
-				double gate_x = thisobj->get_upper_left().x + thisobj->get_sprite()->get_image_width()/2;
-				double gate_y = thisobj->get_upper_left().y + thisobj->get_sprite()->get_image_height()/2;
-				double angle = atan2(gate_y - new_y, gate_x - new_x);
-				m_players[m_player_id].set_velocity(m_players[m_player_id].get_x_vel() - .01 * cos(angle), m_players[m_player_id].get_y_vel() - .01 * sin(angle));
-			}
+		double newdist = -1;
+
+		if (thisobj->is_interactive()) {
+			newdist = shape.solid_intersects_circle(player_circle, &angle_of_incidence);
+			angle_of_incidence = get_normalized_angle(angle_of_incidence + 180);
+		} else if (thisobj->is_collidable()) {
+			newdist = shape.boundary_intersects_circle(player_circle, &angle_of_incidence);
+			angle_of_incidence = get_normalized_angle(angle_of_incidence + 180);
 		}
-	
-		// If we're hitting the object...
+
 		if (newdist != -1) {
-			// If we're moving closer to the object, we need to stop.
-			if (newdist < olddist) {
-				if (thisobj->is_obstacle()) {
-					// If we're frozen, bounce off the wall.
-					if (m_players[m_player_id].is_frozen() && !m_players[m_player_id].is_invisible()) {
-						double xvel = m_players[m_player_id].get_x_vel();
-						double yvel = m_players[m_player_id].get_y_vel();
-						double my_angle = get_normalized_angle(atan2(yvel, xvel) * RADIANS_TO_DEGREES);
-						double new_angle = get_normalized_angle(angle_of_incidence + (angle_of_incidence - my_angle) - 180);
-						double vel_magnitude = sqrt(xvel * xvel + yvel * yvel);
-						m_players[m_player_id].set_velocity(vel_magnitude * cos(new_angle * DEGREES_TO_RADIANS) * .9, vel_magnitude * sin(new_angle * DEGREES_TO_RADIANS) * .9);
-						//new_x = m_players[m_player_id].get_x() + m_players[m_player_id].get_x_vel() * timescale;
-						//new_y = m_players[m_player_id].get_y() + m_players[m_player_id].get_y_vel() * timescale;
-						new_x = m_players[m_player_id].get_x();
-						new_y = m_players[m_player_id].get_y();
-					} else {
-						m_players[m_player_id].set_velocity(0, 0);
-						m_players[m_player_id].set_rotational_vel(0);
-						new_x = m_players[m_player_id].get_x();
-						new_y = m_players[m_player_id].get_y();
-					}
+			// We are intesecting with the object
+
+			if (thisobj->is_collidable()) {
+				double olddist = shape.boundary_intersects_circle(old_player_circle, NULL);
+				if (newdist < olddist) {
+					// We're moving closer to the object... COLLISION!
+					thisobj->collide(*this, player, oldpos, angle_of_incidence);
 				}
 			}
-			// If it's a gate, we're lowering it if we're unfrozen and it's owned by the enemy team.
-			if (thisobj->get_type() == Map::GATE && thisobj->get_team() != m_players[m_player_id].get_team() && !m_players[m_player_id].is_frozen()) {
-				if (!m_holding_gate) {
-					send_gate_hold(true);
-				}
-				m_holding_gate = true;
-				holdinggate = true;
+			if (thisobj->is_interactive()) {
+				thisobj->interact(*this, player);
 			}
+
+		} else if (thisobj->is_interactive() && thisobj->is_engaged()) {
+			// We are no longer engaging the object, but we were previously
+			thisobj->disengage(*this, player);
 		}
 	}
 	
-	if (!holdinggate) {
-		if (m_holding_gate) {
-			send_gate_hold(false);
-		}
-		m_holding_gate = false;
-	}
+	player.update_rotation(timescale);
 	
 	// Set the player position and radar position.
-	m_players[m_player_id].set_x(new_x);
-	m_players[m_player_id].set_y(new_y);
-	m_radar->move_blip(m_player_id, new_x, new_y);
-	m_radar->recenter(new_x, new_y);
-	m_players[m_player_id].set_rotation_degrees(m_players[m_player_id].get_rotation_degrees() + m_players[m_player_id].get_rotational_vel() * timescale);
-	
+	m_radar->move_blip(m_player_id, player.get_x(), player.get_y());
+	m_radar->recenter(player.get_x(), player.get_y());
+
 	// Set name sprites visible/invisible. and move players.
 	map<uint32_t, GraphicalPlayer>::iterator it;
 	for ( it=m_players.begin() ; it != m_players.end(); it++ ) {
-		const GraphicalPlayer& currplayer = (*it).second;
+		GraphicalPlayer&	currplayer(it->second);
 		if (currplayer.is_invisible()) {
 			currplayer.get_name_sprite()->set_invisible(true);
 		} else {
@@ -1643,9 +1611,8 @@ void GameController::move_objects(float timescale) {
 			continue;
 		}
 		
-		m_players[currplayer.get_id()].set_x(currplayer.get_x() + currplayer.get_x_vel() * timescale);
-		m_players[currplayer.get_id()].set_y(currplayer.get_y() + currplayer.get_y_vel() * timescale);
-		m_radar->move_blip(currplayer.get_id(), m_players[currplayer.get_id()].get_x(), m_players[currplayer.get_id()].get_y());
+		currplayer.update_position(timescale);
+		m_radar->move_blip(currplayer.get_id(), currplayer.get_x(), currplayer.get_y());
 	}
 }
 
@@ -1688,18 +1655,16 @@ void GameController::attempt_jump() {
 	}
 
 	// Check if we're near any obstacles.
-	const list<MapObject>& map_objects(m_map->get_objects());
-	list<MapObject>::const_iterator thisobj;
-	for (thisobj = map_objects.begin(); thisobj != map_objects.end(); thisobj++) {
-		if (thisobj->get_sprite() == NULL) {
+	Circle	player_circle(player.get_position(), player.get_radius()+5);
+	const list<BaseMapObject*>& map_objects(m_map->get_objects());
+	for (list<BaseMapObject*>::const_iterator it(map_objects.begin()); it != map_objects.end(); it++) {
+		BaseMapObject*	thisobj = *it;
+
+		if (!thisobj->is_jumpable() || !thisobj->is_intersectable()) {
 			continue;
 		}
-		if (!thisobj->is_obstacle()) {
-			// Only obstacles can be jumped from
-			continue;
-		}
-		const Polygon& poly(thisobj->get_bounding_polygon());
-		double newdist = poly.intersects_circle(player.get_position(), player.get_radius()+5, NULL);
+		const Shape& shape(*thisobj->get_bounding_shape());
+		double newdist = shape.boundary_intersects_circle(player_circle, NULL);
 		if (newdist != -1) {
 			player.set_velocity(new_velocity);
 			player.set_rotational_vel(new_rotation);
@@ -1715,25 +1680,29 @@ void GameController::fire_weapon(double start_x, double start_y, double directio
 		return;
 	}
 	
-	const list<MapObject>& map_objects(m_map->get_objects());
-	list<MapObject>::const_iterator thisobj;
+	const list<BaseMapObject*>& map_objects(m_map->get_objects());
 	Point startpos = Point(start_x, start_y);
 	
 	double shortestdist = numeric_limits<double>::max();
-	Point wallhitpoint = Point(0, 0);
 	double end_x = -1;
 	double end_y = -1;
 	
 	// Find the closest object that the shot will hit, if any.
-	for (thisobj = map_objects.begin(); thisobj != map_objects.end(); thisobj++) {
-		if (!thisobj->is_obstacle()) {
+	BaseMapObject*		hit_object = NULL;
+
+	for (list<BaseMapObject*>::const_iterator it(map_objects.begin()); it != map_objects.end(); it++) {
+		BaseMapObject*	thisobj = *it;
+
+		if (!thisobj->is_shootable() || !thisobj->is_intersectable()) {
 			continue;
 		}
-		const Polygon& poly(thisobj->get_bounding_polygon());
-		double dist_to_obstacle = Point::distance(Point(start_x, start_y), Point(thisobj->get_sprite()->get_x() + thisobj->get_sprite()->get_image_width()/2, thisobj->get_sprite()->get_y() + thisobj->get_sprite()->get_image_height()/2)) + 100.0;
+
+		const Shape& shape(*thisobj->get_bounding_shape());
+		//double dist_to_obstacle = Point::distance(Point(start_x, start_y), Point(thisobj->get_sprite()->get_x() + thisobj->get_sprite()->get_image_width()/2, thisobj->get_sprite()->get_y() + thisobj->get_sprite()->get_image_height()/2)) + 100.0;
+		double dist_to_obstacle = m_map_width + m_map_height; // XXX: longer than it needs to be...
 		Point endpos(start_x + dist_to_obstacle * cos(direction * DEGREES_TO_RADIANS), start_y + dist_to_obstacle * sin(direction * DEGREES_TO_RADIANS));
 		
-		Point newpoint = poly.intersects_line(startpos, endpos);
+		Point newpoint = shape.intersects_line(startpos, endpos);
 		
 		if (newpoint.x == -1 && newpoint.y == -1) {
 			continue;
@@ -1743,9 +1712,9 @@ void GameController::fire_weapon(double start_x, double start_y, double directio
 		
 		if (newdist != -1 && newdist < shortestdist) {
 			shortestdist = newdist;
-			wallhitpoint = newpoint;
 			end_x = newpoint.x;
 			end_y = newpoint.y;
+			hit_object = thisobj;
 		}
 	}
 	
@@ -1782,10 +1751,10 @@ void GameController::fire_weapon(double start_x, double start_y, double directio
 		// If the shot hit the player:
 		if (dist < currplayer.get_radius()) {
 			shortestdist = playerdist;
-			wallhitpoint = Point(0, 0);
-			hit_player = &currplayer;
 			end_x = closestpoint.at(0);
 			end_y = closestpoint.at(1);
+			hit_player = &currplayer;
+			hit_object = NULL;
 		}
 	}
 	
@@ -1800,10 +1769,20 @@ void GameController::fire_weapon(double start_x, double start_y, double directio
 	
 			if (newdist != -1 && newdist < shortestdist) {
 				shortestdist = newdist;
-				wallhitpoint = newpoint;
 				end_x = newpoint.x;
 				end_y = newpoint.y;
+				hit_player = NULL;
+				hit_object = NULL;
 			}
+		}
+	}
+
+	// If this shot hit a map object, tell the map object about it
+	if (hit_object != NULL) {
+		if (!hit_object->shot(*this, m_players[m_player_id], Point(end_x, end_y), direction)) {
+			// Instead of absorbing the shot, the map object redirected it
+			end_x = -1;
+			end_y = -1;
 		}
 	}
 	
@@ -1836,6 +1815,7 @@ void GameController::fire_weapon(double start_x, double start_y, double directio
 	
 	m_network.send_packet(gun_fired);
 	
+	// If a player was hit, send a packet about it
 	if (hit_player != NULL) {
 		if (!hit_player->is_frozen()) {
 			m_sound_controller->play_sound("hit");
@@ -2882,6 +2862,14 @@ void GameController::send_gate_hold(bool holding) {
 		gate_hold << m_player_id << get_other_team(m_players[m_player_id].get_team()) << 0;
 	}
 	m_network.send_packet(gate_hold);
+}
+
+void GameController::set_gate_hold(bool holding_gate) {
+	if (m_holding_gate != holding_gate) {
+		m_holding_gate = holding_gate;
+		send_gate_hold(m_holding_gate);
+	}
+	
 }
 
 /*

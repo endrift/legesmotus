@@ -39,6 +39,7 @@
 #include "common/PacketReader.hpp"
 #include "common/misc.hpp"
 #include "common/GameParameters.hpp"
+#include "common/Polygon.hpp"
 #include "GraphicalPlayer.hpp"
 #include "Radar.hpp"
 #include "Font.hpp"
@@ -283,6 +284,7 @@ namespace LM {
 		void		display_message(std::string message) { display_message(message, TEXT_COLOR, TEXT_SHADOW); }
 		void		display_message(std::string message, Color, Color);
 		void		send_gate_hold(bool holding);
+		void		set_gate_hold(bool holding);
 		void		set_players_visible(bool visible);
 		void		process_mouse_click(SDL_Event event);
 		void		send_animation_packet(std::string sprite, std::string field, int value);
