@@ -31,9 +31,9 @@ clean:
 	$(MAKE) -C client clean
 	$(MAKE) -C metaserver clean
 	$(MAKE) -C tests clean
-	rm -rf "Leges Motus.app"
-	rm -rf legesmotus*.pkg
-	rm -f README.rtf
+	$(RM) -r "Leges Motus.app"
+	$(RM) -r legesmotus*.pkg
+	$(RM) README.rtf
 
 deps:
 	$(MAKE) -C common deps
@@ -87,9 +87,9 @@ legesmotus-$(VERSION).pkg: bundle README.rtf
 		--title "Leges Motus $(VERSION)" --version "$(VERSION)" --resources tmp/Resources \
 		--target 10.4 --root-volume-only --out legesmotus-$(VERSION).pkg
 	# The following two lines are a hack to prevent the installer from thinking the packages are relocatable
-	rm -f legesmotus-$(VERSION).pkg/Contents/Resources/TokenDefinitions.plist
+	$(RM) legesmotus-$(VERSION).pkg/Contents/Resources/TokenDefinitions.plist
 	defaults delete "`pwd`/legesmotus-$(VERSION).pkg/Contents/Info" IFPkgPathMappings
-	rm -Rf tmp
+	$(RM) -r tmp
 
 $(CLI_INSTALLER): mac/install.applescript mac/install.sh
 	osacompile -o $(CLI_INSTALLER) mac/install.applescript
@@ -110,9 +110,9 @@ install:
 	install -m 0644 $(BASEDIR)/man/man6/lmserver.6 $(MANDIR)/man6
 
 uninstall:
-	rm -rf /Applications/Leges\ Motus.app
-	rm -f $(BINDIR)/lmserver
-	rm -f $(MANDIR)/man6/lmserver.6
+	$(RM) -r /Applications/Leges\ Motus.app
+	$(RM) $(BINDIR)/lmserver
+	$(RM) $(MANDIR)/man6/lmserver.6
 else
 
 ifneq ($(PREFIX),)
@@ -134,9 +134,9 @@ install:
 	strip $(DESTDIR)$(BINDIR)/lmserver
 
 uninstall:
-	rm -rf $(DESTDIR)$(DATADIR)
-	rm -f $(DESTDIR)$(BINDIR)/lmserver $(DESTDIR)$(BINDIR)/legesmotus
-	rm -f $(DESTDIR)$(MANDIR)/man6/lmserver.6 $(DESTDIR)$(MANDIR)/man6/legesmotus.6
+	$(RM) -r $(DESTDIR)$(DATADIR)
+	$(RM) $(DESTDIR)$(BINDIR)/lmserver $(DESTDIR)$(BINDIR)/legesmotus
+	$(RM) $(DESTDIR)$(MANDIR)/man6/lmserver.6 $(DESTDIR)$(MANDIR)/man6/legesmotus.6
 endif
 endif
 

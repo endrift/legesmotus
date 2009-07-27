@@ -10,6 +10,6 @@ all: ../liblmcommon.a
 	$(AR) crus ../liblmcommon.a $(OBJS)
 
 clean: common-clean
-	rm -f $(OBJS) ../liblmcommon.a *~
+	$(RM) $(OBJS) ../liblmcommon.a *~
 
 deps: common-deps

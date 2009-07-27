@@ -11,6 +11,6 @@ lmserver: ../liblmserver.a ../liblmcommon.a main.o
 	$(AR) crus ../liblmserver.a $(OBJS)
 
 clean: common-clean
-	rm -f $(OBJS) main.o ../liblmserver.a *~
+	$(RM) $(OBJS) main.o ../liblmserver.a *~
 
 deps: common-deps

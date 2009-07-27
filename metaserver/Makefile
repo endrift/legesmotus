@@ -8,6 +8,6 @@ lmmetaserver: $(OBJS) ../liblmcommon.a main.o
 	$(CXX) $(LDFLAGS) -o lmmetaserver -L.. main.o $(OBJS) -llmcommon $(LIBS)
 
 clean: common-clean
-	rm -f $(OBJS) main.o *~
+	$(RM) $(OBJS) main.o *~
 
 deps: common-deps

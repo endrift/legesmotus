@@ -100,7 +100,7 @@ CXXFLAGS += $(CFLAGS) -fno-rtti
 common-deps: $(PHONY) .deps .deps/deps.mak
 
 common-clean: $(PHONY)
-	rm -rf .deps
+	$(RM) -r .deps
 
 .deps:
 	mkdir -p .deps
@@ -110,6 +110,8 @@ common-clean: $(PHONY)
 
 ifneq ($(OBJS),)
 ifneq ($(shell test -r .deps/deps.mak && echo 1),)
+ifeq ($(NODEPS),)
 include .deps/deps.mak
+endif
 endif
 endif
