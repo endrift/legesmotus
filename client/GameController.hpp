@@ -64,9 +64,11 @@ namespace LM {
 		static const Color		RED_SHADOW;
 		static const Color		TEXT_COLOR;
 		static const Color		TEXT_SHADOW;
-		static const Color		GREYED_OUT;
+		static const Color		GREYED_COLOR;
+		static const Color		GREYED_SHADOW;
 		static const Color		TEXT_BG_COLOR;
 		static const Color		BUTTON_HOVER_COLOR;
+		static const Color		BUTTON_HOVER_SHADOW;
 
 		const static int MESSAGE_DISPLAY_TIME;
 		const static unsigned int MAX_MESSAGES_TO_DISPLAY;

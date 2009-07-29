@@ -40,12 +40,17 @@ namespace LM {
 		GraphicGroup(const GraphicGroup& other);
 		virtual ~GraphicGroup();
 		virtual GraphicGroup* clone() const;
-	
+
 		// Adding a graphic to the group clones it
 		template<class T> T*	add_graphic(T* graphic);
 		template<class T> T*	add_graphic(T* graphic, const std::string& name);
+		// Giving a graphic to the group does not clone it
+		template<class T> void	give_graphic(T* graphic);
+		template<class T> void	give_graphic(T* graphic, const std::string& name);
 		Graphic*	get_graphic(const std::string& name);
-		void		remove_graphic(const std::string& name); // Removing the graphic doesn't delete it -- you must delete it yourself
+		// Removing the graphic doesn't delete it -- you must delete it yourself
+		template<class T> void	remove_graphic(T* graphic);
+		void		remove_graphic(const std::string& name);
 	
 		// These act recursively
 		virtual void	set_alpha(double alpha);
@@ -64,12 +69,31 @@ namespace LM {
 	
 	template<class T> T* GraphicGroup::add_graphic(T* graphic) {
 		T* g = graphic->clone();
+		give_graphic(g);
+		return g;
+	}
+
+	template<class T> void GraphicGroup::give_graphic(T* graphic, const std::string& name) {
+		give_graphic(graphic);
+		m_names[name] = graphic;
+	}
+	
+	template<class T> void GraphicGroup::give_graphic(T* graphic) {
 		std::list<Graphic*>::iterator iter = m_graphics.begin();
 		while (iter != m_graphics.end() && (*iter)->get_priority() >= graphic->get_priority()) {
 			++iter;
 		}
-		m_graphics.insert(iter, g);
-		return g;
+		m_graphics.insert(iter, graphic);
+	}
+	
+	template<class T> void GraphicGroup::remove_graphic(T* graphic) {
+		for (std::list<Graphic*>::iterator iter = m_graphics.begin(); iter != m_graphics.end();) {
+			if (*iter == graphic) {
+				iter = m_graphics.erase(iter);
+			} else {
+				++iter;
+			}
+		}
 	}
 }
 

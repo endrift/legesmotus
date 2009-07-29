@@ -72,9 +72,11 @@ const Color GameController::BLUE_SHADOW(0.1, 0.1, 0.3);
 const Color GameController::RED_SHADOW(0.3, 0.1, 0.1);
 const Color GameController::TEXT_COLOR(1.0, 1.0, 1.0);
 const Color GameController::TEXT_SHADOW(0.1, 0.1, 0.1);
-const Color GameController::GREYED_OUT(0.5, 0.5, 0.5);
+const Color GameController::GREYED_COLOR(0.5, 0.5, 0.5);
+const Color GameController::GREYED_SHADOW(0.2, 0.2, 0.2);
 const Color GameController::TEXT_BG_COLOR(0.0, 0.0, 0.0, 0.7);
-const Color GameController::BUTTON_HOVER_COLOR(0.5, 0.5, 1.0);
+const Color GameController::BUTTON_HOVER_COLOR(0.7, 0.7, 1.0);
+const Color GameController::BUTTON_HOVER_SHADOW(0.1, 0.1, 0.4);
 const int GameController::GATE_STATUS_RECT_WIDTH = 80;
 const int GameController::FROZEN_STATUS_RECT_WIDTH = 60;
 const int GameController::HEALTH_BAR_WIDTH = 100;
@@ -343,8 +345,8 @@ void GameController::init(GameWindow* window) {
 	m_main_menu_items["versionstr"] = m_text_manager->place_string(string("v. ").append(m_client_version), m_screen_width - 90, m_screen_height - 40, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_text_manager->set_active_font(m_menu_font);
 	
-	m_main_menu_items["Resume Game"]->set_color(GREYED_OUT);
-	m_main_menu_items["Disconnect"]->set_color(GREYED_OUT);
+	m_main_menu_items["Resume Game"]->set_color(GREYED_COLOR);
+	m_main_menu_items["Disconnect"]->set_color(GREYED_COLOR);
 	
 	// Options menu
 	m_text_manager->set_active_font(m_menu_font);
@@ -1139,8 +1141,8 @@ void GameController::process_input() {
 						}
 					}
 					if (!m_network.is_connected() || !m_join_sent_time == 0) {
-						m_main_menu_items["Resume Game"]->set_color(GREYED_OUT);
-						m_main_menu_items["Disconnect"]->set_color(GREYED_OUT);
+						m_main_menu_items["Resume Game"]->set_color(GREYED_COLOR);
+						m_main_menu_items["Disconnect"]->set_color(GREYED_COLOR);
 					}
 				} else if (m_game_state == SHOW_OPTIONS_MENU) {
 					map<string, Text*>::iterator it;
@@ -2134,8 +2136,8 @@ void GameController::connect_to_server(int servernum) {
  * Send a disconnect packet.
  */
 void GameController::disconnect() {
-	m_main_menu_items["Resume Game"]->set_color(GREYED_OUT);
-	m_main_menu_items["Disconnect"]->set_color(GREYED_OUT);
+	m_main_menu_items["Resume Game"]->set_color(GREYED_COLOR);
+	m_main_menu_items["Disconnect"]->set_color(GREYED_COLOR);
 	if (!m_players.empty()) {
 		PacketWriter leave_request(LEAVE_PACKET);
 		leave_request << m_player_id;

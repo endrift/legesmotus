@@ -57,6 +57,8 @@ namespace LM {
 		virtual void	set_red_intensity(double r);
 		virtual void	set_green_intensity(double g);
 		virtual void	set_blue_intensity(double b);
+
+		virtual bool	is_over(int x, int y) const;
 	
 		virtual void	draw(const GameWindow* window) const;
 	};

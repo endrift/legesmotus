@@ -111,6 +111,8 @@ namespace LM {
 
 		virtual void	set_width(double w) { (void)(w); }
 		virtual void	set_height(double h) { (void)(h); }
+
+		virtual bool	is_over(int x, int y) const;
 	
 		virtual Graphic*	get_graphic(const std::string&) { return NULL; }
 

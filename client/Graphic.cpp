@@ -215,3 +215,9 @@ bool Graphic::is_invisible() const {
 void Graphic::set_invisible(bool invisible) {
 	m_invisible = invisible;
 }
+
+bool Graphic::is_over(int x, int y) const {
+	double left = get_x() - get_center_x();
+	double top = get_y() - get_center_y();
+	return (x >= left && x <= left + get_image_width() && y >= top && y <= top + get_image_height());
+}

@@ -129,6 +129,10 @@ void Text::set_blue_intensity(double b) {
 	m_fg->set_blue_intensity(b);
 }
 
+bool Text::is_over(int x, int y) const {
+	return m_fg->is_over(x - get_x() + get_center_x(), y - get_y() + get_center_y());
+}
+
 void Text::draw(const GameWindow* window) const {
 	glPushMatrix();
 	transform_gl();

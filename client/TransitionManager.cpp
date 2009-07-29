@@ -64,7 +64,7 @@ list<TransitionManager::State>::iterator TransitionManager::remove_transition(co
 	}
 	if (iter->removal == DELETE) {
 		delete iter->transition;
-	} 
+	}
 	return m_transitions.erase(iter);
 }
 
