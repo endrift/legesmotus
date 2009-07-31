@@ -2295,6 +2295,10 @@ void GameController::player_update(PacketReader& reader) {
 
 	currplayer->read_update_packet(reader);
 
+	if (player_id == m_player_id) {
+		update_health_bar();
+	}
+
 	// Update the radar and name sprite
 	m_radar->move_blip(player_id, currplayer->get_x(), currplayer->get_y());
 	m_radar->set_blip_invisible(player_id, currplayer->is_invisible());
