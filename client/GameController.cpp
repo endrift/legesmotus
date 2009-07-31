@@ -2728,6 +2728,7 @@ void GameController::game_stop(PacketReader& reader) {
 	m_players[m_player_id].set_is_frozen(true);
 	m_time_to_unfreeze = 0;
 	m_total_time_frozen = 0;
+	m_last_fired = 0;
 }
 
 /*
