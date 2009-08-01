@@ -136,11 +136,12 @@ double	Polygon::solid_intersects_circle(const Circle& circle, double* angle) con
 	return inside ? 0 : -1;
 }
 
-Point Polygon::intersects_line(Point start, Point end) const {
+Point Polygon::intersects_line(Point start, Point end, double* angle) const {
 	double mindist = numeric_limits<double>::max();
 	
 	Point p = start;
 	Point r = end - start;
+	LineList::const_iterator	intersecting_side(m_lines.end());
 	for (LineList::const_iterator it(m_lines.begin()); it != m_lines.end(); ++it) {
 		Point q = it->first;
 		Point s = it->second - it->first;
@@ -151,11 +152,16 @@ Point Polygon::intersects_line(Point start, Point end) const {
 		if (t >= 0 && t <= 1 && u >= 0 && u <= 1) {
 			if (t < mindist) {
 				mindist = t;
+				intersecting_side = it;
 			}
 		}
 	}
 	
 	if (mindist != numeric_limits<double>::max()) {
+		if (angle != NULL) {
+			Point closest_point = closest_point_on_line_to_point(intersecting_side->first, intersecting_side->second, start, false);
+			*angle = to_degrees((closest_point - start).get_angle());
+		}
 		Point scale = Point(mindist * r.x, mindist * r.y);
 		return start + scale;
 	}
@@ -164,7 +170,6 @@ Point Polygon::intersects_line(Point start, Point end) const {
 
 double	Polygon::dist_from_circle(const Circle& circle) const {
 	const Point p(circle.center);
-	const double radius = circle.radius;
 
 	double min_dist = numeric_limits<double>::max();
 	for (LineList::const_iterator it(m_lines.begin()); it != m_lines.end(); ++it) {
@@ -187,6 +192,12 @@ double	Polygon::dist_from_circle(const Circle& circle) const {
 		if (dtocorner < min_dist) {
 			min_dist = dtocorner;
 		}
+	}
+	if (min_dist != numeric_limits<double>::max()) {
+		if (min_dist > circle.radius) {
+			return min_dist - circle.radius;
+		}
+		return 0;
 	}
 	return min_dist;
 }

@@ -64,7 +64,10 @@ namespace LM {
 	inline double to_degrees(double radians) { return radians * RADIANS_TO_DEGREES; }
 
 	double	dist_from_line_to_point(Point start, Point end, Point p);
-	Point	closest_point_on_line_to_point(Point start, Point end, Point p);
+
+	// Return the point on the given line that is closest to the given point
+	// If is_segment is true, then the line is considered a finite segment, and the function will return Point(-1, -1) if the closest point would lie outside the segment
+	Point	closest_point_on_line_to_point(Point start, Point end, Point p, bool is_segment =true);
 		
 }
 

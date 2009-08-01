@@ -64,11 +64,11 @@ double LM::get_normalized_angle(double angle) {
 	return angle;
 }
 
-Point LM::closest_point_on_line_to_point(Point start, Point end, Point p) {
+Point LM::closest_point_on_line_to_point(Point start, Point end, Point p, bool is_segment) {
 	Point v = end - start;
 	Point w = p - start;
 	double projection = Point::dot_product(v, w) / Point::dot_product(v, v);
-	if (projection < 0 || projection > 1) {
+	if (is_segment && (projection < 0 || projection > 1)) {
 		return Point(-1, -1);
 	} else {
 		return start + Point(v.x * projection, v.y * projection);

@@ -32,6 +32,7 @@ namespace LM {
 	class Circle : public Shape {
 	private:
 		double		get_angle_of_incidence (const Circle& other_circle) const;
+		double		get_angle_of_incidence (Point point_on_circle) const;
 
 	public:
 		Point		center;
@@ -46,7 +47,7 @@ namespace LM {
 
 		virtual double	boundary_intersects_circle(const Circle& circle, double* angle) const;
 		virtual double	solid_intersects_circle(const Circle& circle, double* angle) const;
-		virtual Point	intersects_line(Point start, Point end) const;
+		virtual Point	intersects_line(Point start, Point end, double* angle) const;
 		virtual double	dist_from_circle(const Circle& circle) const;
 
 		virtual void	rotate (double angle);

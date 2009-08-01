@@ -67,7 +67,7 @@ double	Circle::solid_intersects_circle(const Circle& other, double* angle) const
 	return -1;
 }
 
-Point	Circle::intersects_line(Point start, Point end) const {
+Point	Circle::intersects_line(Point start, Point end, double* angle) const {
 	Point	closest = closest_point_on_line_to_point(start, end, center);
 	if (closest.x == -1 && closest.y == -1) {
 		// This circle's not near the line
@@ -89,11 +89,20 @@ Point	Circle::intersects_line(Point start, Point end) const {
 	// Find the distance from the start point to an intersection point
 	double	distance_from_start = Point::distance(start, closest) - intersection_distance;
 
-	return start + Vector::make_from_magnitude(distance_from_start, (end - start).get_angle());
+	Point	point_of_intersection(start + Vector::make_from_magnitude(distance_from_start, (end - start).get_angle()));
+
+	if (angle != NULL) {
+		*angle = to_degrees(get_angle_of_incidence(point_of_intersection));
+	}
+	return point_of_intersection;
 }
 
 double	Circle::get_angle_of_incidence (const Circle& other_circle) const {
 	return Vector(center - other_circle.center).get_angle();
+}
+
+double	Circle::get_angle_of_incidence (Point point_on_circle) const {
+	return Vector(center - point_on_circle).get_angle();
 }
 
 void	Circle::rotate (double angle) {

@@ -49,7 +49,9 @@ namespace LM {
 
 		// Return the point of intersection if this shape intersects with the (finite) line.
 		// Otherwise return Point(-1, -1).
-		virtual Point		intersects_line(Point start, Point end) const = 0;
+		// Also stores the angle of incidence (degrees) in angle, if not NULL.
+		// This is the angle of the intersecting surface, and has nothing to do with the angle between the line and the shape
+		virtual Point		intersects_line(Point start, Point end, double* angle) const = 0;
 
 
 		// Return the distance to this shape from the given circle
