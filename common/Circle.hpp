@@ -47,6 +47,7 @@ namespace LM {
 		virtual double	boundary_intersects_circle(const Circle& circle, double* angle) const;
 		virtual double	solid_intersects_circle(const Circle& circle, double* angle) const;
 		virtual Point	intersects_line(Point start, Point end) const;
+		virtual double	dist_from_circle(const Circle& circle) const;
 
 		virtual void	rotate (double angle);
 		virtual void	scale (double factor);

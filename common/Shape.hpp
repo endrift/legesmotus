@@ -52,6 +52,10 @@ namespace LM {
 		virtual Point		intersects_line(Point start, Point end) const = 0;
 
 
+		// Return the distance to this shape from the given circle
+		virtual double		dist_from_circle(const Circle& circle) const = 0;
+
+
 		// Rotate the shape CW by the given angle (in degrees)
 		virtual void		rotate (double angle) = 0;
 

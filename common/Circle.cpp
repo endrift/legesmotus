@@ -104,3 +104,12 @@ void	Circle::scale (double factor) {
 	radius *= factor;
 }
 
+double	Circle::dist_from_circle(const Circle& other) const {
+	double distance = Point::distance(center, other.center);
+	if (distance > radius + other.radius) {
+		return distance - (radius + other.radius);
+	} else {
+		return 0.0;
+	}
+}
+

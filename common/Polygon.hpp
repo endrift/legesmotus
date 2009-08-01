@@ -59,18 +59,12 @@ namespace LM {
 		virtual double		boundary_intersects_circle(const Circle& circle, double* angle) const;
 		virtual double		solid_intersects_circle(const Circle& circle, double* angle) const;
 		virtual Point		intersects_line(Point start, Point end) const;
-	
+		virtual double		dist_from_circle(const Circle& circle) const;
+
 		virtual void		rotate (double angle);
 		virtual void		scale (double factor);
 	
 		virtual bool		is_centered () const { return false; }
-
-		// XXX: depreciated function - use boundary_intersects_circle instead
-		double			intersects_circle(Point point, double radius, double* angle) const;
-		
-		// Return the distance of this polygon from the given circle, 
-		double			dist_from_circle(Point point, double radius) const;
-
 
 		// Are there any lines in this polygon?
 		// An empty polygon would be used (for example) in a non-intersectable map object (i.e. a decoration or background)

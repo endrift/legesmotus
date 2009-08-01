@@ -81,6 +81,14 @@ Point	LM::operator-(Point a, Point b) {
 	return Point(a.x - b.x, a.y - b.y);
 }
 
+Point	LM::operator*(Point p, double scale_factor) {
+	return Point(p.x * scale_factor, p.y * scale_factor);
+}
+
+Point	LM::operator/(Point p, double scale_factor) {
+	return Point(p.x / scale_factor, p.y / scale_factor);
+}
+
 void	Point::operator+=(Point other) {
 	x += other.x;
 	y += other.y;
@@ -89,5 +97,15 @@ void	Point::operator+=(Point other) {
 void	Point::operator-=(Point other) {
 	x -= other.x;
 	y -= other.y;
+}
+
+void	Point::operator*=(double scale_factor) {
+	x *= scale_factor;
+	y *= scale_factor;
+}
+
+void	Point::operator/=(double scale_factor) {
+	x /= scale_factor;
+	y /= scale_factor;
 }
 

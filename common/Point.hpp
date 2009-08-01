@@ -59,6 +59,8 @@ namespace LM {
 
 		void		operator+=(Point other);
 		void		operator-=(Point other);
+		void		operator*=(double scale_factor);
+		void		operator/=(double scale_factor);
 	
 		static double distance(Point a, Point b);
 	};
@@ -69,6 +71,8 @@ namespace LM {
 	// Arithmetic
 	Point	operator+(Point a, Point b);
 	Point	operator-(Point a, Point b);
+	Point	operator*(Point p, double scale_factor);
+	Point	operator/(Point p, double scale_factor);
 	
 	typedef Point Vector;
 }

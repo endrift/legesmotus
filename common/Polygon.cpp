@@ -50,10 +50,6 @@ void	Polygon::make_rectangle(double width, double height) {
 	add_line(Point(0, height), Point(0, 0));
 }
 
-double	Polygon::intersects_circle(Point p, double radius, double* angle) const {
-	return boundary_intersects_circle(Circle(p, radius), angle);
-}
-
 double	Polygon::boundary_intersects_circle(const Circle& circle, double* angle) const {
 	const Point&	p(circle.center);
 	const double	radius(circle.radius);
@@ -166,7 +162,10 @@ Point Polygon::intersects_line(Point start, Point end) const {
 	return Point(-1, -1);
 }
 
-double	Polygon::dist_from_circle(Point p, double radius) const {
+double	Polygon::dist_from_circle(const Circle& circle) const {
+	const Point p(circle.center);
+	const double radius = circle.radius;
+
 	double min_dist = numeric_limits<double>::max();
 	for (LineList::const_iterator it(m_lines.begin()); it != m_lines.end(); ++it) {
 		double x1 = it->first.x;
