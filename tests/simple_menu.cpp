@@ -21,28 +21,11 @@ int main(int argc, char *argv[]) {
 	texts.set_shadow(true);
 	texts.set_shadow_offset(2, 2);
 	texts.set_shadow_convolve(&curve, 8, 1);
-	Text *currtext;
-	TextMenuItem *curritem;
 
-	currtext = texts.place_string("First", 10, 10);
-	curritem = new TextMenuItem(currtext->clone(), "first");
-	texts.remove_string(currtext);
-	m.add_item(curritem);
-
-	currtext = texts.place_string("Second", 10, 40);
-	curritem = new TextMenuItem(currtext->clone(), "second");
-	texts.remove_string(currtext);
-	m.add_item(curritem);
-
-	currtext = texts.place_string("Unclickable", 10, 70);
-	curritem = new TextMenuItem(currtext->clone(), "static", MenuItem::STATIC);
-	texts.remove_string(currtext);
-	m.add_item(curritem);
-
-	currtext = texts.place_string("Disabled", 10, 100);
-	curritem = new TextMenuItem(currtext->clone(), "disabled", MenuItem::DISABLED);
-	texts.remove_string(currtext);
-	m.add_item(curritem);
+	m.add_item(TextMenuItem::with_manager(&texts, "First", "first", 10, 10));
+	m.add_item(TextMenuItem::with_manager(&texts, "Second", "second", 10, 40));
+	m.add_item(TextMenuItem::with_manager(&texts, "Unclickable", "static", 10, 70, MenuItem::STATIC));
+	m.add_item(TextMenuItem::with_manager(&texts, "Disabled", "disabled", 10, 100, MenuItem::DISABLED));
 
 	window->register_graphic(m.get_graphic_group());
 

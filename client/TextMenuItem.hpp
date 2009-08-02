@@ -30,6 +30,7 @@
 
 namespace LM {
 	class Text;
+	class TextManager;
 	class Graphic;
 	// TODO move default colors from GameController to here
 	class TextMenuItem : public MenuItem {
@@ -47,6 +48,8 @@ namespace LM {
 
 	public:
 		TextMenuItem(Text* text, std::string value, State state = NORMAL);
+		static TextMenuItem* with_manager(TextManager* manager, std::string text,
+			std::string value, double x, double y, State state = NORMAL);
 
 		void	set_plain_fg_color(const Color& color);
 		void	set_plain_bg_color(const Color& color);

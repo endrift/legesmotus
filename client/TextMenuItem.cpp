@@ -24,6 +24,7 @@
 
 #include "TextMenuItem.hpp"
 #include "Text.hpp"
+#include "TextManager.hpp"
 #include "Graphic.hpp"
 #include "GameController.hpp"
 
@@ -36,6 +37,14 @@ m_hover_fg(GameController::BUTTON_HOVER_COLOR), m_hover_bg(GameController::BUTTO
 m_disabled_fg(GameController::GREYED_COLOR), m_disabled_bg(GameController::GREYED_SHADOW) {
 	m_text = text;
 	state_changed(state, state);
+}
+
+TextMenuItem* TextMenuItem::with_manager(TextManager* manager, string text, string value,
+double x, double y, State state) {
+	Text* graphic = manager->place_string(text, x, y);
+	TextMenuItem* item = new TextMenuItem(graphic->clone(), value, state);
+	manager->remove_string(graphic);
+	return item;
 }
 
 void TextMenuItem::state_changed(State old_state, State new_state) {
