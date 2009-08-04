@@ -2334,6 +2334,9 @@ void GameController::send_my_player_update() {
  * Send a message packet.
  */
 void GameController::send_message(string message) {
+	if (m_players.empty()) {
+		return;
+	}
 	strip_leading_trailing_spaces(message);
 	if (message.empty()) {
 		return;
@@ -2366,6 +2369,9 @@ void GameController::send_message(string message) {
  * Send a team message packet.
  */
 void GameController::send_team_message(string message) {
+	if (m_players.empty()) {
+		return;
+	}
 	strip_leading_trailing_spaces(message);
 	if (message.empty()) {
 		return;
