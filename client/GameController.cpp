@@ -1772,7 +1772,7 @@ void GameController::fire_weapon(double start_x, double start_y, double directio
 		double dist_to_obstacle = m_map_width + m_map_height; // XXX: longer than it needs to be...
 		Point endpos(start_x + dist_to_obstacle * cos(direction * DEGREES_TO_RADIANS), start_y + dist_to_obstacle * sin(direction * DEGREES_TO_RADIANS));
 		
-		Point newpoint = shape.intersects_line(startpos, endpos);
+		Point newpoint = shape.intersects_line(startpos, endpos, NULL);
 		
 		if (newpoint.x == -1 && newpoint.y == -1) {
 			continue;
@@ -1832,7 +1832,7 @@ void GameController::fire_weapon(double start_x, double start_y, double directio
 	if (end_x == -1 && end_y == -1) {
 		double dist_to_obstacle = m_map_width + m_map_height;
 		Point endpos = Point(start_x + dist_to_obstacle * cos(direction * DEGREES_TO_RADIANS), start_y + dist_to_obstacle * sin(direction * DEGREES_TO_RADIANS));
-		Point newpoint = m_map_polygon.intersects_line(startpos, endpos);
+		Point newpoint = m_map_polygon.intersects_line(startpos, endpos, NULL);
 	
 		if (newpoint.x != -1 || newpoint.y != -1) {		
 			double newdist = Point::distance(Point(start_x, start_y), newpoint);
