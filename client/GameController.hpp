@@ -46,6 +46,8 @@
 #include "ScrollArea.hpp"
 #include "ScrollBar.hpp"
 #include "MapReceiver.hpp"
+#include "ArbitraryMenu.hpp"
+#include "TextMenuItem.hpp"
 
 #include <string>
 #include <vector>
@@ -189,9 +191,12 @@ namespace LM {
 		Sprite*		m_shot;
 	
 		Sprite*		m_logo;
-		
-		std::map<std::string, Text*> m_main_menu_items;
-		
+
+		TextMenuItem* m_item_resume;
+		TextMenuItem* m_item_disconnect;
+		ArbitraryMenu m_main_menu;
+		ArbitraryMenu m_options_menu;
+
 		std::map<std::string, Text*> m_options_menu_items;
 		size_t		m_num_resolutions;
 		size_t		m_resolution_selected;

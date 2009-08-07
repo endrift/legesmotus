@@ -33,6 +33,7 @@
 #include "ServerBrowser.hpp"
 #include "TransitionManager.hpp"
 #include "BaseMapObject.hpp"
+#include "TextMenuItem.hpp"
 #include "common/PacketReader.hpp"
 #include "common/PacketWriter.hpp"
 #include "common/network.hpp"
@@ -75,8 +76,8 @@ const Color GameController::TEXT_SHADOW(0.1, 0.1, 0.1);
 const Color GameController::GREYED_COLOR(0.5, 0.5, 0.5);
 const Color GameController::GREYED_SHADOW(0.2, 0.2, 0.2);
 const Color GameController::TEXT_BG_COLOR(0.0, 0.0, 0.0, 0.7);
-const Color GameController::BUTTON_HOVER_COLOR(0.7, 0.7, 1.0);
-const Color GameController::BUTTON_HOVER_SHADOW(0.1, 0.1, 0.4);
+const Color GameController::BUTTON_HOVER_COLOR(0.6, 0.7, 0.9);
+const Color GameController::BUTTON_HOVER_SHADOW(0.1, 0.2, 0.4);
 const int GameController::GATE_STATUS_RECT_WIDTH = 80;
 const int GameController::FROZEN_STATUS_RECT_WIDTH = 60;
 const int GameController::HEALTH_BAR_WIDTH = 100;
@@ -221,7 +222,7 @@ void GameController::init(GameWindow* window) {
 	m_font = new Font(m_path_manager.data_path("JuraMedium.ttf", "fonts"), 14);
 	m_text_manager = new TextManager(m_font, m_window);
 	
-	m_menu_font = new Font(m_path_manager.data_path("JuraDemiBold.ttf", "fonts"), 34);
+	m_menu_font = new Font(m_path_manager.data_path("JuraDemiBold.ttf", "fonts"), 30);
 	m_medium_font = new Font(m_path_manager.data_path("JuraMedium.ttf", "fonts"), 20);
 	
 	m_sound_controller = SoundController::get_instance(*this, m_path_manager);
@@ -314,7 +315,6 @@ void GameController::init(GameWindow* window) {
 	m_logo->set_priority(0);
 	m_window->register_hud_graphic(m_logo);
 	
-	m_main_menu_items.clear();
 	m_options_menu_items.clear();
 	
 	// Set the text manager to draw a shadow behind everything.
@@ -331,41 +331,42 @@ void GameController::init(GameWindow* window) {
 	// Initialize all of the menu items.
 	
 	// Main menu
-	m_main_menu_items["Connect to Server"] = m_text_manager->place_string("Connect to Server", 50, 200, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_main_menu_items["Resume Game"] = m_text_manager->place_string("Resume Game", 50, 250, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_main_menu_items["Disconnect"] = m_text_manager->place_string("Disconnect", 50, 300, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_main_menu_items["Options"] = m_text_manager->place_string("Options", 50, 350, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_main_menu_items["Quit"] = m_text_manager->place_string("Quit", 50, 400, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_main_menu_items["Thanks"] = m_text_manager->place_string("Thanks for playing! Please visit", 50, 500, TextManager::LEFT, TextManager::LAYER_HUD);
- 	m_text_manager->set_active_color(0.4, 1.0, 0.4);
- 	m_main_menu_items["Thanks2"] = m_text_manager->place_string("http://legesmotus.cs.brown.edu", 50, 540, TextManager::LEFT, TextManager::LAYER_HUD);
- 	m_text_manager->set_active_color(TEXT_COLOR);
- 	m_main_menu_items["Thanks3"] = m_text_manager->place_string("to leave feedback for us!", 50, 580, TextManager::LEFT, TextManager::LAYER_HUD);
-	
+	m_main_menu.add_item(TextMenuItem::with_manager(m_text_manager, "Connect to Server", "connect", 50, 200));
+	m_item_resume = TextMenuItem::with_manager(m_text_manager, "Resume Game", "resume", 50, 240, MenuItem::DISABLED);
+	m_main_menu.add_item(m_item_resume);
+	m_item_disconnect = TextMenuItem::with_manager(m_text_manager, "Disconnect", "disconnect", 50, 280, MenuItem::DISABLED);
+	m_main_menu.add_item(m_item_disconnect);
+	m_main_menu.add_item(TextMenuItem::with_manager(m_text_manager, "Options", "submenu:options", 50, 320));
+	m_main_menu.add_item(TextMenuItem::with_manager(m_text_manager, "Quit", "quit", 50, 360));
+	m_main_menu.add_item(TextMenuItem::with_manager(m_text_manager, "Thanks for playing! Please visit", "", 50, 420, MenuItem::STATIC));
+	TextMenuItem* thanks2 = TextMenuItem::with_manager(m_text_manager, "http://legesmotus.cs.brown.edu", "", 50, 460, MenuItem::STATIC);
+	thanks2->set_plain_fg_color(Color(0.4, 1.0, 0.4));
+	m_main_menu.add_item(thanks2);
+	m_main_menu.add_item(TextMenuItem::with_manager(m_text_manager, "to leave feedback for us!", "", 50, 500, MenuItem::STATIC));
+
 	m_text_manager->set_active_font(m_font);
-	m_main_menu_items["versionstr"] = m_text_manager->place_string(string("v. ").append(m_client_version), m_screen_width - 90, m_screen_height - 40, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_main_menu.add_item(TextMenuItem::with_manager(m_text_manager, string("v. ").append(m_client_version), "", m_screen_width - 90, m_screen_height - 40, MenuItem::STATIC));
 	m_text_manager->set_active_font(m_menu_font);
-	
-	m_main_menu_items["Resume Game"]->set_color(GREYED_COLOR);
-	m_main_menu_items["Disconnect"]->set_color(GREYED_COLOR);
-	
+
+	m_window->register_hud_graphic(m_main_menu.get_graphic_group());
+
 	// Options menu
 	m_text_manager->set_active_font(m_menu_font);
 	m_options_menu_items["Back"] = m_text_manager->place_string("Cancel", 50, m_screen_height-50, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_options_menu_items["Enter Name"] = m_text_manager->place_string("Enter Name", 50, 200, TextManager::LEFT, TextManager::LAYER_HUD);
 	if (m_sound_controller->is_sound_on()) {
-		m_options_menu_items["Toggle Sound"] = m_text_manager->place_string("Sound: On", 50, 250, TextManager::LEFT, TextManager::LAYER_HUD);
+		m_options_menu_items["Toggle Sound"] = m_text_manager->place_string("Sound: On", 50, 240, TextManager::LEFT, TextManager::LAYER_HUD);
 	} else {
-		m_options_menu_items["Toggle Sound"] = m_text_manager->place_string("Sound: Off", 50, 250, TextManager::LEFT, TextManager::LAYER_HUD);
+		m_options_menu_items["Toggle Sound"] = m_text_manager->place_string("Sound: Off", 50, 240, TextManager::LEFT, TextManager::LAYER_HUD);
 	}
-	m_options_menu_items["Resolution"] = m_text_manager->place_string("Screen Resolution: ", 50, 300, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_options_menu_items["Resolution"] = m_text_manager->place_string("Screen Resolution: ", 50, 280, TextManager::LEFT, TextManager::LAYER_HUD);
 	string fullscreen = "";
 	if (m_configuration->get_bool_value("fullscreen")) {
 		fullscreen = "Fullscreen: Yes";
 	} else {
 		fullscreen = "Fullscreen: No";
 	}
-	m_options_menu_items["Fullscreen"] = m_text_manager->place_string(fullscreen, 50, 350, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_options_menu_items["Fullscreen"] = m_text_manager->place_string(fullscreen, 50, 320, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_options_menu_items["Apply"] = m_text_manager->place_string("Apply", m_screen_width - 200, m_screen_height-50, TextManager::LEFT, TextManager::LAYER_HUD);
 
 	// TODO: move this to preinit--it doesn't require a GameWindow, and should be done before one is made
@@ -398,7 +399,7 @@ void GameController::init(GameWindow* window) {
 		resolution << width << "x" << height;
 		if (m_screen_width == width && m_screen_height == height) {
 			m_resolution_selected = i;
-			m_options_menu_items["CurrResolution"] = m_text_manager->place_string(resolution.str(), 410, 300, TextManager::LEFT, TextManager::LAYER_HUD);
+			m_options_menu_items["CurrResolution"] = m_text_manager->place_string(resolution.str(), 410, 280, TextManager::LEFT, TextManager::LAYER_HUD);
 		}
 	}
 	
@@ -1122,28 +1123,10 @@ void GameController::process_input() {
 				}
 				
 				if (m_game_state == SHOW_MENUS) {
-					map<string, Text*>::iterator it;
-					for ( it=m_main_menu_items.begin() ; it != m_main_menu_items.end(); it++ ) {
-						if ((*it).first.find("Thanks") != string::npos) {
-							continue;
-						}
-						if ((*it).first.find("version") != string::npos) {
-							continue;
-						}
-						Text* thisitem = (*it).second;
-						double x = thisitem->get_x();
-						double y = thisitem->get_y();
-						if (event.button.x >= x && event.button.x <= x + thisitem->get_image_width()
-						    && event.button.y >= y && event.button.y <= y + thisitem->get_image_height()) {
-							// We're hovering over this menu item.
-							thisitem->set_color(BUTTON_HOVER_COLOR);
-						} else {
-							thisitem->set_color(TEXT_COLOR);
-						}
-					}
+					m_main_menu.mouse_motion_event(event.motion);
 					if (!m_network.is_connected() || !m_join_sent_time == 0) {
-						m_main_menu_items["Resume Game"]->set_color(GREYED_COLOR);
-						m_main_menu_items["Disconnect"]->set_color(GREYED_COLOR);
+						m_item_resume->set_state(MenuItem::DISABLED);
+						m_item_disconnect->set_state(MenuItem::DISABLED);
 					}
 				} else if (m_game_state == SHOW_OPTIONS_MENU) {
 					map<string, Text*>::iterator it;
@@ -1261,35 +1244,28 @@ void GameController::process_mouse_click(SDL_Event event) {
 		if (event.button.button != 1) {
 			return;
 		}
-		// Check each item in the menu to see if the mouse is clicking on it.
-		map<string, Text*>::iterator it;
-		for ( it=m_main_menu_items.begin() ; it != m_main_menu_items.end(); it++ ) {
-			Graphic* thisitem = (*it).second;
-			double x = thisitem->get_x();
-			double y = thisitem->get_y();
-			if (event.button.x >= x && event.button.x <= x + thisitem->get_image_width()
-			    && event.button.y >= y && event.button.y <= y + thisitem->get_image_height()) {
-				if ((*it).first == "Quit") {
-					m_quit_game = true;
-					break;
-				} else if ((*it).first == "Options") {
-					m_game_state = SHOW_OPTIONS_MENU;
-				} else if ((*it).first == "Resume Game") {
-					if (!m_players.empty()) {
-						m_game_state = GAME_IN_PROGRESS;
-					} else {
-						display_message("Not connected to server.");
-					}
-				} else if ((*it).first == "Disconnect") {
-					if (!m_players.empty()) {
-						disconnect();
-					} else {
-						display_message("Not connected to server.");
-					}
-				} else if ((*it).first == "Connect to Server") {
-					m_game_state = SHOW_SERVER_BROWSER;
+		MenuItem* item = m_main_menu.mouse_button_event(event.button);
+		if (item) {
+			item->set_state(MenuItem::NORMAL);
+			m_sound_controller->play_sound("click");
+			if (item->get_value() == "quit") {
+				m_quit_game = true;
+			} else if (item->get_value() == "resume") {
+				if (!m_players.empty()) {
+					m_game_state = GAME_IN_PROGRESS;
+				} else {
+					display_message("Not connected to server.");
 				}
-				m_sound_controller->play_sound("click");
+			} else if (item->get_value() == "submenu:options") {
+				m_game_state = SHOW_OPTIONS_MENU;
+			} else if (item->get_value() == "disconnect") {
+				if (!m_players.empty()) {
+					disconnect();
+				} else {
+					display_message("Not connected to server.");
+				}
+			} else if (item->get_value() == "connect") {
+				m_game_state = SHOW_SERVER_BROWSER;
 			}
 		}
 	} else if (m_game_state == SHOW_OPTIONS_MENU) {
@@ -1331,7 +1307,7 @@ void GameController::process_mouse_click(SDL_Event event) {
 					}
 					m_text_manager->remove_string(m_options_menu_items["Toggle Sound"]);
 					m_text_manager->set_active_font(m_menu_font);
-					m_options_menu_items["Toggle Sound"] = m_text_manager->place_string(sound, 50, 250, TextManager::LEFT, TextManager::LAYER_HUD);
+					m_options_menu_items["Toggle Sound"] = m_text_manager->place_string(sound, 50, 240, TextManager::LEFT, TextManager::LAYER_HUD);
 				} else if ((*it).first == "Resolution" || (*it).first == "CurrResolution") {
 					m_resolution_selected++;
 					if (m_resolution_selected >= m_num_resolutions) {
@@ -1343,7 +1319,7 @@ void GameController::process_mouse_click(SDL_Event event) {
 					resolution << width << "x" << height;
 					m_text_manager->remove_string(m_options_menu_items["CurrResolution"]);
 					m_text_manager->set_active_font(m_menu_font);
-					m_options_menu_items["CurrResolution"] = m_text_manager->place_string(resolution.str(), 410, 300, TextManager::LEFT, TextManager::LAYER_HUD);
+					m_options_menu_items["CurrResolution"] = m_text_manager->place_string(resolution.str(), 410, 280, TextManager::LEFT, TextManager::LAYER_HUD);
 				} else if ((*it).first == "Fullscreen") {
 					string fullscreen = "";
 					if (m_fullscreen) {
@@ -1355,7 +1331,7 @@ void GameController::process_mouse_click(SDL_Event event) {
 					}
 					m_text_manager->remove_string(m_options_menu_items["Fullscreen"]);
 					m_text_manager->set_active_font(m_menu_font);
-					m_options_menu_items["Fullscreen"] = m_text_manager->place_string(fullscreen, 50, 350, TextManager::LEFT, TextManager::LAYER_HUD);
+					m_options_menu_items["Fullscreen"] = m_text_manager->place_string(fullscreen, 50, 320, TextManager::LEFT, TextManager::LAYER_HUD);
 				} else if ((*it).first == "Apply") {
 					int width = m_resolutions[m_resolution_selected].first;
 					int height = m_resolutions[m_resolution_selected].second;
@@ -1472,10 +1448,10 @@ void GameController::reset_options() {
 	}
 	m_text_manager->remove_string(m_options_menu_items["Toggle Sound"]);
 	m_text_manager->set_active_font(m_menu_font);
-	m_options_menu_items["Toggle Sound"] = m_text_manager->place_string(sound, 50, 250, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_options_menu_items["Toggle Sound"] = m_text_manager->place_string(sound, 50, 240, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_text_manager->remove_string(m_options_menu_items["Fullscreen"]);
 	m_text_manager->set_active_font(m_menu_font);
-	m_options_menu_items["Fullscreen"] = m_text_manager->place_string(fullscreen, 50, 350, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_options_menu_items["Fullscreen"] = m_text_manager->place_string(fullscreen, 50, 320, TextManager::LEFT, TextManager::LAYER_HUD);
 	m_text_manager->remove_string(m_options_menu_items["CurrResolution"]);
 	stringstream resolution;
 	for (size_t i = 0; i < m_num_resolutions; i++) {
@@ -1485,7 +1461,7 @@ void GameController::reset_options() {
 		resolution << width << "x" << height;
 		if (m_screen_width == width && m_screen_height == height) {
 			m_resolution_selected = i;
-			m_options_menu_items["CurrResolution"] = m_text_manager->place_string(resolution.str(), 410, 300, TextManager::LEFT, TextManager::LAYER_HUD);
+			m_options_menu_items["CurrResolution"] = m_text_manager->place_string(resolution.str(), 410, 280, TextManager::LEFT, TextManager::LAYER_HUD);
 		}
 	}
 }
@@ -1939,10 +1915,7 @@ void GameController::toggle_score_overlay(bool visible) {
  * Show or hide the main menu
  */
 void GameController::toggle_main_menu(bool visible) {
-	map<string, Text*>::iterator it;
-	for (it = m_main_menu_items.begin(); it != m_main_menu_items.end(); ++it) {
-		it->second->set_invisible(!visible);
-	}
+	m_main_menu.get_graphic_group()->set_invisible(!visible);
 }
 
 /*
@@ -2137,8 +2110,8 @@ void GameController::connect_to_server(int servernum) {
  * Send a disconnect packet.
  */
 void GameController::disconnect() {
-	m_main_menu_items["Resume Game"]->set_color(GREYED_COLOR);
-	m_main_menu_items["Disconnect"]->set_color(GREYED_COLOR);
+	m_item_resume->set_state(MenuItem::DISABLED);
+	m_item_disconnect->set_state(MenuItem::DISABLED);
 	if (!m_players.empty()) {
 		PacketWriter leave_request(LEAVE_PACKET);
 		leave_request << m_player_id;
@@ -2188,8 +2161,8 @@ void GameController::welcome(PacketReader& reader) {
 	
 	m_join_sent_time = 0;
 	
-	m_main_menu_items["Resume Game"]->set_color(TEXT_COLOR);
-	m_main_menu_items["Disconnect"]->set_color(TEXT_COLOR);
+	m_item_resume->set_state(MenuItem::NORMAL);
+	m_item_disconnect->set_state(MenuItem::NORMAL);
 	
 	clear_players();
 	
@@ -3107,7 +3080,8 @@ void	GameController::upgrade_available(const IPAddress& server_address, PacketRe
 	ostringstream message;
 	message << "Version: " << latest_version;
 
-	if (m_main_menu_items.find("Newversion") != m_main_menu_items.end()) {
+	// TODO: rewrite
+	/*if (m_main_menu_items.find("Newversion") != m_main_menu_items.end()) {
 		m_text_manager->remove_string(m_main_menu_items["Newversion"]);
 	}
 	if (m_main_menu_items.find("Newversion2") != m_main_menu_items.end()) {
@@ -3115,7 +3089,7 @@ void	GameController::upgrade_available(const IPAddress& server_address, PacketRe
 	}
 	m_text_manager->set_active_font(m_menu_font);
 	m_main_menu_items["Newversion"] = m_text_manager->place_string("There is an upgrade available!", 440, 250, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_main_menu_items["Newversion2"] = m_text_manager->place_string(message.str(), 600, 300, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_main_menu_items["Newversion2"] = m_text_manager->place_string(message.str(), 600, 300, TextManager::LEFT, TextManager::LAYER_HUD);*/
 }
 
 void	GameController::scan_all() {

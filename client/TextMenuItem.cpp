@@ -69,26 +69,70 @@ void TextMenuItem::state_changed(State old_state, State new_state) {
 
 void TextMenuItem::set_plain_fg_color(const Color& color) {
 	m_plain_fg = color;
+	switch(get_state()) {
+	case NORMAL:
+	case STATIC:
+		m_text->set_color(m_plain_fg);
+		break;
+	default:
+		break;
+	}
 }
 
 void TextMenuItem::set_plain_bg_color(const Color& color) {
 	m_plain_bg = color;
+	switch(get_state()) {
+	case NORMAL:
+	case STATIC:
+		m_text->set_shadow_color(m_plain_bg);
+		break;
+	default:
+		break;
+	}
 }
 
 void TextMenuItem::set_hover_fg_color(const Color& color) {
 	m_hover_fg = color;
+	switch(get_state()) {
+	case HOVER:
+		m_text->set_color(m_hover_fg);
+		break;
+	default:
+		break;
+	}
 }
 
 void TextMenuItem::set_hover_bg_color(const Color& color) {
 	m_hover_bg = color;
+	switch(get_state()) {
+	case HOVER:
+		m_text->set_color(m_hover_bg);
+		break;
+	default:
+		break;
+	}
 }
 
 void TextMenuItem::set_disabled_fg_color(const Color& color) {
 	m_disabled_fg = color;
+	switch(get_state()) {
+	case DISABLED:
+		m_text->set_color(m_disabled_fg);
+		break;
+	default:
+		break;
+	}
 }
 
 void TextMenuItem::set_disabled_bg_color(const Color& color) {
 	m_disabled_bg = color;
+	switch(get_state()) {
+	case DISABLED:
+		m_text->set_color(m_disabled_bg);
+		break;
+	default:
+		break;
+	}
 }
 
 const Graphic* TextMenuItem::get_graphic() const {
