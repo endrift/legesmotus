@@ -53,17 +53,16 @@ TextManager::~TextManager() {
 	delete m_shadow_kernel;
 }
 
-Text* TextManager::place_string(const std::string& text, double x, double y, Align align, Layer layer, int priority) {
+Text* TextManager::render_string(const std::string& text, double x, double y, Align align) {
 	Text *rendered;
 	try {
 		rendered = new Text(text, m_font, m_shadow_kernel);
 	} catch(Exception e) {
-		cerr << "Error placing string: " << e.what() << endl;
+		cerr << "Error rendering string: " << e.what() << endl;
 		return NULL;
 	}
 	rendered->set_color(m_active_red, m_active_green, m_active_blue);
 	rendered->set_alpha(m_active_alpha);
-	rendered->set_priority(priority);
 	if (m_shadow) {
 		rendered->set_shadow(true);
 		rendered->set_shadow_color(m_shadow_red, m_shadow_green, m_shadow_blue);
@@ -71,6 +70,16 @@ Text* TextManager::place_string(const std::string& text, double x, double y, Ali
 		rendered->set_shadow_offset(m_shadow_x, m_shadow_y);
 	}
 	reposition_string(rendered, x, y, align);
+
+	return rendered;
+}
+
+Text* TextManager::place_string(const std::string& text, double x, double y, Align align, Layer layer, int priority) {
+	Text* rendered = render_string(text, x, y, align);
+	if (rendered == NULL) {
+		return NULL;
+	}
+	rendered->set_priority(priority);
 	m_texts.push_back(rendered);
 	if (m_window != NULL) {
 		switch(layer) {

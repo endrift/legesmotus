@@ -1160,6 +1160,7 @@ void GameController::process_input() {
 				break;
 				
 			case SDL_MOUSEBUTTONUP:
+				process_mouse_click(event);
 				if (!m_server_browser->is_invisible()) {
 					m_server_browser->scrollbar_button_event(event.button);
 				}
@@ -1240,12 +1241,13 @@ void GameController::parse_key_input() {
  * Process a mouse click, depending on the game state.
  */
 void GameController::process_mouse_click(SDL_Event event) {
-	if (m_game_state == SHOW_MENUS) {
+	switch (m_game_state) {
+	case SHOW_MENUS: {
 		if (event.button.button != 1) {
 			return;
 		}
 		MenuItem* item = m_main_menu.mouse_button_event(event.button);
-		if (item) {
+		if (item && event.type == SDL_MOUSEBUTTONUP) {
 			item->set_state(MenuItem::NORMAL);
 			m_sound_controller->play_sound("click");
 			if (item->get_value() == "quit") {
@@ -1268,8 +1270,10 @@ void GameController::process_mouse_click(SDL_Event event) {
 				m_game_state = SHOW_SERVER_BROWSER;
 			}
 		}
-	} else if (m_game_state == SHOW_OPTIONS_MENU) {
-		if (event.button.button != 1) {
+	}
+	break;
+	case SHOW_OPTIONS_MENU: {
+		if (event.button.button != 1 || event.type != SDL_MOUSEBUTTONUP) {
 			return;
 		}
 		// Check each item in the options menu.
@@ -1352,8 +1356,10 @@ void GameController::process_mouse_click(SDL_Event event) {
 				m_sound_controller->play_sound("click");
 			}
 		}
-	} else if (m_game_state == SHOW_SERVER_BROWSER) {
-		if (event.button.button != 1) {
+	}
+	break;
+	case SHOW_SERVER_BROWSER: {
+		if (event.button.button != 1 || event.type != SDL_MOUSEBUTTONUP) {
 			return;
 		}
 		m_sound_controller->play_sound("click");
@@ -1395,9 +1401,12 @@ void GameController::process_mouse_click(SDL_Event event) {
 			m_server_browser->deselect();
 			m_game_state = SHOW_MENUS;
 		}
-		
-	} else if (m_game_state == GAME_IN_PROGRESS) {
-		if (!m_overlay_background->is_invisible()) {
+	}
+	break;
+	case GAME_IN_PROGRESS: {
+		if (event.type != SDL_MOUSEBUTTONDOWN) {
+			return;
+		} else if (!m_overlay_background->is_invisible()) {
 			// Do nothing.
 		} else if (!m_chat_log->is_invisible()) {
 			// Do nothing.
@@ -1421,6 +1430,7 @@ void GameController::process_mouse_click(SDL_Event event) {
 			fire_weapon(m_players[m_player_id].get_x(), m_players[m_player_id].get_y(), direction);
 			m_sound_controller->play_sound("fire");
 		}
+	}
 	}
 	m_last_clicked = get_ticks();
 }

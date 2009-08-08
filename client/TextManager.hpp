@@ -65,6 +65,7 @@ namespace LM {
 		~TextManager();
 	
 		Text*	place_string(const std::string& text, double x, double y, Align = LEFT, Layer layer = LAYER_HUD, int priority = 0);
+		Text*	render_string(const std::string& text, double x, double y, Align = LEFT);
 		void	reposition_string(Graphic* text, double x, double y, Align = LEFT);
 		void	remove_string(Graphic* text);
 		void	remove_all_strings();
