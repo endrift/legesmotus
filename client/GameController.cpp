@@ -1508,7 +1508,7 @@ void GameController::move_objects(float timescale) {
 		} else {
 			player.stop();
 			// Rotate to a good orientation:
-			rotate_towards_angle(0, ROTATION_ADJUST_SPEED);
+			//rotate_towards_angle(0, ROTATION_ADJUST_SPEED);
 		}
 	} else if (player.get_x() + half_width > m_map_width) {
 		player.set_x(m_map_width - half_width);
@@ -1518,7 +1518,7 @@ void GameController::move_objects(float timescale) {
 		} else {
 			player.stop();
 			// Rotate to a good orientation:
-			rotate_towards_angle(180, ROTATION_ADJUST_SPEED);
+			//rotate_towards_angle(180, ROTATION_ADJUST_SPEED);
 		}
 	}
 	
@@ -1530,7 +1530,7 @@ void GameController::move_objects(float timescale) {
 		} else {
 			player.stop();
 			// Rotate to a good orientation:
-			rotate_towards_angle(90, ROTATION_ADJUST_SPEED);
+			//rotate_towards_angle(90, ROTATION_ADJUST_SPEED);
 		}
 	} else if (player.get_y() + half_height > m_map_height) {
 		player.set_x(oldpos.x);
@@ -1540,7 +1540,7 @@ void GameController::move_objects(float timescale) {
 		} else {
 			player.stop();
 			// Rotate to a good orientation:
-			rotate_towards_angle(270, ROTATION_ADJUST_SPEED);
+			//rotate_towards_angle(270, ROTATION_ADJUST_SPEED);
 		}
 	}
 
@@ -1635,37 +1635,6 @@ void GameController::rotate_towards_angle(double angle_of_incidence, uint64_t du
 			rotation_transition->set_curve_ownership(true);
 			m_transition_manager.add_transition(rotation_transition, "player_rotation", false, TransitionManager::DELETE);
 		}
-
-		/*
-		// Add 90 degrees to the angle so the player's feet hit the wall.
-		angle_of_incidence += 90;
-	
-		// Shift the angle of incidence until it's the closest it can be to the current angle.
-		double currangle = player->get_sprite()->get_rotation();
-		while (abs(currangle - angle_of_incidence) > 180.0) {
-			if (currangle < angle_of_incidence) {
-				angle_of_incidence -= 360;
-			} else {
-				angle_of_incidence += 360;
-			}
-		}
-	
-		if (abs(currangle - angle_of_incidence) > 90.0) {
-			if (currangle < angle_of_incidence) {
-				angle_of_incidence -= 90;
-			} else {
-				angle_of_incidence += 90;
-			}
-		}
-	
-		// Set the sprite to rotate towards that angle.
-		if (!m_transition_manager.get_transition("player_rotation")) {
-			Transition* rotation_transition = new Transition(m_players[m_player_id].get_sprite(), &Graphic::set_rotation, new LinearCurve(currangle, angle_of_incidence), get_ticks(), duration);
-			rotation_transition->set_curve_ownership(true);
-			m_transition_manager.add_transition(rotation_transition, "player_rotation", false, TransitionManager::DELETE);
-		}
-		*/
-		
 	}
 }
 
@@ -1707,14 +1676,13 @@ void GameController::attempt_jump() {
 	Circle	player_circle(player.get_position(), player.get_radius()+5);
 	const list<BaseMapObject*>& map_objects(m_map->get_objects());
 	for (list<BaseMapObject*>::const_iterator it(map_objects.begin()); it != map_objects.end(); it++) {
-		BaseMapObject*	thisobj = *it;
+		BaseMapObject*	map_obj = *it;
 
-		if (!thisobj->is_jumpable() || !thisobj->is_intersectable()) {
+		if (!map_obj->is_jumpable() || !map_obj->is_intersectable()) {
 			continue;
 		}
-		const Shape& shape(*thisobj->get_bounding_shape());
-		double newdist = shape.boundary_intersects_circle(player_circle, NULL);
-		if (newdist != -1) {
+
+		if (map_obj->get_bounding_shape()->boundary_intersects_circle(player_circle, NULL) != -1) {
 			jump(new_velocity, new_rotation);
 		}
 	}
@@ -1723,9 +1691,83 @@ void GameController::attempt_jump() {
 
 void GameController::jump(Vector new_velocity, double new_rotation) {
 	GraphicalPlayer& player = m_players[m_player_id];
+
+	//
+	// Set the player in motion
+	//
 	player.set_velocity(new_velocity);
 	player.set_rotational_vel(new_rotation);
 	m_transition_manager.remove_transition(m_transition_manager.get_transition("player_rotation"));
+
+	//
+	// Find the nearest obstacle that we are jumping towards
+	//
+	Point	start_pos(player.get_position());
+	Point	end_pos(start_pos + new_velocity.get_unit_vector() * (m_map_width + m_map_height));
+	double	angle_of_incidence = 0;
+	double	shortest_dist = numeric_limits<double>::infinity();
+
+	const list<BaseMapObject*>& map_objects(m_map->get_objects());
+	for (list<BaseMapObject*>::const_iterator it(map_objects.begin()); it != map_objects.end(); it++) {
+		BaseMapObject*	map_obj = *it;
+
+		if (!map_obj->is_jumpable() || !map_obj->is_intersectable()) {
+			continue;
+		}
+
+		double		new_angle = 0;
+		Point		new_point = map_obj->get_bounding_shape()->intersects_line(start_pos, end_pos, &new_angle);
+		
+		if (new_point.x == -1 && new_point.y == -1) {
+			continue;
+		}
+		
+		double		new_dist = Point::distance(start_pos, new_point);
+		
+		if (new_dist != -1 && new_dist < shortest_dist) {
+			shortest_dist = new_dist;
+			angle_of_incidence = new_angle;
+		}
+	}
+
+	if (isinf(shortest_dist)) {
+		// Try the map edge
+		double	new_angle = 0;
+		Point	new_point = m_map_polygon.intersects_line(start_pos, end_pos, &new_angle);
+		
+		if (new_point.x != -1 && new_point.y != -1) {
+			shortest_dist = Point::distance(start_pos, new_point);
+			angle_of_incidence = new_angle;
+		}
+	}
+
+	if (finite(shortest_dist)) {
+		//
+		// Set our rotational velocity so that we will land on this obstacle in a good orientation (i.e. head not hitting the wall)
+		//
+		angle_of_incidence = get_normalized_angle(angle_of_incidence + 180);
+
+		double	currangle = player.get_sprite()->get_rotation();
+		double	adjusted_angle = get_normalized_angle(currangle + 90 - angle_of_incidence);
+		double	newangle = currangle;
+		if (adjusted_angle < 110) {
+			newangle = currangle + (110 - adjusted_angle);
+		} else if (adjusted_angle > 250) {
+			newangle = currangle - (adjusted_angle - 250);
+		}
+
+		if (newangle != currangle) {
+			double	time_till_hit = shortest_dist / new_velocity.get_magnitude();
+			double	ideal_velocity = (newangle - currangle) / time_till_hit;
+
+			if (ideal_velocity < -2.0)
+				player.set_rotational_vel(-2.0);
+			else if (ideal_velocity > 2.0)
+				player.set_rotational_vel(2.0);
+			else
+				player.set_rotational_vel(ideal_velocity);
+		}
+	}
 }
 
 /*
