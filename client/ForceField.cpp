@@ -1,5 +1,5 @@
 /*
- * client/RepulsionField.cpp
+ * client/ForceField.cpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,7 +22,7 @@
  * 
  */
 
-#include "RepulsionField.hpp"
+#include "ForceField.hpp"
 #include "ClientMap.hpp"
 #include "GameController.hpp"
 #include "common/MapReader.hpp"
@@ -34,16 +34,17 @@
 using namespace LM;
 using namespace std;
 
-RepulsionField::RepulsionField(Point position) : BaseMapObject(position) {
+ForceField::ForceField(Point position) : BaseMapObject(position) {
 	m_graphic = NULL;
 	m_team = 0;
 	m_affects_frozen = false;
 	m_affects_thawed = false;
-	m_strength = 0.01;
+	m_friction = 0.0;
+	m_gravity = 0.0;
 	m_params.priority = 512; // TODO: use enum
 }
 
-void	RepulsionField::interact (GameController& gc, Player& player) {
+void	ForceField::interact (GameController& gc, Player& player) {
 	if (player.is_invisible()) {
 		return;
 	}
@@ -53,12 +54,27 @@ void	RepulsionField::interact (GameController& gc, Player& player) {
 	}
 
 	if (player.is_frozen() && m_affects_frozen || !player.is_frozen() && m_affects_thawed) {
-		double	angle = (get_position() - player.get_position()).get_angle();
-		player.set_velocity(player.get_velocity() - Vector::make_from_magnitude(m_strength, angle));
+		// Apply vector force
+		player.set_velocity(player.get_velocity() + m_force);
+
+		if (m_friction != 0.0) {
+			// Apply scalar friction
+			player.set_velocity(player.get_velocity() - Vector::make_from_magnitude(m_friction, player.get_velocity().get_angle()));
+		}
+
+		if (m_gravity != 0.0) {
+			// Apply scalar gravity
+			double distance = Point::distance(get_position(), player.get_position());
+			if (distance != 0.0) {
+				double accel = m_gravity / (distance * distance);
+				double angle = (get_position() - player.get_position()).get_angle();
+				player.set_velocity(player.get_velocity() + Vector::make_from_magnitude(accel, angle));
+			}
+		}
 	}
 }
 
-void	RepulsionField::init (MapReader& reader, ClientMap& map) {
+void	ForceField::init (MapReader& reader, ClientMap& map) {
 	string		bounding_shape;
 
 	reader >> m_graphic_name >> bounding_shape;
@@ -68,8 +84,12 @@ void	RepulsionField::init (MapReader& reader, ClientMap& map) {
 		reader >> param_string;
 		if (strncmp(param_string.c_str(), "team=", 5) == 0) {
 			m_team = parse_team_string(param_string.c_str() + 5);
-		} else if (strncmp(param_string.c_str(), "strength=", 9) == 0) {
-			m_strength = atof(param_string.c_str() + 9);
+		} else if (strncmp(param_string.c_str(), "force=", 6) == 0) {
+			m_force = Vector::make_from_string(param_string.c_str() + 6);
+		} else if (strncmp(param_string.c_str(), "friction=", 9) == 0) {
+			m_friction = atof(param_string.c_str() + 9);
+		} else if (strncmp(param_string.c_str(), "gravity=", 8) == 0) {
+			m_gravity = atof(param_string.c_str() + 8);
 		} else if (param_string == "nofrozen") {
 			m_affects_frozen = false;
 		} else if (param_string == "frozen") {

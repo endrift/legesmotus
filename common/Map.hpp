@@ -48,7 +48,8 @@ namespace LM {
 			SPAWN_POINT = 3,
 			OBSTACLE = 4,
 			DECORATION = 5,
-			REPULSION = 6
+			REPULSION = 6,
+			FORCE_FIELD = 7
 		};
 		static ObjectType	parse_object_type(const char* type_string);
 	

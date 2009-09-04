@@ -74,7 +74,7 @@ void	Obstacle::init (MapReader& reader, ClientMap& map) {
 	m_bounding_shape.reset(ClientMap::make_bounding_shape(bounding_shape, get_position(), m_params));
 
 	if (!m_graphic) {
-		m_graphic = map.load_graphic(m_graphic_name, false, get_position(), m_params);
+		m_graphic = map.load_graphic(m_graphic_name, m_bounding_shape.get() && m_bounding_shape->is_centered(), get_position(), m_params);
 	}
 }
 

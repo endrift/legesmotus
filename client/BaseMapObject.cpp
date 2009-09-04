@@ -27,6 +27,7 @@
 #include "Decoration.hpp"
 #include "ClientGate.hpp"
 #include "RepulsionField.hpp"
+#include "ForceField.hpp"
 #include "common/MapReader.hpp"
 #include <memory>
 
@@ -51,6 +52,9 @@ BaseMapObject*	BaseMapObject::make_map_object(MapReader& reader, ClientMap& map)
 		break;
 	case Map::REPULSION:
 		object.reset(new RepulsionField(position));
+		break;
+	case Map::FORCE_FIELD:
+		object.reset(new ForceField(position));
 		break;
 	default:
 		return NULL;

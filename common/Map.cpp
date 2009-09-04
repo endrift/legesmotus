@@ -134,6 +134,8 @@ Map::ObjectType	Map::parse_object_type(const char* type_string) {
 		return DECORATION;
 	if (strcasecmp(type_string, "REPULSION") == 0)
 		return REPULSION;
+	if (strcasecmp(type_string, "FORCE") == 0)
+		return FORCE_FIELD;
 	
 	return INVALID_OBJECT_TYPE;
 }
