@@ -1,0 +1,31 @@
+name gravity-test
+revision 44
+width 2048
+height 2048
+firing_recoil 3.0
+firing_delay 1
+game_start_delay 1000
+late_join_delay 1000
+
+# Background
+BACKGROUND	0,0		metal_bgtile	tile=2048,2048
+
+# Walls
+BACKGROUND	0,2048		metal_wall_s32	tile=2048,32
+BACKGROUND	0,-32		metal_wall_n32	tile=2048,32
+BACKGROUND	2048,0		metal_wall_e32	tile=32,2048
+BACKGROUND	-32,0		metal_wall_w32	tile=32,2048
+
+# Wall Corners
+BACKGROUND	2048,-32	metal_wall_ne32
+BACKGROUND	-32,-32		metal_wall_nw32
+BACKGROUND	-32,2048	metal_wall_sw32
+BACKGROUND	2048,2048	metal_wall_se32
+
+SPAWN	0,1024		BLUE
+SPAWN	2048,1024	RED
+
+FORCE		1024,1024	-	circle:900	frozen	thawed	gravity=5000
+OBSTACLE	1024,1024	circle256	circle:128
+#FORCE	1024,1024	circle256	circle:128	frozen	thawed	friction=0.03
+#FORCE	1024,1024	circle256	circle:128	frozen	thawed	force=0,-1
