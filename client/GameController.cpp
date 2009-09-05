@@ -1196,6 +1196,9 @@ void GameController::initialize_key_bindings() {
 	m_key_bindings.open_team_chat = SDLK_y;
 	m_key_bindings.open_console = SDLK_BACKQUOTE;
 	m_key_bindings.send_chat = SDLK_RETURN;
+	m_key_bindings.weapon_1 = SDLK_1;
+	m_key_bindings.weapon_2 = SDLK_2;
+	m_key_bindings.weapon_3 = SDLK_3;
 
 	m_alt_key_bindings.quit = -1;
 	m_alt_key_bindings.jump = -1;
@@ -1205,6 +1208,9 @@ void GameController::initialize_key_bindings() {
 	m_alt_key_bindings.open_team_chat = -1;
 	m_alt_key_bindings.open_console = -1;
 	m_alt_key_bindings.send_chat = SDLK_KP_ENTER;
+	m_alt_key_bindings.weapon_1 = -1;
+	m_alt_key_bindings.weapon_2 = -1;
+	m_alt_key_bindings.weapon_3 = -1;
 }
 
 /*
@@ -1217,6 +1223,15 @@ void GameController::parse_key_input() {
    	if (m_game_state == GAME_IN_PROGRESS && m_input_bar == NULL) {
 		if ((m_key_bindings.jump != -1 && m_keys[m_key_bindings.jump]) || (m_alt_key_bindings.jump != -1 && m_keys[m_alt_key_bindings.jump])) {
 			attempt_jump();
+		}
+		if ((m_key_bindings.weapon_1 != -1 && m_keys[m_key_bindings.weapon_1]) || (m_alt_key_bindings.weapon_1 != -1 && m_keys[m_alt_key_bindings.weapon_1])) {
+			change_weapon(1);
+		}
+		if ((m_key_bindings.weapon_2 != -2 && m_keys[m_key_bindings.weapon_2]) || (m_alt_key_bindings.weapon_2 != -2 && m_keys[m_alt_key_bindings.weapon_2])) {
+			change_weapon(2);
+		}
+		if ((m_key_bindings.weapon_3 != -3 && m_keys[m_key_bindings.weapon_3]) || (m_alt_key_bindings.weapon_3 != -3 && m_keys[m_alt_key_bindings.weapon_3])) {
+			change_weapon(3);
 		}
 	}
 	
@@ -1797,6 +1812,7 @@ void GameController::fire_weapon(double start_x, double start_y, double directio
 
 		const Shape& shape(*thisobj->get_bounding_shape());
 		//double dist_to_obstacle = Point::distance(Point(start_x, start_y), Point(thisobj->get_sprite()->get_x() + thisobj->get_sprite()->get_image_width()/2, thisobj->get_sprite()->get_y() + thisobj->get_sprite()->get_image_height()/2)) + 100.0;
+		double angle = 0;
 		double dist_to_obstacle = m_map_width + m_map_height; // XXX: longer than it needs to be...
 		Point endpos(start_x + dist_to_obstacle * cos(direction * DEGREES_TO_RADIANS), start_y + dist_to_obstacle * sin(direction * DEGREES_TO_RADIANS));
 		
@@ -3364,6 +3380,9 @@ void GameController::set_radar_mode(RadarMode mode) {
 			}
 		}
 	}
+}
+
+void GameController::change_weapon(int weaponnum) {
 }
 
 double	GameController::get_crosshairs_angle() const {

@@ -99,6 +99,9 @@ namespace LM {
 			int open_team_chat;
 			int open_console;
 			int send_chat;
+			int weapon_1;
+			int weapon_2;
+			int weapon_3;
 		};
 		
 		enum {
@@ -317,6 +320,7 @@ namespace LM {
 		void		clear_players();
 		bool		wants_restart();
 		void		reset_options();
+		void		change_weapon(int weaponnum);
 		std::string	get_server_address();
 		std::string	format_time_from_millis(uint64_t milliseconds);
 		
