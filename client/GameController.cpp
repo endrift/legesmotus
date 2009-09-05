@@ -2510,7 +2510,11 @@ void GameController::player_shot(PacketReader& reader) {
 			message << shooter->get_name();
 		}
 		
-		message << " shot ";
+		if (shotplayer->get_team() == shooter->get_team()) { // TODO (when we finish game modes): only say "betrayed" if team-play is in effect.
+			message << " betrayed ";
+		} else {
+			message << " shot ";
+		}
 		
 		if (shot_id == m_player_id) {
 			message << "you";
