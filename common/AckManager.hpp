@@ -37,7 +37,7 @@ namespace LM {
 	class AckManager {
 		enum {
 			ACK_TIME = 1000,
-			RETRIES = 2
+			RETRIES = 5
 		};
 	protected:
 		struct SentPacket {
