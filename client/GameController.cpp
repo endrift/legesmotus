@@ -196,6 +196,7 @@ void GameController::init(GameWindow* window) {
 	m_window = window;
 
 	m_time_to_unfreeze = 0;
+	m_total_time_frozen = 0;
 	m_last_fired = 0;
 	m_last_clicked = 0;
 
@@ -2231,6 +2232,9 @@ void GameController::send_my_player_update() {
  * Send a message packet.
  */
 void GameController::send_message(string message) {
+	if (m_players.empty()) {
+		return;
+	}
 	strip_leading_trailing_spaces(message);
 	if (message.empty()) {
 		return;
@@ -2263,6 +2267,9 @@ void GameController::send_message(string message) {
  * Send a team message packet.
  */
 void GameController::send_team_message(string message) {
+	if (m_players.empty()) {
+		return;
+	}
 	strip_leading_trailing_spaces(message);
 	if (message.empty()) {
 		return;
@@ -2620,6 +2627,8 @@ void GameController::game_stop(PacketReader& reader) {
 	m_players[m_player_id].set_is_invisible(true);
 	m_radar->set_blip_invisible(m_player_id,true);
 	m_players[m_player_id].set_is_frozen(true);
+	m_time_to_unfreeze = 0;
+	m_total_time_frozen = 0;
 }
 
 /*
