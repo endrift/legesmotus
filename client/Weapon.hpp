@@ -25,6 +25,8 @@
 #ifndef LM_CLIENT_WEAPON_HPP
 #define LM_CLIENT_WEAPON_HPP
 
+#include "common/Point.hpp"
+
 namespace LM {
 	class GameController;
 	class Player;
