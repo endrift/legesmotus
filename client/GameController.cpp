@@ -163,6 +163,7 @@ GameController::~GameController() {
 	delete m_text_manager;
 	m_sound_controller->destroy_instance();
 	delete m_font;
+	delete m_bold_font;
 	delete m_menu_font;
 	delete m_medium_font;
 
@@ -226,6 +227,8 @@ void GameController::init(GameWindow* window) {
 	m_muzzle_flash_start = 0;
 
 	m_font = new Font(m_path_manager.data_path("JuraMedium.ttf", "fonts"), 14);
+	m_bold_font = new Font(m_path_manager.data_path("JuraDemiBold.ttf", "fonts"), 14);
+	m_bold_font->set_font_style(true, false);
 	m_text_manager = new TextManager(m_font, m_window);
 	
 	m_menu_font = new Font(m_path_manager.data_path("JuraDemiBold.ttf", "fonts"), 30);
@@ -2493,9 +2496,10 @@ void GameController::player_died(PacketReader& reader) {
 
 	if (!dead_player->is_frozen() && time_to_unfreeze != 0) {
 		ostringstream message;
-		
+		bool bold = false;
 		if (killer_id == m_player_id) {
 			message << "You";
+			bold = true;
 		} else if (killer) {
 			message << killer->get_name();
 		} else {
@@ -2510,6 +2514,7 @@ void GameController::player_died(PacketReader& reader) {
 		
 		if (dead_player_id == m_player_id) {
 			message << "you";
+			bold = true;
 		} else {
 			message << dead_player->get_name();
 		}
@@ -2517,9 +2522,9 @@ void GameController::player_died(PacketReader& reader) {
 		message << ".";
 		
 		if (killer && killer->get_team() == 'A') {
-			display_message(message.str(), BLUE_COLOR, BLUE_SHADOW);
+			display_message(message.str(), BLUE_COLOR, BLUE_SHADOW, bold);
 		} else if (killer && killer->get_team() == 'B') {
-			display_message(message.str(), RED_COLOR, RED_SHADOW);
+			display_message(message.str(), RED_COLOR, RED_SHADOW, bold);
 		} else {
 			display_message(message.str());
 		}
@@ -2564,9 +2569,9 @@ void GameController::message(PacketReader& reader) {
 		
 		// Show the message in a color depending on the sender's team.
 		if (sender->get_team() == 'A') {
-			display_message(message, BLUE_COLOR, BLUE_SHADOW);
+			display_message(message, BLUE_COLOR, BLUE_SHADOW, true);
 		} else {
-			display_message(message, RED_COLOR, RED_SHADOW);
+			display_message(message, RED_COLOR, RED_SHADOW, true);
 		}
 	}
 }
@@ -2589,7 +2594,8 @@ void GameController::gate_update(PacketReader& reader) {
 		return;
 	}
 	
-	ostringstream message;
+	// Uncomment this code to return gate raise/lower messages.
+	/*ostringstream message;
 	
 	if (actingplayer != NULL) {
 		message << actingplayer->get_name();
@@ -2608,7 +2614,7 @@ void GameController::gate_update(PacketReader& reader) {
 			message << "red gate!";
 			display_message(message.str(), BLUE_COLOR, BLUE_SHADOW);
 		}
-	}
+	}*/
 	
 	if (change_in_players == 1 && new_nbr_players == 1) {
 		// The gate just started opening.
@@ -2990,10 +2996,14 @@ void GameController::send_team_change_packet(char new_team) {
 /*
  * Display a message on the screen.
  */
-void GameController::display_message(string message, Color color, Color shadow) {
+void GameController::display_message(string message, Color color, Color shadow, bool bold) {
 	m_text_manager->set_active_color(color);
 	m_text_manager->set_shadow_color(shadow);
-	m_text_manager->set_active_font(m_font);
+	if (bold) {
+		m_text_manager->set_active_font(m_bold_font);
+	} else {
+		m_text_manager->set_active_font(m_font);
+	}
 	int y = 20 + (m_font->ascent() + m_font->descent() + 5) * m_messages.size();
 	Text* message_sprite = m_text_manager->place_string(message, 20, y, TextManager::LEFT, TextManager::LAYER_HUD);
 	if (!message_sprite) {

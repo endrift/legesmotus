@@ -44,6 +44,18 @@ Font::~Font() {
 	}
 }
 
+void Font::set_font_style(bool bold, bool italic) {
+	if (bold && italic) {
+		TTF_SetFontStyle(m_font, TTF_STYLE_BOLD|TTF_STYLE_ITALIC);
+	} else if (bold) {
+		TTF_SetFontStyle(m_font, TTF_STYLE_BOLD);
+	} else if (italic) {
+		TTF_SetFontStyle(m_font, TTF_STYLE_ITALIC);
+	} else {
+		TTF_SetFontStyle(m_font, TTF_STYLE_NORMAL);
+	}
+}
+
 Sprite* Font::render_string(const string& text, const ConvolveKernel* kernel) {
 	SDL_Color white = { 255, 255, 255, 0 };
 	SDL_Surface* rendered = TTF_RenderUTF8_Blended(m_font,text.c_str(),white);

@@ -41,6 +41,7 @@ namespace LM {
 		~Font();
 	
 		Sprite*	render_string(const std::string& text, const ConvolveKernel* kernel = NULL);
+		void	set_font_style(bool bold, bool italic);
 		int	line_skip() const;
 		int	ascent() const;
 		int	descent() const;

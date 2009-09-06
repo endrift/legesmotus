@@ -130,6 +130,7 @@ namespace LM {
 		ServerBrowser*	m_server_browser;
 		ChatLog*	m_chat_log;
 		Font*		m_font;
+		Font*		m_bold_font;
 		Font*		m_medium_font;
 		Font*		m_menu_font;
 		
@@ -304,7 +305,7 @@ namespace LM {
 		void		send_message(std::string message);
 		void		send_team_message(std::string message);
 		void		display_message(std::string message) { display_message(message, TEXT_COLOR, TEXT_SHADOW); }
-		void		display_message(std::string message, Color, Color);
+		void		display_message(std::string message, Color, Color, bool bold=false);
 		void		send_gate_hold(bool holding);
 		void		set_gate_hold(bool holding);
 		void		set_players_visible(bool visible);
