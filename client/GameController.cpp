@@ -1241,7 +1241,7 @@ void GameController::parse_key_input() {
 			change_weapon("pistol");
 		}
 		if ((m_key_bindings.weapon_2 != -2 && m_keys[m_key_bindings.weapon_2]) || (m_alt_key_bindings.weapon_2 != -2 && m_keys[m_alt_key_bindings.weapon_2])) {
-			change_weapon("machinegun");
+			change_weapon("stop");
 		}
 		if ((m_key_bindings.weapon_3 != -3 && m_keys[m_key_bindings.weapon_3]) || (m_alt_key_bindings.weapon_3 != -3 && m_keys[m_alt_key_bindings.weapon_3])) {
 			change_weapon("impact");
