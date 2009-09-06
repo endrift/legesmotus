@@ -36,11 +36,14 @@ void	DeathmatchMode::gate_open(char team) {
 }
 
 bool	DeathmatchMode::player_shot(ServerPlayer& shooter, ServerPlayer& shot_player) {
-	return !shot_player.is_frozen();
+	return true;
 }
 
-uint64_t	DeathmatchMode::player_died(ServerPlayer& killer, ServerPlayer& killed) {
-	m_server.change_score(killer, 1);
+uint64_t	DeathmatchMode::player_died(ServerPlayer* killer, ServerPlayer& killed) {
+	if (killer) {
+		m_server.change_score(*killer, 1);
+	}
+
 	return m_server.m_params.freeze_time;
 }
 

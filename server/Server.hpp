@@ -276,9 +276,9 @@ namespace LM {
 		void		join(const IPAddress& address, PacketReader& packet);
 		void		info(const IPAddress& address, PacketReader& packet);
 		void		leave(const IPAddress& address, PacketReader& packet);
-		void		player_shot(const IPAddress& address, PacketReader& packet);
+		void		player_hit(const IPAddress& address, PacketReader& packet);
 		void		message(const IPAddress& address, PacketReader& packet);
-		void		gun_fired(const IPAddress& address, PacketReader& packet);
+		void		weapon_discharged(const IPAddress& address, PacketReader& packet);
 		void		gate_update(const IPAddress& address, PacketReader& packet);
 		void		player_animation(const IPAddress& address, PacketReader& packet);
 		void		name_change(const IPAddress& address, PacketReader& packet);
@@ -286,6 +286,7 @@ namespace LM {
 		void		register_server_packet(const IPAddress& address, PacketReader& packet);
 		void		map_info_packet(const IPAddress& address, PacketReader& packet);
 		void		hole_punch_packet(const IPAddress& address, PacketReader& packet);
+		void		player_died(const IPAddress& address, PacketReader& packet);
 	
 		void		start();
 		void		run();

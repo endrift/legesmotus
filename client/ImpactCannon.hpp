@@ -1,5 +1,5 @@
 /*
- * server/ZombieMode.hpp
+ * client/ImpactCannon.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,27 +22,35 @@
  * 
  */
 
-#ifndef LM_SERVER_ZOMBIEMODE_HPP
-#define LM_SERVER_ZOMBIEMODE_HPP
+#ifndef LM_CLIENT_IMPACTCANNON_HPP
+#define LM_CLIENT_IMPACTCANNON_HPP
 
-#include "GameModeHelper.hpp"
+#include "client/Weapon.hpp"
 
 namespace LM {
-	class ZombieMode : public GameModeHelper {
+	class ImpactCannon : public Weapon {
 	private:
+		// Weapon settings
+		uint64_t		m_freeze_time;
+		int			m_damage;
+		double			m_force;
+		uint64_t		m_delay;
+		double			m_recoil;
+
+		// Weapon state
+		uint64_t		m_last_fired_time;	// Time that this gun was last fired (to enforce delay)
 
 	public:
-		virtual void		check_state();
-		virtual void		gate_open(char team);
-		virtual bool		player_shot(ServerPlayer& shooter, ServerPlayer& shot_player);
-		virtual uint64_t	player_died(ServerPlayer* killer, ServerPlayer& killed);
-		virtual void		game_timeout();
-		virtual void		new_game();
+		ImpactCannon(const char* name, uint64_t freeze_time, int damage, double force, uint64_t delay, double recoil);
+		explicit ImpactCannon(PacketReader& gun_data);
 
-		virtual bool		is_team_play() const { return false; }
-		virtual GameMode	get_type() const { return ZOMBIE; }
+		virtual void		fire(Player& player, GameController& gc, Point start, double direction);
+		virtual void		discharged(Player& player, GameController& gc, PacketReader& data);
+		virtual void		hit(Player& player, Player& shooting_player, bool has_effect, GameController& gc, PacketReader& data);
+		virtual void		reset();
 
-		explicit ZombieMode (Server& server) : GameModeHelper(server) { }
+		virtual const char*	gun_graphic() const { return "gun_noshot"; }
+		virtual const char*	gun_fired_graphic() const { return "gun_fired"; }
 	};
 }
 

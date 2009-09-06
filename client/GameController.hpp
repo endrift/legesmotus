@@ -57,6 +57,7 @@
 namespace LM {
 	class TiledGraphic;
 	class IPAddress;
+	class Weapon;
 	
 	class GameController {
 	public:
@@ -75,7 +76,7 @@ namespace LM {
 		const static int MESSAGE_DISPLAY_TIME;
 		const static unsigned int MAX_MESSAGES_TO_DISPLAY;
 		const static int SHOT_DISPLAY_TIME;
-		const static int MUZZLE_FLASH_LENGTH;
+		const static uint64_t MUZZLE_FLASH_LENGTH;
 		const static int GATE_WARNING_FLASH_LENGTH;
 		const static double RANDOM_ROTATION_SCALE;
 		const static int GATE_STATUS_RECT_WIDTH;
@@ -159,9 +160,9 @@ namespace LM {
 		uint32_t 	m_player_id;
 		bool		m_holding_gate;
 		int		m_gate_lower_sounds[2];
-		uint64_t	m_last_fired;
 		uint64_t	m_last_clicked;
 		uint64_t	m_join_sent_time;
+		uint64_t	m_muzzle_flash_start;
 	
 		uint64_t	m_time_to_unfreeze;
 		uint64_t	m_total_time_frozen;
@@ -237,6 +238,15 @@ namespace LM {
 		GameParameters	m_params;
 		GraphicalMap*	m_map;
 		std::auto_ptr<MapReceiver>	m_map_receiver;
+
+		// NEW WEAPON CODE
+		Weapon*		m_current_weapon;
+		std::map<std::string, Weapon*>	m_weapons;
+
+		Weapon*		get_weapon(const std::string& name);
+		void		init_weapons(); //TEMP
+		void		reset_weapons(); // Call reset() on all weapons. Call at end of every round.
+		void		clear_weapons(); // Remove all weapons, handling memory management.
 	
 		// Server Browsing/Scanning
 		IPAddress	m_metaserver_address;
@@ -291,8 +301,6 @@ namespace LM {
 		void		connect_to_server(const IPAddress& server_address, char team =0);
 		void		connect_to_server(int servernum);
 		void		disconnect();
-		void		fire_weapon(double start_x, double start_y, double direction);
-		void		send_player_shot(uint32_t shooter_id, uint32_t hit_player_id, double angle);
 		void		send_message(std::string message);
 		void		send_team_message(std::string message);
 		void		display_message(std::string message) { display_message(message, TEXT_COLOR, TEXT_SHADOW); }
@@ -320,11 +328,15 @@ namespace LM {
 		void		clear_players();
 		bool		wants_restart();
 		void		reset_options();
-		void		change_weapon(int weaponnum);
-		void		show_muzzle_flash();
-		void		show_bullet_impact(int x, int y);
+		void		change_weapon(const char* name);
 		std::string	get_server_address();
 		std::string	format_time_from_millis(uint64_t milliseconds);
+
+		void		freeze(uint64_t how_long);
+
+ 		// Find the first shootable object (either map object or player) in the given direction from the given start point
+		// direction is in radians
+		Point		find_shootable_object(Point startpos, double direction, BaseMapObject*& hit_map_object, Player*& hit_player);
 		
 		// Scan both the local network and the meta server for servers:
 		void		scan_all();
@@ -333,12 +345,14 @@ namespace LM {
 		void		check_for_upgrade();
 		
 		// Network callbacks:
+		void		send_packet(PacketWriter& packet);
+
 		void		welcome(PacketReader& reader);
 		void		player_update(PacketReader& reader);
 		void		announce(PacketReader& reader);
 		void		leave(PacketReader& reader);
-		void		gun_fired(PacketReader& reader);
-		void		player_shot(PacketReader& reader);
+		void		weapon_discharged(PacketReader& reader);
+		void		player_hit(PacketReader& reader);
 		void		message(PacketReader& reader);
 		void		gate_update(PacketReader& reader);
 		void		game_start(PacketReader& reader);
@@ -351,12 +365,24 @@ namespace LM {
 		void		map_info_packet(PacketReader& reader);
 		void		map_object_packet(PacketReader& reader);
 		void		game_param_packet(PacketReader& reader);
+		void		player_died(PacketReader& reader);
 		void		server_info(const IPAddress& server_address, PacketReader& reader);
 		void		upgrade_available(const IPAddress& server_address, PacketReader& reader);
 		void		hole_punch_packet(const IPAddress& server_address, PacketReader& reader);
 	
 		// Sound callbacks:
+		void		play_sound(const char* name);
 		void		sound_finished(int channel);
+
+		// Weapon callbacks:
+		void		activate_radar_blip(const Player& player);
+		void		show_muzzle_flash();
+		void		show_bullet_impact(Point position);
+
+		// Damage the player by this amount of health
+		// aggressor is the player who did the damage, or NULL if no player did it (e.g. hazerdous map object)
+		// Returns true if the player died as a result, false if the player is still alive
+		bool		damage (int amount, const Player* aggressor);
 	};
 }
 

@@ -371,14 +371,14 @@ void	Server::command_server(uint32_t player_id, const char* command) {
 	}
 }
 
-void	Server::player_shot(const IPAddress& address, PacketReader& inbound_packet)
+void	Server::player_hit(const IPAddress& address, PacketReader& inbound_packet)
 {
 	uint32_t		shooter_id;
+	string			weapon_name;
 	uint32_t		shot_player_id;
 	double			angle;
-	string			weapon;
 
-	inbound_packet >> shooter_id >> shot_player_id >> weapon >> angle;
+	inbound_packet >> shooter_id >> weapon_name >> shot_player_id >> angle;
 
 	if (!is_authorized(address, shooter_id)) {
 		return;
@@ -391,30 +391,40 @@ void	Server::player_shot(const IPAddress& address, PacketReader& inbound_packet)
 		return;
 	}
 
-	uint64_t		freeze_time = 0;
-	
-	if (m_game_mode->player_shot(*shooter, *shot_player)) {
-		// Deal damage
-		shot_player->change_health(-100); // TODO: base off of weapon's damage
+	// Tell the current game mode that this player was shot
+	bool			has_effect = m_game_mode->player_shot(*shooter, *shot_player);
 
-		if (shot_player->get_health() == 0) {
-			// Player died
-			freeze_time = m_game_mode->player_died(*shooter, *shot_player);
+	// Inform the victim that he has been hit
+	PacketWriter		outbound_packet(PLAYER_HIT_PACKET);
+	outbound_packet << shooter_id << weapon_name << shot_player_id << has_effect << angle;
+	m_network.send_packet(shot_player->get_address(), outbound_packet);
+	// TODO: REQUIRE ACK
+}
 
-			if (freeze_time == 0) {
-				shot_player->reset_health();
-			}
-		}
+void	Server::player_died(const IPAddress& address, PacketReader& packet)
+{
+	uint32_t		killed_player_id;
+	uint32_t		killer_id;
+	packet >> killed_player_id >> killer_id;
+
+	if (!is_authorized(address, killed_player_id)) {
+		return;
 	}
 
-	// Inform all players that this player has been shot
-	PacketWriter		outbound_packet(PLAYER_SHOT_PACKET);
-	outbound_packet << shooter_id << shot_player_id << freeze_time << shot_player->get_health() << angle;
+	ServerPlayer&		killed_player = *get_player(killed_player_id);
+	ServerPlayer*		killer = killer_id ? get_player(killer_id) : NULL;
+
+	// Tell the current game mode that this player died
+	uint64_t		freeze_time = m_game_mode->player_died(killer, killed_player);
+
+	// Inform all players that this player died, and include the freeze time
+	PacketWriter		outbound_packet(PLAYER_DIED_PACKET);
+	outbound_packet << killed_player_id << killer_id << freeze_time;
 	broadcast_packet(outbound_packet);
 	// TODO: REQUIRE ACK
 }
 
-void	Server::gun_fired(const IPAddress& address, PacketReader& inbound_packet)
+void	Server::weapon_discharged(const IPAddress& address, PacketReader& inbound_packet)
 {
 	// Just broadcast this packet to all other players
 	uint32_t		shooter_id;
@@ -422,7 +432,7 @@ void	Server::gun_fired(const IPAddress& address, PacketReader& inbound_packet)
 
 	if (is_authorized(address, shooter_id)) {
 		// Re-broadcast the packet to all _other_ players
-		PacketWriter	outbound_packet(GUN_FIRED_PACKET);
+		PacketWriter	outbound_packet(WEAPON_DISCHARGED_PACKET);
 		outbound_packet << shooter_id << inbound_packet;
 		broadcast_packet_except(outbound_packet, shooter_id);
 
@@ -1092,7 +1102,11 @@ void	Server::send_spawn_packet(ServerPlayer& player, Point spawnpoint, bool is_a
 	player.set_rotation_degrees(0);
 	player.set_is_frozen(!is_alive);
 	player.set_is_invisible(!is_alive);
-	player.reset_health();
+	if (is_alive) {
+		player.reset_health();
+	} else {
+		player.set_health(0);
+	}
 
 	PacketWriter	spawn_packet(PLAYER_UPDATE_PACKET);
 	player.write_update_packet(spawn_packet);

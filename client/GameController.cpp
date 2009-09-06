@@ -34,6 +34,10 @@
 #include "TransitionManager.hpp"
 #include "BaseMapObject.hpp"
 #include "TextMenuItem.hpp"
+#include "Weapon.hpp"
+#include "FreezeGun.hpp" //TEMP
+#include "StopGun.hpp" //TEMP
+#include "ImpactCannon.hpp" //TEMP
 #include "common/PacketReader.hpp"
 #include "common/PacketWriter.hpp"
 #include "common/network.hpp"
@@ -64,7 +68,7 @@ using namespace std;
 const int GameController::MESSAGE_DISPLAY_TIME = 10000;
 const unsigned int GameController::MAX_MESSAGES_TO_DISPLAY = 20;
 const int GameController::SHOT_DISPLAY_TIME = 180;
-const int GameController::MUZZLE_FLASH_LENGTH = 80;
+const uint64_t GameController::MUZZLE_FLASH_LENGTH = 80;
 const int GameController::GATE_WARNING_FLASH_LENGTH = 3000;
 const double GameController::RANDOM_ROTATION_SCALE = 1.0;
 const Color GameController::BLUE_COLOR(0.6, 0.6, 1.0);
@@ -154,6 +158,8 @@ GameController::~GameController() {
 	// TEMPORARY MAP CODE BY ANDREW
 	delete m_map;
 
+	clear_weapons();
+
 	delete m_text_manager;
 	m_sound_controller->destroy_instance();
 	delete m_font;
@@ -216,8 +222,8 @@ void GameController::init(GameWindow* window) {
 
 	m_time_to_unfreeze = 0;
 	m_total_time_frozen = 0;
-	m_last_fired = 0;
 	m_last_clicked = 0;
+	m_muzzle_flash_start = 0;
 
 	m_font = new Font(m_path_manager.data_path("JuraMedium.ttf", "fonts"), 14);
 	m_text_manager = new TextManager(m_font, m_window);
@@ -234,6 +240,8 @@ void GameController::init(GameWindow* window) {
 	m_map = new GraphicalMap(m_path_manager, m_window);
 	m_map_width = 0;
 	m_map_height = 0;
+
+	init_weapons(); // TEMP CODE - Ultimately, get from the server when game starts
 
 	// Initialize the gun sprites.
 	gun_normal = new Sprite(m_path_manager.data_path("gun_noshot.png", "sprites"));
@@ -541,7 +549,7 @@ void GameController::init(GameWindow* window) {
 	m_health_bar_back->set_y(m_health_bar->get_y());
 	m_window->register_hud_graphic(m_health_bar_back);
 	
-	update_health_bar(100);
+	update_health_bar(0);
 
 	// Initialize the input bar background
 	m_input_bar_back = new TableBackground(1, 0);
@@ -624,8 +632,12 @@ void GameController::run(int lockfps) {
 		// Check if my player is set to unfreeze.
 		if (!m_players.empty() && m_time_to_unfreeze < get_ticks() && m_time_to_unfreeze != 0) {
 			m_sound_controller->play_sound("unfreeze");
-			m_players[m_player_id].reset_health();
-			update_health_bar();
+			if (m_players[m_player_id].is_dead()) {
+				// If we were dead (i.e. at 0 health), reset our health
+				// Otherwise, we continue with the health we had before getting killed
+				m_players[m_player_id].reset_health();
+				update_health_bar();
+			}
 			m_players[m_player_id].set_is_frozen(false);
 			if (m_radar->get_mode() == RADAR_ON) {
 				m_radar->set_blip_alpha(m_player_id, 1.0);
@@ -747,13 +759,14 @@ void GameController::run(int lockfps) {
 								
 				// Change gun sprite if muzzle flash is done.
 				Graphic* frontarm = m_players[m_player_id].get_sprite()->get_graphic("frontarm");
-				if (m_last_fired < get_ticks() - MUZZLE_FLASH_LENGTH && frontarm->get_graphic("gun")->is_invisible()) {
+				if (m_muzzle_flash_start != 0 && get_ticks() - m_muzzle_flash_start >= MUZZLE_FLASH_LENGTH && frontarm->get_graphic("gun")->is_invisible()) {
 					frontarm->get_graphic("gun")->set_invisible(false);
 					send_animation_packet("frontarm/gun", "invisible", false);
 					frontarm->get_graphic("gun_fired")->set_invisible(true);
 					send_animation_packet("frontarm/gun_fired", "invisible", true);
+					m_muzzle_flash_start = 0;
 				}
-							
+
 				m_crosshairs->set_x(m_mouse_x);
 				m_crosshairs->set_y(m_mouse_y);
 				
@@ -919,8 +932,8 @@ void GameController::update_health_bar(int new_health) {
 		} else {
 			new_health = player->get_health();
 		}
-	} else {
-		new_health = 100;
+	} else if (new_health == -1) {
+		new_health = 0;
 	}
 	
 	m_health_bar->set_image_width(HEALTH_BAR_WIDTH * ((double)new_health/GraphicalPlayer::MAX_HEALTH));
@@ -1225,13 +1238,13 @@ void GameController::parse_key_input() {
 			attempt_jump();
 		}
 		if ((m_key_bindings.weapon_1 != -1 && m_keys[m_key_bindings.weapon_1]) || (m_alt_key_bindings.weapon_1 != -1 && m_keys[m_alt_key_bindings.weapon_1])) {
-			change_weapon(1);
+			change_weapon("pistol");
 		}
 		if ((m_key_bindings.weapon_2 != -2 && m_keys[m_key_bindings.weapon_2]) || (m_alt_key_bindings.weapon_2 != -2 && m_keys[m_alt_key_bindings.weapon_2])) {
-			change_weapon(2);
+			change_weapon("machinegun");
 		}
 		if ((m_key_bindings.weapon_3 != -3 && m_keys[m_key_bindings.weapon_3]) || (m_alt_key_bindings.weapon_3 != -3 && m_keys[m_alt_key_bindings.weapon_3])) {
-			change_weapon(3);
+			change_weapon("impact");
 		}
 	}
 	
@@ -1427,23 +1440,14 @@ void GameController::process_mouse_click(SDL_Event event) {
 			// Do nothing.
 		} else if (event.button.button == 1) {
 			// Fire the gun if it's ready.
-			if (m_last_fired != 0 && m_last_fired > get_ticks() - m_params.firing_delay) {
+			if (m_players.empty() || m_players[m_player_id].is_frozen() || !m_current_weapon)
 				return;
-			}
-			if (m_players.empty() || m_players[m_player_id].is_frozen()) {
-				return;
-			}
+
 			double x_dist = (event.button.x + m_offset_x) - m_players[m_player_id].get_x();
 			double y_dist = (event.button.y + m_offset_y) - m_players[m_player_id].get_y();
-			double direction = atan2(y_dist, x_dist) * RADIANS_TO_DEGREES;
-			// Cause recoil if the player is not hanging onto a wall.
-			// XXX: This is bad test to see if a player's hanging onto a wall, since a player could be hovering in mid-space with no velocity.  In fact, that would be really bad, because then the player couldn't use recoil to get moving again.  We'll probably need to keep a flag in the Player class that specifies whether the player is hanging onto a wall or not. (-- andrew)
-			if (m_players[m_player_id].get_x_vel() != 0 || m_players[m_player_id].get_y_vel() != 0) {
-				m_players[m_player_id].set_velocity(m_players[m_player_id].get_x_vel() - m_params.firing_recoil * cos((direction) * DEGREES_TO_RADIANS), m_players[m_player_id].get_y_vel() - m_params.firing_recoil * sin((direction) * DEGREES_TO_RADIANS));
-			}
-			m_last_fired = get_ticks();
-			fire_weapon(m_players[m_player_id].get_x(), m_players[m_player_id].get_y(), direction);
-			m_sound_controller->play_sound("fire");
+			double direction = atan2(y_dist, x_dist);
+
+			m_current_weapon->fire(m_players[m_player_id], *this, m_players[m_player_id].get_position(), direction);
 		}
 	}
 	}
@@ -1786,22 +1790,18 @@ void GameController::jump(Vector new_velocity, double new_rotation) {
 }
 
 /*
- * Called when the current player fires his weapon.
+ * Find the first shootable object (either map object or player) in the given direction from the given start point
+ * direction is in radians
  */
-void GameController::fire_weapon(double start_x, double start_y, double direction) {
-	if (m_players.empty()) {
-		return;
-	}
-	
+Point GameController::find_shootable_object(Point startpos, double direction, BaseMapObject*& hit_map_object, Player*& hit_player) {
 	const list<BaseMapObject*>& map_objects(m_map->get_objects());
-	Point startpos = Point(start_x, start_y);
 	
-	double shortestdist = numeric_limits<double>::max();
+	double shortestdist = numeric_limits<double>::infinity();
 	double end_x = -1;
 	double end_y = -1;
 	
 	// Find the closest object that the shot will hit, if any.
-	BaseMapObject*		hit_object = NULL;
+	hit_map_object = NULL;
 
 	for (list<BaseMapObject*>::const_iterator it(map_objects.begin()); it != map_objects.end(); it++) {
 		BaseMapObject*	thisobj = *it;
@@ -1811,10 +1811,9 @@ void GameController::fire_weapon(double start_x, double start_y, double directio
 		}
 
 		const Shape& shape(*thisobj->get_bounding_shape());
-		//double dist_to_obstacle = Point::distance(Point(start_x, start_y), Point(thisobj->get_sprite()->get_x() + thisobj->get_sprite()->get_image_width()/2, thisobj->get_sprite()->get_y() + thisobj->get_sprite()->get_image_height()/2)) + 100.0;
-		double angle = 0;
+		//double dist_to_obstacle = Point::distance(Point(startpos.x, startpos.y), Point(thisobj->get_sprite()->get_x() + thisobj->get_sprite()->get_image_width()/2, thisobj->get_sprite()->get_y() + thisobj->get_sprite()->get_image_height()/2)) + 100.0;
 		double dist_to_obstacle = m_map_width + m_map_height; // XXX: longer than it needs to be...
-		Point endpos(start_x + dist_to_obstacle * cos(direction * DEGREES_TO_RADIANS), start_y + dist_to_obstacle * sin(direction * DEGREES_TO_RADIANS));
+		Point endpos(startpos.x + dist_to_obstacle * cos(direction), startpos.y + dist_to_obstacle * sin(direction));
 		
 		Point newpoint = shape.intersects_line(startpos, endpos, NULL);
 		
@@ -1822,34 +1821,34 @@ void GameController::fire_weapon(double start_x, double start_y, double directio
 			continue;
 		}
 		
-		double newdist = Point::distance(Point(start_x, start_y), newpoint);
+		double newdist = Point::distance(Point(startpos.x, startpos.y), newpoint);
 		
 		if (newdist != -1 && newdist < shortestdist) {
 			shortestdist = newdist;
 			end_x = newpoint.x;
 			end_y = newpoint.y;
-			hit_object = thisobj;
+			hit_map_object = thisobj;
 		}
 	}
 	
 	// Now check if any players are closer.
-	const GraphicalPlayer* hit_player = NULL;
+	hit_player = NULL;
 	
 	map<uint32_t, GraphicalPlayer>::iterator it;
 	for ( it=m_players.begin() ; it != m_players.end(); it++ ) {
-		const GraphicalPlayer& currplayer = (*it).second;
+		GraphicalPlayer& currplayer = (*it).second;
 		if (currplayer.get_id() == m_player_id) {
 			continue;
 		}
-		double playerdist = Point::distance(Point(start_x, start_y), Point(currplayer.get_x(), currplayer.get_y()));
+		double playerdist = Point::distance(Point(startpos.x, startpos.y), Point(currplayer.get_x(), currplayer.get_y()));
 		
 		if (playerdist > shortestdist) {
 			continue;
 		}
 		
-		double this_end_x = start_x + playerdist * cos(direction * DEGREES_TO_RADIANS);
-		double this_end_y = start_y + playerdist * sin(direction * DEGREES_TO_RADIANS);
-		vector<double> closestpoint = closest_point_on_line(start_x, start_y, this_end_x, this_end_y, currplayer.get_x(), currplayer.get_y());
+		double this_end_x = startpos.x + playerdist * cos(direction);
+		double this_end_y = startpos.y + playerdist * sin(direction);
+		vector<double> closestpoint = closest_point_on_line(startpos.x, startpos.y, this_end_x, this_end_y, currplayer.get_x(), currplayer.get_y());
 		
 		if (closestpoint.size() == 0) {
 			continue;
@@ -1868,74 +1867,30 @@ void GameController::fire_weapon(double start_x, double start_y, double directio
 			end_x = closestpoint.at(0);
 			end_y = closestpoint.at(1);
 			hit_player = &currplayer;
-			hit_object = NULL;
+			hit_map_object = NULL;
 		}
 	}
 	
 	// If we're still not hitting anything, find the nearest map edge where the shot will hit.
 	if (end_x == -1 && end_y == -1) {
 		double dist_to_obstacle = m_map_width + m_map_height;
-		Point endpos = Point(start_x + dist_to_obstacle * cos(direction * DEGREES_TO_RADIANS), start_y + dist_to_obstacle * sin(direction * DEGREES_TO_RADIANS));
+		Point endpos = Point(startpos.x + dist_to_obstacle * cos(direction), startpos.y + dist_to_obstacle * sin(direction));
 		Point newpoint = m_map_polygon.intersects_line(startpos, endpos, NULL);
 	
 		if (newpoint.x != -1 || newpoint.y != -1) {		
-			double newdist = Point::distance(Point(start_x, start_y), newpoint);
+			double newdist = Point::distance(Point(startpos.x, startpos.y), newpoint);
 	
 			if (newdist != -1 && newdist < shortestdist) {
 				shortestdist = newdist;
 				end_x = newpoint.x;
 				end_y = newpoint.y;
 				hit_player = NULL;
-				hit_object = NULL;
+				hit_map_object = NULL;
 			}
 		}
 	}
 
-	// If this shot hit a map object, tell the map object about it
-	if (hit_object != NULL) {
-		if (!hit_object->shot(*this, m_players[m_player_id], Point(end_x, end_y), direction)) {
-			// Instead of absorbing the shot, the map object redirected it
-			end_x = -1;
-			end_y = -1;
-		}
-	}
-	
-	// Create the gun fired packet and send it, and display the shot hit point.
-	PacketWriter gun_fired(GUN_FIRED_PACKET);
-	gun_fired << m_player_id;
-	gun_fired << start_x;
-	gun_fired << start_y;
-	gun_fired << direction;
-	if (end_x != -1 || end_y != -1) {
-		gun_fired << end_x;
-		gun_fired << end_y;
-		Graphic* this_shot = new Sprite(*m_shot);
-		this_shot->set_x(end_x);
-		this_shot->set_y(end_y);
-		this_shot->set_scale_x(.1);
-		this_shot->set_scale_y(.1);
-		this_shot->set_invisible(false);
-		pair<Graphic*, unsigned int> new_shot(this_shot, get_ticks() + SHOT_DISPLAY_TIME);
-		m_shots.push_back(new_shot);
-		m_window->register_graphic(this_shot);
-	}
-	
-	// Switch to the gun with the muzzle flash.
-	GraphicGroup* frontarm = (GraphicGroup*)m_players[m_player_id].get_sprite()->get_graphic("frontarm");
-	frontarm->get_graphic("gun")->set_invisible(true);
-	send_animation_packet("frontarm/gun", "invisible", true);
-	frontarm->get_graphic("gun_fired")->set_invisible(false);
-	send_animation_packet("frontarm/gun_fired", "invisible", false);
-	
-	m_network.send_packet(gun_fired);
-	
-	// If a player was hit, send a packet about it
-	if (hit_player != NULL) {
-		if (!hit_player->is_frozen()) {
-			m_sound_controller->play_sound("hit");
-		}
-		send_player_shot(m_player_id, hit_player->get_id(), direction-180);
-	}
+	return Point(end_x, end_y);
 }
 
 void GameController::show_muzzle_flash() {
@@ -1945,12 +1900,13 @@ void GameController::show_muzzle_flash() {
 	send_animation_packet("frontarm/gun", "invisible", true);
 	frontarm->get_graphic("gun_fired")->set_invisible(false);
 	send_animation_packet("frontarm/gun_fired", "invisible", false);
+	m_muzzle_flash_start = get_ticks();
 }
 
-void GameController::show_bullet_impact(int x, int y) {
+void GameController::show_bullet_impact(Point position) {
 	Graphic* this_shot = new Sprite(*m_shot);
-	this_shot->set_x(x);
-	this_shot->set_y(y);
+	this_shot->set_x(position.x);
+	this_shot->set_y(position.y);
 	this_shot->set_scale_x(.1);
 	this_shot->set_scale_y(.1);
 	this_shot->set_invisible(false);
@@ -2148,19 +2104,6 @@ void GameController::delete_individual_score(const GraphicalPlayer& currplayer) 
 	m_overlay_scrollarea->get_group()->remove_graphic(playerscore);
 	m_overlay_items.erase(playerscore);
 	m_overlay_items.erase(playerid);
-}
-
-/*
- * Send a player shot packet.
- */
-void GameController::send_player_shot(uint32_t shooter_id, uint32_t hit_player_id, double angle) {
-	PacketWriter player_shot(PLAYER_SHOT_PACKET);
-	player_shot << shooter_id;
-	player_shot << hit_player_id;
-	player_shot << "default"; // TODO: send weapon name here
-	player_shot << angle;
-	
-	m_network.send_packet(player_shot);
 }
 
 /*
@@ -2488,103 +2431,107 @@ void GameController::leave(PacketReader& reader) {
 /*
  * Called when a gun fired packet is received.
  */
-void GameController::gun_fired(PacketReader& reader) {
-	unsigned int playerid;
-	double start_x;
-	double start_y;
-	double rotation;
-	double end_x;
-	double end_y;
-	reader >> playerid >> start_x >> start_y >> rotation >> end_x >> end_y;
-	
-	if (playerid == m_player_id) {
+void GameController::weapon_discharged(PacketReader& reader) {
+	uint32_t	player_id;
+	string		weapon_name;
+
+	reader >> player_id >> weapon_name;
+
+	if (player_id == m_player_id) {
+		// Ignore discharge packets from ourself
 		return;
 	}
-	
-	if (GraphicalPlayer* player = get_player_by_id(playerid)) {
-		// Show a graphic for the shot.
-		Graphic* this_shot = new Sprite(*m_shot);
-		this_shot->set_x(end_x);
-		this_shot->set_y(end_y);
-		this_shot->set_invisible(false);
-		this_shot->set_scale_x(.1);
-		this_shot->set_scale_y(.1);
-		pair<Graphic*, unsigned int> new_shot(this_shot, get_ticks() + SHOT_DISPLAY_TIME);
-		m_shots.push_back(new_shot);
-		m_window->register_graphic(this_shot);
-	
-		m_sound_controller->play_sound("fire");
-		m_radar->activate_blip(playerid, get_ticks(), m_params.radar_blip_duration);
+
+	Weapon*		weapon = get_weapon(weapon_name);
+	Player*		player = get_player_by_id(player_id);
+
+	if (!weapon || !player) {
+		return;
 	}
+
+	weapon->discharged(*player, *this, reader);
 }
 
 /*
  * Called when a player shot packet is received.
  */
-void GameController::player_shot(PacketReader& reader) {
-	unsigned int shooter_id;
-	unsigned int shot_id;
-	unsigned long time_to_unfreeze;
-	int new_health;
-	double shot_angle;
-	
-	reader >> shooter_id >> shot_id >> time_to_unfreeze >> new_health >> shot_angle;
-	
-	GraphicalPlayer* shooter = get_player_by_id(shooter_id);
-	GraphicalPlayer* shotplayer = get_player_by_id(shot_id);
-	if (shooter == NULL || shotplayer == NULL) {
+void GameController::player_hit(PacketReader& reader) {
+	uint32_t	shooter_id;
+	string		weapon_name;
+	uint32_t	shot_player_id;
+	bool		has_effect;
+
+	reader >> shooter_id >> weapon_name >> shot_player_id >> has_effect;
+
+	GraphicalPlayer*	shooter = get_player_by_id(shooter_id);
+	GraphicalPlayer*	shot_player = get_player_by_id(shot_player_id);
+
+	if (!shooter || !shot_player) {
 		return;
 	}
 
-	shotplayer->set_health(new_health);
+	if (shot_player_id == m_player_id) {
+		if (Weapon* weapon = get_weapon(weapon_name)) {
+			weapon->hit(*shot_player, *shooter, has_effect, *this, reader);
+		}
+	}
+}
+
+void GameController::player_died(PacketReader& reader) {
+	uint32_t	dead_player_id;
+	uint32_t	killer_id;
+	uint64_t	time_to_unfreeze;
+
+	reader >> dead_player_id >> killer_id >> time_to_unfreeze;
 	
-	if (!shotplayer->is_frozen() && time_to_unfreeze != 0) {
+	GraphicalPlayer* dead_player = get_player_by_id(dead_player_id);
+	GraphicalPlayer* killer = killer_id ? get_player_by_id(killer_id) : NULL;
+
+	if (!dead_player) {
+		return;
+	}
+
+	if (!dead_player->is_frozen() && time_to_unfreeze != 0) {
 		ostringstream message;
 		
-		if (shooter_id == m_player_id) {
+		if (killer_id == m_player_id) {
 			message << "You";
+		} else if (killer) {
+			message << killer->get_name();
 		} else {
-			message << shooter->get_name();
+			message << "A map hazard";
 		}
 		
-		if (shotplayer->get_team() == shooter->get_team()) { // TODO (when we finish game modes): only say "betrayed" if team-play is in effect.
+		if (killer && killer->get_team() == dead_player->get_team()) { // TODO (when we finish game modes): only say "betrayed" if team-play is in effect.
 			message << " betrayed ";
 		} else {
-			message << " shot ";
+			message << " killed ";
 		}
 		
-		if (shot_id == m_player_id) {
+		if (dead_player_id == m_player_id) {
 			message << "you";
 		} else {
-			message << shotplayer->get_name();
+			message << dead_player->get_name();
 		}
 		
 		message << ".";
 		
-		if (shooter->get_team() == 'A') {
+		if (killer && killer->get_team() == 'A') {
 			display_message(message.str(), BLUE_COLOR, BLUE_SHADOW);
-		} else if (shooter->get_team() == 'B') {
+		} else if (killer && killer->get_team() == 'B') {
 			display_message(message.str(), RED_COLOR, RED_SHADOW);
+		} else {
+			display_message(message.str());
 		}
 	}
 	
-	// If we were frozen, add to our velocity based on the shot, and freeze.
-	if (shot_id == m_player_id) {
-		if (!m_players[m_player_id].is_frozen() && time_to_unfreeze != 0) {
-			m_frozen_status_rect->set_y(m_screen_height/2 + m_players[m_player_id].get_radius() + 15);
-			m_frozen_status_rect_back->set_y(m_frozen_status_rect->get_y());
-			m_frozen_status_text->set_y(m_frozen_status_rect->get_y());
-			m_sound_controller->play_sound("freeze");
-			m_players[m_player_id].set_is_frozen(true);
-			if (m_radar->get_mode() == RADAR_ON) {
-				m_radar->set_blip_alpha(m_player_id, 0.5);
-			}
-			m_time_to_unfreeze = get_ticks() + time_to_unfreeze;
-			m_total_time_frozen = time_to_unfreeze;
-		}
-		update_health_bar();
-		if (shot_angle != 0) {
-			m_players[m_player_id].set_velocity(m_players[m_player_id].get_x_vel() - m_params.firing_recoil * cos((shot_angle) * DEGREES_TO_RADIANS), m_players[m_player_id].get_y_vel() - m_params.firing_recoil * sin((shot_angle) * DEGREES_TO_RADIANS));
+	// If we were killed, freeze
+	if (dead_player_id == m_player_id) {
+		if (time_to_unfreeze) {
+			freeze(time_to_unfreeze);
+		} else {
+			m_players[m_player_id].reset_health();
+			update_health_bar();
 		}
 	}
 }
@@ -2804,7 +2751,8 @@ void GameController::game_stop(PacketReader& reader) {
 	m_players[m_player_id].set_is_frozen(true);
 	m_time_to_unfreeze = 0;
 	m_total_time_frozen = 0;
-	m_last_fired = 0;
+	update_health_bar(0);
+	reset_weapons();
 }
 
 /*
@@ -3403,7 +3351,10 @@ void GameController::set_radar_mode(RadarMode mode) {
 	}
 }
 
-void GameController::change_weapon(int weaponnum) {
+void GameController::change_weapon(const char* weapon_name) {
+	if (Weapon* weapon = get_weapon(weapon_name)) {
+		m_current_weapon = weapon;
+	}
 }
 
 double	GameController::get_crosshairs_angle() const {
@@ -3413,5 +3364,77 @@ double	GameController::get_crosshairs_angle() const {
 
 	Point	crosshairs_location(m_crosshairs->get_x() + m_offset_x, m_crosshairs->get_y() + m_offset_y);
 	return Vector(crosshairs_location - get_player_by_id(m_player_id)->get_position()).get_angle();
+}
+
+void	GameController::freeze(uint64_t time_to_unfreeze) {
+	if (!m_players[m_player_id].is_frozen() && time_to_unfreeze != 0) {
+		m_frozen_status_rect->set_y(m_screen_height/2 + m_players[m_player_id].get_radius() + 15);
+		m_frozen_status_rect_back->set_y(m_frozen_status_rect->get_y());
+		m_frozen_status_text->set_y(m_frozen_status_rect->get_y());
+		m_sound_controller->play_sound("freeze");
+		m_players[m_player_id].set_is_frozen(true);
+		if (m_radar->get_mode() == RADAR_ON) {
+			m_radar->set_blip_alpha(m_player_id, 0.5);
+		}
+		m_time_to_unfreeze = get_ticks() + time_to_unfreeze;
+		m_total_time_frozen = time_to_unfreeze;
+	}
+}
+
+void	GameController::send_packet(PacketWriter& packet) {
+	m_network.send_packet(packet);
+}
+
+void	GameController::play_sound(const char* sound_name) {
+	m_sound_controller->play_sound(sound_name);
+}
+
+Weapon*	GameController::get_weapon(const string& name) {
+	map<string, Weapon*>::iterator it(m_weapons.find(name));
+	return it == m_weapons.end() ? NULL : it->second;
+}
+
+void	GameController::init_weapons() { //TEMP
+	m_weapons.insert(make_pair("pistol", m_current_weapon = new FreezeGun("pistol", 0, 50, 700, 1.5)));
+	m_weapons.insert(make_pair("machinegun", new FreezeGun("machinegun", 2000, 0, 100, 1.5)));
+	m_weapons.insert(make_pair("jet", new FreezeGun("jet", 0, 0, 100, 2.5)));
+	m_weapons.insert(make_pair("stop", new StopGun("stop", 0, 50, 1.2)));
+	m_weapons.insert(make_pair("impact", new ImpactCannon("impact", 1000, 10, 20.0, 2000, 2.0)));
+}
+
+void	GameController::reset_weapons() {
+	for (map<string, Weapon*>::iterator it(m_weapons.begin()); it != m_weapons.end(); ++it) {
+		it->second->reset();
+	}
+}
+
+void	GameController::clear_weapons() {
+	for (map<string, Weapon*>::iterator it(m_weapons.begin()); it != m_weapons.end(); ++it) {
+		delete it->second;
+	}
+	m_weapons.clear();
+}
+
+void	GameController::activate_radar_blip(const Player& player) {
+	m_radar->activate_blip(player.get_id(), get_ticks(), m_params.radar_blip_duration);
+}
+
+bool	GameController::damage (int amount, const Player* aggressor) {
+	if (amount == 0 || m_players[m_player_id].is_frozen()) {
+		// No effect on already frozen players
+		return false;
+	}
+
+	m_players[m_player_id].change_health(-amount);
+	update_health_bar();
+	if (m_players[m_player_id].is_dead()) {
+		// Inform the server that we died
+		PacketWriter		died_packet(PLAYER_DIED_PACKET);
+		died_packet << m_player_id << (aggressor ? aggressor->get_id() : 0);
+		m_network.send_packet(died_packet);
+
+		return true;
+	}
+	return false;
 }
 

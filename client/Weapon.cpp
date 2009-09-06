@@ -29,6 +29,12 @@
 using namespace LM;
 using namespace std;
 
+Weapon::Weapon() {
+}
+
+Weapon::Weapon(const char* name) : m_name(name) {
+}
+
 Weapon*	Weapon::create_weapon (const char* weapon_name, PacketReader& data)
 {
 	return NULL;

@@ -113,12 +113,12 @@ void	ServerNetwork::process_packet(Server& server, const UDPPacket& raw_packet) 
 		server.player_update(address, reader);
 		break;
 
-	case GUN_FIRED_PACKET:
-		server.gun_fired(address, reader);
+	case WEAPON_DISCHARGED_PACKET:
+		server.weapon_discharged(address, reader);
 		break;
 
-	case PLAYER_SHOT_PACKET:
-		server.player_shot(address, reader);
+	case PLAYER_HIT_PACKET:
+		server.player_hit(address, reader);
 		break;
 
 	case MESSAGE_PACKET:
@@ -163,6 +163,10 @@ void	ServerNetwork::process_packet(Server& server, const UDPPacket& raw_packet) 
 
 	case HOLE_PUNCH_PACKET:
 		server.hole_punch_packet(address, reader);
+		break;
+
+	case PLAYER_DIED_PACKET:
+		server.player_died(address, reader);
 		break;
 	}
 }

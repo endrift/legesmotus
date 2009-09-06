@@ -49,9 +49,9 @@ namespace LM {
 		virtual bool		player_shot(ServerPlayer& shooter, ServerPlayer& shot_player) = 0;
 
 		// Called when a player is killed (i.e. health reaches 0).
-		// killer is the player who dealt the last blow.
+		// killer is the player who dealt the last blow (or NULL if no player did it, e.g. a hazardous map object)
 		// The return value is the amount of time the player should be frozen (may be 0).
-		virtual uint64_t	player_died(ServerPlayer& killer, ServerPlayer& killed) = 0;
+		virtual uint64_t	player_died(ServerPlayer* killer, ServerPlayer& killed) = 0;
 
 		// Called when the game times out.
 		virtual void		game_timeout() = 0;

@@ -26,6 +26,7 @@
 #define LM_CLIENT_WEAPON_HPP
 
 #include "common/Point.hpp"
+#include <string>
 
 namespace LM {
 	class GameController;
@@ -33,14 +34,28 @@ namespace LM {
 	class PacketReader;
 
 	class Weapon {
+	private:
+		std::string		m_name;
+	
+	protected:
+		void			set_name(const char* name) { m_name = name; }
+
 	public:
+		Weapon();
+		explicit Weapon(const char* name);
+
+		const char*		get_name() { return m_name.c_str(); }
+
+
 		// When the current player (player) fires this weapon:
 		//  direction is in radians
-		virtual void	fire(Player& player, GameController& gc, Point start, double direction) = 0;
+		virtual void		fire(Player& player, GameController& gc, Point start, double direction) = 0;
 		// When another player (player) fires this weapon:
-		virtual void	discharged(Player& player, GameController& gc) = 0;
+		virtual void		discharged(Player& player, GameController& gc, PacketReader& data) = 0;
 		// When the current player (player) is hit by this weapon:
-		virtual void	hit(Player& player, GameController& gc) = 0;
+		virtual void		hit(Player& player, Player& shooting_player, bool has_effect, GameController& gc, PacketReader& data) = 0;
+		// Call when the round ends to reset this weapon's state:
+		virtual void		reset() = 0;
 
 		virtual const char*	gun_graphic() const = 0;
 		virtual const char*	gun_fired_graphic() const = 0;

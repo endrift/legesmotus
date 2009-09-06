@@ -49,8 +49,8 @@ namespace LM {
 	enum {
 		ACK_PACKET = 0,
 		PLAYER_UPDATE_PACKET = 1,
-		GUN_FIRED_PACKET = 2,
-		PLAYER_SHOT_PACKET = 3,
+		WEAPON_DISCHARGED_PACKET = 2,
+		PLAYER_HIT_PACKET = 3,
 		MESSAGE_PACKET = 4,
 		GAME_START_PACKET = 5,
 		GAME_STOP_PACKET = 6,
@@ -72,7 +72,8 @@ namespace LM {
 		MAP_INFO_PACKET = 22,
 		MAP_OBJECT_PACKET = 23,
 		GAME_PARAM_PACKET = 24,
-		HOLE_PUNCH_PACKET = 25		// UDP hole punching for NAT traversal
+		HOLE_PUNCH_PACKET = 25,		// UDP hole punching for NAT traversal
+		PLAYER_DIED_PACKET = 26
 	};
 
 	bool		resolve_hostname(IPAddress& resolved_addr, const char* hostname_port_string); // hostname_port_string should be in form "hostname:portno" (i.e. colon separator)

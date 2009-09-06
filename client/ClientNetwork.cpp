@@ -118,13 +118,13 @@ void	ClientNetwork::process_server_packet(GameController& controller, const UDPP
 		controller.player_update(reader);
 		break;
 
-	case GUN_FIRED_PACKET:
-		controller.gun_fired(reader);
+	case WEAPON_DISCHARGED_PACKET:
+		controller.weapon_discharged(reader);
 		break;
 
-	case PLAYER_SHOT_PACKET:
+	case PLAYER_HIT_PACKET:
 		//send_ack(reader.packet_id());
-		controller.player_shot(reader);
+		controller.player_hit(reader);
 		break;
 
 	case MESSAGE_PACKET:
@@ -197,6 +197,10 @@ void	ClientNetwork::process_server_packet(GameController& controller, const UDPP
 
 	case INFO_PACKET:
 		controller.server_info(raw_packet.get_address(), reader);
+		break;
+
+	case PLAYER_DIED_PACKET:
+		controller.player_died(reader);
 		break;
 	}
 }

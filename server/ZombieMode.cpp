@@ -48,30 +48,33 @@ void	ZombieMode::gate_open(char team) {
 }
 
 bool	ZombieMode::player_shot(ServerPlayer& shooter, ServerPlayer& shot_player) {
-	return !shot_player.is_frozen() &&
-		(m_server.m_params.friendly_fire || shooter.get_team() != shot_player.get_team());
+	return m_server.m_params.friendly_fire || shooter.get_team() != shot_player.get_team();
 }
 
-uint64_t	ZombieMode::player_died(ServerPlayer& killer, ServerPlayer& killed) {
+uint64_t	ZombieMode::player_died(ServerPlayer* killer, ServerPlayer& killed) {
+	if (!killer) {
+		return m_server.m_params.freeze_time;
+	}
+
 	int		score_change = 0;
 	uint64_t	freeze_time = 0;
 
-	if (killer.get_team() == killed.get_team()) {
+	if (killer->get_team() == killed.get_team()) {
 		// Killed your own kind (d'oh) - results in a freeze and -1 score penalty
 		score_change = -1;
 		freeze_time = m_server.m_params.freeze_time;
-	} else if (killer.get_team() == 'A') {
+	} else if (killer->get_team() == 'A') {
 		// Human killed a zombie - zombie freezes
 		score_change = 1;
 		freeze_time = m_server.m_params.freeze_time;
-	} else if (killer.get_team() == 'B') {
+	} else if (killer->get_team() == 'B') {
 		// Zombie killed a human - human becomes zombie
 		score_change = 1;
 		m_server.change_team(killed, 'B', false, false);
 	}
 
 	if (score_change) {
-		m_server.change_score(killer, score_change);
+		m_server.change_score(*killer, score_change);
 	}
 
 	return freeze_time;
