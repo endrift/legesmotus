@@ -3378,7 +3378,6 @@ void	GameController::freeze(uint64_t time_to_unfreeze) {
 		}
 		m_time_to_unfreeze = get_ticks() + time_to_unfreeze;
 		m_total_time_frozen = time_to_unfreeze;
-		set_gate_hold(false);
 	}
 }
 

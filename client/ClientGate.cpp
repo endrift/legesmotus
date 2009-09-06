@@ -61,8 +61,8 @@ void	ClientGate::set_progress(ClientMap& map, double progress) {
 void	ClientGate::interact (GameController& gc, Player& player) {
 	m_is_engaged = true;
 
-	if (!player.is_frozen() && player.get_team() != m_team) {
-		gc.set_gate_hold(true);
+	if (player.get_team() != m_team) {
+		gc.set_gate_hold(!player.is_frozen());
 	}
 }
 
