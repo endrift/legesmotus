@@ -1241,7 +1241,7 @@ void GameController::parse_key_input() {
 			change_weapon("pistol");
 		}
 		if ((m_key_bindings.weapon_2 != -2 && m_keys[m_key_bindings.weapon_2]) || (m_alt_key_bindings.weapon_2 != -2 && m_keys[m_alt_key_bindings.weapon_2])) {
-			change_weapon("stop");
+			change_weapon("machinegun");
 		}
 		if ((m_key_bindings.weapon_3 != -3 && m_keys[m_key_bindings.weapon_3]) || (m_alt_key_bindings.weapon_3 != -3 && m_keys[m_alt_key_bindings.weapon_3])) {
 			change_weapon("impact");
@@ -3397,7 +3397,7 @@ Weapon*	GameController::get_weapon(const string& name) {
 
 void	GameController::init_weapons() { //TEMP
 	m_weapons.insert(make_pair("pistol", m_current_weapon = new FreezeGun("pistol", 0, 50, 700, 1.5)));
-	m_weapons.insert(make_pair("machinegun", new FreezeGun("machinegun", 2000, 0, 100, 1.5)));
+	m_weapons.insert(make_pair("machinegun", new FreezeGun("machinegun", 0, 20, 100, 1.1)));
 	m_weapons.insert(make_pair("jet", new FreezeGun("jet", 0, 0, 100, 2.5)));
 	m_weapons.insert(make_pair("stop", new StopGun("stop", 0, 50, 1.2)));
 	m_weapons.insert(make_pair("impact", new ImpactCannon("impact", 1000, 10, 20.0, 2000, 2.0)));
