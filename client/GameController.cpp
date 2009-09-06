@@ -1938,6 +1938,27 @@ void GameController::fire_weapon(double start_x, double start_y, double directio
 	}
 }
 
+void GameController::show_muzzle_flash() {
+	// Switch to the gun with the muzzle flash.
+	GraphicGroup* frontarm = (GraphicGroup*)m_players[m_player_id].get_sprite()->get_graphic("frontarm");
+	frontarm->get_graphic("gun")->set_invisible(true);
+	send_animation_packet("frontarm/gun", "invisible", true);
+	frontarm->get_graphic("gun_fired")->set_invisible(false);
+	send_animation_packet("frontarm/gun_fired", "invisible", false);
+}
+
+void GameController::show_bullet_impact(int x, int y) {
+	Graphic* this_shot = new Sprite(*m_shot);
+	this_shot->set_x(x);
+	this_shot->set_y(y);
+	this_shot->set_scale_x(.1);
+	this_shot->set_scale_y(.1);
+	this_shot->set_invisible(false);
+	pair<Graphic*, unsigned int> new_shot(this_shot, get_ticks() + SHOT_DISPLAY_TIME);
+	m_shots.push_back(new_shot);
+	m_window->register_graphic(this_shot);
+}
+
 /*
  * Set the player sprites visible or invisible.
  */

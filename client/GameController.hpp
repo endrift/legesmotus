@@ -321,6 +321,8 @@ namespace LM {
 		bool		wants_restart();
 		void		reset_options();
 		void		change_weapon(int weaponnum);
+		void		show_muzzle_flash();
+		void		show_bullet_impact(int x, int y);
 		std::string	get_server_address();
 		std::string	format_time_from_millis(uint64_t milliseconds);
 		
