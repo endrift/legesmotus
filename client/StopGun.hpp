@@ -26,6 +26,7 @@
 #define LM_CLIENT_STOPGUN_HPP
 
 #include "client/Weapon.hpp"
+#include <stdint.h>
 
 namespace LM {
 	class StopGun : public Weapon {

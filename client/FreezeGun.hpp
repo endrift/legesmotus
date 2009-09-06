@@ -26,6 +26,7 @@
 #define LM_CLIENT_FREEZEGUN_HPP
 
 #include "client/Weapon.hpp"
+#include <stdint.h>
 
 namespace LM {
 	class FreezeGun : public Weapon {

@@ -26,6 +26,7 @@
 #define LM_CLIENT_IMPACTCANNON_HPP
 
 #include "client/Weapon.hpp"
+#include <stdint.h>
 
 namespace LM {
 	class ImpactCannon : public Weapon {
