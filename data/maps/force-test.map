@@ -1,5 +1,5 @@
 name gravity-test
-revision 45
+revision 46
 width 2048
 height 2048
 firing_recoil 3.0
@@ -28,6 +28,7 @@ SPAWN	2048,1024	RED
 FORCE		1024,1024	-	circle:900	frozen	thawed	gravity=5000
 OBSTACLE	1024,1024	circle256	circle:128
 
-FORCE	256,256		friction64	-	frozen	thawed	friction=0.03	tile=256,128
+#FORCE	256,256		friction64	-	frozen	thawed	friction=0.03	tile=256,128
+HAZARD	256,256		friction64	-	tile=256,256	damage=1	freeze=0
 
 #FORCE	1024,1024	circle256	circle:128	frozen	thawed	force=0,-1

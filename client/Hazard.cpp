@@ -37,9 +37,14 @@ Hazard::Hazard (Point position) : BaseMapObject(position) {
 	m_params.priority = 256; // TODO: use enum
 	m_freeze_time = 5000;
 	m_damage = 0;
+	m_is_collidable = false;
 }
 
 void	Hazard::collide(GameController& gc, Player& player, Point old_position, double angle_of_incidence) {
+	if (!m_is_collidable) {
+		return;
+	}
+
 	player.set_x(old_position.x);
 	player.set_y(old_position.y);
 	if (player.is_frozen() && !player.is_invisible()) {
@@ -65,7 +70,9 @@ void	Hazard::init (MapReader& reader, ClientMap& map) {
 		string		param_string;
 		reader >> param_string;
 
-		if (strncmp(param_string.c_str(), "damage=", 7) == 0) {
+		if (param_string == "collidable") {
+			m_is_collidable = true;
+		} else if (strncmp(param_string.c_str(), "damage=", 7) == 0) {
 			m_damage = atoi(param_string.c_str() + 7);
 		} else if (strncmp(param_string.c_str(), "freeze=", 7) == 0) {
 			m_freeze_time = atol(param_string.c_str() + 7);
@@ -78,6 +85,18 @@ void	Hazard::init (MapReader& reader, ClientMap& map) {
 
 	if (!m_graphic) {
 		m_graphic = map.load_graphic(m_graphic_name, m_bounding_shape.get() && m_bounding_shape->is_centered(), get_position(), m_params);
+	}
+}
+
+void	Hazard::interact(GameController& gc, Player& player) {
+	if (m_is_collidable || player.is_frozen() || player.is_invisible()) {
+		return;
+	}
+
+	// Deal damage to the player
+	if (!gc.damage(m_damage, NULL)) {
+		// Player was not killed, so freeze the player based on this hazards's effects
+		gc.freeze(m_freeze_time);
 	}
 }
 

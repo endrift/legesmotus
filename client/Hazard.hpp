@@ -48,6 +48,7 @@ namespace LM {
 
 		uint64_t		m_damage;
 		uint64_t		m_freeze_time;
+		bool			m_is_collidable;
 
 	public:
 		explicit Hazard (Point pos);
@@ -55,14 +56,14 @@ namespace LM {
 		virtual Graphic*	get_graphic () const { return m_graphic; }
 		virtual const Shape*	get_bounding_shape () const { return m_bounding_shape.get(); }
 
-		virtual bool	is_jumpable () const { return true; }
-		virtual bool	is_shootable () const { return true; }
-		virtual bool	is_collidable () const { return true; }
-		virtual bool	is_interactive () const { return false; }
+		virtual bool	is_jumpable () const { return m_is_collidable; }
+		virtual bool	is_shootable () const { return m_is_collidable; }
+		virtual bool	is_collidable () const { return m_is_collidable; }
+		virtual bool	is_interactive () const { return !m_is_collidable; }
 		virtual bool	is_engaged () const { return false; }
-		virtual bool	shot (GameController& gc, Player& shooter, Point point_hit, double direction) { return true; }
+		virtual bool	shot (GameController& gc, Player& shooter, Point point_hit, double direction) { return m_is_collidable; }
 		virtual void	collide (GameController& gc, Player& player, Point old_position, double angle_of_incidence);
-		virtual void	interact (GameController& gc, Player& player) { }
+		virtual void	interact (GameController& gc, Player& player);
 		virtual void	disengage (GameController& gc, Player& player) { }
 		virtual void	init (MapReader& reader, ClientMap& map);
 	};
