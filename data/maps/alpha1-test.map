@@ -1,5 +1,5 @@
 name alpha1-test
-revision 15
+revision 16
 width 2048
 height 1024
 
@@ -64,12 +64,12 @@ OBSTACLE	960,576	metal_obstacle128	rect:128,128
 OBSTACLE	992,704	metal_obstacle64	rect:64,64	tile=64,128
 OBSTACLE	992,192	metal_obstacle64	rect:64,64	tile=64,128
 
-OBSTACLE	768,0	metal_obstacle64	rect:64,64
-OBSTACLE	768,960	metal_obstacle64	rect:64,64
-OBSTACLE	1216,0	metal_obstacle64	rect:64,64
-OBSTACLE	1216,960	metal_obstacle64	rect:64,64
+HAZARD		768,0		hazard64	rect:64,64	freeze=10	damage=40
+HAZARD		768,960		hazard64	rect:64,64	freeze=10	damage=40
+HAZARD		1216,0		hazard64	rect:64,64	freeze=10	damage=40
+HAZARD		1216,960	hazard64	rect:64,64	freeze=10	damage=40
 
-OBSTACLE	768,192	metal_obstacle64	rect:64,64
-OBSTACLE	768,768	metal_obstacle64	rect:64,64
-OBSTACLE	1216,192	metal_obstacle64	rect:64,64
-OBSTACLE	1216,768	metal_obstacle64	rect:64,64
+HAZARD		768,192		hazard64	rect:64,64	freeze=10	damage=40
+HAZARD		768,768		hazard64	rect:64,64	freeze=10	damage=40
+HAZARD		1216,192	hazard64	rect:64,64	freeze=10	damage=40
+HAZARD		1216,768	hazard64	rect:64,64	freeze=10	damage=40

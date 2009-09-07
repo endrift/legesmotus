@@ -1,5 +1,5 @@
 /*
- * client/Obstacle.hpp
+ * client/Hazard.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,8 +22,8 @@
  * 
  */
 
-#ifndef LM_CLIENT_OBSTACLE_HPP
-#define LM_CLIENT_OBSTACLE_HPP
+#ifndef LM_CLIENT_HAZARD_HPP
+#define LM_CLIENT_HAZARD_HPP
 
 #include "BaseMapObject.hpp"
 #include "MapObjectParams.hpp"
@@ -32,16 +32,23 @@
 #include <string>
 
 namespace LM {
-	class Obstacle : public BaseMapObject {
+	class Hazard : public BaseMapObject {
 	private:
+		/*
+		 * TODO:
+		 *  rate of damage
+		 *  real object stick detection, so that you can't jump off immediately to avoid damage
+		 */
 		std::string		m_graphic_name;
 		MapObjectParams		m_params;
 		Graphic*		m_graphic;
 		std::auto_ptr<Shape>	m_bounding_shape;
-		bool			m_is_slippery;
+
+		uint64_t		m_damage;
+		uint64_t		m_freeze_time;
 
 	public:
-		explicit Obstacle (Point pos);
+		explicit Hazard (Point pos);
 
 		virtual Graphic*	get_graphic () const { return m_graphic; }
 		virtual const Shape*	get_bounding_shape () const { return m_bounding_shape.get(); }

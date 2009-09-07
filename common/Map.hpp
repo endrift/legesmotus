@@ -49,7 +49,8 @@ namespace LM {
 			OBSTACLE = 4,
 			DECORATION = 5,
 			REPULSION = 6,
-			FORCE_FIELD = 7
+			FORCE_FIELD = 7,
+			HAZARD = 8
 		};
 		static ObjectType	parse_object_type(const char* type_string);
 	

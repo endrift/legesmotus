@@ -5,7 +5,7 @@ OBJS = ClientNetwork.o ClientSDL.o GameController.o GameWindow.o Sprite.o Graphi
 	ClientConfiguration.o MapReceiver.o ServerBrowser.o ChatLog.o RadialBackground.o \
 	ConvolveKernel.o MapObjectParams.o BaseMapObject.o Obstacle.o Decoration.o ClientGate.o \
 	ClientMap.o RepulsionField.o Menu.o MenuItem.o TextMenuItem.o ArbitraryMenu.o ForceField.o \
-	Weapon.o FreezeGun.o StopGun.o ImpactCannon.o
+	Weapon.o FreezeGun.o StopGun.o ImpactCannon.o Hazard.o
 	#put .o filenames here (DO NOT PUT .cpp!)
 include ../common.mak
 CXXFLAGS += $(CLIENTFLAGS)

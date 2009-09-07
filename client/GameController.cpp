@@ -654,7 +654,7 @@ void GameController::run(int lockfps) {
 		if ((currframe - lastmoveframe) >= (delay/2)) {
 			move_objects((get_ticks() - lastmoveframe) / delay); // scale all position changes to keep game speed constant. 
 			
-			if (m_time_to_unfreeze != 0 && m_total_time_frozen > 100) {
+			if (m_time_to_unfreeze != 0) {
 				m_frozen_status_rect->set_image_width(((m_time_to_unfreeze - get_ticks())/(double)m_total_time_frozen) * FROZEN_STATUS_RECT_WIDTH);
 			}
 			
@@ -933,7 +933,7 @@ void GameController::set_hud_visible(bool visible) {
 	m_health_bar_back->set_invisible(!visible);
 	m_health_text->set_invisible(!visible);
 	
-	if (player->is_frozen() && !player->is_invisible()) {
+	if (player->is_frozen() && !player->is_invisible() && m_total_time_frozen > 100) {
 		m_frozen_status_rect->set_invisible(!visible);
 		m_frozen_status_text->set_invisible(!visible);
 		m_frozen_status_rect_back->set_invisible(!visible);
@@ -2145,6 +2145,8 @@ void GameController::connect_to_server(const IPAddress& server_address, char tea
 		cerr << errmsg.str() << endl;
 		return;
 	}
+
+	update_health_bar(0);
 	
 	PacketWriter join_request(JOIN_PACKET);
 	join_request << m_protocol_number;
