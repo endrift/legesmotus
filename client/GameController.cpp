@@ -654,7 +654,7 @@ void GameController::run(int lockfps) {
 		if ((currframe - lastmoveframe) >= (delay/2)) {
 			move_objects((get_ticks() - lastmoveframe) / delay); // scale all position changes to keep game speed constant. 
 			
-			if (m_time_to_unfreeze != 0) {
+			if (m_time_to_unfreeze != 0 && m_total_time_frozen > 100) {
 				m_frozen_status_rect->set_image_width(((m_time_to_unfreeze - get_ticks())/(double)m_total_time_frozen) * FROZEN_STATUS_RECT_WIDTH);
 			}
 			
