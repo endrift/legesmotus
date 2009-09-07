@@ -1297,9 +1297,13 @@ void GameController::process_mouse_click(SDL_Event event) {
 		if (event.button.button != 1) {
 			return;
 		}
-		m_sound_controller->play_sound("click");
 		
 		string button = m_server_browser->check_button_press(event.button.x, event.button.y);
+		
+		if (button != "") {
+			m_sound_controller->play_sound("click");
+		}
+		
 		if (button == "Back") {
 			// Back.
 			m_game_state = SHOW_MENUS;
@@ -1328,7 +1332,9 @@ void GameController::process_mouse_click(SDL_Event event) {
 		
 		if (selected_item < 0) {
 			return;
-		}		
+		}
+		
+		m_sound_controller->play_sound("click");
 		
 		if (m_last_clicked > get_ticks() - DOUBLE_CLICK_TIME) {
 			connect_to_server(selected_item);
