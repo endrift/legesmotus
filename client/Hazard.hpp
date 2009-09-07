@@ -46,6 +46,7 @@ namespace LM {
 		Graphic*		m_graphic;
 		std::auto_ptr<Shape>	m_bounding_shape;
 
+		char			m_team;			// What team this affects (0 for all players)
 		uint64_t		m_damage;
 		uint64_t		m_freeze_time;
 		bool			m_is_collidable;

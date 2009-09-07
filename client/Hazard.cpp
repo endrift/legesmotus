@@ -25,6 +25,7 @@
 #include "Hazard.hpp"
 #include "common/Player.hpp"
 #include "common/MapReader.hpp"
+#include "common/team.hpp"
 #include "GameController.hpp"
 #include "ClientMap.hpp"
 #include <string>
@@ -35,6 +36,7 @@ using namespace std;
 Hazard::Hazard (Point position) : BaseMapObject(position) {
 	m_graphic = NULL;
 	m_params.priority = 256; // TODO: use enum
+	m_team = 0;
 	m_freeze_time = 5000;
 	m_damage = 0;
 	m_is_collidable = false;
@@ -50,14 +52,16 @@ void	Hazard::collide(GameController& gc, Player& player, Point old_position, dou
 	if (player.is_frozen() && !player.is_invisible()) {
 		// Bounce off the wall
 		player.bounce(angle_of_incidence, 0.9);
-	} else {
+	} else if (!is_valid_team(m_team) || player.get_team() == m_team) {
 		// Deal damage to the player
 		if (!gc.damage(m_damage, NULL)) {
 			// Player was not killed, so freeze the player based on this hazards's effects
 			gc.freeze(m_freeze_time);
 			// Note: we do NOT want to call player.stop(), because we want the player to continue to collide with this obstacle and get damaged
 		}
-
+	} else {
+		// Immune to this hazard
+		player.stop();
 	}
 }
 
@@ -70,7 +74,9 @@ void	Hazard::init (MapReader& reader, ClientMap& map) {
 		string		param_string;
 		reader >> param_string;
 
-		if (param_string == "collidable") {
+		if (strncmp(param_string.c_str(), "team=", 5) == 0) {
+			m_team = parse_team_string(param_string.c_str() + 5);
+		} else if (param_string == "collidable") {
 			m_is_collidable = true;
 		} else if (strncmp(param_string.c_str(), "damage=", 7) == 0) {
 			m_damage = atoi(param_string.c_str() + 7);
@@ -89,7 +95,7 @@ void	Hazard::init (MapReader& reader, ClientMap& map) {
 }
 
 void	Hazard::interact(GameController& gc, Player& player) {
-	if (m_is_collidable || player.is_frozen() || player.is_invisible()) {
+	if (m_is_collidable || player.is_frozen() || player.is_invisible() || is_valid_team(m_team) && player.get_team() != m_team) {
 		return;
 	}
 
