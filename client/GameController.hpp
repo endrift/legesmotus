@@ -168,6 +168,7 @@ namespace LM {
 		uint64_t	m_time_to_unfreeze;
 		uint64_t	m_total_time_frozen;
 		
+		uint64_t	m_round_end_time;
 		uint64_t	m_last_ping_sent;
 		uint32_t	m_current_ping_id;
 		uint64_t	m_ping;
