@@ -30,6 +30,7 @@
 #include "common/Shape.hpp"
 #include <memory>
 #include <string>
+#include <stdint.h>
 
 namespace LM {
 	class Hazard : public BaseMapObject {
@@ -38,6 +39,7 @@ namespace LM {
 		 * TODO:
 		 *  rate of damage
 		 *  real object stick detection, so that you can't jump off immediately to avoid damage
+		 *  hazard areas (i.e. non-collidable hazards)
 		 */
 		std::string		m_graphic_name;
 		MapObjectParams		m_params;
