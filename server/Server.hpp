@@ -220,6 +220,7 @@ namespace LM {
 		bool			waiting_to_spawn() const; // Return true if we're waiting to spawn players
 		uint64_t		time_until_spawn() const; // Time in ms until players should spawn
 		uint64_t		time_since_spawn() const; // Time in ms since players spawned in this game
+		uint64_t		gametime_left() const; // Time in ms remaining in this game
 
 		// For rebalancing teams:
 		void			balance_teams();

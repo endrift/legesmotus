@@ -2675,8 +2675,9 @@ void GameController::game_start(PacketReader& reader) {
 	string 		map_name;
 	int 		map_revision;
 	bool		game_started;
-	uint64_t	timeleft;
-	reader >> map_name >> map_revision >> game_started >> timeleft;
+	uint64_t	time_until_start;
+	uint64_t	time_left_in_game;
+	reader >> map_name >> map_revision >> game_started >> time_until_start >> time_left_in_game;
 
 	send_ack(reader);
 
@@ -2688,18 +2689,18 @@ void GameController::game_start(PacketReader& reader) {
 		if (m_game_state == GAME_OVER) {
 			m_game_state = GAME_IN_PROGRESS;
 		}
-		if (timeleft == numeric_limits<uint64_t>::max()) {
+		if (time_until_start == numeric_limits<uint64_t>::max()) {
 			message << "Game in progress.  You will spawn when the next game starts.";
-		} else if (timeleft/1000 > 0) {
-			message << "Game started! " << timeleft / 1000 << " seconds until spawn.";
+		} else if (time_until_start/1000 > 0) {
+			message << "Game started! " << time_until_start / 1000 << " seconds until spawn.";
 		} else {
 			message << "Game started!";
 		}
 		m_sound_controller->play_sound("begin");
 			
 		toggle_score_overlay(false);
-	} else if (timeleft/1000 > 0) {
-		message << "Game starts in " << timeleft/1000 << " seconds.";
+	} else if (time_until_start/1000 > 0) {
+		message << "Game starts in " << time_until_start/1000 << " seconds.";
 	}
 	
 	if (!message.str().empty()) {
@@ -3091,9 +3092,10 @@ void	GameController::server_info(const IPAddress& server_address, PacketReader& 
 		int		team_count[2];
 		int		max_players;
 		uint64_t	uptime;
+		uint64_t	time_left_in_game;
 		string		server_name;
 		string		server_location;
-		info_packet >> server_protocol_version >> current_map_name >> team_count[0] >> team_count[1] >> max_players >> uptime >> server_name >> server_location;
+		info_packet >> server_protocol_version >> current_map_name >> team_count[0] >> team_count[1] >> max_players >> uptime >> time_left_in_game >> server_name >> server_location;
 		
 		m_ping = get_ticks() - scan_start_time;
 		if (request_packet_id == m_current_ping_id) {

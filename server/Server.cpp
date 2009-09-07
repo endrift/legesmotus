@@ -529,7 +529,7 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 		// Joining a game that hasn't started yet.
 		// Tell the player what map is currently in use, and how much time until the round starts (i.e. players spawn)
 		PacketWriter		game_start_packet(GAME_START_PACKET);
-		game_start_packet << m_current_map.get_name() << m_current_map.get_revision() << 0 << time_until_spawn();
+		game_start_packet << m_current_map.get_name() << m_current_map.get_revision() << 0 << time_until_spawn() << gametime_left();
 		m_ack_manager.add_packet(player_id, game_start_packet);
 		m_network.send_packet(address, game_start_packet);
 
@@ -540,7 +540,7 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 		m_waiting_players.push_back(&new_player);
 		// Tell the player what map is currently in use, and how much time until he spawns
 		PacketWriter		game_start_packet(GAME_START_PACKET);
-		game_start_packet << m_current_map.get_name() << m_current_map.get_revision() << 1 << m_params.late_join_delay;
+		game_start_packet << m_current_map.get_name() << m_current_map.get_revision() << 1 << m_params.late_join_delay << gametime_left();
 		m_ack_manager.add_packet(player_id, game_start_packet);
 		m_network.send_packet(address, game_start_packet);
 
@@ -586,7 +586,7 @@ void	Server::info(const IPAddress& address, PacketReader& request_packet) {
 	request_packet >> client_protocol_version >> scan_id >> scan_start_time;
 
 	PacketWriter	response_packet(INFO_PACKET);
-	response_packet << scan_id << scan_start_time << SERVER_PROTOCOL_VERSION << m_current_map.get_name() << m_team_count[0] << m_team_count[1] << m_params.max_players << get_ticks() << m_server_name << m_server_location;
+	response_packet << scan_id << scan_start_time << SERVER_PROTOCOL_VERSION << m_current_map.get_name() << m_team_count[0] << m_team_count[1] << m_params.max_players << get_ticks() << gametime_left() << m_server_name << m_server_location;
 	m_network.send_packet(address, response_packet);
 }
 
@@ -848,7 +848,7 @@ void	Server::new_game() {
 	m_game_mode->new_game();
 
 	PacketWriter		packet(GAME_START_PACKET);
-	packet << m_current_map.get_name() << m_current_map.get_revision() << 0 << m_params.game_start_delay;
+	packet << m_current_map.get_name() << m_current_map.get_revision() << 0 << m_params.game_start_delay << gametime_left();
 	m_ack_manager.add_broadcast_packet(packet);
 	broadcast_packet(packet);
 
@@ -887,7 +887,7 @@ void	Server::start_game() {
 
 	// Send the game start packet
 	PacketWriter		packet(GAME_START_PACKET);
-	packet << m_current_map.get_name() << m_current_map.get_revision() << 1 << 0;
+	packet << m_current_map.get_name() << m_current_map.get_revision() << 1 << 0 << gametime_left();
 	m_ack_manager.add_broadcast_packet(packet);
 	broadcast_packet(packet);
 }
@@ -1291,4 +1291,9 @@ void	Server::change_score(ServerPlayer& player, int score_change) {
 	// And inform all players of the score update
 	broadcast_score_update(player);
 }
+
+uint64_t	Server::gametime_left() const {
+	return m_params.game_timeout - time_since_spawn();
+}
+
 
