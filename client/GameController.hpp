@@ -331,6 +331,7 @@ namespace LM {
 		bool		wants_restart();
 		void		reset_options();
 		void		change_weapon(const char* name);
+		void		recreate_name(GraphicalPlayer* player);
 		std::string	get_server_address();
 		std::string	format_time_from_millis(uint64_t milliseconds);
 

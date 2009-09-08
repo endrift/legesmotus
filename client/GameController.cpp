@@ -642,6 +642,7 @@ void GameController::run(int lockfps) {
 				update_health_bar();
 			}
 			m_players[m_player_id].set_is_frozen(false);
+			recreate_name(get_player_by_id(m_player_id));
 			if (m_radar->get_mode() == RADAR_ON) {
 				m_radar->set_blip_alpha(m_player_id, 1.0);
 			}
@@ -2328,7 +2329,13 @@ void GameController::player_update(PacketReader& reader) {
 		return;
 	}
 
+	bool wasfrozen = currplayer->is_frozen();
+
 	currplayer->read_update_packet(reader);
+
+	if (wasfrozen != currplayer->is_frozen()) {
+		recreate_name(currplayer);
+	}
 
 	if (player_id == m_player_id) {
 		update_health_bar();
@@ -2917,19 +2924,14 @@ void GameController::name_change(PacketReader& reader) {
 			m_name = new_name;
 		}
 
-		// Re-create the name sprite.
 		if (player->get_team() == 'A') {
 			display_message(msg.str().c_str(), BLUE_COLOR, BLUE_SHADOW);
-			m_text_manager->set_active_color(BLUE_COLOR);
-			m_text_manager->set_shadow_color(BLUE_SHADOW);
 		} else {
 			display_message(msg.str().c_str(), RED_COLOR, RED_SHADOW);
-			m_text_manager->set_active_color(RED_COLOR);
-			m_text_manager->set_shadow_color(RED_SHADOW);
 		}
-		m_text_manager->remove_string(player->get_name_sprite());
-		player->set_name_sprite(m_text_manager->place_string(player->get_name(), player->get_x(), player->get_y()-(player->get_radius()+30), TextManager::CENTER, TextManager::LAYER_MAIN));
-		m_text_manager->set_shadow_color(TEXT_SHADOW);
+
+		// Re-create the name sprite.
+		recreate_name(player);
 		update_individual_scores();
 	}
 }
@@ -3012,6 +3014,30 @@ void GameController::send_name_change_packet(const char* new_name) {
 	PacketWriter packet(NAME_CHANGE_PACKET);
 	packet << m_player_id << new_name;
 	m_network.send_packet(packet);
+}
+
+/*
+ * Recreate the player name sprite.
+ */
+void GameController::recreate_name(GraphicalPlayer* player) {
+	// Re-create the name sprite.
+	if (player->get_team() == 'A') {
+		m_text_manager->set_active_color(BLUE_COLOR);
+		m_text_manager->set_shadow_color(BLUE_SHADOW);
+	} else {
+		m_text_manager->set_active_color(RED_COLOR);
+		m_text_manager->set_shadow_color(RED_SHADOW);
+	}
+	m_text_manager->remove_string(player->get_name_sprite());
+	m_text_manager->set_active_font(m_font);
+	string name_string = player->get_name();
+	if (player->is_frozen()) {
+		m_font->set_font_style(false, true);
+		name_string = "[" + name_string + "]";
+	}
+	player->set_name_sprite(m_text_manager->place_string(name_string, player->get_x(), player->get_y()-(player->get_radius()+30), TextManager::CENTER, TextManager::LAYER_MAIN));
+	m_font->set_font_style(false, false);		
+	m_text_manager->set_shadow_color(TEXT_SHADOW);
 }
 
 /*
@@ -3408,17 +3434,20 @@ double	GameController::get_crosshairs_angle() const {
 }
 
 void	GameController::freeze(uint64_t time_to_unfreeze) {
-	if (!m_players[m_player_id].is_frozen() && time_to_unfreeze != 0) {
-		m_frozen_status_rect->set_y(m_screen_height/2 + m_players[m_player_id].get_radius() + 15);
-		m_frozen_status_rect_back->set_y(m_frozen_status_rect->get_y());
-		m_frozen_status_text->set_y(m_frozen_status_rect->get_y());
-		m_sound_controller->play_sound("freeze");
-		m_players[m_player_id].set_is_frozen(true);
-		if (m_radar->get_mode() == RADAR_ON) {
-			m_radar->set_blip_alpha(m_player_id, 0.5);
+	if (GraphicalPlayer* player = get_player_by_id(m_player_id)) {
+		if (!player->is_frozen() && time_to_unfreeze != 0) {
+			m_frozen_status_rect->set_y(m_screen_height/2 + player->get_radius() + 15);
+			m_frozen_status_rect_back->set_y(m_frozen_status_rect->get_y());
+			m_frozen_status_text->set_y(m_frozen_status_rect->get_y());
+			m_sound_controller->play_sound("freeze");
+			player->set_is_frozen(true);
+			if (m_radar->get_mode() == RADAR_ON) {
+				m_radar->set_blip_alpha(m_player_id, 0.5);
+			}
+			recreate_name(player);
+			m_time_to_unfreeze = get_ticks() + time_to_unfreeze;
+			m_total_time_frozen = time_to_unfreeze;
 		}
-		m_time_to_unfreeze = get_ticks() + time_to_unfreeze;
-		m_total_time_frozen = time_to_unfreeze;
 	}
 }
 
