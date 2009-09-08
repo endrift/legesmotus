@@ -60,6 +60,11 @@ endif
 ifeq ($(MACHINE),Darwin)
 ifneq ($(UNIVERSAL),)
 CFLAGS += -arch ppc -arch i386
+else
+# Test for Snow Leopard
+ifeq ($(shell test `uname -r | cut -f 1 -d .` -ge 10 && echo 1),1) 
+CFLAGS += -arch i386
+endif
 endif
 FLAGS_GL = -FOpenGL
 LIBS_GL = -framework OpenGL
