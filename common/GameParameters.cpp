@@ -49,8 +49,7 @@ void 	GameParameters::reset() {
 	game_start_delay = 5000;
 	late_join_delay = 5000;
 	team_change_period = 30000; // 30 seconds
-	firing_recoil = 1.5;
-	firing_delay = 700;
+	autobalance_teams = false;
 }
 
 void	GameParameters::init_from_config(const ConfigManager& config) {
@@ -68,8 +67,7 @@ void	GameParameters::init_from_config(const ConfigManager& config) {
 	if (config.has("game_start_delay"))	game_start_delay = config.get<uint64_t>("game_start_delay");
 	if (config.has("late_join_delay"))	late_join_delay = config.get<uint64_t>("late_join_delay");
 	if (config.has("team_change_period"))	team_change_period = config.get<uint64_t>("team_change_period");
-	if (config.has("firing_recoil"))	firing_recoil = config.get<double>("firing_recoil");
-	if (config.has("firing_delay"))		firing_delay = config.get<uint64_t>("firing_delay");
+	if (config.has("autobalance"))		autobalance_teams = config.get<bool>("autobalance");
 }
 
 void	GameParameters::process_param_packet(PacketReader& packet) {
@@ -82,10 +80,6 @@ void	GameParameters::process_param_packet(PacketReader& packet) {
 		packet >> radar_scale;
 	} else if (param_name == "radar_blip_duration") {
 		packet >> radar_blip_duration;
-	} else if (param_name == "firing_recoil") {
-		packet >> firing_recoil;
-	} else if (param_name == "firing_delay") {
-		packet >> firing_delay;
 	}
 }
 

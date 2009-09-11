@@ -68,7 +68,6 @@ Server::Server (ServerConfig& config, PathManager& path_manager) : m_config(conf
 
 	m_team_count[0] = m_team_count[1] = 0;
 	m_team_score[0] = m_team_score[1] = 0;
-	m_autobalance_teams = false;
 }
 
 void	Server::ack(const IPAddress& /*address*/, PacketReader& ack_packet) {
@@ -168,7 +167,7 @@ void	Server::team_change(const IPAddress& address, PacketReader& packet)
 	}
 
 	// If team autobalancing is enabled, make sure this team change won't upset the balance
-	if (m_autobalance_teams && get_team_count(new_team) >= get_team_count(player->get_team())) {
+	if (m_params.autobalance_teams && get_team_count(new_team) >= get_team_count(player->get_team())) {
 		// TODO: use a REJECT packet instead of sending a system message
 		send_system_message(*player, "You may not change teams right now because it would cause an imbalance.");
 		return;
@@ -473,7 +472,7 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 
 	if (!m_game_mode->is_team_play()) {
 		team = 'A';
-	} else if (m_autobalance_teams || !is_valid_team(team)) {
+	} else if (m_params.autobalance_teams || !is_valid_team(team)) {
 		// Assign to team equitably.
 		if (m_team_count[0] < m_team_count[1]) {
 			team = 'A';
@@ -660,7 +659,7 @@ void	Server::remove_player(ServerPlayer& player, const char* leave_message) {
 	m_players.erase(player_id);
 
 	// Rebalance the teams, if autobalance is on
-	if (m_autobalance_teams) {
+	if (m_params.autobalance_teams) {
 		balance_teams();
 	}
 }
@@ -701,8 +700,6 @@ void	Server::start()
 
 	m_server_name = m_config.get<string>("server_name");
 	m_server_location = m_config.get<string>("server_location");
-
-	m_autobalance_teams = m_config.get<bool>("autobalance");
 
 	m_register_with_metaserver = m_config.get<bool>("register_server");
 
@@ -1171,8 +1168,6 @@ void	Server::broadcast_params(const ServerPlayer* player) {
 	broadcast_param(player, "radar_mode", m_params.radar_mode);
 	broadcast_param(player, "radar_scale", m_params.radar_scale);
 	broadcast_param(player, "radar_blip_duration", m_params.radar_blip_duration);
-	broadcast_param(player, "firing_recoil", m_params.firing_recoil);
-	broadcast_param(player, "firing_delay", m_params.firing_delay);
 }
 
 void	Server::hole_punch_packet(const IPAddress& address, PacketReader& packet) {

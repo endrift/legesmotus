@@ -64,8 +64,7 @@ namespace LM {
 		uint64_t	game_start_delay;
 		uint64_t	late_join_delay;
 		uint64_t	team_change_period;
-		double		firing_recoil;
-		uint64_t	firing_delay;		// minimum time between shots
+		bool		autobalance_teams;
 
 		GameParameters() { reset(); }
 

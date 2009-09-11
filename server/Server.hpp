@@ -102,7 +102,6 @@ namespace LM {
 		ServerPlayer::Queue	m_timeout_queue;	// A list of players in the order in which they will timeout
 		int			m_team_count[2];	// [0] = # of players on team A  [1] == # of players on team B
 		int			m_team_score[2];	// [0] = team A's score  [1] = team B's score
-		bool			m_autobalance_teams;
 	
 	
 		//

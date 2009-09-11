@@ -69,7 +69,7 @@ Display the number of players on each team.
 Display a list of maps available on the server.
 .TP 
 \fB/server balance\fR
-Balance the teams by reassigning players as necessary.  (See also the \fBautobalance\fR configuration option below.)  [op]
+Balance the teams by reassigning players as necessary.  (See also the \fBautobalance\fR game parameter below.)  [op]
 .TP 
 \fB/server shakeup\fR
 Randomly reform the teams.  [op]
@@ -121,9 +121,6 @@ Set the human\-readable server name to <\fIname\fP>.  If set, appears in the ser
 \fBserver_location <\fIlocation\fP>\fR
 Set the human\-readable geographic location of the server to <\fIlocation\fP>.  Not presently used, but in the future will appear in the server browser.
 .TP 
-\fBautobalance [\fI yes \fP|\fI no \fP]\fR
-Specifies whether to enforce balanced teams.  When enabled, players are not permitted to switch teams if it would cause an imbalance, and when imbalances are caused by player departures, random players are switched until the teams are balanced.  (default: disabled)
-.TP 
 \fBregister_server [\fI yes \fP|\fI no \fP]\fR
 Specifies whether to register the server with the global meta server.  When enabled, the server will appear in the server browsers of Internet players.  When disabled, the server will only appear in the server browsers of LAN users.  (default: enabled)
 .SH "GAME PARAMETERS"
@@ -165,11 +162,8 @@ The time which a player who joins mid-game must wait before spawning.  (default:
 \fBteam_change_period <\fItime\fP>\fR
 The minimum time that a player must wait after switching teams before being allowed to switch again.  (default: 30000 ms)
 .TP 
-\fBfiring_recoil <\fIdecimal\fP>\fR
-The affect on a player's velocity when firing his gun.  (default: 1.5)
-.TP 
-\fBfiring_delay <\fItime\fP>\fR
-The minimum time permitted between gunfire.  (default: 700 ms)
+\fBautobalance [\fI yes \fP|\fI no \fP]\fR
+Specifies whether to enforce balanced teams.  When enabled, players are not permitted to switch teams if it would cause an imbalance, and when imbalances are caused by player departures, random players are switched until the teams are balanced.  (default: disabled)
 .SH "NOTES"
 .LP 
 If no operator password is set, then any player connecting from the localhost (127.0.0.1) will be given operator status.  If this is undesirable behavior, then be sure to set an operator password.

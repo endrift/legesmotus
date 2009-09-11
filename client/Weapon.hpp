@@ -33,6 +33,7 @@ namespace LM {
 	class Player;
 	class PacketReader;
 
+	// TODO: need proper graphics support, a la MapObjectParams
 	class Weapon {
 	private:
 		std::string		m_name;
