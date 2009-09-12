@@ -44,6 +44,7 @@ namespace LM {
 	public:
 		Weapon();
 		explicit Weapon(const char* name);
+		virtual ~Weapon() { }
 
 		const char*		get_name() { return m_name.c_str(); }
 
