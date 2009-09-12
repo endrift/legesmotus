@@ -29,7 +29,7 @@ using namespace std;
 
 
 bool compare_spawnpoint::operator()(const Spawnpoint* a, const Spawnpoint* b) const {
-	return a->utilization < b->utilization;
+	return a->m_utilization < b->m_utilization;
 }
 
 void	SpawnpointSet::clear() {
@@ -45,34 +45,33 @@ void	SpawnpointSet::reset() {
 	while (it != end()) {
 		Spawnpoint*	p = *it;
 		erase(it++);
-		p->utilization = 0;
-		p->it = new_set.insert(p);
+		p->m_utilization = 0;
+		p->m_it = new_set.insert(p);
 	}
 	// Then swap in the new set.
 	swap(new_set);
 }
 
-void	SpawnpointSet::add(Point pt) {
+void	SpawnpointSet::add(const Spawnpoint& pt) {
 	Spawnpoint* sp = new Spawnpoint(pt);
-	sp->it = insert(sp);
+	sp->m_it = insert(sp);
 }
 
 const Spawnpoint*	SpawnpointSet::acquire() {
 	Spawnpoint* p = *begin();
 	erase(begin());
-	++p->utilization;
-	p->it = insert(p);
+	++p->m_utilization;
+	p->m_it = insert(p);
 	return p;
 }
 
 void	SpawnpointSet::release(const Spawnpoint* cp) {
-	Spawnpoint* p = *cp->it;
-	erase(p->it);
-	--p->utilization;
-	p->it = insert(p);
+	Spawnpoint* p = *cp->m_it;
+	erase(p->m_it);
+	--p->m_utilization;
+	p->m_it = insert(p);
 }
 
-Spawnpoint::Spawnpoint(Point p) : point(p) {
-	utilization = 0;
+Spawnpoint::Spawnpoint(Point point, Vector velocity, bool is_grabbing_obstacle) : m_point(point), m_initial_velocity(velocity), m_is_grabbing_obstacle(is_grabbing_obstacle) {
+	m_utilization = 0;
 }
-

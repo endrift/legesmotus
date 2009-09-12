@@ -45,6 +45,7 @@ namespace LM {
 		char			m_team;
 		bool			m_affects_frozen;
 		bool			m_affects_thawed;
+		bool			m_sucks_off_obstacles;	// affects even players who are grabbing obstacles
 
 		// What it does
 		Vector			m_force;	// i.e. acceleration

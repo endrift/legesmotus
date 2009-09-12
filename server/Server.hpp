@@ -175,7 +175,7 @@ namespace LM {
 		// Send a packet to spawn a player at specified point
 		// If is_alive is true, the player will be un-frozen and visible.
 		// If is_alive is false, the player will be frozen and invisible.
-		void			send_spawn_packet(ServerPlayer& player, Point spawnpoint, bool is_alive);
+		void			send_spawn_packet(ServerPlayer& player, const Spawnpoint* spawnpoint, bool is_alive);
 	
 		// Server command support
 		void			broadcast_system_message(const char* message);

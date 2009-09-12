@@ -49,6 +49,7 @@ Player::Player() {
 	m_gun_rotation = 0;
 	m_is_invisible = true;
 	m_is_frozen = true;
+	m_is_grabbing_obstacle = false;
 }
 
 Player::Player(const char* name, uint32_t id, char team, double x, double y, double xvel, double yvel, double rotation) : m_name(name) {
@@ -65,6 +66,7 @@ Player::Player(const char* name, uint32_t id, char team, double x, double y, dou
 	m_gun_rotation = 0;
 	m_is_invisible = true;
 	m_is_frozen = true;
+	m_is_grabbing_obstacle = false;
 }
 
 Player::~Player() {
@@ -199,8 +201,9 @@ void Player::set_is_frozen(bool is_frozen) {
 void Player::write_update_packet (PacketWriter& packet) const {
 	string	flags;
 	
-	if (is_invisible())	{ flags.push_back('I'); }
-	if (is_frozen())	{ flags.push_back('F'); }
+	if (is_invisible())		{ flags.push_back('I'); }
+	if (is_frozen())		{ flags.push_back('F'); }
+	if (is_grabbing_obstacle())	{ flags.push_back('G'); }
 
 	packet << get_id() << get_x() << get_y() << get_x_vel() << get_y_vel() << get_rotation_degrees() << get_health() << flags;
 }
@@ -223,5 +226,10 @@ void Player::read_update_packet (PacketReader& packet) {
 	set_health(health);
 	set_is_invisible(flags.find_first_of('I') != string::npos);
 	set_is_frozen(flags.find_first_of('F') != string::npos);
+	set_is_grabbing_obstacle(flags.find_first_of('G') != string::npos);
+}
+
+void Player::set_is_grabbing_obstacle(bool x) {
+	m_is_grabbing_obstacle = x;
 }
 

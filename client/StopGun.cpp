@@ -55,8 +55,7 @@ void	StopGun::fire(Player& player, GameController& gc, Point startpos, double di
 	}
 
 	// Cause recoil if the player is not hanging onto a wall.
-	// XXX: This is bad test to see if a player's hanging onto a wall, since a player could be hovering in mid-space with no velocity.  In fact, that would be really bad, because then the player couldn't use recoil to get moving again.  We'll probably need to keep a flag in the Player class that specifies whether the player is hanging onto a wall or not. (-- andrew)
-	if (player.get_x_vel() != 0 || player.get_y_vel() != 0) {
+	if (!player.is_grabbing_obstacle()) {
 		player.set_velocity(player.get_velocity() - Vector::make_from_magnitude(m_recoil, direction));
 	}
 
@@ -128,7 +127,7 @@ void	StopGun::hit(Player& shot_player, Player& shooting_player, bool has_effect,
 		gc.damage(m_damage, &shooting_player);
 
 		// Set velocity to 0
-		shot_player.set_velocity(Vector(0.0001, 0.0001)); // XXX: Hack until we have proper stuck to wall detection
+		shot_player.set_velocity(Vector(0, 0));
 	}
 }
 

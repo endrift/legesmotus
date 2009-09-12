@@ -41,7 +41,7 @@ namespace LM {
 		~SpawnpointSet() { clear(); }
 		void			clear();
 		void			reset();
-		void			add(Point p);
+		void			add(const Spawnpoint& p);
 		const Spawnpoint*	acquire();
 		void			release(const Spawnpoint*);
 
@@ -53,16 +53,21 @@ namespace LM {
 
 	class Spawnpoint {
 	private:
-		SpawnpointSet::iterator	it;
-		Point			point;
-		int			utilization;
+		Point			m_point;
+		Vector			m_initial_velocity;
+		bool			m_is_grabbing_obstacle;
 
-		explicit Spawnpoint(Point p);
+		SpawnpointSet::iterator	m_it;
+		int			m_utilization;
 
 		friend class SpawnpointSet;
 		friend class compare_spawnpoint;
 	public:
-		Point			get_point() const { return point; }
+		Spawnpoint(Point point, Vector velocity, bool is_grabbing_obstacle);
+
+		Point			get_point() const { return m_point; }
+		Vector			get_initial_velocity() const { return m_initial_velocity; }
+		bool			is_grabbing_obstacle () const { return m_is_grabbing_obstacle; }
 	};
 
 	

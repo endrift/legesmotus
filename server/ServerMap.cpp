@@ -80,9 +80,21 @@ void	ServerMap::add_object(MapReader& object_data) {
 		string		team_string;
 		object_data >> point >> team_string;
 
+		Vector		initial_velocity;
+		bool		is_grabbing_obstacle = true;
+		while (object_data.has_more()) {
+			string		param_string;
+			object_data >> param_string;
+
+			if (param_string == "notgrabbing")
+				is_grabbing_obstacle = false;
+			else if (strncmp(param_string.c_str(), "velocity=", 9) == 0)
+				initial_velocity = Vector::make_from_string(param_string.c_str() + 9);
+		}
+
 		char		team = parse_team_string(team_string.c_str());
 		if (is_valid_team(team)) {
-			m_spawnpoints[team - 'A'].add(point);
+			m_spawnpoints[team - 'A'].add(Spawnpoint(point, initial_velocity, is_grabbing_obstacle));
 		}
 	}
 }

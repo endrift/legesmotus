@@ -262,7 +262,6 @@ namespace LM {
 		GraphicalPlayer* get_player_by_name(const char* name);
 		void		send_my_player_update();
 		void		attempt_jump();
-		void		jump(Vector new_velocity, double new_rotation);
 	
 		// Scan a particular server:
 		void		scan_server(const IPAddress& server_address);

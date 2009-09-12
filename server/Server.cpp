@@ -204,7 +204,7 @@ void	Server::change_team(ServerPlayer& player, char new_team, bool respawn_playe
 			spawn_player(player);
 		} else {
 			// Hide and freeze the player
-			send_spawn_packet(player, Point(0, 0), false);
+			send_spawn_packet(player, NULL, false);
 
 			// Add them to the waiting to spawn list
 			player.reset_join_time();
@@ -899,7 +899,7 @@ void	Server::spawn_waiting_players() {
 bool	Server::spawn_player(ServerPlayer& player) {
 	if (const Spawnpoint* point = m_current_map.next_spawnpoint(player.get_team())) {
 		player.set_spawnpoint(point);
-		send_spawn_packet(player, point->get_point(), true);
+		send_spawn_packet(player, point, true);
 		return true;
 	} else {
 		// Oh noes! No place to spawn this player.
@@ -1093,9 +1093,16 @@ void	Server::ServerAckManager::add_broadcast_packet(const PacketWriter& packet) 
 	AckManager::add_broadcast_packet(player_ids, packet);
 }
 
-void	Server::send_spawn_packet(ServerPlayer& player, Point spawnpoint, bool is_alive) {
-	player.set_position(spawnpoint.x, spawnpoint.y);
-	player.set_velocity(0, 0);
+void	Server::send_spawn_packet(ServerPlayer& player, const Spawnpoint* spawnpoint, bool is_alive) {
+	if (spawnpoint) {
+		player.set_position(spawnpoint->get_point());
+		player.set_velocity(spawnpoint->get_initial_velocity());
+		player.set_is_grabbing_obstacle(spawnpoint->is_grabbing_obstacle());
+	} else {
+		player.set_position(0, 0);
+		player.set_velocity(0, 0);
+		player.set_is_grabbing_obstacle(false);
+	}
 	player.set_rotation_degrees(0);
 	player.set_is_frozen(!is_alive);
 	player.set_is_invisible(!is_alive);

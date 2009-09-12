@@ -47,6 +47,7 @@ void	Obstacle::collide(GameController& gc, Player& player, Point old_position, d
 	} else {
 		// Stop moving
 		player.stop();
+		player.set_is_grabbing_obstacle(true);
 
 		// Rotate to a good orientation:
 		//gc.rotate_towards_angle(angle_of_incidence, GameController::ROTATION_ADJUST_SPEED);

@@ -53,6 +53,8 @@ void	Hazard::collide(GameController& gc, Player& player, Point old_position, dou
 		// Bounce off the wall
 		player.bounce(angle_of_incidence, 0.9);
 	} else if (!is_valid_team(m_team) || player.get_team() == m_team) {
+		player.set_is_grabbing_obstacle(true);
+
 		// Deal damage to the player
 		if (!gc.damage(m_damage, NULL)) {
 			// Player was not killed, so freeze the player based on this hazards's effects
@@ -62,6 +64,7 @@ void	Hazard::collide(GameController& gc, Player& player, Point old_position, dou
 	} else {
 		// Immune to this hazard
 		player.stop();
+		player.set_is_grabbing_obstacle(true);
 	}
 }
 

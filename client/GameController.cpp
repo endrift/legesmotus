@@ -1555,6 +1555,7 @@ void GameController::move_objects(float timescale) {
 			player.bounce(0, 0.9);
 		} else {
 			player.stop();
+			player.set_is_grabbing_obstacle(true);
 			// Rotate to a good orientation:
 			//rotate_towards_angle(0, ROTATION_ADJUST_SPEED);
 		}
@@ -1565,6 +1566,7 @@ void GameController::move_objects(float timescale) {
 			player.bounce(180, 0.9);
 		} else {
 			player.stop();
+			player.set_is_grabbing_obstacle(true);
 			// Rotate to a good orientation:
 			//rotate_towards_angle(180, ROTATION_ADJUST_SPEED);
 		}
@@ -1577,6 +1579,7 @@ void GameController::move_objects(float timescale) {
 			player.bounce(90, 0.9);
 		} else {
 			player.stop();
+			player.set_is_grabbing_obstacle(true);
 			// Rotate to a good orientation:
 			//rotate_towards_angle(90, ROTATION_ADJUST_SPEED);
 		}
@@ -1587,6 +1590,7 @@ void GameController::move_objects(float timescale) {
 			player.bounce(270, 0.9);
 		} else {
 			player.stop();
+			player.set_is_grabbing_obstacle(true);
 			// Rotate to a good orientation:
 			//rotate_towards_angle(270, ROTATION_ADJUST_SPEED);
 		}
@@ -1696,55 +1700,25 @@ void GameController::attempt_jump() {
 
 	GraphicalPlayer& player = m_players[m_player_id];
 	
-	if (player.is_frozen() || player.is_invisible()) {
+	//
+	// Make sure the player is able to jump right now
+	//
+	if (player.is_frozen() || player.is_invisible() || !player.is_grabbing_obstacle()) {
 		return;
 	}
 	
-	// The new velocities
+	//
+	// Calculate the new velocities
+	//
 	Vector	new_velocity(Vector::make_from_magnitude(6.0, get_crosshairs_angle()));
 	double	new_rotation = (((double)rand() / ((double)(RAND_MAX)+1)) - 0.5) * RANDOM_ROTATION_SCALE;
-	
-	// Check if we're next to the side of the map.
-	double half_width = player.get_radius();
-	double half_height = player.get_radius();
-
-	if (player.get_x() - half_width <= 5) {
-		jump(new_velocity, new_rotation);
-	} else if (player.get_x() + half_width >= m_map_width - 5) {
-		jump(new_velocity, new_rotation);
-	}
-	
-	if (player.get_y() - half_height <= 5) {
-		jump(new_velocity, new_rotation);
-	} else if (player.get_y() + half_height >= m_map_height - 5) {
-		jump(new_velocity, new_rotation);
-	}
-
-	// Check if we're near any obstacles.
-	Circle	player_circle(player.get_position(), player.get_radius()+5);
-	const list<BaseMapObject*>& map_objects(m_map->get_objects());
-	for (list<BaseMapObject*>::const_iterator it(map_objects.begin()); it != map_objects.end(); it++) {
-		BaseMapObject*	map_obj = *it;
-
-		if (!map_obj->is_jumpable() || !map_obj->is_intersectable()) {
-			continue;
-		}
-
-		if (map_obj->get_bounding_shape()->boundary_intersects_circle(player_circle, NULL) != -1) {
-			jump(new_velocity, new_rotation);
-		}
-	}
-}
-
-
-void GameController::jump(Vector new_velocity, double new_rotation) {
-	GraphicalPlayer& player = m_players[m_player_id];
 
 	//
 	// Set the player in motion
 	//
 	player.set_velocity(new_velocity);
 	player.set_rotational_vel(new_rotation);
+	player.set_is_grabbing_obstacle(false);
 	m_transition_manager.remove_transition(m_transition_manager.get_transition("player_rotation"));
 
 	//
@@ -2792,6 +2766,7 @@ void GameController::game_stop(PacketReader& reader) {
 	m_players[m_player_id].set_is_invisible(true);
 	m_radar->set_blip_invisible(m_player_id,true);
 	m_players[m_player_id].set_is_frozen(true);
+	m_players[m_player_id].set_is_grabbing_obstacle(false);
 	m_time_to_unfreeze = 0;
 	m_total_time_frozen = 0;
 	update_health_bar(0);
@@ -3441,6 +3416,7 @@ void	GameController::freeze(uint64_t time_to_unfreeze) {
 			m_frozen_status_text->set_y(m_frozen_status_rect->get_y());
 			m_sound_controller->play_sound("freeze");
 			player->set_is_frozen(true);
+			player->set_is_grabbing_obstacle(false);
 			if (m_radar->get_mode() == RADAR_ON) {
 				m_radar->set_blip_alpha(m_player_id, 0.5);
 			}
