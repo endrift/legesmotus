@@ -31,6 +31,7 @@
 #include "GameController.hpp"
 #include "ClientMap.hpp"
 #include <string>
+#include <stdlib.h>
 
 using namespace LM;
 using namespace std;
@@ -60,7 +61,7 @@ void	Hazard::collide(GameController& gc, Player& player, Point old_position, dou
 	if (player.is_frozen() && !player.is_invisible()) {
 		// Bounce off the wall
 		player.bounce(angle_of_incidence, 0.9);
-	} else {
+	} else if (!player.is_dead()) {
 		m_angle_of_incidence = angle_of_incidence;
 		if (!is_valid_team(m_team) || player.get_team() == m_team) {
 			// Deal collision damage
@@ -123,7 +124,7 @@ void	Hazard::init (MapReader& reader, ClientMap& map) {
 }
 
 void	Hazard::interact(GameController& gc, Player& player) {
-	if (player.is_frozen() || player.is_invisible() || is_valid_team(m_team) && player.get_team() != m_team) {
+	if (player.is_dead() || player.is_frozen() || player.is_invisible() || is_valid_team(m_team) && player.get_team() != m_team) {
 		m_last_damage_time = 0;
 		return;
 	}

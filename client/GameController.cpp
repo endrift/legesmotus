@@ -3466,7 +3466,7 @@ void	GameController::activate_radar_blip(const Player& player) {
 }
 
 bool	GameController::damage (int amount, const Player* aggressor) {
-	if (amount == 0 || m_players[m_player_id].is_frozen()) {
+	if (amount == 0 || m_players.empty() || m_players[m_player_id].is_frozen() || m_players[m_player_id].is_dead()) {
 		// No effect on already frozen players
 		return false;
 	}
