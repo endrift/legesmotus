@@ -26,6 +26,8 @@
 #include "common/Player.hpp"
 #include "common/MapReader.hpp"
 #include "common/team.hpp"
+#include "common/math.hpp"
+#include "common/timer.hpp"
 #include "GameController.hpp"
 #include "ClientMap.hpp"
 #include <string>
@@ -37,9 +39,15 @@ Hazard::Hazard (Point position) : BaseMapObject(position) {
 	m_graphic = NULL;
 	m_params.priority = 256; // TODO: use enum
 	m_team = 0;
-	m_freeze_time = 5000;
 	m_damage = 0;
+	m_damage_rate = 100;
 	m_is_collidable = false;
+	m_collision_damage = 0;
+	m_freeze_time = 0;
+	m_repel_velocity = 1.0;
+
+	m_last_damage_time = 0;
+	m_angle_of_incidence = 0.0;
 }
 
 void	Hazard::collide(GameController& gc, Player& player, Point old_position, double angle_of_incidence) {
@@ -52,17 +60,28 @@ void	Hazard::collide(GameController& gc, Player& player, Point old_position, dou
 	if (player.is_frozen() && !player.is_invisible()) {
 		// Bounce off the wall
 		player.bounce(angle_of_incidence, 0.9);
-	} else if (!is_valid_team(m_team) || player.get_team() == m_team) {
-		player.set_is_grabbing_obstacle(true);
-
-		// Deal damage to the player
-		if (!gc.damage(m_damage, NULL)) {
-			// Player was not killed, so freeze the player based on this hazards's effects
-			gc.freeze(m_freeze_time);
-			// Note: we do NOT want to call player.stop(), because we want the player to continue to collide with this obstacle and get damaged
-		}
 	} else {
-		// Immune to this hazard
+		m_angle_of_incidence = angle_of_incidence;
+		if (!is_valid_team(m_team) || player.get_team() == m_team) {
+			// Deal collision damage
+			if (!gc.damage(m_collision_damage, NULL)) {
+				// Player not killed by collision damage
+				if (m_freeze_time) {
+					// Freeze player based on this hazard's effects
+					player.bounce(angle_of_incidence, 0.9); // Bounce off since we're frozen now
+					gc.freeze(m_freeze_time);
+					return; // Return now, so we don't land on the obstacle
+				} else if (m_collision_damage) {
+					// Remember that some damage has already been dealt
+					m_last_damage_time = get_ticks();
+				}
+			} else {
+				// Player killed
+				repel_player(player);
+			}
+		}
+
+		// Land on obstacle
 		player.stop();
 		player.set_is_grabbing_obstacle(true);
 	}
@@ -81,10 +100,16 @@ void	Hazard::init (MapReader& reader, ClientMap& map) {
 			m_team = parse_team_string(param_string.c_str() + 5);
 		} else if (param_string == "collidable") {
 			m_is_collidable = true;
+		} else if (strncmp(param_string.c_str(), "collision_damage=", 17) == 0) {
+			m_collision_damage = atoi(param_string.c_str() + 17);
 		} else if (strncmp(param_string.c_str(), "damage=", 7) == 0) {
 			m_damage = atoi(param_string.c_str() + 7);
+		} else if (strncmp(param_string.c_str(), "rate=", 5) == 0) {
+			m_damage_rate = atol(param_string.c_str() + 5);
 		} else if (strncmp(param_string.c_str(), "freeze=", 7) == 0) {
 			m_freeze_time = atol(param_string.c_str() + 7);
+		} else if (strncmp(param_string.c_str(), "repel=", 6) == 0) {
+			m_repel_velocity = atof(param_string.c_str() + 6);
 		} else {
 			m_params.parse(param_string.c_str());
 		}
@@ -98,14 +123,48 @@ void	Hazard::init (MapReader& reader, ClientMap& map) {
 }
 
 void	Hazard::interact(GameController& gc, Player& player) {
-	if (m_is_collidable || player.is_frozen() || player.is_invisible() || is_valid_team(m_team) && player.get_team() != m_team) {
+	if (player.is_frozen() || player.is_invisible() || is_valid_team(m_team) && player.get_team() != m_team) {
+		m_last_damage_time = 0;
 		return;
 	}
 
+	if (m_is_collidable) {
+		player.set_is_grabbing_obstacle(true);
+	}
+
+	// Figure out how much damage to give the player, based on the time elapsed since the last damage was dealt
+	int			damage = 0;
+
+	if (m_last_damage_time) {
+		uint64_t	now = get_ticks();
+		uint64_t	time_elapsed = now - m_last_damage_time;
+		damage = m_damage * (time_elapsed / m_damage_rate);
+		m_last_damage_time = now - time_elapsed % m_damage_rate;
+	} else {
+		damage = m_damage;
+		m_last_damage_time = get_ticks();
+	}
+
 	// Deal damage to the player
-	if (!gc.damage(m_damage, NULL)) {
-		// Player was not killed, so freeze the player based on this hazards's effects
-		gc.freeze(m_freeze_time);
+	if (gc.damage(damage, NULL)) {
+		// Player killed
+		m_last_damage_time = 0;
+		if (m_is_collidable) {
+			repel_player(player);
+		}
+	}
+}
+
+void	Hazard::disengage(GameController& gc, Player& player) {
+	m_last_damage_time = 0;
+}
+
+void	Hazard::repel_player(Player& player) {
+	if (m_repel_velocity) {
+		double	new_angle = get_normalized_angle(180 - m_angle_of_incidence + (((double)rand() / ((double)(RAND_MAX)+1)) - 0.5) * 180.0);
+		Vector	new_velocity(Vector::make_from_magnitude(m_repel_velocity, new_angle));
+		player.set_velocity(new_velocity);
+		player.set_is_grabbing_obstacle(false);
 	}
 }
 

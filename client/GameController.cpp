@@ -1623,7 +1623,7 @@ void GameController::move_objects(float timescale) {
 		}
 
 		if (newdist != -1) {
-			// We are intesecting with the object
+			// We are intersecting with the object
 
 			if (thisobj->is_collidable()) {
 				double olddist = shape.boundary_intersects_circle(old_player_circle, NULL);

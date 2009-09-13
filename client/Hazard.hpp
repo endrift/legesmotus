@@ -35,19 +35,23 @@
 namespace LM {
 	class Hazard : public BaseMapObject {
 	private:
-		/*
-		 * TODO:
-		 *  rate of damage
-		 */
 		std::string		m_graphic_name;
 		MapObjectParams		m_params;
 		Graphic*		m_graphic;
 		std::auto_ptr<Shape>	m_bounding_shape;
 
 		char			m_team;			// What team this affects (0 for all players)
-		uint64_t		m_damage;
-		uint64_t		m_freeze_time;
-		bool			m_is_collidable;
+		int			m_damage;		// Damage when player interacts with object
+		uint64_t		m_damage_rate;		// How often damage is applied (when interacting)
+		bool			m_is_collidable;	// Can player collide with this hazard?  If false, then it's a hazard *area*
+		int			m_collision_damage;	// Damage when player collides with obstacle
+		uint64_t		m_freeze_time;		// How long you're frozen for (only when colliding)
+		double			m_repel_velocity;	// The magnitude of velocity at which killed player should be pushed away
+
+		uint64_t		m_last_damage_time;	// 0 if not engaged
+		double			m_angle_of_incidence;	// Angle of incidence of the surface we landed on (used for repelling players)
+
+		void			repel_player(Player&);
 
 	public:
 		explicit Hazard (Point pos);
@@ -58,12 +62,12 @@ namespace LM {
 		virtual bool	is_jumpable () const { return m_is_collidable; }
 		virtual bool	is_shootable () const { return m_is_collidable; }
 		virtual bool	is_collidable () const { return m_is_collidable; }
-		virtual bool	is_interactive () const { return !m_is_collidable; }
-		virtual bool	is_engaged () const { return false; }
+		virtual bool	is_interactive () const { return true; }
+		virtual bool	is_engaged () const { return m_last_damage_time != 0; }
 		virtual bool	shot (GameController& gc, Player& shooter, Point point_hit, double direction) { return m_is_collidable; }
 		virtual void	collide (GameController& gc, Player& player, Point old_position, double angle_of_incidence);
 		virtual void	interact (GameController& gc, Player& player);
-		virtual void	disengage (GameController& gc, Player& player) { }
+		virtual void	disengage (GameController& gc, Player& player);
 		virtual void	init (MapReader& reader, ClientMap& map);
 	};
 }
