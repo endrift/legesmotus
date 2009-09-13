@@ -34,7 +34,7 @@ Menu::Menu() {
 
 Menu::~Menu() {
 	for (vector<MenuItem*>::iterator iter = m_menu_items.begin(); iter != m_menu_items.end(); ++iter) {
-		m_group.remove_graphic((*iter)->get_graphic());
+		m_group.take_graphic((*iter)->get_graphic());
 		delete *iter;
 	}
 }
@@ -59,7 +59,7 @@ void Menu::remove_item_internal(MenuItem* item) {
 			++iter;
 		}
 	}
-	m_group.remove_graphic(item->get_graphic());
+	m_group.take_graphic(item->get_graphic());
 }
 
 GraphicGroup* Menu::get_graphic_group() {

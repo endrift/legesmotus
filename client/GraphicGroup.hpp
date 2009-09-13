@@ -48,8 +48,10 @@ namespace LM {
 		template<class T> void	give_graphic(T* graphic);
 		template<class T> void	give_graphic(T* graphic, const std::string& name);
 		Graphic*	get_graphic(const std::string& name);
-		// Removing the graphic doesn't delete it -- you must delete it yourself
-		template<class T> void	remove_graphic(T* graphic);
+		// Taking the graphic doesn't delete it -- you must delete it yourself
+		template<class T> void	take_graphic(T* graphic);
+		void		take_all_graphics();
+		// Removing the graphic does delete it
 		void		remove_graphic(const std::string& name);
 	
 		// These act recursively
@@ -86,7 +88,7 @@ namespace LM {
 		m_graphics.insert(iter, graphic);
 	}
 	
-	template<class T> void GraphicGroup::remove_graphic(T* graphic) {
+	template<class T> void GraphicGroup::take_graphic(T* graphic) {
 		for (std::list<Graphic*>::iterator iter = m_graphics.begin(); iter != m_graphics.end();) {
 			if (*iter == graphic) {
 				iter = m_graphics.erase(iter);

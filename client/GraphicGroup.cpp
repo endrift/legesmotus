@@ -71,6 +71,11 @@ void GraphicGroup::remove_graphic(const string& name) {
 	delete g;
 }
 
+void GraphicGroup::take_all_graphics() {
+	m_names.clear();
+	m_graphics.clear();
+}
+
 void GraphicGroup::set_alpha(double alpha) {
 	for (list<Graphic*>::iterator iter = m_graphics.begin(); iter != m_graphics.end(); ++iter) {
 		(*iter)->set_alpha(alpha);

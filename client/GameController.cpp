@@ -326,8 +326,6 @@ void GameController::init(GameWindow* window) {
 	m_logo->set_priority(0);
 	m_window->register_hud_graphic(m_logo);
 	
-	m_options_menu_items.clear();
-	
 	// Set the text manager to draw a shadow behind everything.
 	ConstantCurve curve(0, 1);
 	m_text_manager->set_active_font(m_menu_font);
@@ -362,23 +360,27 @@ void GameController::init(GameWindow* window) {
 	m_window->register_hud_graphic(m_main_menu.get_graphic_group());
 
 	// Options menu
-	m_text_manager->set_active_font(m_menu_font);
-	m_options_menu_items["Back"] = m_text_manager->place_string("Cancel", 50, m_screen_height-50, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_options_menu_items["Enter Name"] = m_text_manager->place_string("Enter Name", 50, 200, TextManager::LEFT, TextManager::LAYER_HUD);
-	if (m_sound_controller->is_sound_on()) {
-		m_options_menu_items["Toggle Sound"] = m_text_manager->place_string("Sound: On", 50, 240, TextManager::LEFT, TextManager::LAYER_HUD);
-	} else {
-		m_options_menu_items["Toggle Sound"] = m_text_manager->place_string("Sound: Off", 50, 240, TextManager::LEFT, TextManager::LAYER_HUD);
-	}
-	m_options_menu_items["Resolution"] = m_text_manager->place_string("Screen Resolution: ", 50, 280, TextManager::LEFT, TextManager::LAYER_HUD);
-	string fullscreen = "";
-	if (m_configuration->get_bool_value("fullscreen")) {
-		fullscreen = "Fullscreen: Yes";
-	} else {
-		fullscreen = "Fullscreen: No";
-	}
-	m_options_menu_items["Fullscreen"] = m_text_manager->place_string(fullscreen, 50, 320, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_options_menu_items["Apply"] = m_text_manager->place_string("Apply", m_screen_width - 200, m_screen_height-50, TextManager::LEFT, TextManager::LAYER_HUD);
+	ListMenuItem* current_lmi;
+	m_options_menu.add_item(TextMenuItem::with_manager(m_text_manager, "Cancel", "cancel", 50, m_screen_height - 50));
+	m_options_menu.add_item(TextMenuItem::with_manager(m_text_manager, "Enter Name", "name", 50, 200));
+	current_lmi = new ListMenuItem("sound", TextMenuItem::with_manager(m_text_manager, "Toggle Sound:", "sound", 50, 240));
+	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "On", "on", 300, 240));
+	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "Off", "off", 300, 240));
+	current_lmi->set_default_index(m_sound_controller->is_sound_on() ? 0 : 1);
+	current_lmi->set_current_index(m_sound_controller->is_sound_on() ? 0 : 1);
+	m_options_form.add_item("sound", current_lmi);
+	m_options_menu.add_item(current_lmi);
+	current_lmi = new ListMenuItem("fullscreen", TextMenuItem::with_manager(m_text_manager, "Fullscreen:", "fullscreen", 50, 320));
+	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "On", "on", 300, 320));
+	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "Off", "off", 300, 320));
+	current_lmi->set_default_index(m_configuration->get_bool_value("fullscreen") ? 0 : 1);
+	current_lmi->set_current_index(m_configuration->get_bool_value("fullscreen") ? 0 : 1);
+	m_options_form.add_item("fullscreen", current_lmi);
+	m_options_menu.add_item(current_lmi);
+	m_options_menu.add_item(TextMenuItem::with_manager(m_text_manager, "Apply", "apply", m_screen_width - 200, m_screen_height - 50));
+	current_lmi = new ListMenuItem("resolution", TextMenuItem::with_manager(m_text_manager, "Screen Resolution:", "resolution", 50, 280));
+	m_options_form.add_item("resolution", current_lmi);
+	m_options_menu.add_item(current_lmi);
 
 	// TODO: move this to preinit--it doesn't require a GameWindow, and should be done before one is made
 	int depth;
@@ -408,11 +410,14 @@ void GameController::init(GameWindow* window) {
 		int height = m_resolutions[i].second;
 		stringstream resolution;
 		resolution << width << "x" << height;
+		current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, resolution.str(), resolution.str(), 400, 280));
 		if (m_screen_width == width && m_screen_height == height) {
-			m_resolution_selected = i;
-			m_options_menu_items["CurrResolution"] = m_text_manager->place_string(resolution.str(), 410, 280, TextManager::LEFT, TextManager::LAYER_HUD);
+			current_lmi->set_current_index(i);
+			current_lmi->set_default_index(i);
 		}
 	}
+	m_window->register_hud_graphic(m_options_menu.get_graphic_group());
+	toggle_options_menu(false);
 	
 	// Server browser
 	m_server_browser = new ServerBrowser(*this, m_window, m_text_manager, m_screen_width, m_screen_height, m_font, m_medium_font, m_menu_font);
@@ -1160,24 +1165,13 @@ void GameController::process_input() {
 				
 				if (m_game_state == SHOW_MENUS) {
 					m_main_menu.mouse_motion_event(event.motion);
+					// TODO: Move this. Why is it HERE?
 					if (!m_network.is_connected() || !m_join_sent_time == 0) {
 						m_item_resume->set_state(MenuItem::DISABLED);
 						m_item_disconnect->set_state(MenuItem::DISABLED);
 					}
 				} else if (m_game_state == SHOW_OPTIONS_MENU) {
-					map<string, Text*>::iterator it;
-					for ( it=m_options_menu_items.begin() ; it != m_options_menu_items.end(); it++ ) {
-						Text* thisitem = (*it).second;
-						double x = thisitem->get_x();
-						double y = thisitem->get_y();
-						if (m_mouse_x >= x && m_mouse_x <= x + thisitem->get_image_width()
-						    && m_mouse_y >= y && m_mouse_y <= y + thisitem->get_image_height()) {
-							// We're hovering over this menu item.
-							thisitem->set_color(BUTTON_HOVER_COLOR);
-						} else {
-							thisitem->set_color(TEXT_COLOR);
-						}
-					}
+					m_options_menu.mouse_motion_event(event.motion);
 				}
 				break;
 				
@@ -1301,110 +1295,73 @@ void GameController::process_mouse_click(SDL_Event event) {
 		if (item && event.type == SDL_MOUSEBUTTONUP) {
 			item->set_state(MenuItem::NORMAL);
 			m_sound_controller->play_sound("click");
-			if (item->get_value() == "quit") {
+			if (item->get_name() == "quit") {
 				m_quit_game = true;
-			} else if (item->get_value() == "resume") {
+			} else if (item->get_name() == "resume") {
 				if (!m_players.empty()) {
 					m_game_state = GAME_IN_PROGRESS;
 				} else {
 					display_message("Not connected to server.");
 				}
-			} else if (item->get_value() == "submenu:options") {
+			} else if (item->get_name() == "submenu:options") {
 				m_game_state = SHOW_OPTIONS_MENU;
-			} else if (item->get_value() == "disconnect") {
+			} else if (item->get_name() == "disconnect") {
 				if (!m_players.empty()) {
 					disconnect();
 				} else {
 					display_message("Not connected to server.");
 				}
-			} else if (item->get_value() == "connect") {
+			} else if (item->get_name() == "connect") {
 				m_game_state = SHOW_SERVER_BROWSER;
 			}
 		}
 	}
 	break;
 	case SHOW_OPTIONS_MENU: {
-		if (event.button.button != 1 || event.type != SDL_MOUSEBUTTONUP) {
+		if (event.button.button != 1) {
 			return;
 		}
-		// Check each item in the options menu.
-		map<string, Text*>::iterator it;
-		for ( it=m_options_menu_items.begin() ; it != m_options_menu_items.end(); it++ ) {
-			Graphic* thisitem = (*it).second;
-			double x = thisitem->get_x();
-			double y = thisitem->get_y();
-			if (event.button.x >= x && event.button.x <= x + thisitem->get_image_width()
-			    && event.button.y >= y && event.button.y <= y + thisitem->get_image_height()) {
-				if ((*it).first == "Back") {
-					reset_options();
-					m_game_state = SHOW_MENUS;
-				} else if ((*it).first == "Enter Name") {
-					// Open the input bar and allow the name to be entered.
-					// Should replace later, to use a separate text entry location.
-					SDL_EnableUNICODE(1);
-					m_text_manager->set_active_color(TEXT_COLOR);
-					m_text_manager->set_active_font(m_font);
-					m_input_text = "> /name ";
-					m_text_manager->remove_string(m_input_bar);
-					m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
-					m_input_bar_back->set_image_width(m_input_bar->get_image_width() + 6);
-					if (m_configuration->get_bool_value("text_background")) {
-						m_input_bar_back->set_invisible(false);
-					}
-				} else if ((*it).first == "Toggle Sound") {
-					string sound = "";
-					if (m_sound_controller->is_sound_on()) {
-						m_sound_controller->set_sound_on(false);
-						sound = "Sound: Off";
-					} else {
-						m_sound_controller->set_sound_on(true);
-						sound = "Sound: On";
-					}
-					m_text_manager->remove_string(m_options_menu_items["Toggle Sound"]);
-					m_text_manager->set_active_font(m_menu_font);
-					m_options_menu_items["Toggle Sound"] = m_text_manager->place_string(sound, 50, 240, TextManager::LEFT, TextManager::LAYER_HUD);
-				} else if ((*it).first == "Resolution" || (*it).first == "CurrResolution") {
-					m_resolution_selected++;
-					if (m_resolution_selected >= m_num_resolutions) {
-						m_resolution_selected = 0;
-					}
-					int width = m_resolutions[m_resolution_selected].first;
-					int height = m_resolutions[m_resolution_selected].second;
-					stringstream resolution;
-					resolution << width << "x" << height;
-					m_text_manager->remove_string(m_options_menu_items["CurrResolution"]);
-					m_text_manager->set_active_font(m_menu_font);
-					m_options_menu_items["CurrResolution"] = m_text_manager->place_string(resolution.str(), 410, 280, TextManager::LEFT, TextManager::LAYER_HUD);
-				} else if ((*it).first == "Fullscreen") {
-					string fullscreen = "";
-					if (m_fullscreen) {
-						m_fullscreen = false;
-						fullscreen = "Fullscreen: No";
-					} else {
-						m_fullscreen = true;
-						fullscreen = "Fullscreen: Yes";
-					}
-					m_text_manager->remove_string(m_options_menu_items["Fullscreen"]);
-					m_text_manager->set_active_font(m_menu_font);
-					m_options_menu_items["Fullscreen"] = m_text_manager->place_string(fullscreen, 50, 320, TextManager::LEFT, TextManager::LAYER_HUD);
-				} else if ((*it).first == "Apply") {
-					int width = m_resolutions[m_resolution_selected].first;
-					int height = m_resolutions[m_resolution_selected].second;
-					m_configuration->set_bool_value("sound", m_sound_controller->is_sound_on());
-					
-					if (width != m_configuration->get_int_value("screen_width") || 
-							height != m_configuration->get_int_value("screen_height") ||
-							m_fullscreen != m_configuration->get_bool_value("fullscreen")) {
-						m_configuration->set_int_value("screen_width", width);
-						m_configuration->set_int_value("screen_height", height);
-						m_configuration->set_bool_value("fullscreen", m_fullscreen);
-						m_restart = true;
-						m_quit_game = true;
-					} else {
-						m_game_state = SHOW_MENUS;
-					}
+		MenuItem* item = m_options_menu.mouse_button_event(event.button);
+		if (item && event.type == SDL_MOUSEBUTTONUP) {
+			m_sound_controller->play_sound("click");
+			if(item->get_name() == "cancel") {
+				reset_options();
+				m_game_state = SHOW_MENUS;
+			} else if(item->get_name() == "name") {
+				// Open the input bar and allow the name to be entered.
+				// Should replace later, to use a separate text entry location.
+				SDL_EnableUNICODE(1);
+				m_text_manager->set_active_color(TEXT_COLOR);
+				m_text_manager->set_active_font(m_font);
+				m_input_text = "> /name ";
+				m_text_manager->remove_string(m_input_bar);
+				m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
+				m_input_bar_back->set_image_width(m_input_bar->get_image_width() + 6);
+				if (m_configuration->get_bool_value("text_background")) {
+					m_input_bar_back->set_invisible(false);
 				}
-				m_sound_controller->play_sound("click");
+			} else if(item->get_name() == "apply") {
+				string resolution = m_options_form.get_item("resolution")->get_value();
+				size_t xpos = resolution.find('x');
+				int width;
+				int height;
+				istringstream wstring(resolution.substr(0, xpos));
+				istringstream hstring(resolution.substr(xpos + 1));
+				wstring >> width;
+				hstring >> height;
+				m_sound_controller->set_sound_on(m_options_form.get_item("sound")->get_value() == "on");
+				bool fullscreen = m_options_form.get_item("fullscreen")->get_value() == "on";
+				if (width != m_configuration->get_int_value("screen_width") || 
+						height != m_configuration->get_int_value("screen_height") ||
+						fullscreen != m_configuration->get_bool_value("fullscreen")) {
+					m_configuration->set_int_value("screen_width", width);
+					m_configuration->set_int_value("screen_height", height);
+					m_configuration->set_bool_value("fullscreen", fullscreen);
+					m_restart = true;
+					m_quit_game = true;
+				} else {
+					m_game_state = SHOW_MENUS;
+				}
 			}
 		}
 	}
@@ -1487,41 +1444,7 @@ void GameController::process_mouse_click(SDL_Event event) {
  * Reset the options menu, without applying the changes.
  */
 void GameController::reset_options() {
-	string fullscreen = "";
-	string sound = "";
-	m_text_manager->set_active_color(TEXT_COLOR);
-	if (m_configuration->get_bool_value("fullscreen")) {
-		m_fullscreen = true;
-		fullscreen = "Fullscreen: Yes";
-	} else {
-		m_fullscreen = false;
-		fullscreen = "Fullscreen: No";
-	}
-	if (m_configuration->get_bool_value("sound")) {
-		m_sound_controller->set_sound_on(true);
-		sound = "Sound: On";
-	} else {
-		m_sound_controller->set_sound_on(false);
-		sound = "Sound: Off";
-	}
-	m_text_manager->remove_string(m_options_menu_items["Toggle Sound"]);
-	m_text_manager->set_active_font(m_menu_font);
-	m_options_menu_items["Toggle Sound"] = m_text_manager->place_string(sound, 50, 240, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_text_manager->remove_string(m_options_menu_items["Fullscreen"]);
-	m_text_manager->set_active_font(m_menu_font);
-	m_options_menu_items["Fullscreen"] = m_text_manager->place_string(fullscreen, 50, 320, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_text_manager->remove_string(m_options_menu_items["CurrResolution"]);
-	stringstream resolution;
-	for (size_t i = 0; i < m_num_resolutions; i++) {
-		int width = m_resolutions[i].first;
-		int height = m_resolutions[i].second;
-		stringstream resolution;
-		resolution << width << "x" << height;
-		if (m_screen_width == width && m_screen_height == height) {
-			m_resolution_selected = i;
-			m_options_menu_items["CurrResolution"] = m_text_manager->place_string(resolution.str(), 410, 280, TextManager::LEFT, TextManager::LAYER_HUD);
-		}
-	}
+	m_options_form.reset();
 }
 
 /*
@@ -1970,10 +1893,7 @@ void GameController::toggle_main_menu(bool visible) {
  * Show or hide the options menu
  */
 void GameController::toggle_options_menu(bool visible) {
-	map<string, Text*>::iterator it;
-	for (it = m_options_menu_items.begin(); it != m_options_menu_items.end(); ++it) {
-		it->second->set_invisible(!visible);
-	}
+	m_options_menu.get_graphic_group()->set_invisible(!visible);
 }
 
 /*

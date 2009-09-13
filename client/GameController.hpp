@@ -48,6 +48,8 @@
 #include "MapReceiver.hpp"
 #include "ArbitraryMenu.hpp"
 #include "TextMenuItem.hpp"
+#include "ListMenuItem.hpp"
+#include "Form.hpp"
 
 #include <string>
 #include <vector>
@@ -191,19 +193,20 @@ namespace LM {
 		Graphic*	m_input_bar;
 		TableBackground* m_input_bar_back;
 		TableBackground* m_chat_window_back;
-		Transition* m_chat_window_transition_x;
-		Transition* m_chat_window_transition_y;
+		Transition*	m_chat_window_transition_x;
+		Transition*	m_chat_window_transition_y;
 		
 		Sprite*		m_shot;
 	
 		Sprite*		m_logo;
 
-		TextMenuItem* m_item_resume;
-		TextMenuItem* m_item_disconnect;
-		ArbitraryMenu m_main_menu;
-		ArbitraryMenu m_options_menu;
+		TextMenuItem*	m_item_resume;
+		TextMenuItem*	m_item_disconnect;
+		ArbitraryMenu	m_main_menu;
+		ArbitraryMenu	m_options_menu;
+		Form		m_options_form;
 
-		std::map<std::string, Text*> m_options_menu_items;
+		//std::map<std::string, Text*> m_options_menu_items;
 		size_t		m_num_resolutions;
 		size_t		m_resolution_selected;
 		std::vector<std::pair<int, int> > m_resolutions;

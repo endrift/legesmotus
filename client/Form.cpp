@@ -1,5 +1,5 @@
 /*
- * client/MenuItem.hpp
+ * client/Form.cpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,47 +22,29 @@
  * 
  */
 
-#ifndef LM_CLIENT_MENUITEM_HPP
-#define LM_CLIENT_MENUITEM_HPP
+#include "Form.hpp"
 
-#include <string>
-#include "FormItem.hpp"
+using namespace LM;
+using namespace std;
 
-namespace LM {
-	class Graphic;
-	class MenuItem {
-	public:
-		enum State {
-			NORMAL,
-			STATIC,
-			HOVER,
-			CLICKED,
-			DISABLED
-		};
-	private:
-		std::string	m_name;
-		std::string	m_default;
-		State		m_state;
-
-	protected:
-		virtual void state_changed(State old_state, State new_state) {}
-
-	public:
-		MenuItem(std::string name, State state = NORMAL);
-		virtual ~MenuItem() {}
-
-		void		set_state(State state);
-		virtual void	set_name(std::string name);
-
-		State		get_state() const;
-		virtual std::string	get_name() const;
-		virtual const Graphic*	get_graphic() const = 0;
-		virtual Graphic*	get_graphic() = 0;
-
-		bool		disabled() const;
-
-		virtual bool	is_mouse_over(int x, int y) const;
-	};
+void Form::reset() {
+	for (map<string, FormItem*>::const_iterator iter = m_items.begin(); iter != m_items.end(); ++iter) {
+		iter->second->reset();
+	}
 }
 
-#endif
+void Form::add_item(const string& name, FormItem* item) {
+	m_items[name] = item;
+}
+
+void Form::remove_item(const string& name) {
+	m_items.erase(name);
+}
+
+FormItem* Form::get_item(const string& name) {
+	if (m_items.find(name) != m_items.end()) {
+		return m_items[name];
+	} else {
+		return NULL;
+	}
+}

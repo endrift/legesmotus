@@ -28,8 +28,8 @@
 using namespace LM;
 using namespace std;
 
-MenuItem::MenuItem(string value, State state) {
-	m_value = value;
+MenuItem::MenuItem(string name, State state) {
+	m_name = name;
 	m_state = state;
 }
 
@@ -39,16 +39,16 @@ void MenuItem::set_state(State state) {
 	state_changed(old_state, state);
 }
 
-void MenuItem::set_value(string value) {
-	m_value = value;
+void MenuItem::set_name(string name) {
+	m_name = name;
 }
 
 MenuItem::State MenuItem::get_state() const {
 	return m_state;
 }
 
-string MenuItem::get_value() const {
-	return m_value;
+string MenuItem::get_name() const {
+	return m_name;
 }
 
 bool MenuItem::disabled() const {
