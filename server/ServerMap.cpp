@@ -25,6 +25,7 @@
 #include "ServerMap.hpp"
 #include "common/MapReader.hpp"
 #include "common/team.hpp"
+#include <cstring>
 
 using namespace LM;
 using namespace std;
