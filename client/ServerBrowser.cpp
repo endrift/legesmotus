@@ -219,7 +219,7 @@ void ServerBrowser::add_entry(IPAddress server_address, const string& current_ma
 	printer << "name";
 	printer << m_server_list_count;
 	if (server_address.is_localhost()) {
-	string hostname = "";
+		string hostname = "";
 		uint16_t portno = 0;
 		resolve_ip_address(hostname, &portno, server_address);
 		ostringstream ipprinter;

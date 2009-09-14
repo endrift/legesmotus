@@ -30,11 +30,18 @@ using namespace LM;
 using namespace std;
 
 Text::Text(const string& text, Font* font, const ConvolveKernel* kernel) : Graphic() {
+	m_shadow = NULL;
+	if (text.empty()) {
+		m_fg = NULL;
+		m_image_width = 0;
+		m_image_height = 0;
+		return;
+	}
+
 	m_fg = font->render_string(text);
 	if (m_fg == NULL) {
 		throw Exception("Cannot render text");
 	}
-	m_shadow = NULL;
 	m_fg->set_center_x(0);
 	m_fg->set_center_y(0);
 	m_image_width = m_fg->get_image_width();
@@ -50,6 +57,13 @@ Text::Text(const string& text, Font* font, const ConvolveKernel* kernel) : Graph
 }
 
 Text::Text(const Text& other) : Graphic(other) {
+	if (other.m_fg == NULL) {
+		m_fg = NULL;
+		m_shadow = NULL;
+		m_image_width = 0;
+		m_image_height = 0;
+		return;
+	}
 	m_fg = other.m_fg->clone();
 	if (other.m_shadow != NULL) {
 		m_shadow = other.m_shadow->clone();
@@ -69,15 +83,17 @@ Text* Text::clone() const {
 }
 
 void Text::touch_shadow() {
-	if (m_shadow == NULL) {
+	if (m_shadow == NULL && m_fg != NULL) {
 		m_shadow = new Sprite(*m_fg);
 	}
 }
 
 void Text::set_color(double r, double g, double b) {
-	m_fg->set_red_intensity(r);
-	m_fg->set_green_intensity(g);
-	m_fg->set_blue_intensity(b);
+	if (m_fg != NULL) {
+		m_fg->set_red_intensity(r);
+		m_fg->set_green_intensity(g);
+		m_fg->set_blue_intensity(b);
+	}
 }
 
 void Text::set_color(const Color& color) {
@@ -85,14 +101,18 @@ void Text::set_color(const Color& color) {
 }
 
 void Text::set_alpha(double a) {
-	m_fg->set_alpha(a);
+	if (m_fg != NULL) {
+		m_fg->set_alpha(a);
+	}
 }
 
 void Text::set_shadow_color(double r, double g, double b) {
 	touch_shadow();
-	m_shadow->set_red_intensity(r);
-	m_shadow->set_green_intensity(g);
-	m_shadow->set_blue_intensity(b);
+	if (m_shadow != NULL) {
+		m_shadow->set_red_intensity(r);
+		m_shadow->set_green_intensity(g);
+		m_shadow->set_blue_intensity(b);
+	}
 }
 
 void Text::set_shadow_color(const Color& color) {
@@ -101,13 +121,17 @@ void Text::set_shadow_color(const Color& color) {
 
 void Text::set_shadow_alpha(double a) {
 	touch_shadow();
-	m_shadow->set_alpha(a);
+	if (m_shadow != NULL) {
+		m_shadow->set_alpha(a);
+	}
 }
 
 void Text::set_shadow_offset(double x, double y) {
 	touch_shadow();
-	m_shadow->set_x(x);
-	m_shadow->set_y(y);
+	if (m_shadow != NULL) {
+		m_shadow->set_x(x);
+		m_shadow->set_y(y);
+	}
 }
 
 void Text::set_shadow(bool enable) {
@@ -118,18 +142,27 @@ void Text::set_shadow(bool enable) {
 }
 
 void Text::set_red_intensity(double r) {
-	m_fg->set_red_intensity(r);
+	if (m_fg != NULL) {
+		m_fg->set_red_intensity(r);
+	}
 }
 
 void Text::set_green_intensity(double g) {
-	m_fg->set_green_intensity(g);
+	if (m_fg != NULL) {
+		m_fg->set_green_intensity(g);
+	}
 }
 
 void Text::set_blue_intensity(double b) {
-	m_fg->set_blue_intensity(b);
+	if (m_fg != NULL) {
+		m_fg->set_blue_intensity(b);
+	}
 }
 
 bool Text::is_over(int x, int y) const {
+	if (m_fg == NULL) {
+		return false;
+	}
 	return m_fg->is_over(x - get_x() + get_center_x(), y - get_y() + get_center_y());
 }
 
@@ -139,6 +172,8 @@ void Text::draw(const GameWindow* window) const {
 	if (m_shadow_enabled) {
 		m_shadow->draw(window);
 	}
-	m_fg->draw(window);
+	if (m_fg != NULL) {
+		m_fg->draw(window);
+	}
 	glPopMatrix();
 }
