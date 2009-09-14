@@ -58,6 +58,10 @@ void	SpawnpointSet::add(const Spawnpoint& pt) {
 }
 
 const Spawnpoint*	SpawnpointSet::acquire() {
+	if (empty()) {
+		return NULL;
+	}
+
 	Spawnpoint* p = *begin();
 	erase(begin());
 	++p->m_utilization;
