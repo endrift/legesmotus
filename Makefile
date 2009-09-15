@@ -133,13 +133,13 @@ install:
 	install -d $(DESTDIR)$(PREFIX)/share/applications
 	install -m 0644 $(BASEDIR)/client/legesmotus.desktop $(DESTDIR)$(PREFIX)/share/applications/legesmotus.desktop
 	sed -e 's/\$$VERSION/$(subst /,\/,$(VERSION))/' -i'' $(DESTDIR)$(PREFIX)/share/applications/legesmotus.desktop
-	sed -e 's/\$$DESTDIR/$(subst /,\/,DESTDIR))/' -i'' $(DESTDIR)$(PREFIX)/share/applications/legesmotus.desktop
-	sed -e 's/\$$PREFIX/$(subst /,\/,PREFIX))/' -i'' $(DESTDIR)$(PREFIX)/share/applications/legesmotus.desktop
-	sed -e 's/\$$BINDIR/$(subst /,\/,BINDIR))/' -i'' $(DESTDIR)$(PREFIX)/share/applications/legesmotus.desktop
+	sed -e 's/\$$DESTDIR/$(subst /,\/,$(DESTDIR))/' -i'' $(DESTDIR)$(PREFIX)/share/applications/legesmotus.desktop
+	sed -e 's/\$$PREFIX/$(subst /,\/,$(PREFIX))/' -i'' $(DESTDIR)$(PREFIX)/share/applications/legesmotus.desktop
+	sed -e 's/\$$BINDIR/$(subst /,\/,$(BINDIR))/' -i'' $(DESTDIR)$(PREFIX)/share/applications/legesmotus.desktop
 	install -d $(DESTDIR)$(PREFIX)/share/icons/hicolor/256x256
 	install -m 0644 $(BASEDIR)/data/sprites/blue_head256.png $(DESTDIR)$(PREFIX)/share/icons/hicolor/256x256/legesmotus.png
 	install -d $(DESTDIR)$(BINDIR)
-	where update-desktop-database && update-desktop-database
+	which update-desktop-database && update-desktop-database
 	install $(BASEDIR)/server/lmserver $(BASEDIR)/client/legesmotus $(DESTDIR)$(BINDIR)
 	strip $(DESTDIR)$(BINDIR)/legesmotus
 	strip $(DESTDIR)$(BINDIR)/lmserver
