@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Version=$VERSION
+Name=Leges Motus
+GenericName=Leges Motus
+Comment=A 2D Networked Shooter
+Icon=$DESTDIR$PREFIX/share/icons/hicolor/legesmotus.png
+Exec=$DESTDIR$BINDIR/legesmotus
+Categories=Game;StrategyGame;ActionGame
