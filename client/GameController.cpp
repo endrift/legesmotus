@@ -244,6 +244,8 @@ void GameController::init(GameWindow* window) {
 	m_map_width = 0;
 	m_map_height = 0;
 
+	m_round_end_time = 0;
+
 	init_weapons(); // TEMP CODE - Ultimately, get from the server when game starts
 
 	// Initialize the gun sprites.
