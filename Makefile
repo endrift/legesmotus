@@ -132,10 +132,10 @@ install:
 	install -m 0644 $(BASEDIR)/man/man6/* $(DESTDIR)$(MANDIR)/man6
 	install -d $(DESTDIR)$(PREFIX)/share/applications
 	install -m 0644 $(BASEDIR)/client/legesmotus.desktop $(DESTDIR)$(PREFIX)/share/applications/legesmotus.desktop
-	sed -e 's/\$$VERSION/$(VERSION)/' -i '' $(DESTDIR)$(PREFIX)/share/applications/legesmotus.desktop
-	sed -e 's/\$$DESTDIR/$(DESTDIR)/' -i '' $(DESTDIR)$(PREFIX)/share/applications/legesmotus.desktop
-	sed -e 's/\$$PREFIX/$(PREFIX)/' -i '' $(DESTDIR)$(PREFIX)/share/applications/legesmotus.desktop
-	sed -e 's/\$$BINDIR/$(BINDIR)/' -i '' $(DESTDIR)$(PREFIX)/share/applications/legesmotus.desktop
+	sed -e 's/\$$VERSION/$(VERSION)/' -i'' $(DESTDIR)$(PREFIX)/share/applications/legesmotus.desktop
+	sed -e 's/\$$DESTDIR/$(DESTDIR)/' -i'' $(DESTDIR)$(PREFIX)/share/applications/legesmotus.desktop
+	sed -e 's/\$$PREFIX/$(PREFIX)/' -i'' $(DESTDIR)$(PREFIX)/share/applications/legesmotus.desktop
+	sed -e 's/\$$BINDIR/$(BINDIR)/' -i'' $(DESTDIR)$(PREFIX)/share/applications/legesmotus.desktop
 	install -d $(DESTDIR)$(PREFIX)/share/icons/hicolor/256x256
 	install -m 0644 $(BASEDIR)/data/sprites/blue_head256.png $(DESTDIR)$(PREFIX)/share/icons/hicolor/256x256/legesmotus.png
 	install -d $(DESTDIR)$(BINDIR)
