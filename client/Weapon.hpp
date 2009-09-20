@@ -62,6 +62,10 @@ namespace LM {
 		// Can this gun be continuously fired?
 		virtual bool		is_continuous() = 0;
 
+		// How long until this weapon can be fired again?
+		virtual uint64_t	get_remaining_cooldown() const = 0;
+		virtual uint64_t	get_total_cooldown() const = 0;
+
 		virtual const char*	gun_graphic() const = 0;
 		virtual const char*	gun_fired_graphic() const = 0;
 

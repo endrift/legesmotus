@@ -51,7 +51,7 @@ FreezeGun::FreezeGun(PacketReader& gun_data) {
 }
 
 void	FreezeGun::fire(Player& player, GameController& gc, Point startpos, double direction) {
-	if (m_last_fired_time != 0 && m_last_fired_time > get_ticks() - m_delay) {
+	if (m_last_fired_time != 0 && get_ticks() - m_last_fired_time < m_delay) {
 		// Firing too soon
 		return;
 	}
@@ -138,5 +138,16 @@ void	FreezeGun::hit(Player& shot_player, Player& shooting_player, bool has_effec
 
 void	FreezeGun::reset() {
 	m_last_fired_time = 0;
+}
+
+uint64_t	FreezeGun::get_remaining_cooldown() const
+{
+	if (m_last_fired_time) {
+		uint64_t	time_since_fire = get_ticks() - m_last_fired_time;
+		if (time_since_fire < m_delay) {
+			return m_delay - time_since_fire;
+		}
+	}
+	return 0;
 }
 

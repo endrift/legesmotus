@@ -48,6 +48,8 @@ namespace LM {
 		virtual void		hit(Player& player, Player& shooting_player, bool has_effect, GameController& gc, PacketReader& data);
 		virtual void		reset();
 		virtual bool		is_continuous() { return false; }
+		virtual uint64_t	get_remaining_cooldown() const;
+		virtual uint64_t	get_total_cooldown() const { return m_delay; }
 
 		virtual const char*	gun_graphic() const { return "gun_noshot"; }
 		virtual const char*	gun_fired_graphic() const { return "gun_fired"; }
