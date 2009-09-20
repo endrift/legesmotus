@@ -1212,6 +1212,28 @@ void GameController::process_input() {
 				break;
 		}
 	}
+
+	// Check if left mouse button is held down, for weapon firing code.
+	int mouse_x = 0;
+	int mouse_y = 0;
+	if (SDL_GetMouseState(&mouse_x, &mouse_y)&SDL_BUTTON(1)) {
+		if (m_game_state == GAME_IN_PROGRESS) {
+			if (m_players.empty() || m_players[m_player_id].is_frozen() || !m_current_weapon) {
+				// Do nothing. We don't have a current player or weapon.
+			} else if (!m_overlay_background->is_invisible()) {
+				// Do nothing. The overlay is up.
+			} else if (!m_chat_log->is_invisible()) {
+				// Do nothing. The chat log is up.
+			} else if (m_current_weapon->is_continuous()) {
+				// Fire the gun if it's ready.
+				double x_dist = (mouse_x + m_offset_x) - m_players[m_player_id].get_x();
+				double y_dist = (mouse_y + m_offset_y) - m_players[m_player_id].get_y();
+				double direction = atan2(y_dist, x_dist);
+
+				m_current_weapon->fire(m_players[m_player_id], *this, m_players[m_player_id].get_position(), direction);
+			}
+		}
+	}
 	
 	parse_key_input();
 }
