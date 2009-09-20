@@ -27,6 +27,7 @@
 
 #include "common/Point.hpp"
 #include <string>
+#include <stdint.h>
 
 namespace LM {
 	class GameController;
