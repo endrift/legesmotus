@@ -59,6 +59,9 @@ namespace LM {
 		// Call when the round ends to reset this weapon's state:
 		virtual void		reset() = 0;
 
+		// Can this gun be continuously fired?
+		virtual bool		is_continuous() = 0;
+
 		virtual const char*	gun_graphic() const = 0;
 		virtual const char*	gun_fired_graphic() const = 0;
 

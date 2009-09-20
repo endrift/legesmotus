@@ -36,18 +36,20 @@ namespace LM {
 		int 			m_damage;
 		uint64_t		m_delay;
 		double			m_recoil;
+		bool			m_is_continuous;
 
 		// Weapon state
 		uint64_t		m_last_fired_time;	// Time that this gun was last fired (to enforce delay)
 
 	public:
-		FreezeGun(const char* name, uint64_t freeze_time, int damage, uint64_t delay, double recoil);
+		FreezeGun(const char* name, uint64_t freeze_time, int damage, uint64_t delay, double recoil, bool is_continuous);
 		explicit FreezeGun(PacketReader& gun_data);
 
 		virtual void		fire(Player& player, GameController& gc, Point start, double direction);
 		virtual void		discharged(Player& player, GameController& gc, PacketReader& data);
 		virtual void		hit(Player& player, Player& shooting_player, bool has_effect, GameController& gc, PacketReader& data);
 		virtual void		reset();
+		virtual bool		is_continuous() { return m_is_continuous; }
 
 		virtual const char*	gun_graphic() const { return "gun_noshot"; }
 		virtual const char*	gun_fired_graphic() const { return "gun_fired"; }
