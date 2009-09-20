@@ -31,10 +31,13 @@
 #include "common/timer.hpp"
 #include "common/math.hpp"
 
+#include <stdlib.h>
+
 using namespace LM;
 using namespace std;
 
 FreezeGun::FreezeGun(const char* name, uint64_t freeze_time, int damage, uint64_t delay, double recoil, double inaccuracy, bool iscontinuous) : Weapon(name) {
+	srand( time(NULL) );
 	m_last_fired_time = 0;
 	m_freeze_time = freeze_time;
 	m_damage = damage;
@@ -46,6 +49,7 @@ FreezeGun::FreezeGun(const char* name, uint64_t freeze_time, int damage, uint64_
 
 FreezeGun::FreezeGun(PacketReader& gun_data) {
 	m_last_fired_time = 0;
+	srand( time(NULL) );
 	string		name;
 	gun_data >> name >> m_freeze_time >> m_damage >> m_delay >> m_recoil >> m_inaccuracy >> m_is_continuous;
 	set_name(name.c_str());
@@ -55,6 +59,11 @@ void	FreezeGun::fire(Player& player, GameController& gc, Point startpos, double 
 	if (m_last_fired_time != 0 && get_ticks() - m_last_fired_time < m_delay) {
 		// Firing too soon
 		return;
+	}
+	
+	// Randomly change the direction anywhere within the + or - m_inaccuracy angle.
+	if (m_inaccuracy != 0) {
+		direction += (rand()/(RAND_MAX+1.0)) * (m_inaccuracy*2) - m_inaccuracy;
 	}
 
 	// Cause recoil if the player is not hanging onto a wall.
