@@ -36,13 +36,14 @@ namespace LM {
 		int 			m_damage;
 		uint64_t		m_delay;
 		double			m_recoil;
+		double			m_inaccuracy;		// The angle by which firing may deviate randomly
 		bool			m_is_continuous;
 
 		// Weapon state
 		uint64_t		m_last_fired_time;	// Time that this gun was last fired (to enforce delay)
 
 	public:
-		FreezeGun(const char* name, uint64_t freeze_time, int damage, uint64_t delay, double recoil, bool is_continuous);
+		FreezeGun(const char* name, uint64_t freeze_time, int damage, uint64_t delay, double recoil, double inaccuracy, bool is_continuous);
 		explicit FreezeGun(PacketReader& gun_data);
 
 		virtual void		fire(Player& player, GameController& gc, Point start, double direction);

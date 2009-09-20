@@ -34,19 +34,20 @@
 using namespace LM;
 using namespace std;
 
-FreezeGun::FreezeGun(const char* name, uint64_t freeze_time, int damage, uint64_t delay, double recoil, bool iscontinuous) : Weapon(name) {
+FreezeGun::FreezeGun(const char* name, uint64_t freeze_time, int damage, uint64_t delay, double recoil, double inaccuracy, bool iscontinuous) : Weapon(name) {
 	m_last_fired_time = 0;
 	m_freeze_time = freeze_time;
 	m_damage = damage;
 	m_delay = delay;
 	m_recoil = recoil;
+	m_inaccuracy = inaccuracy;
 	m_is_continuous = iscontinuous;
 }
 
 FreezeGun::FreezeGun(PacketReader& gun_data) {
 	m_last_fired_time = 0;
 	string		name;
-	gun_data >> name >> m_freeze_time >> m_damage >> m_delay >> m_recoil >> m_is_continuous;
+	gun_data >> name >> m_freeze_time >> m_damage >> m_delay >> m_recoil >> m_inaccuracy >> m_is_continuous;
 	set_name(name.c_str());
 }
 
