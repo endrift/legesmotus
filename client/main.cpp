@@ -217,7 +217,7 @@ extern "C" int main(int argc, char* argv[]) try {
 } catch (const Exception& e) {
 	cerr << "Error: " << e.what() << endl;
 	cerr << "1. If on X11, check that your $DISPLAY environment variable is set properly." << endl;
-	cerr << "2. Make sure that you are running Leges Motus from the top-level source directory, OR that your $LM_DATA_DIR environment variable is set to the directory containing the game resources." << endl;
+	cerr << "2. Make sure that Leges Motus has been properly installed (if compiling from source, you should have run 'make install'), OR that your $LM_DATA_DIR environment variable is set to the directory containing the game resources." << endl;
 
 	#ifdef __APPLE__
 	if (run_from_finder) {
@@ -226,7 +226,7 @@ extern "C" int main(int argc, char* argv[]) try {
 	#elif defined(__WIN32)
 	stringstream s;
 	s << e.what() << endl;
-	s << "Please ensure that you are running Leges Motus from the proper working directory" << flush;
+	s << "Please ensure that you are running Leges Motus from the same directory as the game resources" << flush;
 	MessageBox(NULL, s.str().c_str(), NULL, MB_OK|MB_ICONERROR);
 	#endif
 
