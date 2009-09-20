@@ -62,9 +62,7 @@ void	FreezeGun::fire(Player& player, GameController& gc, Point startpos, double 
 	}
 	
 	// Randomly change the direction anywhere within the + or - m_inaccuracy angle.
-	if (m_inaccuracy != 0) {
-		direction += (rand()/(RAND_MAX+1.0)) * (m_inaccuracy*2) - m_inaccuracy;
-	}
+	direction += (rand()/(RAND_MAX+1.0)) * (m_inaccuracy*2) - m_inaccuracy;
 
 	// Cause recoil if the player is not hanging onto a wall.
 	if (!player.is_grabbing_obstacle()) {
