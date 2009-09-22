@@ -49,12 +49,14 @@ int RadialMenu::coord_to_item(int x, int y) const {
 	return int(angle/m_background->get_num_segments());
 }
 
-void RadialMenu::recalc_positions() {
+void RadialMenu::recalc_segments() {
 	double dist = m_background->get_inner_radius() +
 		(m_background->get_outer_radius() - m_background->get_inner_radius())/2.0;
 	double roffset = m_background->get_rotation();
 	int total = m_menu_items.size();
+	m_background->set_num_segments(total);
 	for (int i = 0; i < total; ++i) {
+		m_background->set_segment_color(i, m_normal);
 		Graphic* g = m_menu_items.at(i)->get_graphic();
 		g->set_x(dist*cos(i*2.0*M_PI/total + roffset));
 		g->set_y(dist*cos(i*2.0*M_PI/total + roffset));
@@ -71,12 +73,12 @@ void RadialMenu::mouseout(MenuItem* item, int x, int y) {
 
 void RadialMenu::add_item(MenuItem* item) {
 	add_item_internal(item);
-	recalc_positions();
+	recalc_segments();
 }
 
 void RadialMenu::remove_item(MenuItem* item) {
 	remove_item_internal(item);
-	recalc_positions();
+	recalc_segments();
 }
 
 MenuItem* RadialMenu::item_at_position(int x, int y) {

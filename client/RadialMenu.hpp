@@ -36,7 +36,7 @@ namespace LM {
 		Color	m_hover;
 
 		int	coord_to_item(int x, int y) const;
-		void	recalc_positions();
+		void	recalc_segments();
 
 	protected:
 		virtual void mouseover(MenuItem* item, int x, int y);
