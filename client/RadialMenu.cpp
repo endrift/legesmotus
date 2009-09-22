@@ -23,7 +23,8 @@
  */
 
 #include "RadialMenu.hpp"
-#include <cmath>
+#include "common/math.hpp"
+#include <iostream>
 
 using namespace LM;
 using namespace std;
@@ -32,43 +33,44 @@ RadialMenu::RadialMenu(RadialBackground* background, Color normal, Color hover) 
 	m_background = background;
 	m_normal = normal;
 	m_hover = hover;
+	m_active = 0;
 	m_background->set_num_segments(1);
 	m_background->set_segment_color(0, m_normal);
 	m_background->set_priority(1);
-	get_graphic_group()->add_graphic(m_background, "background");
-}
-
-RadialMenu::~RadialMenu() {
-	delete m_background;
+	get_graphic_group()->give_graphic(m_background, "background");
 }
 
 int RadialMenu::coord_to_item(int x, int y) const {
 	int x0 = x - m_background->get_x();
-	int y0 = y - m_background->get_y();
-	double angle = atan2(double(y0), double(x0)) - m_background->get_rotation();
-	return int(angle/m_background->get_num_segments());
+	int y0 = -y + m_background->get_y();
+	double angle = -(atan2(double(y0), double(x0)) + (DEGREES_TO_RADIANS*m_background->get_rotation()));
+	angle = fmod(angle + 4.0*M_PI + (3.0*M_PI/m_background->get_num_segments()), 2.0*M_PI);
+	int i = int((angle + M_PI)/(2.0*M_PI) * m_background->get_num_segments()) % m_background->get_num_segments();
+	cout << angle << " " << i << endl;
+	return i;
 }
 
 void RadialMenu::recalc_segments() {
 	double dist = m_background->get_inner_radius() +
 		(m_background->get_outer_radius() - m_background->get_inner_radius())/2.0;
-	double roffset = m_background->get_rotation();
+	double roffset = DEGREES_TO_RADIANS*m_background->get_rotation() + (M_PI/m_background->get_num_segments());
 	int total = m_menu_items.size();
 	m_background->set_num_segments(total);
 	for (int i = 0; i < total; ++i) {
 		m_background->set_segment_color(i, m_normal);
 		Graphic* g = m_menu_items.at(i)->get_graphic();
-		g->set_x(dist*cos(i*2.0*M_PI/total + roffset));
-		g->set_y(dist*cos(i*2.0*M_PI/total + roffset));
+		g->set_x(dist*cos(i*2.0*M_PI/total + roffset) + m_background->get_x());
+		g->set_y(dist*sin(i*2.0*M_PI/total + roffset) + m_background->get_y());
 	}
 }
 
 void RadialMenu::mouseover(MenuItem* item, int x, int y) {
-	m_background->set_segment_color(coord_to_item(x, y), m_hover);
+	m_active = coord_to_item(x, y);
+	m_background->set_segment_color(m_active, m_hover);
 }
 
 void RadialMenu::mouseout(MenuItem* item, int x, int y) {
-	m_background->set_segment_color(coord_to_item(x, y), m_normal);
+	m_background->set_segment_color(m_active, m_normal);
 }
 
 void RadialMenu::add_item(MenuItem* item) {

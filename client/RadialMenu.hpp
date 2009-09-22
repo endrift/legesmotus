@@ -34,6 +34,7 @@ namespace LM {
 		RadialBackground* m_background;
 		Color	m_normal;
 		Color	m_hover;
+		int	m_active;
 
 		int	coord_to_item(int x, int y) const;
 		void	recalc_segments();
@@ -44,7 +45,6 @@ namespace LM {
 
 	public:
 		RadialMenu(RadialBackground* background, Color normal, Color hover);
-		~RadialMenu();
 
 		void	add_item(MenuItem* item);
 		void	remove_item(MenuItem* item);
