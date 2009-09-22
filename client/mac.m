@@ -92,6 +92,7 @@ void toplevel_exception(const char* text) {
 	[alert release];
 }
 
+#ifdef LM_FWBASED
 #ifdef main
 #undef main
 #endif
@@ -99,3 +100,5 @@ void toplevel_exception(const char* text) {
 int main(int argc, char *argv[]) {
     return NSApplicationMain(argc, (const char **)argv);
 }
+
+#endif
