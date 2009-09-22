@@ -43,17 +43,20 @@ int RadialMenu::coord_to_item(int x, int y) const {
 	int x0 = x - m_background->get_x();
 	int y0 = -y + m_background->get_y();
 	double angle = -(atan2(double(y0), double(x0)) + (DEGREES_TO_RADIANS*m_background->get_rotation()));
-	angle = fmod(angle + 4.0*M_PI + (3.0*M_PI/m_background->get_num_segments()), 2.0*M_PI);
-	int i = int((angle + M_PI)/(2.0*M_PI) * m_background->get_num_segments()) % m_background->get_num_segments();
+	angle = fmod(angle + 4.0*M_PI + (2.0*M_PI/m_background->get_num_segments()), 2.0*M_PI);
+	int i = int(angle/(2.0*M_PI) * m_background->get_num_segments() +
+		m_background->get_num_segments() - 1) % m_background->get_num_segments();
 	return i;
 }
 
 void RadialMenu::recalc_segments() {
-	double dist = m_background->get_inner_radius() +
-		(m_background->get_outer_radius() - m_background->get_inner_radius())/2.0;
-	double roffset = DEGREES_TO_RADIANS*m_background->get_rotation() + (M_PI/m_background->get_num_segments());
+	double dist = m_background->get_inner_radius() + m_background->get_outer_radius()/2.0;
 	int total = m_menu_items.size();
 	m_background->set_num_segments(total);
+	if (total == 0) {
+		return;
+	}
+	double roffset = DEGREES_TO_RADIANS*m_background->get_rotation() + 1.0*M_PI/total;
 	for (int i = 0; i < total; ++i) {
 		m_background->set_segment_color(i, m_normal);
 		Graphic* g = m_menu_items.at(i)->get_graphic();
