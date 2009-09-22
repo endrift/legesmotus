@@ -130,14 +130,13 @@ install:
 	install -m 0644 $(BASEDIR)/man/man6/* $(DESTDIR)$(MANDIR)/man6
 	install -d $(DESTDIR)$(MANDIR)/man6
 	install -m 0644 $(BASEDIR)/man/man6/* $(DESTDIR)$(MANDIR)/man6
-	install -d $(DESTDIR)$(PREFIX)/share/applications
-	install -m 0644 $(BASEDIR)/client/legesmotus.desktop $(DESTDIR)$(PREFIX)/share/applications/legesmotus.desktop
-	sed -e 's/\$$VERSION/$(subst /,\/,$(VERSION))/' -i'' $(DESTDIR)$(PREFIX)/share/applications/legesmotus.desktop
-	sed -e 's/\$$DESTDIR/$(subst /,\/,$(DESTDIR))/' -i'' $(DESTDIR)$(PREFIX)/share/applications/legesmotus.desktop
-	sed -e 's/\$$PREFIX/$(subst /,\/,$(PREFIX))/' -i'' $(DESTDIR)$(PREFIX)/share/applications/legesmotus.desktop
-	sed -e 's/\$$BINDIR/$(subst /,\/,$(BINDIR))/' -i'' $(DESTDIR)$(PREFIX)/share/applications/legesmotus.desktop
-	install -d $(DESTDIR)$(PREFIX)/share/icons/hicolor/256x256
-	install -m 0644 $(BASEDIR)/data/sprites/blue_head256.png $(DESTDIR)$(PREFIX)/share/icons/hicolor/256x256/legesmotus.png
+	install -d $(DESTDIR)$(SHAREDIR)/applications
+	install -m 0644 $(BASEDIR)/client/legesmotus.desktop $(DESTDIR)$(SHAREDIR)/applications/legesmotus.desktop
+	sed -e 's/\$$VERSION/$(subst /,\/,$(VERSION))/' -i'' $(DESTDIR)$(SHAREDIR)/applications/legesmotus.desktop
+	sed -e 's/\$$SHAREDIR/$(subst /,\/,$(SHAREDIR))/' -i'' $(DESTDIR)$(SHAREDIR)/applications/legesmotus.desktop
+	sed -e 's/\$$BINDIR/$(subst /,\/,$(BINDIR))/' -i'' $(DESTDIR)$(SHAREDIR)/applications/legesmotus.desktop
+	install -d $(DESTDIR)$(SHAREDIR)/icons/hicolor/256x256
+	install -m 0644 $(BASEDIR)/data/sprites/blue_head256.png $(DESTDIR)$(SHAREDIR)/icons/hicolor/256x256/legesmotus.png
 	install -d $(DESTDIR)$(BINDIR)
 	which update-desktop-database && update-desktop-database
 	install $(BASEDIR)/server/lmserver $(BASEDIR)/client/legesmotus $(DESTDIR)$(BINDIR)

@@ -20,6 +20,10 @@ ifneq ($(shell test -r $(BASEDIR)/config.mak && echo 1),)
  include $(BASEDIR)/config.mak
 endif
 
+ifeq ($(SHAREDIR),)
+ SHAREDIR = $(PREFIX)/share
+endif
+
 CFLAGS += -DLM_DATA_DIR=\"$(DATADIR)\" -DLM_VERSION="\"$(VERSION)\""
 
 MACHINE = $(shell uname -s)
@@ -57,9 +61,12 @@ ifeq ($(MACHINE),Darwin)
  ifneq ($(UNIVERSAL),)
   CFLAGS += -arch ppc -arch i386
  else
-  # Test for Snow Leopard
-  ifeq ($(shell test `uname -r | cut -f 1 -d .` -ge 10 && echo 1),1) 
-   CFLAGS += -arch i386
+  ifeq ($(UNIXSTYLE),)
+   CFLAGS += -DLM_FWBASED
+   # Test for Snow Leopard
+   ifeq ($(shell test `uname -r | cut -f 1 -d .` -ge 10 && echo 1),1) 
+    CFLAGS += -arch i386
+   endif
   endif
  endif
  FLAGS_GL = -FOpenGL

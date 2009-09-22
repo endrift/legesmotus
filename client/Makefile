@@ -21,7 +21,7 @@ ifeq ($(MACHINE),Windows)
 PLATFORM_DEP = legesmotus-res.o
 legesmotus-res.o: legesmotus.ico
 endif
-ifeq ($(MACHINE)$(UNIXSTYLE),Darwin)
+ifeq ($(MACHINE),Darwin)
 PLATFORM_DEP = mac.o
 endif
 

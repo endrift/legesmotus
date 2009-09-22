@@ -187,6 +187,7 @@ if [ $unix_style -ne 0 ]
 then
 	echo 'MANDIR = $(PREFIX)/man' >> config.mak
 	echo 'DATADIR = $(PREFIX)/share/games/legesmotus' >> config.mak
+	echo 'SHAREDIR = $(PREFIX)/share' >> config.mak
 	echo "UNIXSTYLE = 1" >> config.mak
 else
 	echo 'MANDIR = $(PREFIX)/share/man' >> config.mak
