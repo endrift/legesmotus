@@ -24,7 +24,6 @@
 
 #include "RadialMenu.hpp"
 #include "common/math.hpp"
-#include <iostream>
 
 using namespace LM;
 using namespace std;
@@ -46,7 +45,6 @@ int RadialMenu::coord_to_item(int x, int y) const {
 	double angle = -(atan2(double(y0), double(x0)) + (DEGREES_TO_RADIANS*m_background->get_rotation()));
 	angle = fmod(angle + 4.0*M_PI + (3.0*M_PI/m_background->get_num_segments()), 2.0*M_PI);
 	int i = int((angle + M_PI)/(2.0*M_PI) * m_background->get_num_segments()) % m_background->get_num_segments();
-	cout << angle << " " << i << endl;
 	return i;
 }
 
