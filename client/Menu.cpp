@@ -71,11 +71,11 @@ MenuItem* Menu::mouse_motion_event(const SDL_MouseMotionEvent& event) {
 	if (seen_item != m_over) {
 		if (m_over != NULL && m_over->get_state() == MenuItem::HOVER) {
 			m_over->set_state(MenuItem::NORMAL);
-			mouseout(m_over);
+			mouseout(m_over, event.x, event.y);
 		}
 		if (seen_item != NULL && seen_item->get_state() == MenuItem::NORMAL) {
 			seen_item->set_state(MenuItem::HOVER);
-			mouseover(seen_item);
+			mouseover(seen_item, event.x, event.y);
 		}
 		m_over = seen_item;
 	}
@@ -96,7 +96,7 @@ MenuItem* Menu::mouse_button_event(const SDL_MouseButtonEvent& event) {
 		if (m_pressed != NULL && m_pressed->get_state() == MenuItem::HOVER) {
 			m_pressed->set_state(MenuItem::CLICKED);
 		}
-		mousedown(m_pressed);
+		mousedown(m_pressed, event.x, event.y);
 	} else {
 		if (m_pressed != NULL && m_pressed->get_state() == MenuItem::CLICKED) {
 			if (item_at_position(event.x, event.y) == m_pressed) {
@@ -105,7 +105,7 @@ MenuItem* Menu::mouse_button_event(const SDL_MouseButtonEvent& event) {
 				m_pressed->set_state(MenuItem::NORMAL);
 			}
 		}
-		mouseup(m_pressed);
+		mouseup(m_pressed, event.x, event.y);
 	}
 
 	if (m_pressed && m_pressed->disabled()) {

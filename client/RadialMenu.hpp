@@ -1,5 +1,5 @@
 /*
- * client/RadialBackground.hpp
+ * client/RadialMenu.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,44 +22,34 @@
  * 
  */
 
-#ifndef LM_CLIENT_RADIALBACKGROUND_HPP
-#define LM_CLIENT_RADIALBACKGROUND_HPP
+#ifndef LM_CLIENT_RADIALMENU_HPP
+#define LM_CLIENT_RADIALMENU_HPP
 
-#include "Graphic.hpp"
-#include <vector>
+#include "Menu.hpp"
+#include "RadialBackground.hpp"
 
 namespace LM {
-	class RadialBackground : public Graphic {
+	class RadialMenu : public Menu {
 	private:
-		static const int RESOLUTION;
+		RadialBackground* m_background;
+		Color	m_normal;
+		Color	m_hover;
 
-		int	m_num_segments;
-		std::vector<Color>	m_segment_colors;
+		int	coord_to_item(int x, int y) const;
+		void	recalc_positions();
 
-		Color	m_border_color;
-		double	m_border_radius;
-		double	m_border_angle;
-		double	m_outer_radius;
-		double	m_inner_radius;
+	protected:
+		virtual void mouseover(MenuItem* item, int x, int y);
+		virtual void mouseout(MenuItem* item, int x, int y);
 
 	public:
-		RadialBackground(int num_segments);
-		virtual RadialBackground* clone() const;
+		RadialMenu(RadialBackground* background, Color normal, Color hover);
+		~RadialMenu();
 
-		int	get_num_segments() const;
+		void	add_item(MenuItem* item);
+		void	remove_item(MenuItem* item);
 
-		void	set_num_segments(int num_rows);
-		void	set_border_radius(double radius);
-		void	set_border_angle(double degrees);
-		void	set_border_color(Color color);
-		void	set_segment_color(int segment, Color color);
-		void	set_outer_radius(double radius);
-		void	set_inner_radius(double radius);
-
-		double	get_outer_radius() const;
-		double	get_inner_radius() const;
-
-		virtual void	draw(const GameWindow* window) const;
+		virtual MenuItem* item_at_position(int x, int y);
 	};
 }
 

@@ -88,6 +88,14 @@ void RadialBackground::set_inner_radius(double radius) {
 	m_inner_radius = radius;
 }
 
+double RadialBackground::get_outer_radius() const {
+	return m_outer_radius;
+}
+
+double RadialBackground::get_inner_radius() const {
+	return m_inner_radius;
+}
+
 void RadialBackground::draw(const GameWindow* window) const {
 	(void)(window); // Unused
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);

@@ -41,10 +41,10 @@ namespace LM {
 	protected:
 		std::vector<MenuItem*>	m_menu_items;
 
-		virtual void mouseover(MenuItem* item) { (void)(item); }
-		virtual void mouseout(MenuItem* item) { (void)(item); }
-		virtual void mousedown(MenuItem* item) { (void)(item); }
-		virtual void mouseup(MenuItem* item) { (void)(item); }
+		virtual void mouseover(MenuItem* item, int x, int y) { (void)(item); }
+		virtual void mouseout(MenuItem* item, int x, int y) { (void)(item); }
+		virtual void mousedown(MenuItem* item, int x, int y) { (void)(item); }
+		virtual void mouseup(MenuItem* item, int x, int y) { (void)(item); }
 
 		void	add_item_internal(MenuItem* item);
 		void	remove_item_internal(MenuItem* item); // Note: does not delete the item
