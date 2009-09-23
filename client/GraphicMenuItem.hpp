@@ -39,6 +39,8 @@ namespace LM {
 		Color	m_plain;
 		Color	m_hover;
 		Color	m_disabled;
+		double	m_hover_scale;
+		double	m_normal_scale;
 
 	protected:
 		virtual void state_changed(State old_state, State new_state);
@@ -49,6 +51,9 @@ namespace LM {
 		void	set_plain_color(const Color& color);
 		void	set_hover_color(const Color& color);
 		void	set_disabled_color(const Color& color);
+
+		void	set_scale(double factor);
+		void	set_hover_scale(double factor);
 
 		void	set_graphic(Graphic* graphic);
 		virtual	const Graphic*	get_graphic() const;

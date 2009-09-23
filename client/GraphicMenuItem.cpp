@@ -35,6 +35,8 @@ const Color GraphicMenuItem::DISABLED_COLOR = Color(0.8, 0.8, 0.8, 0.4);
 GraphicMenuItem::GraphicMenuItem(Graphic* Graphic, string value, State state) : MenuItem(value, state),
 m_plain(PLAIN_COLOR), m_hover(HOVER_COLOR), m_disabled(DISABLED_COLOR) {
 	m_graphic = Graphic;
+	m_hover_scale = 1.0;
+	m_normal_scale = 1.0;
 	state_changed(state, state);
 }
 
@@ -44,16 +46,22 @@ void GraphicMenuItem::state_changed(State old_state, State new_state) {
 	case STATIC:
 		m_graphic->set_color_intensity(m_plain);
 		m_graphic->set_alpha(m_plain.a);
+		m_graphic->set_scale_x(m_normal_scale);
+		m_graphic->set_scale_y(m_normal_scale);
 		break;
 	case CLICKED:
 		//TODO separate case
 	case HOVER:
 		m_graphic->set_color_intensity(m_hover);
 		m_graphic->set_alpha(m_hover.a);
+		m_graphic->set_scale_x(m_hover_scale);
+		m_graphic->set_scale_y(m_hover_scale);
 		break;
 	case DISABLED:
 		m_graphic->set_color_intensity(m_disabled);
 		m_graphic->set_alpha(m_disabled.a);
+		m_graphic->set_scale_x(m_normal_scale);
+		m_graphic->set_scale_y(m_normal_scale);
 		break;
 	}
 }
@@ -93,6 +101,14 @@ void GraphicMenuItem::set_disabled_color(const Color& color) {
 	default:
 		break;
 	}
+}
+
+void GraphicMenuItem::set_scale(double factor) {
+	m_normal_scale = factor;
+}
+
+void GraphicMenuItem::set_hover_scale(double factor) {
+	m_hover_scale = factor;
 }
 
 const Graphic* GraphicMenuItem::get_graphic() const {
