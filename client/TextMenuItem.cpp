@@ -39,6 +39,10 @@ m_disabled_fg(GameController::GREYED_COLOR), m_disabled_bg(GameController::GREYE
 	state_changed(state, state);
 }
 
+TextMenuItem::~TextMenuItem() {
+	delete m_text;
+}
+
 TextMenuItem* TextMenuItem::with_manager(TextManager* manager, string text, string value,
 double x, double y, State state) {
 	Text* graphic = manager->render_string(text, x, y);

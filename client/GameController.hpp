@@ -195,7 +195,10 @@ namespace LM {
 		TableBackground* m_chat_window_back;
 		Transition*	m_chat_window_transition_x;
 		Transition*	m_chat_window_transition_y;
-		
+
+		TextMenuItem*	m_version_nag1;
+		TextMenuItem*	m_version_nag2;
+
 		Sprite*		m_shot;
 	
 		Sprite*		m_logo;

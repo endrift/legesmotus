@@ -48,6 +48,7 @@ namespace LM {
 
 	public:
 		TextMenuItem(Text* text, std::string value, State state = NORMAL);
+		virtual ~TextMenuItem();
 		static TextMenuItem* with_manager(TextManager* manager, std::string text,
 			std::string value, double x, double y, State state = NORMAL);
 

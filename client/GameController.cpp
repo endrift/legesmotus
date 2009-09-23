@@ -340,6 +340,8 @@ void GameController::init(GameWindow* window) {
 	m_text_manager->set_shadow(true);
 	
 	// Initialize all of the menu items.
+	m_version_nag1 = NULL;
+	m_version_nag2 = NULL;
 	
 	// Main menu
 	m_main_menu.add_item(TextMenuItem::with_manager(m_text_manager, "Connect to Server", "connect", 50, 200));
@@ -1262,9 +1264,9 @@ void GameController::initialize_key_bindings() {
 	m_alt_key_bindings.open_team_chat = -1;
 	m_alt_key_bindings.open_console = -1;
 	m_alt_key_bindings.send_chat = SDLK_KP_ENTER;
-	m_alt_key_bindings.weapon_1 = -1;
-	m_alt_key_bindings.weapon_2 = -1;
-	m_alt_key_bindings.weapon_3 = -1;
+	m_alt_key_bindings.weapon_1 = SDLK_KP1;
+	m_alt_key_bindings.weapon_2 = SDLK_KP2;
+	m_alt_key_bindings.weapon_3 = SDLK_KP3;
 }
 
 /*
@@ -1281,10 +1283,10 @@ void GameController::parse_key_input() {
 		if ((m_key_bindings.weapon_1 != -1 && m_keys[m_key_bindings.weapon_1]) || (m_alt_key_bindings.weapon_1 != -1 && m_keys[m_alt_key_bindings.weapon_1])) {
 			change_weapon("pistol");
 		}
-		if ((m_key_bindings.weapon_2 != -2 && m_keys[m_key_bindings.weapon_2]) || (m_alt_key_bindings.weapon_2 != -2 && m_keys[m_alt_key_bindings.weapon_2])) {
+		if ((m_key_bindings.weapon_2 != -1 && m_keys[m_key_bindings.weapon_2]) || (m_alt_key_bindings.weapon_2 != -1 && m_keys[m_alt_key_bindings.weapon_2])) {
 			change_weapon("machinegun");
 		}
-		if ((m_key_bindings.weapon_3 != -3 && m_keys[m_key_bindings.weapon_3]) || (m_alt_key_bindings.weapon_3 != -3 && m_keys[m_alt_key_bindings.weapon_3])) {
+		if ((m_key_bindings.weapon_3 != -1 && m_keys[m_key_bindings.weapon_3]) || (m_alt_key_bindings.weapon_3 != -1 && m_keys[m_alt_key_bindings.weapon_3])) {
 			change_weapon("impact");
 		}
 	}
@@ -3107,16 +3109,24 @@ void	GameController::upgrade_available(const IPAddress& server_address, PacketRe
 	ostringstream message;
 	message << "Version: " << latest_version;
 
-	// TODO: rewrite
-	/*if (m_main_menu_items.find("Newversion") != m_main_menu_items.end()) {
-		m_text_manager->remove_string(m_main_menu_items["Newversion"]);
+	if (m_version_nag1 != NULL) {
+		m_main_menu.remove_item(m_version_nag1);
+		delete m_version_nag1;
+		m_version_nag1 = NULL;
 	}
-	if (m_main_menu_items.find("Newversion2") != m_main_menu_items.end()) {
-		m_text_manager->remove_string(m_main_menu_items["Newversion2"]);
+	if (m_version_nag2 != NULL) {
+		m_main_menu.remove_item(m_version_nag2);
+		delete m_version_nag2;
+		m_version_nag2 = NULL;
 	}
 	m_text_manager->set_active_font(m_menu_font);
-	m_main_menu_items["Newversion"] = m_text_manager->place_string("There is an upgrade available!", 440, 250, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_main_menu_items["Newversion2"] = m_text_manager->place_string(message.str(), 600, 300, TextManager::LEFT, TextManager::LAYER_HUD);*/
+	m_text_manager->set_active_color(TEXT_COLOR);
+	Text *nag1 = m_text_manager->render_string("There is an upgrade available!", m_window->get_width() - 30, 200, TextManager::RIGHT);
+	Text *nag2 = m_text_manager->render_string(message.str(), m_window->get_width() - 30, 240, TextManager::RIGHT);
+	m_version_nag1 = new TextMenuItem(nag1, "", MenuItem::STATIC);
+	m_version_nag2 = new TextMenuItem(nag2, "", MenuItem::STATIC);
+	m_main_menu.add_item(m_version_nag1);
+	m_main_menu.add_item(m_version_nag2);
 }
 
 void	GameController::scan_all() {
