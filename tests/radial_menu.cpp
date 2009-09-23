@@ -25,9 +25,16 @@ extern "C" int main(int argc, char* argv[]) {
 
 	RadialMenu m(rb, Color(1,1,1,0.5), Color(1,1,1,1));
 
-	m.add_item(new GraphicMenuItem(new Sprite(pman.data_path("gun_noshot.png", "sprites")), "gun"));
-	m.add_item(new GraphicMenuItem(new Sprite(pman.data_path("mgun_noshot.png", "sprites")), "mgun"));
-	m.add_item(new GraphicMenuItem(new Sprite(pman.data_path("cannon_front.png", "sprites")), "cannon", MenuItem::DISABLED));
+	GraphicMenuItem *cur_item;
+	cur_item = new GraphicMenuItem(new Sprite(pman.data_path("gun_noshot.png", "sprites")), "gun");
+	cur_item->set_hover_scale(2.0);
+	m.add_item(cur_item);
+	cur_item = new GraphicMenuItem(new Sprite(pman.data_path("mgun_noshot.png", "sprites")), "mgun");
+	cur_item->set_hover_scale(2.0);
+	m.add_item(cur_item);
+	cur_item = new GraphicMenuItem(new Sprite(pman.data_path("cannon_front.png", "sprites")), "cannon", MenuItem::DISABLED);
+	cur_item->set_hover_scale(2.0);
+	m.add_item(cur_item);
 
 	window->register_graphic(m.get_graphic_group());
 	window->register_graphic(&ch);
