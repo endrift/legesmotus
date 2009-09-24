@@ -33,39 +33,57 @@ namespace LM {
 	class ScrollArea : public Graphic {
 	private:
 		GraphicGroup	m_group;
-		double		m_progress;
-		ScrollBar*	m_linked;
+		double		m_horiz_progress;
+		double		m_vert_progress;
+		ScrollBar*	m_horiz_linked;
+		ScrollBar*	m_vert_linked;
 		double		m_width;
 		double		m_height;
 		double		m_content_height;
+		double		m_content_width;
 		bool		m_updated;
 	
 	public:
-		ScrollArea(double width, double height, double content_height, ScrollBar* bar = NULL);
+		ScrollArea(double width, double height, double content_width, double content_height, ScrollBar* hbar = NULL, ScrollBar* vbar = NULL);
 		ScrollArea(const ScrollArea& other);
 		virtual ScrollArea* clone() const;
-	
+
 		virtual void	set_width(double width);
 		virtual void	set_height(double height);
 		void	set_content_height(double height);
-	
+		void	set_content_width(double height);
+
 		double	get_width() const;
 		double	get_height() const;
 		double	get_content_height() const;
-	
-		void	set_scroll_progress(double amount);
-		void	scroll(double amount);
-	
-		void	set_scroll_progress_pixels(double pixels);
-		void	scroll_pixels(double pixels);
-	
-		double	get_scroll_progress() const;
-		double	get_scroll_progress_pixels() const;
-	
+		double	get_content_width() const;
+
+		// TODO: Inner class to reduce code reuse?
+		void	set_horiz_scroll_progress(double amount);
+		void	horiz_scroll(double amount);
+
+		void	set_horiz_scroll_progress_pixels(double pixels);
+		void	horiz_scroll_pixels(double pixels);
+
+		double	get_horiz_scroll_progress() const;
+		double	get_horiz_scroll_progress_pixels() const;
+
+		void	set_vert_scroll_progress(double amount);
+		void	vert_scroll(double amount);
+
+		void	set_vert_scroll_progress_pixels(double pixels);
+		void	vert_scroll_pixels(double pixels);
+
+		double	get_vert_scroll_progress() const;
+		double	get_vert_scroll_progress_pixels() const;
+
 		GraphicGroup*	get_group();
-	
-		void	relink(ScrollBar* linked);
-		ScrollBar* getLinked();
+
+		void	horiz_relink(ScrollBar* linked);
+		ScrollBar* get_horiz_linked();
+
+		void	vert_relink(ScrollBar* linked);
+		ScrollBar* get_vert_linked();
 	
 		virtual void draw(const GameWindow* window) const;
 	};

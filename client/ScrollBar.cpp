@@ -30,7 +30,7 @@ using namespace LM;
 
 const double ScrollBar::DEFAULT_AUTOSCROLL = 50.0;
 
-ScrollBar::ScrollBar(ScrollArea* area) : m_bg(5,SCROLL_WIDTH) {
+ScrollBar::ScrollBar(bool horizontal, ScrollArea* area) : m_bg(5,SCROLL_WIDTH) {
 	m_bg.set_corner_radius(SCROLL_WIDTH*0.5);
 	m_bg.set_border_color(Color::WHITE);
 	m_bg.set_border_width(2);
@@ -38,26 +38,36 @@ ScrollBar::ScrollBar(ScrollArea* area) : m_bg(5,SCROLL_WIDTH) {
 	m_bg.set_row_height(0, SCROLL_WIDTH);
 	m_bg.set_row_height(4, SCROLL_WIDTH);
 	m_bg.set_center_x(SCROLL_WIDTH*0.5);
+	m_horizontal = horizontal;
 
 	m_updated = false;
 	if (area != NULL) {
-		area->relink(this);
+		if (m_horizontal) {
+			area->horiz_relink(this);
+		} else {
+			area->vert_relink(this);
+		}
 	} else {
 		m_linked = NULL;
 	}
 	m_progress = 0.0;
 	set_height(SCROLL_WIDTH*5);
-	set_scrollbar_height(SCROLL_WIDTH);
+	set_scrollbar_length(SCROLL_WIDTH);
 	m_pressed = NO_WIDGET;
 
 	m_scroll_speed = 1.0;
 	m_track_speed = 3.0;
+
+	if (m_horizontal) {
+		m_bg.set_rotation(-90);
+	}
 }
 
 ScrollBar::ScrollBar(const ScrollBar& other) : m_bg(other.m_bg) {
 	m_updated = false;
 	set_height(other.m_height);
-	set_scrollbar_height(other.m_scrollbar_height);
+	set_scrollbar_length(other.m_scrollbar_height);
+	m_horizontal = other.m_horizontal;
 	m_linked = NULL;
 	m_progress = other.m_progress;
 	m_pressed = NO_WIDGET;
@@ -88,19 +98,55 @@ void ScrollBar::autoscroll(double scale) {
 	}
 
 	if (m_linked != NULL) {
-		m_linked->scroll_pixels(amount*20*scale/m_height);
+		if (m_horizontal) {
+			m_linked->horiz_scroll_pixels(amount*20*scale/m_height);
+		} else {
+			m_linked->vert_scroll_pixels(amount*20*scale/m_height);
+		}
 	} else {
 		scroll(amount*scale/m_height);
 	}
 }
 
+void ScrollBar::set_width(double width) {
+	if (m_horizontal) {
+		m_height = width;
+		m_bg.set_center_y(width*0.5);
+		set_scroll_progress(m_progress);
+	}
+}
+
 void ScrollBar::set_height(double height) {
-	m_height = height;
-	m_bg.set_center_y(height*0.5);
+	if (!m_horizontal) {
+		m_height = height;
+		m_bg.set_center_y(height*0.5);
+		set_scroll_progress(m_progress);
+	}
+}
+
+void ScrollBar::set_length(double length) {
+	m_height = length;
+	m_bg.set_center_y(length*0.5);
 	set_scroll_progress(m_progress);
 }
 
+double ScrollBar::get_width() const {
+	if (m_horizontal) {
+		return m_height;
+	} else {
+		return SCROLL_WIDTH;
+	}
+}
+
 double ScrollBar::get_height() const {
+	if (m_horizontal) {
+		return SCROLL_WIDTH;
+	} else {
+		return m_height;
+	}
+}
+
+double ScrollBar::get_length() const {
 	return m_height;
 }
 
@@ -110,32 +156,45 @@ void ScrollBar::mouse_button_event(const SDL_MouseButtonEvent& event) {
 		return;
 	}
 
-	double x = get_x() - get_center_x();
-	double y = get_y() - get_center_y();
+	double x;
+	double y;
+	int ex;
+	int ey;
+	if (m_horizontal) {
+		y = get_x() - get_center_x();
+		x = get_y() - get_center_y();
+		ey = event.x;
+		ex = event.y;
+	} else {
+		x = get_x() - get_center_x();
+		y = get_y() - get_center_y();
+		ex = event.x;
+		ey = event.y;
+	}
 
-	if (event.x < (x - SCROLL_WIDTH*0.5) || event.x > (x + SCROLL_WIDTH*0.5)) {
+	if (ex < (x - SCROLL_WIDTH*0.5) || ex > (x + SCROLL_WIDTH*0.5)) {
 		return;
-	} else if(event.y < (y - m_height*0.5) || event.y > (y + m_height*0.5)) {
+	} else if(ey < (y - m_height*0.5) || ey > (y + m_height*0.5)) {
 		return;
 	}
 
-	if(event.y < (y - (m_height*0.5 - SCROLL_WIDTH))) {
+	if(ey < (y - (m_height*0.5 - SCROLL_WIDTH))) {
 		m_pressed = TOP_BUTTON;
 		autoscroll(DEFAULT_AUTOSCROLL);
-	} else if(event.y > (y + (m_height*0.5 - SCROLL_WIDTH))) {
+	} else if(ey > (y + (m_height*0.5 - SCROLL_WIDTH))) {
 		m_pressed = BOTTOM_BUTTON;
 		autoscroll(DEFAULT_AUTOSCROLL);
-	} else if(event.y < (y - (m_height*0.5 - SCROLL_WIDTH) +
+	} else if(ey < (y - (m_height*0.5 - SCROLL_WIDTH) +
 			m_bg.get_row_height(1))) {
 		m_pressed = TOP_TRACK;
 		autoscroll(DEFAULT_AUTOSCROLL);
-	} else if(event.y > (y + (m_height*0.5 - SCROLL_WIDTH) -
+	} else if(ey > (y + (m_height*0.5 - SCROLL_WIDTH) -
 			m_bg.get_row_height(3))) {
 		m_pressed = BOTTOM_TRACK;
 		autoscroll(DEFAULT_AUTOSCROLL);
 	} else {
 		m_pressed = TRACKER;
-		m_grab_y = event.y - m_progress*(m_height-SCROLL_WIDTH*2-m_scrollbar_height);
+		m_grab_y = ey - m_progress*(m_height-SCROLL_WIDTH*2-m_scrollbar_height);
 	}
 }
 
@@ -147,7 +206,11 @@ void ScrollBar::mouse_motion_event(const SDL_MouseMotionEvent& event) {
 	if(scroll_denominator == 0) {
 		set_scroll_progress(0);
 	} else {
-		set_scroll_progress((event.y - m_grab_y)/scroll_denominator);
+		if (m_horizontal) {
+			set_scroll_progress((event.x - m_grab_y)/scroll_denominator);
+		} else {
+			set_scroll_progress((event.y - m_grab_y)/scroll_denominator);
+		}
 	}
 }
 
@@ -164,7 +227,11 @@ void ScrollBar::set_scroll_progress(double amount) {
 
 	if(m_linked != NULL && !m_updated) {
 		m_updated = true;
-		m_linked->set_scroll_progress(amount);
+		if (m_horizontal) {
+			m_linked->set_horiz_scroll_progress(amount);
+		} else {
+			m_linked->set_vert_scroll_progress(amount);
+		}
 		m_updated = false;
 	}
 }
@@ -177,13 +244,13 @@ double ScrollBar::get_scroll_progress() const {
 	return m_progress;
 }
 
-void ScrollBar::set_scrollbar_height(double height) {
+void ScrollBar::set_scrollbar_length(double length) {
 	/*if (height > m_height - SCROLL_WIDTH*2) {
 		height = m_height - SCROLL_WIDTH*2;
-	} else*/ if (height < SCROLL_WIDTH*0.5) {
-		height = SCROLL_WIDTH*0.5;
+	} else*/ if (length < SCROLL_WIDTH*0.5) {
+		length = SCROLL_WIDTH*0.5;
 	}
-	m_scrollbar_height = height;
+	m_scrollbar_height = length;
 	m_bg.set_row_height(2, m_scrollbar_height);
 	set_scroll_progress(m_progress);
 }
@@ -241,6 +308,17 @@ double ScrollBar::get_track_speed() const {
 	return m_track_speed;
 }
 
+void ScrollBar::set_horizontal(bool horiz) {
+	m_horizontal = horiz;
+	// We need to break the link, or else bad stuff happens
+	m_linked = NULL;
+	if (horiz) {
+		m_bg.set_rotation(-90);
+	} else {
+		m_bg.set_rotation(0);
+	}
+}
+
 void ScrollBar::relink(ScrollArea* linked) {
 	if (m_updated) {
 		return;
@@ -248,13 +326,18 @@ void ScrollBar::relink(ScrollArea* linked) {
 	m_linked = linked;
 	if (linked != NULL) {
 		m_updated = true;
-		linked->relink(this);
-		linked->set_scroll_progress(m_progress);
+		if (m_horizontal) {
+			linked->horiz_relink(this);
+			linked->set_horiz_scroll_progress(m_progress);
+		} else {
+			linked->vert_relink(this);
+			linked->set_vert_scroll_progress(m_progress);
+		}
 		m_updated = false;
 	}
 }
 
-ScrollArea* ScrollBar::getLinked() {
+ScrollArea* ScrollBar::get_linked() {
 	return m_linked;
 }
 

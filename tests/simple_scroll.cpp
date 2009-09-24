@@ -9,14 +9,21 @@ using namespace LM;
 
 int main(int argc, char *argv[]) {
 	GameWindow *window = GameWindow::get_instance(300,300,24,false);
-	ScrollBar bar;
-	bar.set_x(280);
-	bar.set_y(150);
-	bar.set_height(280);
-	bar.set_section_color(ScrollBar::BUTTONS, Color(0.5,0.5,0.5));
-	bar.set_section_color(ScrollBar::TRACK, Color(0.2,0.2,0.2));
-	bar.set_section_color(ScrollBar::TRACKER, Color(0.4,0.4,0.4));
-	ScrollArea area(250,250,300,&bar);
+	ScrollBar vbar;
+	vbar.set_x(280);
+	vbar.set_y(150);
+	vbar.set_height(240);
+	vbar.set_section_color(ScrollBar::BUTTONS, Color(0.5,0.5,0.5));
+	vbar.set_section_color(ScrollBar::TRACK, Color(0.2,0.2,0.2));
+	vbar.set_section_color(ScrollBar::TRACKER, Color(0.4,0.4,0.4));
+	ScrollBar hbar;
+	hbar.set_x(150);
+	hbar.set_y(280);
+	hbar.set_height(240);
+	hbar.set_section_color(ScrollBar::BUTTONS, Color(0.5,0.5,0.5));
+	hbar.set_section_color(ScrollBar::TRACK, Color(0.2,0.2,0.2));
+	hbar.set_section_color(ScrollBar::TRACKER, Color(0.4,0.4,0.4));
+	ScrollArea area(250,250,300,300,&hbar,&vbar);
 	area.set_x(150);
 	area.set_y(150);
 	area.set_center_x(125);
@@ -29,7 +36,8 @@ int main(int argc, char *argv[]) {
 	s.set_y(150);
 	ch.set_priority(-1);
 	window->register_graphic(&ch);
-	window->register_graphic(&bar);
+	window->register_graphic(&hbar);
+	window->register_graphic(&vbar);
 	window->register_graphic(&area);
 	area.get_group()->add_graphic(&s);
 
@@ -49,10 +57,16 @@ int main(int argc, char *argv[]) {
 					running = 0;
 					break;
 				case SDLK_DOWN:
-					bar.scroll(0.1);
+					vbar.scroll(0.1);
 					break;
 				case SDLK_UP:
-					bar.scroll(-0.1);
+					vbar.scroll(-0.1);
+					break;
+				case SDLK_RIGHT:
+					hbar.scroll(0.1);
+					break;
+				case SDLK_LEFT:
+					hbar.scroll(-0.1);
 					break;
 				default: break;
 				}
@@ -60,16 +74,19 @@ int main(int argc, char *argv[]) {
 			case SDL_MOUSEMOTION:
 				ch.set_x(e.motion.x);
 				ch.set_y(e.motion.y);
-				bar.mouse_motion_event(e.motion);
+				hbar.mouse_motion_event(e.motion);
+				vbar.mouse_motion_event(e.motion);
 				break;
 			case SDL_MOUSEBUTTONDOWN:
 			case SDL_MOUSEBUTTONUP:
-				bar.mouse_button_event(e.button);
+				hbar.mouse_button_event(e.button);
+				vbar.mouse_button_event(e.button);
 				break;
 			}
 		}
 
-		bar.autoscroll(currenttick - lasttick);
+		hbar.autoscroll(currenttick - lasttick);
+		vbar.autoscroll(currenttick - lasttick);
 		window->redraw();
 
 		lasttick = currenttick;

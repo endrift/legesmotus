@@ -71,8 +71,9 @@ ChatLog::ChatLog(GameController& parent, GameWindow* window, TextManager* textma
 	m_scrollbar->set_section_color(ScrollBar::TRACK, Color(0.2,0.1,0.1));
 	m_scrollbar->set_section_color(ScrollBar::TRACKER, Color(0.2,0.2,0.4));
 	m_scrollbar->set_scroll_speed(3);
-	
-	m_scrollarea = new ScrollArea(m_background->get_x() - m_background->get_image_width()/2 - m_scrollbar->get_x() - m_scrollbar->get_image_width() + RIGHT_PADDING, m_background->get_image_height() - m_background->get_row_height(0) - 30,10,m_scrollbar);
+
+	double width = m_background->get_x() - m_background->get_image_width()/2 - m_scrollbar->get_x() - m_scrollbar->get_image_width() + RIGHT_PADDING;
+	m_scrollarea = new ScrollArea(width, m_background->get_image_height() - m_background->get_row_height(0) - 30, width, 10, NULL, m_scrollbar);
 	m_scrollarea->set_priority(TEXT_LAYER);
 	m_scrollarea->get_group()->set_priority(TEXT_LAYER);
 	m_scrollarea->set_x(m_background->get_x() - RIGHT_PADDING);

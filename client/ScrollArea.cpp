@@ -29,25 +29,37 @@
 using namespace LM;
 using namespace std;
 
-ScrollArea::ScrollArea(double width, double height, double content_height, ScrollBar* bar) {
-	m_progress = 0.0;
+ScrollArea::ScrollArea(double width, double height, double content_width, double content_height, ScrollBar* hbar, ScrollBar* vbar) {
+	m_horiz_progress = 0.0;
+	m_vert_progress = 0.0;
 	m_updated = false;
-	if (bar != NULL) {
-		bar->relink(this);
+	if (hbar != NULL) {
+		hbar->set_horizontal(true);
+		hbar->relink(this);
 	} else {
-		m_linked = NULL;
+		m_horiz_linked = NULL;
+	}
+	if (vbar != NULL) {
+		vbar->set_horizontal(false);
+		vbar->relink(this);
+	} else {
+		m_vert_linked = NULL;
 	}
 	m_width = width;
 	m_height = height;
 	set_content_height(content_height);
+	set_content_width(content_width);
 }
 
 ScrollArea::ScrollArea(const ScrollArea& other) : m_group(other.m_group) {
-	m_progress = other.m_progress;
+	m_horiz_progress = other.m_horiz_progress;
+	m_vert_progress = other.m_vert_progress;
 	m_updated = false;
-	m_linked = NULL;
+	m_horiz_linked = NULL;
+	m_vert_linked = NULL;
 	m_width = other.m_width;
 	m_height = other.m_height;
+	m_content_width = other.m_content_width;
 	m_content_height = other.m_content_height;
 }
 
@@ -63,18 +75,32 @@ void ScrollArea::set_height(double height) {
 	m_height = height;
 }
 
-void ScrollArea::set_content_height(double height) {
-	double progress_pixels = m_progress*(m_content_height-m_height);
-	m_content_height = height;
-	if (m_linked != NULL) {
-		double scrollbar_height = m_height/m_content_height;
-		if (scrollbar_height > 1) {
-			scrollbar_height = 1;
+void ScrollArea::set_content_width(double width) {
+	double progress_pixels = m_horiz_progress*(m_content_width-m_width);
+	m_content_width = width;
+	if (m_horiz_linked != NULL) {
+		double scrollbar_length = m_width/m_content_width;
+		if (scrollbar_length > 1) {
+			scrollbar_length = 1;
 		}
-		scrollbar_height *= m_linked->get_height() - ScrollBar::SCROLL_WIDTH*2;
-		m_linked->set_scrollbar_height(scrollbar_height);
+		scrollbar_length *= m_horiz_linked->get_length() - ScrollBar::SCROLL_WIDTH*2;
+		m_horiz_linked->set_scrollbar_length(scrollbar_length);
 	}
-	set_scroll_progress_pixels(progress_pixels);
+	set_horiz_scroll_progress_pixels(progress_pixels);
+}
+
+void ScrollArea::set_content_height(double height) {
+	double progress_pixels = m_vert_progress*(m_content_height-m_height);
+	m_content_height = height;
+	if (m_vert_linked != NULL) {
+		double scrollbar_length = m_height/m_content_height;
+		if (scrollbar_length > 1) {
+			scrollbar_length = 1;
+		}
+		scrollbar_length *= m_vert_linked->get_length() - ScrollBar::SCROLL_WIDTH*2;
+		m_vert_linked->set_scrollbar_length(scrollbar_length);
+	}
+	set_vert_scroll_progress_pixels(progress_pixels);
 }
 
 double ScrollArea::get_width() const {
@@ -89,67 +115,130 @@ double ScrollArea::get_content_height() const {
 	return m_content_height;
 }
 
-void ScrollArea::set_scroll_progress(double amount) {
+double ScrollArea::get_content_width() const {
+	return m_content_width;
+}
+
+void ScrollArea::set_horiz_scroll_progress(double amount) {
 	if (amount < 0) {
 		amount = 0;
 	} else if (amount > 1) {
 		amount = 1;
 	}
 
-	m_progress = amount;
+	m_horiz_progress = amount;
 
-	if(m_linked != NULL && !m_updated) {
+	if(m_horiz_linked != NULL && !m_updated) {
 		m_updated = true;
-		m_linked->set_scroll_progress(amount);
+		m_horiz_linked->set_scroll_progress(amount);
 		m_updated = false;
 	}
 }
 
-void ScrollArea::scroll(double amount) {
-	set_scroll_progress(m_progress + amount);
+void ScrollArea::horiz_scroll(double amount) {
+	set_horiz_scroll_progress(m_horiz_progress + amount);
 }
 
-void ScrollArea::set_scroll_progress_pixels(double pixels) {
-	if (m_content_height <= m_height) {
-		set_scroll_progress(0);
+void ScrollArea::set_horiz_scroll_progress_pixels(double pixels) {
+	if (m_content_width <= m_width) {
+		set_horiz_scroll_progress(0);
 	} else {
-		set_scroll_progress(pixels/(m_content_height-m_height));
+		set_horiz_scroll_progress(pixels/(m_content_width-m_width));
 	}
 }
 
-void ScrollArea::scroll_pixels(double pixels) {
+void ScrollArea::horiz_scroll_pixels(double pixels) {
+	if (m_content_width > m_width) {
+		horiz_scroll(pixels/(m_content_width-m_width));
+	}
+}
+
+double ScrollArea::get_horiz_scroll_progress() const {
+	return m_horiz_progress;
+}
+
+double ScrollArea::get_horiz_scroll_progress_pixels() const {
+	return max<double>(0,m_horiz_progress*(m_content_width-m_width));
+}
+
+void ScrollArea::set_vert_scroll_progress(double amount) {
+	if (amount < 0) {
+		amount = 0;
+	} else if (amount > 1) {
+		amount = 1;
+	}
+
+	m_vert_progress = amount;
+
+	if(m_vert_linked != NULL && !m_updated) {
+		m_updated = true;
+		m_vert_linked->set_scroll_progress(amount);
+		m_updated = false;
+	}
+}
+
+void ScrollArea::vert_scroll(double amount) {
+	set_vert_scroll_progress(m_vert_progress + amount);
+}
+
+void ScrollArea::set_vert_scroll_progress_pixels(double pixels) {
+	if (m_content_height <= m_height) {
+		set_vert_scroll_progress(0);
+	} else {
+		set_vert_scroll_progress(pixels/(m_content_height-m_height));
+	}
+}
+
+void ScrollArea::vert_scroll_pixels(double pixels) {
 	if (m_content_height > m_height) {
-		scroll(pixels/(m_content_height-m_height));
+		horiz_scroll(pixels/(m_content_height-m_height));
 	}
 }
 
-double ScrollArea::get_scroll_progress() const {
-	return m_progress;
+double ScrollArea::get_vert_scroll_progress() const {
+	return m_vert_progress;
 }
 
-double ScrollArea::get_scroll_progress_pixels() const {
-	return max<double>(0,m_progress*(m_content_height-m_height));
+double ScrollArea::get_vert_scroll_progress_pixels() const {
+	return max<double>(0,m_vert_progress*(m_content_height-m_height));
 }
 
 GraphicGroup* ScrollArea::get_group() {
 	return &m_group;
 }
 
-void ScrollArea::relink(ScrollBar* linked) {
+void ScrollArea::horiz_relink(ScrollBar* linked) {
 	if (m_updated) {
 		return;
 	}
-	m_linked = linked;
+	m_horiz_linked = linked;
 	if (linked != NULL) {
 		m_updated = true;
 		linked->relink(this);
-		linked->set_scroll_progress(m_progress);
+		linked->set_scroll_progress(m_horiz_progress);
 		m_updated = false;
 	}
 }
 
-ScrollBar* ScrollArea::getLinked() {
-	return m_linked;
+ScrollBar* ScrollArea::get_horiz_linked() {
+	return m_horiz_linked;
+}
+
+void ScrollArea::vert_relink(ScrollBar* linked) {
+	if (m_updated) {
+		return;
+	}
+	m_vert_linked = linked;
+	if (linked != NULL) {
+		m_updated = true;
+		linked->relink(this);
+		linked->set_scroll_progress(m_vert_progress);
+		m_updated = false;
+	}
+}
+
+ScrollBar* ScrollArea::get_vert_linked() {
+	return m_vert_linked;
 }
 
 void ScrollArea::draw(const GameWindow* window) const {
@@ -169,7 +258,7 @@ void ScrollArea::draw(const GameWindow* window) const {
 		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 		glStencilFunc(GL_EQUAL, 1, 1);
-		glTranslated(0,-round(m_progress*(m_content_height-m_height)),0);
+		glTranslated(-round(m_horiz_progress*(m_content_width-m_width)), -round(m_vert_progress*(m_content_height-m_height)), 0);
 		glEnable(GL_TEXTURE_2D);
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		m_group.draw(window);

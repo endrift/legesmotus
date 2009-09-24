@@ -316,7 +316,7 @@ void GameController::init(GameWindow* window) {
 	red_player.set_invisible(true);
 	
 	m_crosshairs = new Sprite(m_path_manager.data_path("crosshairs.png", "sprites"));
-	m_crosshairs->set_priority(-5);
+	m_crosshairs->set_priority(-10);
 	m_window->register_hud_graphic(m_crosshairs);
 	
 	m_shot = new Sprite(m_path_manager.data_path("shot.png", "sprites"));
@@ -450,15 +450,15 @@ void GameController::init(GameWindow* window) {
 	
 	m_overlay_scrollbar = new ScrollBar();
 	m_overlay_scrollbar->set_priority(-3);
-	m_overlay_scrollbar->set_height(m_overlay_background->get_row_height(2) - 20);
+	m_overlay_scrollbar->set_length(m_overlay_background->get_row_height(2) - 20);
 	m_overlay_scrollbar->set_x(m_overlay_background->get_x() + m_overlay_background->get_image_width()/2 - 20);
-	m_overlay_scrollbar->set_y(m_overlay_background->get_y() + m_overlay_background->get_row_height(0) + m_overlay_background->get_row_height(1) + 5 + m_overlay_scrollbar->get_height()/2);
+	m_overlay_scrollbar->set_y(m_overlay_background->get_y() + m_overlay_background->get_row_height(0) + m_overlay_background->get_row_height(1) + 5 + m_overlay_scrollbar->get_length()/2);
 	m_overlay_scrollbar->set_section_color(ScrollBar::BUTTONS, Color(0.7,0.2,0.1));
 	m_overlay_scrollbar->set_section_color(ScrollBar::TRACK, Color(0.2,0.1,0.1));
 	m_overlay_scrollbar->set_section_color(ScrollBar::TRACKER, Color(0.2,0.2,0.4));
 	m_overlay_scrollbar->set_scroll_speed(3);
 
-	m_overlay_scrollarea = new ScrollArea(m_overlay_background->get_image_width(),m_overlay_background->get_row_height(2) - 30,10,m_overlay_scrollbar);
+	m_overlay_scrollarea = new ScrollArea(m_overlay_background->get_image_width(), m_overlay_background->get_row_height(2) - 30, m_overlay_background->get_image_width(), 10, NULL, m_overlay_scrollbar);
 	m_overlay_scrollarea->set_priority(TEXT_LAYER);
 	m_overlay_scrollarea->get_group()->set_priority(TEXT_LAYER);
 	m_overlay_scrollarea->set_x(m_overlay_background->get_x() + 5);

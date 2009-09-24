@@ -58,18 +58,23 @@ namespace LM {
 		bool		m_updated;
 		double		m_scroll_speed;
 		double		m_track_speed;
-	
+		bool		m_horizontal;
+
 		const static double DEFAULT_AUTOSCROLL;
 	
 	public:
-		ScrollBar(ScrollArea* area = NULL);
+		ScrollBar(bool horizontal = false, ScrollArea* area = NULL);
 		ScrollBar(const ScrollBar& other);
 		virtual ScrollBar* clone() const;
-	
+
+		virtual void	set_width(double width);
 		virtual void	set_height(double height);
-		
+		void	set_length(double length);
+
+		double	get_width() const;
 		double	get_height() const;
-	
+		double	get_length() const;
+
 		void	mouse_button_event(const SDL_MouseButtonEvent& event);
 		void	mouse_motion_event(const SDL_MouseMotionEvent& event);
 	
@@ -80,7 +85,7 @@ namespace LM {
 		void	scroll(double amount);
 		double	get_scroll_progress() const;
 	
-		void	set_scrollbar_height(double height);
+		void	set_scrollbar_length(double length);
 		void	set_section_color(ScrollWidget section, Color color);
 		void	set_border_color(Color color);
 		void	set_border_width(double width);
@@ -90,9 +95,12 @@ namespace LM {
 	
 		double	get_scroll_speed() const;
 		double	get_track_speed() const;
+
+		void	set_horizontal(bool horiz);
+		bool	is_horizontal() const;
 	
 		void	relink(ScrollArea* linked);
-		ScrollArea* getLinked();
+		ScrollArea* get_linked();
 	
 		virtual void draw(const GameWindow* window) const;
 	};

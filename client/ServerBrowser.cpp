@@ -70,7 +70,7 @@ ServerBrowser::ServerBrowser(GameController& parent, GameWindow* window, TextMan
 	m_scrollbar->set_section_color(ScrollBar::TRACKER, Color(0.2,0.2,0.4));
 	m_scrollbar->set_scroll_speed(3);
 	
-	m_scrollarea = new ScrollArea(m_background->get_image_width(),m_background->get_image_height() - m_background->get_row_height(0) - 30,10,m_scrollbar);
+	m_scrollarea = new ScrollArea(m_background->get_image_width(), m_background->get_image_height() - m_background->get_row_height(0) - 30, m_background->get_image_width(), 10, NULL, m_scrollbar);
 	m_scrollarea->set_priority(TEXT_LAYER);
 	m_scrollarea->get_group()->set_priority(TEXT_LAYER);
 	m_scrollarea->set_x(m_background->get_x() + 5);
@@ -323,7 +323,7 @@ int ServerBrowser::check_item_select(int mouse_x, int mouse_y) {
 		return -1;
 	}
 	
-	int offset = int(m_scrollarea->get_y() - m_scrollarea->get_scroll_progress_pixels());
+	int offset = int(m_scrollarea->get_y() - m_scrollarea->get_vert_scroll_progress_pixels());
 	
 	m_selected_item = int(((mouse_y-offset)/25) - m_items["name0"]->get_y() / 25);
 	
