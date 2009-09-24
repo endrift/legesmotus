@@ -968,7 +968,7 @@ void GameController::update_health_bar(int new_health) {
 		new_health = 0;
 	}
 	
-	m_health_bar->set_image_width(HEALTH_BAR_WIDTH * ((double)new_health/GraphicalPlayer::MAX_HEALTH));
+	m_health_bar->set_image_width((HEALTH_BAR_WIDTH-2) * ((double)new_health/(GraphicalPlayer::MAX_HEALTH)) + 2);
 	
 	if (m_health_text != NULL) {
 		m_text_manager->remove_string(m_health_text);
