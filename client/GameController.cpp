@@ -1655,24 +1655,19 @@ void GameController::attempt_jump() {
 	if (player.is_frozen() || player.is_invisible() || !player.is_grabbing_obstacle()) {
 		return;
 	}
+
+	double	jump_angle = get_crosshairs_angle();
 	
 	//
 	// Calculate the new velocities
 	//
-	Vector	new_velocity(Vector::make_from_magnitude(6.0, get_crosshairs_angle()));
+	Vector	new_velocity(Vector::make_from_magnitude(6.0, jump_angle));
 	double	new_rotation = (((double)rand() / ((double)(RAND_MAX)+1)) - 0.5) * RANDOM_ROTATION_SCALE;
-
-	//
-	// Set the player in motion
-	//
-	player.set_velocity(new_velocity);
-	player.set_rotational_vel(new_rotation);
-	player.set_is_grabbing_obstacle(false);
-	m_transition_manager.remove_transition(m_transition_manager.get_transition("player_rotation"));
 
 	//
 	// Find the nearest obstacle that we are jumping towards
 	//
+	Circle	player_circle(player.get_position(), player.get_radius()+5);
 	Point	start_pos(player.get_position());
 	Point	end_pos(start_pos + new_velocity.get_unit_vector() * (m_map_width + m_map_height));
 	double	angle_of_incidence = 0;
@@ -1686,13 +1681,28 @@ void GameController::attempt_jump() {
 			continue;
 		}
 
+		// See if we're colliding with this obstacle right now
+		double		colliding_angle_of_incidence;
+		if (map_obj->get_bounding_shape()->boundary_intersects_circle(player_circle, &colliding_angle_of_incidence) != -1) {
+			double	angle_difference = get_normalized_angle(colliding_angle_of_incidence - to_degrees(jump_angle));
+			if (angle_difference < 90 || angle_difference > 270) {
+				// We are jumping RIGHT INTO the obstacle that we're already colliding with
+				// Abort the jump, since it can take us nowhere
+				// (If the jump weren't aborted, it would cause problems with active map obstacles)
+				return;
+			}
+		}
+
+		// See if our trajectory collides with this obstacle
 		double		new_angle = 0;
 		Point		new_point = map_obj->get_bounding_shape()->intersects_line(start_pos, end_pos, &new_angle);
 		
 		if (new_point.x == -1 && new_point.y == -1) {
+			// Not in the trajectory - continue to next obstacle...
 			continue;
 		}
 		
+		// How far away is the obstacle from us?
 		double		new_dist = Point::distance(start_pos, new_point);
 		
 		if (new_dist != -1 && new_dist < shortest_dist) {
@@ -1711,6 +1721,14 @@ void GameController::attempt_jump() {
 			angle_of_incidence = new_angle;
 		}
 	}
+
+	//
+	// Set the player in motion
+	//
+	player.set_velocity(new_velocity);
+	player.set_rotational_vel(new_rotation);
+	player.set_is_grabbing_obstacle(false);
+	m_transition_manager.remove_transition(m_transition_manager.get_transition("player_rotation"));
 
 	if (finite(shortest_dist)) {
 		//

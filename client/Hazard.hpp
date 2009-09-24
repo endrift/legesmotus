@@ -51,7 +51,7 @@ namespace LM {
 		uint64_t		m_last_damage_time;	// 0 if not engaged
 		double			m_angle_of_incidence;	// Angle of incidence of the surface we landed on (used for repelling players)
 
-		void			repel_player(Player&);
+		bool			repel_player(Player&);	// Returns true if player was repelled, false otherwise
 
 	public:
 		explicit Hazard (Point pos);

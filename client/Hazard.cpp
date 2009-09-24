@@ -78,7 +78,10 @@ void	Hazard::collide(GameController& gc, Player& player, Point old_position, dou
 				}
 			} else {
 				// Player killed
-				repel_player(player);
+				if (repel_player(player)) {
+					// Player repelled - return now, so we don't land on the obstacle
+					return;
+				}
 			}
 		}
 
@@ -160,12 +163,14 @@ void	Hazard::disengage(GameController& gc, Player& player) {
 	m_last_damage_time = 0;
 }
 
-void	Hazard::repel_player(Player& player) {
+bool	Hazard::repel_player(Player& player) {
 	if (m_repel_velocity) {
 		double	new_angle = get_normalized_angle(180 - m_angle_of_incidence + (((double)rand() / ((double)(RAND_MAX)+1)) - 0.5) * 180.0);
 		Vector	new_velocity(Vector::make_from_magnitude(m_repel_velocity, new_angle));
 		player.set_velocity(new_velocity);
 		player.set_is_grabbing_obstacle(false);
+		return true;
 	}
+	return false;
 }
 

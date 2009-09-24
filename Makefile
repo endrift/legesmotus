@@ -148,8 +148,8 @@ uninstall:
 	$(RM) $(DESTDIR)$(BINDIR)/lmserver $(DESTDIR)$(BINDIR)/legesmotus
 	$(RM) $(DESTDIR)$(MANDIR)/man6/lmserver.6 $(DESTDIR)$(MANDIR)/man6/legesmotus.6
 	$(RM) $(DESTDIR)$(PREFIX)/share/icons/hicolor/256x256/legesmotus.png $(DESTDIR)$(PREFIX)/share/applications/legesmotus.desktop
-else
-$(error Prefix not specified. Please specify one by running the configure script)
+#else
+#$(error Prefix not specified. Please specify one by running the configure script)
 endif
 endif
 
