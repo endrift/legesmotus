@@ -58,7 +58,7 @@ void Font::set_font_style(bool bold, bool italic) {
 
 Sprite* Font::render_string(const string& text, const ConvolveKernel* kernel) {
 	SDL_Color white = { 255, 255, 255, 0 };
-	SDL_Surface* rendered = TTF_RenderUTF8_Blended(m_font,text.c_str(),white);
+	SDL_Surface* rendered = TTF_RenderUTF8_Blended(m_font, text.c_str(), white);
 	if (rendered == NULL) {
 		return NULL;
 	}
@@ -70,6 +70,10 @@ Sprite* Font::render_string(const string& text, const ConvolveKernel* kernel) {
 	Sprite* text_sprite = new Sprite(rendered);
 	SDL_FreeSurface(rendered);
 	return text_sprite;
+}
+
+bool Font::size_string(const string& text, int* w, int* h) {
+	return TTF_SizeText(m_font, text.c_str(), w, h) == 0;
 }
 
 int Font::line_skip() const {

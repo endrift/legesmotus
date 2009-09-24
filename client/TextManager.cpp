@@ -53,7 +53,7 @@ TextManager::~TextManager() {
 	delete m_shadow_kernel;
 }
 
-Text* TextManager::render_string(const std::string& text, double x, double y, Align align) {
+Text* TextManager::render_string(const string& text, double x, double y, Align align) {
 	Text *rendered;
 	try {
 		rendered = new Text(text, m_font, m_shadow_kernel);
@@ -74,7 +74,7 @@ Text* TextManager::render_string(const std::string& text, double x, double y, Al
 	return rendered;
 }
 
-Text* TextManager::place_string(const std::string& text, double x, double y, Align align, Layer layer, int priority) {
+Text* TextManager::place_string(const string& text, double x, double y, Align align, Layer layer, int priority) {
 	Text* rendered = render_string(text, x, y, align);
 	if (rendered == NULL) {
 		return NULL;
