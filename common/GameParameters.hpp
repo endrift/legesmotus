@@ -65,12 +65,16 @@ namespace LM {
 		uint64_t	late_join_delay;
 		uint64_t	team_change_period;
 		bool		autobalance_teams;
+		int		recharge_amount;	// How much to recharge energy by
+		uint64_t	recharge_rate;		// How often to recharge energy
+		uint64_t	recharge_delay;		// How much long to wait after being damaged before recharging
+		uint64_t	recharge_continuously;	// Keep recharging, even when actively taking damage?
 
 		GameParameters() { reset(); }
 
 		void		init_from_config(const ConfigManager& config);
 
-		void		process_param_packet(PacketReader& packet);
+		bool		process_param_packet(PacketReader& packet);
 
 		void		reset();
 	};

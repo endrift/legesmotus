@@ -1175,6 +1175,10 @@ void	Server::broadcast_params(const ServerPlayer* player) {
 	broadcast_param(player, "radar_mode", m_params.radar_mode);
 	broadcast_param(player, "radar_scale", m_params.radar_scale);
 	broadcast_param(player, "radar_blip_duration", m_params.radar_blip_duration);
+	broadcast_param(player, "recharge_amount", m_params.recharge_amount);
+	broadcast_param(player, "recharge_rate", m_params.recharge_rate);
+	broadcast_param(player, "recharge_delay", m_params.recharge_delay);
+	broadcast_param(player, "recharge_continuously", m_params.recharge_continuously);
 }
 
 void	Server::hole_punch_packet(const IPAddress& address, PacketReader& packet) {

@@ -167,6 +167,8 @@ namespace LM {
 		uint64_t	m_join_sent_time;
 		uint64_t	m_muzzle_flash_start;
 	
+		uint64_t	m_last_damage_time;
+		uint64_t	m_last_recharge_time;
 		uint64_t	m_time_to_unfreeze;
 		uint64_t	m_total_time_frozen;
 		

@@ -221,6 +221,8 @@ void GameController::init(GameWindow* window) {
 	m_quit_game = false;
 	m_window = window;
 
+	m_last_damage_time = 0;
+	m_last_recharge_time = 0;
 	m_time_to_unfreeze = 0;
 	m_total_time_frozen = 0;
 	m_last_clicked = 0;
@@ -649,14 +651,39 @@ void GameController::run(int lockfps) {
 				// Otherwise, we continue with the health we had before getting killed
 				m_players[m_player_id].reset_health();
 				update_health_bar();
+				m_last_damage_time = 0;
 			}
 			m_players[m_player_id].set_is_frozen(false);
+			m_last_recharge_time = 0;
 			recreate_name(get_player_by_id(m_player_id));
 			if (m_radar->get_mode() == RADAR_ON) {
 				m_radar->set_blip_alpha(m_player_id, 1.0);
 			}
 			m_time_to_unfreeze = 0;
 			m_total_time_frozen = 0;
+		}
+
+		if (!m_players.empty() && m_players[m_player_id].is_damaged() && !m_players[m_player_id].is_dead() && !m_players[m_player_id].is_frozen()) {
+			// Figure out how much energy to recharge, based on the time elapsed since the last recharge
+			uint64_t		now = get_ticks();
+
+			if (m_params.recharge_continuously || !m_last_damage_time || now - m_last_damage_time >= m_params.recharge_delay) {
+				uint64_t	time_elapsed = 0;
+				if (!m_params.recharge_continuously && m_last_damage_time) {
+					time_elapsed = (now - m_last_damage_time) - m_params.recharge_delay;
+				} else if (m_last_recharge_time) {
+					time_elapsed = now - m_last_recharge_time;
+				}
+
+				m_last_damage_time = 0;
+				m_last_recharge_time = now - time_elapsed % m_params.recharge_rate;
+
+				int	recharge = m_params.recharge_amount * (time_elapsed / m_params.recharge_rate);
+				if (recharge) {
+					m_players[m_player_id].change_health(recharge);
+					update_health_bar();
+				}
+			}
 		}
 		
 		// Update movement twice as often as graphics.
@@ -2687,6 +2714,9 @@ void GameController::game_start(PacketReader& reader) {
 			request_map();
 		}
 	}
+
+	m_last_damage_time = 0;
+	m_last_recharge_time = 0;
 }
 
 /*
@@ -3340,7 +3370,11 @@ void	GameController::display_legalese() {
 }
 
 void GameController::game_param_packet(PacketReader& packet) {
-	m_params.process_param_packet(packet);
+	if (!m_params.process_param_packet(packet)) {
+		// Parameter not recognized - reject the packet
+		return;
+	}
+
 	send_ack(packet);
 
 	set_radar_mode(m_params.radar_mode);
@@ -3442,6 +3476,7 @@ bool	GameController::damage (int amount, const Player* aggressor) {
 	}
 
 	m_players[m_player_id].change_health(-amount);
+	m_last_damage_time = get_ticks();
 	update_health_bar();
 	if (m_players[m_player_id].is_dead()) {
 		// Inform the server that we died

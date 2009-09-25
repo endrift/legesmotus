@@ -50,6 +50,10 @@ void 	GameParameters::reset() {
 	late_join_delay = 5000;
 	team_change_period = 30000; // 30 seconds
 	autobalance_teams = false;
+	recharge_amount = 1;
+	recharge_rate = 150;
+	recharge_delay = 0;
+	recharge_continuously = false;
 }
 
 void	GameParameters::init_from_config(const ConfigManager& config) {
@@ -68,9 +72,13 @@ void	GameParameters::init_from_config(const ConfigManager& config) {
 	if (config.has("late_join_delay"))	late_join_delay = config.get<uint64_t>("late_join_delay");
 	if (config.has("team_change_period"))	team_change_period = config.get<uint64_t>("team_change_period");
 	if (config.has("autobalance"))		autobalance_teams = config.get<bool>("autobalance");
+	if (config.has("recharge_amount"))	recharge_amount = config.get<int>("recharge_amount");
+	if (config.has("recharge_rate"))	recharge_rate = config.get<uint64_t>("recharge_rate");
+	if (config.has("recharge_delay"))	recharge_delay = config.get<uint64_t>("recharge_delay");
+	if (config.has("recharge_continuously"))recharge_continuously = config.get<bool>("recharge_continuously");
 }
 
-void	GameParameters::process_param_packet(PacketReader& packet) {
+bool	GameParameters::process_param_packet(PacketReader& packet) {
 	string		param_name;
 	packet >> param_name;
 
@@ -80,7 +88,18 @@ void	GameParameters::process_param_packet(PacketReader& packet) {
 		packet >> radar_scale;
 	} else if (param_name == "radar_blip_duration") {
 		packet >> radar_blip_duration;
+	} else if (param_name == "recharge_amount") {
+		packet >> recharge_amount;
+	} else if (param_name == "recharge_rate") {
+		packet >> recharge_rate;
+	} else if (param_name == "recharge_delay") {
+		packet >> recharge_delay;
+	} else if (param_name == "recharge_continuously") {
+		packet >> recharge_continuously;
+	} else {
+		return false;
 	}
+	return true;
 }
 
 ostream&	LM::operator<<(ostream& out, GameMode mode) {

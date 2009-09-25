@@ -75,6 +75,7 @@ namespace LM {
 		int get_health() const { return m_health; }
 		bool is_alive() const { return get_health() != 0; }
 		bool is_dead() const { return get_health() == 0; }
+		bool is_damaged() const { return get_health() != MAX_HEALTH; }
 		double get_x() const { return m_x; }
 		double get_y() const { return m_y; }
 		Point get_position() const { return Point(m_x, m_y); }
