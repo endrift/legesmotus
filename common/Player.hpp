@@ -109,10 +109,8 @@ namespace LM {
 		virtual void set_y(double y);
 		virtual void set_position(double x, double y);
 		void set_position(Point p) { set_position(p.x, p.y); }
-		virtual void set_x_vel(double xvel);
-		virtual void set_y_vel(double yvel);
-		virtual void set_velocity(double xvel, double yvel);
-		void set_velocity(Vector v) { set_velocity(v.x, v.y); }
+		void set_velocity(double xvel, double yvel) { set_velocity(Vector(xvel, yvel)); }
+		virtual void set_velocity(Vector v);
 		virtual void set_rotation_degrees(double rotation);
 		virtual void set_rotation_radians(double rotation);
 		virtual void set_rotational_vel(double rotation);
@@ -131,6 +129,8 @@ namespace LM {
 		virtual void stop();
 		// Update the player's velocity as if it were bouncing off a wall with given angle of incidence (90 == horizontal wall, 180 == vertical wall)
 		virtual void bounce(double angle_of_incidence, double velocity_scale);
+
+		bool is_moving() const { return get_velocity() != Vector(0, 0); }
 	
 		// Reset the player's score to 0
 		void reset_score() { set_score(0); }

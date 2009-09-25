@@ -72,10 +72,6 @@ void	ForceField::interact (GameController& gc, Player& player) {
 				player.set_velocity(player.get_velocity() + Vector::make_from_magnitude(accel, angle));
 			}
 		}
-
-		if (m_sucks_off_obstacles) {
-			player.set_is_grabbing_obstacle(false);
-		}
 	}
 }
 

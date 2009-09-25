@@ -152,17 +152,13 @@ void Player::bounce(double angle_of_incidence, double velocity_scale) {
 	set_velocity(Vector::make_from_magnitude(curr_magnitude * velocity_scale, to_radians(new_angle)));
 }
 
-void Player::set_x_vel(double xvel) {
-	m_x_vel = xvel;
-}
-
-void Player::set_y_vel(double yvel) {
-	m_y_vel = yvel;
-}
-
-void Player::set_velocity(double xvel, double yvel) {
-	set_x_vel(xvel);
-	set_y_vel(yvel);
+void Player::set_velocity(Vector vel) {
+	m_x_vel = vel.x;
+	m_y_vel = vel.y;
+	if (is_moving()) {
+		// Moving players cannot be grabbing obstacles
+		set_is_grabbing_obstacle(false);
+	}
 }
 
 void Player::set_rotation_degrees(double rotation) {

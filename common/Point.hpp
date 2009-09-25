@@ -73,6 +73,10 @@ namespace LM {
 	Point	operator-(Point a, Point b);
 	Point	operator*(Point p, double scale_factor);
 	Point	operator/(Point p, double scale_factor);
+
+	// Comparison
+	inline bool	operator==(Point a, Point b) { return a.x == b.x && a.y == b.y; }
+	inline bool	operator!=(Point a, Point b) { return a.x != b.x || a.y != b.y; }
 	
 	typedef Point Vector;
 }

@@ -132,10 +132,6 @@ void	Hazard::interact(GameController& gc, Player& player) {
 		return;
 	}
 
-	if (m_is_collidable) {
-		player.set_is_grabbing_obstacle(true);
-	}
-
 	// Figure out how much damage to give the player, based on the time elapsed since the last damage was dealt
 	int			damage = 0;
 
@@ -168,7 +164,6 @@ bool	Hazard::repel_player(Player& player) {
 		double	new_angle = get_normalized_angle(180 - m_angle_of_incidence + (((double)rand() / ((double)(RAND_MAX)+1)) - 0.5) * 180.0);
 		Vector	new_velocity(Vector::make_from_magnitude(m_repel_velocity, new_angle));
 		player.set_velocity(new_velocity);
-		player.set_is_grabbing_obstacle(false);
 		return true;
 	}
 	return false;

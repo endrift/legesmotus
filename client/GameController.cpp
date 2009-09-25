@@ -1727,7 +1727,6 @@ void GameController::attempt_jump() {
 	//
 	player.set_velocity(new_velocity);
 	player.set_rotational_vel(new_rotation);
-	player.set_is_grabbing_obstacle(false);
 	m_transition_manager.remove_transition(m_transition_manager.get_transition("player_rotation"));
 
 	if (finite(shortest_dist)) {
@@ -3388,7 +3387,6 @@ void	GameController::freeze(uint64_t time_to_unfreeze) {
 			m_frozen_status_text->set_y(m_frozen_status_rect->get_y());
 			m_sound_controller->play_sound("freeze");
 			player->set_is_frozen(true);
-			player->set_is_grabbing_obstacle(false);
 			if (m_radar->get_mode() == RADAR_ON) {
 				m_radar->set_blip_alpha(m_player_id, 0.5);
 			}
