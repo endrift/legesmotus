@@ -695,22 +695,24 @@ void GameController::run(int lockfps) {
 				m_frozen_status_rect->set_image_width(((m_time_to_unfreeze - get_ticks())/(double)m_total_time_frozen) * FROZEN_STATUS_RECT_WIDTH);
 			}
 			
-			// If round will end in less than 2 minutes, display a message.
-			if (get_ticks() >= m_round_end_time - 120000 && lastmoveframe < m_round_end_time - 120000) {
-				display_message("Round will end in TWO minutes.", RED_COLOR, RED_SHADOW, true);
-			}
+			if (m_round_end_time) {
+				// If round will end in less than 2 minutes, display a message.
+				if (get_ticks() >= m_round_end_time - 120000 && lastmoveframe < m_round_end_time - 120000) {
+					display_message("Round will end in TWO minutes.", RED_COLOR, RED_SHADOW, true);
+				}
 
-			// If round will end in less than 30 seconds, display a message.
-			if (get_ticks() >= m_round_end_time - 30000 && lastmoveframe < m_round_end_time - 30000) {
-				display_message("Round will end in THIRTY seconds.", RED_COLOR, RED_SHADOW, true);
-			}
-			
-			static const string numeral_to_english[10] = { "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE", "TEN" };
+				// If round will end in less than 30 seconds, display a message.
+				if (get_ticks() >= m_round_end_time - 30000 && lastmoveframe < m_round_end_time - 30000) {
+					display_message("Round will end in THIRTY seconds.", RED_COLOR, RED_SHADOW, true);
+				}
+				
+				static const string numeral_to_english[10] = { "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE", "TEN" };
 
-			for (int a = 10000; a >= 1000; a-=1000) {
-				// If round will end in less than <a> seconds, display a message.
-				if (get_ticks() >= m_round_end_time - a && lastmoveframe < m_round_end_time - a) {
-					display_message("Round will end in " + numeral_to_english[a/1000-1] + " seconds.", RED_COLOR, RED_SHADOW, true);
+				for (int a = 10000; a >= 1000; a-=1000) {
+					// If round will end in less than <a> seconds, display a message.
+					if (get_ticks() >= m_round_end_time - a && lastmoveframe < m_round_end_time - a) {
+						display_message("Round will end in " + numeral_to_english[a/1000-1] + " seconds.", RED_COLOR, RED_SHADOW, true);
+					}
 				}
 			}
 
@@ -2673,7 +2675,11 @@ void GameController::game_start(PacketReader& reader) {
 
 	send_ack(reader);
 
-	m_round_end_time = get_ticks() + time_left_in_game;
+	if (time_left_in_game == time_until_start == numeric_limits<uint64_t>::max()) {
+		m_round_end_time = 0;
+	} else {
+		m_round_end_time = get_ticks() + time_left_in_game;
+	}
 
 	/*
 	 * Tell the player what's going on

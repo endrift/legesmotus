@@ -1300,7 +1300,7 @@ void	Server::change_score(ServerPlayer& player, int score_change) {
 }
 
 uint64_t	Server::gametime_left() const {
-	return m_params.game_timeout - time_since_spawn(); // XXX: doesn't handle no game timeout
+	return m_params.game_timeout ? m_params.game_timeout - time_since_spawn() : std::numeric_limits<uint64_t>::max();
 }
 
 
