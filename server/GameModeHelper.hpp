@@ -48,7 +48,7 @@ namespace LM {
 		// Returns true if the shot resulted in damage, false otherwise.
 		virtual bool		player_shot(ServerPlayer& shooter, ServerPlayer& shot_player) = 0;
 
-		// Called when a player is killed (i.e. health reaches 0).
+		// Called when a player is killed (i.e. energy reaches 0).
 		// killer is the player who dealt the last blow (or NULL if no player did it, e.g. a hazardous map object)
 		// The return value is the amount of time the player should be frozen (may be 0).
 		virtual uint64_t	player_died(ServerPlayer* killer, ServerPlayer& killed) = 0;

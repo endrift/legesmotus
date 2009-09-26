@@ -589,10 +589,10 @@ void	Server::info(const IPAddress& address, PacketReader& request_packet) {
 	m_network.send_packet(address, response_packet);
 }
 
-// Reset the health for all players
-void	Server::reset_player_health() {
+// Reset the energy for all players
+void	Server::reset_player_energy() {
 	for (PlayerMap::iterator it(m_players.begin()); it != m_players.end(); ++it) {
-		it->second.reset_health();
+		it->second.reset_energy();
 	}
 }
 
@@ -873,7 +873,7 @@ void	Server::start_game() {
 	// Only reset player scores when players spawn, so players have an opportunity between rounds to check the leader board for the prior round
 	reset_player_scores();
 
-	reset_player_health();
+	reset_player_energy();
 
 	m_players_have_spawned = true;
 	m_current_map.reset();
@@ -1107,9 +1107,9 @@ void	Server::send_spawn_packet(ServerPlayer& player, const Spawnpoint* spawnpoin
 	player.set_is_frozen(!is_alive);
 	player.set_is_invisible(!is_alive);
 	if (is_alive) {
-		player.reset_health();
+		player.reset_energy();
 	} else {
-		player.set_health(0);
+		player.set_energy(0);
 	}
 
 	PacketWriter	spawn_packet(PLAYER_UPDATE_PACKET);

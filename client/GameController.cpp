@@ -86,7 +86,7 @@ const Color GameController::BUTTON_HOVER_COLOR(0.6, 0.7, 0.9);
 const Color GameController::BUTTON_HOVER_SHADOW(0.1, 0.2, 0.4);
 const int GameController::GATE_STATUS_RECT_WIDTH = 80;
 const int GameController::FROZEN_STATUS_RECT_WIDTH = 60;
-const int GameController::HEALTH_BAR_WIDTH = 100;
+const int GameController::ENERGY_BAR_WIDTH = 100;
 const int GameController::COOLDOWN_BAR_WIDTH = 150;
 const int GameController::STATUS_BAR_HEIGHT = 40;
 const int GameController::DOUBLE_CLICK_TIME = 300;
@@ -152,8 +152,8 @@ GameController::~GameController() {
 	delete m_red_gate_status_rect_back;
 	delete m_frozen_status_rect;
 	delete m_frozen_status_rect_back;
-	delete m_health_bar;
-	delete m_health_bar_back;
+	delete m_energy_bar;
+	delete m_energy_bar_back;
 	
 	delete m_input_bar_back;
 	delete m_chat_window_back;
@@ -549,32 +549,32 @@ void GameController::init(GameWindow* window) {
 	m_text_manager->set_active_font(m_font);
 	m_frozen_status_text = m_text_manager->place_string("Frozen", m_frozen_status_rect->get_x() + 1, m_frozen_status_rect->get_y() + 2, TextManager::CENTER, TextManager::LAYER_HUD, TEXT_LAYER);
 
-	// Initialize the health bar.
-	m_health_text = NULL;
-	m_health_bar = new TableBackground(1, HEALTH_BAR_WIDTH);
-	m_health_bar->set_row_height(0, STATUS_BAR_HEIGHT);
-	m_health_bar->set_priority(-1);
-	m_health_bar->set_cell_color(0, BRIGHT_GREEN);
-	m_health_bar->set_x(HEALTH_BAR_WIDTH);
-	m_health_bar->set_y(m_screen_height - m_health_bar->get_image_height() - 20);
-	m_window->register_hud_graphic(m_health_bar);
-	m_health_bar_back = new TableBackground(1, HEALTH_BAR_WIDTH);
-	m_health_bar_back->set_row_height(0, STATUS_BAR_HEIGHT);
-	m_health_bar_back->set_priority(0);
-	m_health_bar_back->set_cell_color(0, Color(0.1, 0.1, 0.1, 0.5));
-	m_health_bar_back->set_x(m_health_bar->get_x());
-	m_health_bar_back->set_y(m_health_bar->get_y());
-	m_window->register_hud_graphic(m_health_bar_back);
+	// Initialize the energy bar.
+	m_energy_text = NULL;
+	m_energy_bar = new TableBackground(1, ENERGY_BAR_WIDTH);
+	m_energy_bar->set_row_height(0, STATUS_BAR_HEIGHT);
+	m_energy_bar->set_priority(-1);
+	m_energy_bar->set_cell_color(0, BRIGHT_GREEN);
+	m_energy_bar->set_x(ENERGY_BAR_WIDTH);
+	m_energy_bar->set_y(m_screen_height - m_energy_bar->get_image_height() - 20);
+	m_window->register_hud_graphic(m_energy_bar);
+	m_energy_bar_back = new TableBackground(1, ENERGY_BAR_WIDTH);
+	m_energy_bar_back->set_row_height(0, STATUS_BAR_HEIGHT);
+	m_energy_bar_back->set_priority(0);
+	m_energy_bar_back->set_cell_color(0, Color(0.1, 0.1, 0.1, 0.5));
+	m_energy_bar_back->set_x(m_energy_bar->get_x());
+	m_energy_bar_back->set_y(m_energy_bar->get_y());
+	m_window->register_hud_graphic(m_energy_bar_back);
 	
-	update_health_bar(0);
+	update_energy_bar(0);
 	
 	// Initialize the cooldown bar.
 	m_cooldown_bar = new TableBackground(1, COOLDOWN_BAR_WIDTH);
 	m_cooldown_bar->set_row_height(0, STATUS_BAR_HEIGHT/2);
 	m_cooldown_bar->set_priority(-1);
 	m_cooldown_bar->set_cell_color(0, BRIGHT_ORANGE);
-	m_cooldown_bar->set_x(m_health_bar->get_x() + HEALTH_BAR_WIDTH/2 + m_cooldown_bar->get_image_width()/2 + 20);
-	m_cooldown_bar->set_y(m_health_bar->get_y() + m_health_bar->get_image_height() - m_cooldown_bar->get_image_height());
+	m_cooldown_bar->set_x(m_energy_bar->get_x() + ENERGY_BAR_WIDTH/2 + m_cooldown_bar->get_image_width()/2 + 20);
+	m_cooldown_bar->set_y(m_energy_bar->get_y() + m_energy_bar->get_image_height() - m_cooldown_bar->get_image_height());
 	m_window->register_hud_graphic(m_cooldown_bar);
 	m_cooldown_bar_back = new TableBackground(1, COOLDOWN_BAR_WIDTH);
 	m_cooldown_bar_back->set_row_height(0, STATUS_BAR_HEIGHT/2);
@@ -668,10 +668,10 @@ void GameController::run(int lockfps) {
 		if (!m_players.empty() && m_time_to_unfreeze < get_ticks() && m_time_to_unfreeze != 0) {
 			m_sound_controller->play_sound("unfreeze");
 			if (m_players[m_player_id].is_dead()) {
-				// If we were dead (i.e. at 0 health), reset our health
-				// Otherwise, we continue with the health we had before getting killed
-				m_players[m_player_id].reset_health();
-				update_health_bar();
+				// If we were dead (i.e. at 0 energy), reset our energy
+				// Otherwise, we continue with the energy we had before getting killed
+				m_players[m_player_id].reset_energy();
+				update_energy_bar();
 				m_last_damage_time = 0;
 			}
 			m_players[m_player_id].set_is_frozen(false);
@@ -701,8 +701,8 @@ void GameController::run(int lockfps) {
 
 				int	recharge = m_params.recharge_amount * (time_elapsed / m_params.recharge_rate);
 				if (recharge) {
-					m_players[m_player_id].change_health(recharge);
-					update_health_bar();
+					m_players[m_player_id].change_energy(recharge);
+					update_energy_bar();
 				}
 			}
 		}
@@ -986,17 +986,17 @@ void GameController::set_hud_visible(bool visible) {
 		m_frozen_status_rect->set_invisible(true);
 		m_frozen_status_text->set_invisible(true);
 		m_frozen_status_rect_back->set_invisible(true);
-		m_health_bar->set_invisible(true);
-		m_health_bar_back->set_invisible(true);
-		m_health_text->set_invisible(true);
+		m_energy_bar->set_invisible(true);
+		m_energy_bar_back->set_invisible(true);
+		m_energy_text->set_invisible(true);
 		m_cooldown_bar->set_invisible(true);
 		m_cooldown_bar_back->set_invisible(true);
 		return;
 	}
 	
-	m_health_bar->set_invisible(!visible);
-	m_health_bar_back->set_invisible(!visible);
-	m_health_text->set_invisible(!visible);
+	m_energy_bar->set_invisible(!visible);
+	m_energy_bar_back->set_invisible(!visible);
+	m_energy_text->set_invisible(!visible);
 	
 	m_cooldown_bar->set_invisible(!visible);
 	m_cooldown_bar_back->set_invisible(!visible);
@@ -1013,33 +1013,33 @@ void GameController::set_hud_visible(bool visible) {
 }
 
 /*
- * Update the health bar.
+ * Update the energy bar.
  */
-void GameController::update_health_bar(int new_health) {
+void GameController::update_energy_bar(int new_energy) {
 	if (GraphicalPlayer* player = get_player_by_id(m_player_id)) {
-		if (new_health != -1) {
-			player->set_health(new_health);
+		if (new_energy != -1) {
+			player->set_energy(new_energy);
 		} else {
-			new_health = player->get_health();
+			new_energy = player->get_energy();
 		}
-	} else if (new_health == -1) {
-		new_health = 0;
+	} else if (new_energy == -1) {
+		new_energy = 0;
 	}
 	
-	m_health_bar->set_image_width((HEALTH_BAR_WIDTH-2) * ((double)new_health/(GraphicalPlayer::MAX_HEALTH)) + 2);
+	m_energy_bar->set_image_width((ENERGY_BAR_WIDTH-2) * ((double)new_energy/(GraphicalPlayer::MAX_ENERGY)) + 2);
 	
-	if (m_health_text != NULL) {
-		m_text_manager->remove_string(m_health_text);
+	if (m_energy_text != NULL) {
+		m_text_manager->remove_string(m_energy_text);
 	}
 	
 	// Re-initialize the label.
 	m_text_manager->set_active_color(1.0, 1.0, 1.0);
 	m_text_manager->set_active_font(m_font);
 	
-	ostringstream healthstring;
-	healthstring << "H: " << new_health;
-	m_health_text = m_text_manager->place_string(healthstring.str(), m_health_bar->get_x(), m_health_bar->get_y() + STATUS_BAR_HEIGHT/2, TextManager::CENTER, TextManager::LAYER_HUD, TEXT_LAYER);
-	m_health_text->set_y(m_health_bar->get_y() + STATUS_BAR_HEIGHT/2 - m_health_text->get_image_height()/2);
+	ostringstream energystring;
+	energystring << "E: " << new_energy;
+	m_energy_text = m_text_manager->place_string(energystring.str(), m_energy_bar->get_x(), m_energy_bar->get_y() + STATUS_BAR_HEIGHT/2, TextManager::CENTER, TextManager::LAYER_HUD, TEXT_LAYER);
+	m_energy_text->set_y(m_energy_bar->get_y() + STATUS_BAR_HEIGHT/2 - m_energy_text->get_image_height()/2);
 }
 
 /*
@@ -2157,7 +2157,7 @@ void GameController::connect_to_server(const IPAddress& server_address, char tea
 		return;
 	}
 
-	update_health_bar(0);
+	update_energy_bar(0);
 	
 	PacketWriter join_request(JOIN_PACKET);
 	join_request << m_protocol_number;
@@ -2348,7 +2348,7 @@ void GameController::player_update(PacketReader& reader) {
 	}
 
 	if (player_id == m_player_id) {
-		update_health_bar();
+		update_energy_bar();
 	}
 
 	// Update the radar and name sprite
@@ -2579,8 +2579,8 @@ void GameController::player_died(PacketReader& reader) {
 		if (time_to_unfreeze) {
 			freeze(time_to_unfreeze);
 		} else {
-			m_players[m_player_id].reset_health();
-			update_health_bar();
+			m_players[m_player_id].reset_energy();
+			update_energy_bar();
 		}
 	}
 }
@@ -2812,7 +2812,7 @@ void GameController::game_stop(PacketReader& reader) {
 	m_players[m_player_id].set_is_grabbing_obstacle(false);
 	m_time_to_unfreeze = 0;
 	m_total_time_frozen = 0;
-	update_health_bar(0);
+	update_energy_bar(0);
 	reset_weapons();
 }
 
@@ -3525,9 +3525,9 @@ bool	GameController::damage (int amount, const Player* aggressor) {
 		return false;
 	}
 
-	m_players[m_player_id].change_health(-amount);
+	m_players[m_player_id].change_energy(-amount);
 	m_last_damage_time = get_ticks();
-	update_health_bar();
+	update_energy_bar();
 	if (m_players[m_player_id].is_dead()) {
 		// Inform the server that we died
 		PacketWriter		died_packet(PLAYER_DIED_PACKET);

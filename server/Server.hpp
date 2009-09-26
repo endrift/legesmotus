@@ -157,8 +157,8 @@ namespace LM {
 		void			broadcast_params(const ServerPlayer* player =NULL);
 		template<class T> void	broadcast_param(const ServerPlayer* player, const char* param_name, const T& param_value);
 
-		// Reset the health for all players (call at beginning of new game)
-		void			reset_player_health();
+		// Reset the energy for all players (call at beginning of new game)
+		void			reset_player_energy();
 
 		// Reset the scores for all players, broadcasting score updates for each one (call at beginning of new game)
 		void			reset_player_scores();

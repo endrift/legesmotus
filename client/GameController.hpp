@@ -85,7 +85,7 @@ namespace LM {
 		const static double RANDOM_ROTATION_SCALE;
 		const static int GATE_STATUS_RECT_WIDTH;
 		const static int FROZEN_STATUS_RECT_WIDTH;
-		const static int HEALTH_BAR_WIDTH;
+		const static int ENERGY_BAR_WIDTH;
 		const static int COOLDOWN_BAR_WIDTH;
 		const static int STATUS_BAR_HEIGHT;
 		const static int DOUBLE_CLICK_TIME;
@@ -239,9 +239,9 @@ namespace LM {
 		TableBackground* m_frozen_status_rect_back;
 		Graphic*	m_frozen_status_text;
 		
-		TableBackground* m_health_bar;
-		TableBackground* m_health_bar_back;
-		Graphic*	m_health_text;
+		TableBackground* m_energy_bar;
+		TableBackground* m_energy_bar_back;
+		Graphic*	m_energy_text;
 		
 		TableBackground* m_cooldown_bar;
 		TableBackground* m_cooldown_bar_back;
@@ -332,7 +332,7 @@ namespace LM {
 		void		toggle_score_overlay(bool visible);
 		void		toggle_server_browser(bool visible);
 		void		set_hud_visible(bool visible);
-		void		update_health_bar(int new_health=-1);
+		void		update_energy_bar(int new_energy=-1);
 		void		update_cooldown_bar(double new_cooldown=-1);
 		void		delete_server_browser_entry(int num);
 		void		change_team_scores(int bluescore, int redscore);
@@ -396,7 +396,7 @@ namespace LM {
 		void		show_muzzle_flash();
 		void		show_bullet_impact(Point position);
 
-		// Damage the player by this amount of health
+		// Damage the player by this amount of energy
 		// aggressor is the player who did the damage, or NULL if no player did it (e.g. hazerdous map object)
 		// Returns true if the player died as a result, false if the player is still alive
 		bool		damage (int amount, const Player* aggressor);
