@@ -85,6 +85,7 @@ const Color GameController::BUTTON_HOVER_SHADOW(0.1, 0.2, 0.4);
 const int GameController::GATE_STATUS_RECT_WIDTH = 80;
 const int GameController::FROZEN_STATUS_RECT_WIDTH = 60;
 const int GameController::HEALTH_BAR_WIDTH = 100;
+const int GameController::COOLDOWN_BAR_WIDTH = 150;
 const int GameController::STATUS_BAR_HEIGHT = 40;
 const int GameController::DOUBLE_CLICK_TIME = 300;
 const int GameController::NETWORK_TIMEOUT_LIMIT = 10000;
@@ -546,7 +547,7 @@ void GameController::init(GameWindow* window) {
 	m_text_manager->set_active_font(m_font);
 	m_frozen_status_text = m_text_manager->place_string("Frozen", m_frozen_status_rect->get_x() + 1, m_frozen_status_rect->get_y() + 2, TextManager::CENTER, TextManager::LAYER_HUD, TEXT_LAYER);
 
-	// Initialize the frozen status bar.
+	// Initialize the health bar.
 	m_health_text = NULL;
 	m_health_bar = new TableBackground(1, HEALTH_BAR_WIDTH);
 	m_health_bar->set_row_height(0, STATUS_BAR_HEIGHT);
@@ -564,6 +565,24 @@ void GameController::init(GameWindow* window) {
 	m_window->register_hud_graphic(m_health_bar_back);
 	
 	update_health_bar(0);
+	
+	// Initialize the cooldown bar.
+	m_cooldown_bar = new TableBackground(1, COOLDOWN_BAR_WIDTH);
+	m_cooldown_bar->set_row_height(0, STATUS_BAR_HEIGHT/2);
+	m_cooldown_bar->set_priority(-1);
+	m_cooldown_bar->set_cell_color(0, Color(0.0, 0.0, 1.0, 0.5));
+	m_cooldown_bar->set_x(m_health_bar->get_x() + HEALTH_BAR_WIDTH/2 + m_cooldown_bar->get_image_width()/2 + 20);
+	m_cooldown_bar->set_y(m_health_bar->get_y() + m_health_bar->get_image_height() - m_cooldown_bar->get_image_height());
+	m_window->register_hud_graphic(m_cooldown_bar);
+	m_cooldown_bar_back = new TableBackground(1, COOLDOWN_BAR_WIDTH);
+	m_cooldown_bar_back->set_row_height(0, STATUS_BAR_HEIGHT/2);
+	m_cooldown_bar_back->set_priority(0);
+	m_cooldown_bar_back->set_cell_color(0, Color(0.1, 0.1, 0.1, 0.5));
+	m_cooldown_bar_back->set_x(m_cooldown_bar->get_x());
+	m_cooldown_bar_back->set_y(m_cooldown_bar->get_y());
+	m_window->register_hud_graphic(m_cooldown_bar_back);
+	
+	update_cooldown_bar(0);
 
 	// Initialize the input bar background
 	m_input_bar_back = new TableBackground(1, 0);
@@ -809,6 +828,9 @@ void GameController::run(int lockfps) {
 				m_gate_warning->set_invisible(false);
 			}
 			
+			// Update the cooldown bar.
+			update_cooldown_bar();
+			
 			// Uncomment if framerate is needed.
 			// the framerate:
 			m_framerate = (1000/(currframe - startframe));
@@ -965,12 +987,17 @@ void GameController::set_hud_visible(bool visible) {
 		m_health_bar->set_invisible(true);
 		m_health_bar_back->set_invisible(true);
 		m_health_text->set_invisible(true);
+		m_cooldown_bar->set_invisible(true);
+		m_cooldown_bar_back->set_invisible(true);
 		return;
 	}
 	
 	m_health_bar->set_invisible(!visible);
 	m_health_bar_back->set_invisible(!visible);
 	m_health_text->set_invisible(!visible);
+	
+	m_cooldown_bar->set_invisible(!visible);
+	m_cooldown_bar_back->set_invisible(!visible);
 	
 	if (player->is_frozen() && !player->is_invisible() && m_total_time_frozen > 100) {
 		m_frozen_status_rect->set_invisible(!visible);
@@ -1011,6 +1038,21 @@ void GameController::update_health_bar(int new_health) {
 	healthstring << "H: " << new_health;
 	m_health_text = m_text_manager->place_string(healthstring.str(), m_health_bar->get_x(), m_health_bar->get_y() + STATUS_BAR_HEIGHT/2, TextManager::CENTER, TextManager::LAYER_HUD, TEXT_LAYER);
 	m_health_text->set_y(m_health_bar->get_y() + STATUS_BAR_HEIGHT/2 - m_health_text->get_image_height()/2);
+}
+
+/*
+ * Update the cooldown bar.
+ */
+void GameController::update_cooldown_bar(double new_cooldown) {
+	if (m_current_weapon != NULL) {
+		if (new_cooldown == -1) {
+			new_cooldown = m_current_weapon->get_remaining_cooldown()/((double)m_current_weapon->get_total_cooldown());
+		}
+	} else if (new_cooldown == -1) {
+		new_cooldown = 0;
+	}
+	
+	m_cooldown_bar->set_image_width((COOLDOWN_BAR_WIDTH-2) * (1.0-new_cooldown) + 2);
 }
 
 /*

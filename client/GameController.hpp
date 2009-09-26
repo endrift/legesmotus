@@ -84,6 +84,7 @@ namespace LM {
 		const static int GATE_STATUS_RECT_WIDTH;
 		const static int FROZEN_STATUS_RECT_WIDTH;
 		const static int HEALTH_BAR_WIDTH;
+		const static int COOLDOWN_BAR_WIDTH;
 		const static int STATUS_BAR_HEIGHT;
 		const static int DOUBLE_CLICK_TIME;
 		const static int NETWORK_TIMEOUT_LIMIT;
@@ -240,6 +241,9 @@ namespace LM {
 		TableBackground* m_health_bar_back;
 		Graphic*	m_health_text;
 		
+		TableBackground* m_cooldown_bar;
+		TableBackground* m_cooldown_bar_back;
+		
 		// RADAR CODE BY JEFFREY
 		Radar*		m_radar;
 		void		set_radar_mode(RadarMode mode); // wrapper around Radar::set_mode
@@ -327,6 +331,7 @@ namespace LM {
 		void		toggle_server_browser(bool visible);
 		void		set_hud_visible(bool visible);
 		void		update_health_bar(int new_health=-1);
+		void		update_cooldown_bar(double new_cooldown=-1);
 		void		delete_server_browser_entry(int num);
 		void		change_team_scores(int bluescore, int redscore);
 		void 		update_individual_scores();
