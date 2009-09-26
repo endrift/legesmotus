@@ -1,5 +1,5 @@
 name alpha1-test
-revision 16
+revision 27
 width 2048
 height 1024
 game_start_delay 1000
@@ -27,11 +27,13 @@ BACKGROUND	-32,1024	metal_wall_sw32
 BACKGROUND	2048,1024	metal_wall_se32
 
 # Gates
-GATE	512,64	blue_gate	team=blue	length=512	rotate=90
-#GATE	-15,456	blue_gate	team=blue
+#GATE	512,64	blue_gate	team=blue	length=512	rotate=90
+GATE	-15,456	blue_gate	team=blue
 GATE	2055,456	red_gate	team=red
-REPULSION	0,512	-	circle:400	frozen
-REPULSION	2048,512	-	circle:400	frozen
+#REPULSION	0,512	-	circle:512	frozen
+FORCE	0,512	-	circle:512	frozen	sucks-off-obstacles	gravity=-200
+#REPULSION	2048,512	-	circle:400	frozen
+FORCE	2048,512	-	circle:512	frozen	sucks-off-obstacles	gravity=-200
 
 # Spawnpoints
 SPAWN	0,512		BLUE

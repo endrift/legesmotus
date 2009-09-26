@@ -27,8 +27,10 @@ BACKGROUND	2048,1024	metal_wall_se32
 # Gates
 GATE	-15,456	blue_gate	team=blue
 GATE	2055,456	red_gate	team=red
-REPULSION	0,512	-	circle:400	frozen	strength=0.01
-REPULSION	2048,512	-	circle:400	frozen	strength=0.01
+#REPULSION	0,512	-	circle:400	frozen	strength=0.01
+FORCE	0,512	-	circle:512	frozen	sucks-off-obstacles	gravity=-200
+#REPULSION	2048,512	-	circle:400	frozen	strength=0.01
+FORCE	2048,512	-	circle:512	frozen	sucks-off-obstacles	gravity=-200
 
 # Spawnpoints
 SPAWN	0,512		BLUE
