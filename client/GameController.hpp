@@ -65,6 +65,8 @@ namespace LM {
 	public:
 		static const Color		BLUE_COLOR;
 		static const Color		RED_COLOR;
+		static const Color		BRIGHT_GREEN;
+		static const Color		BRIGHT_ORANGE;
 		static const Color		BLUE_SHADOW;
 		static const Color		RED_SHADOW;
 		static const Color		TEXT_COLOR;

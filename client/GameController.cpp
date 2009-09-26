@@ -73,6 +73,8 @@ const int GameController::GATE_WARNING_FLASH_LENGTH = 3000;
 const double GameController::RANDOM_ROTATION_SCALE = 1.0;
 const Color GameController::BLUE_COLOR(0.6, 0.6, 1.0);
 const Color GameController::RED_COLOR(1.0, 0.6, 0.6);
+const Color GameController::BRIGHT_GREEN(0.0, 0.6, 0.0);
+const Color GameController::BRIGHT_ORANGE(1.0, 0.5, 0.0);
 const Color GameController::BLUE_SHADOW(0.1, 0.1, 0.3);
 const Color GameController::RED_SHADOW(0.3, 0.1, 0.1);
 const Color GameController::TEXT_COLOR(1.0, 1.0, 1.0);
@@ -552,7 +554,7 @@ void GameController::init(GameWindow* window) {
 	m_health_bar = new TableBackground(1, HEALTH_BAR_WIDTH);
 	m_health_bar->set_row_height(0, STATUS_BAR_HEIGHT);
 	m_health_bar->set_priority(-1);
-	m_health_bar->set_cell_color(0, Color(1.0, 0.0, 0.0, 0.5));
+	m_health_bar->set_cell_color(0, BRIGHT_GREEN);
 	m_health_bar->set_x(HEALTH_BAR_WIDTH);
 	m_health_bar->set_y(m_screen_height - m_health_bar->get_image_height() - 20);
 	m_window->register_hud_graphic(m_health_bar);
@@ -570,7 +572,7 @@ void GameController::init(GameWindow* window) {
 	m_cooldown_bar = new TableBackground(1, COOLDOWN_BAR_WIDTH);
 	m_cooldown_bar->set_row_height(0, STATUS_BAR_HEIGHT/2);
 	m_cooldown_bar->set_priority(-1);
-	m_cooldown_bar->set_cell_color(0, Color(0.0, 0.0, 1.0, 0.5));
+	m_cooldown_bar->set_cell_color(0, BRIGHT_ORANGE);
 	m_cooldown_bar->set_x(m_health_bar->get_x() + HEALTH_BAR_WIDTH/2 + m_cooldown_bar->get_image_width()/2 + 20);
 	m_cooldown_bar->set_y(m_health_bar->get_y() + m_health_bar->get_image_height() - m_cooldown_bar->get_image_height());
 	m_window->register_hud_graphic(m_cooldown_bar);
