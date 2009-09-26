@@ -1688,7 +1688,7 @@ void GameController::attempt_jump() {
 	//
 	// Calculate the new velocities
 	//
-	Vector	new_velocity(Vector::make_from_magnitude(6.0, jump_angle));
+	Vector	new_velocity(Vector::make_from_magnitude(m_params.jump_velocity, jump_angle));
 	double	new_rotation = (((double)rand() / ((double)(RAND_MAX)+1)) - 0.5) * RANDOM_ROTATION_SCALE;
 
 	//

@@ -54,6 +54,7 @@ void 	GameParameters::reset() {
 	recharge_rate = 150;
 	recharge_delay = 0;
 	recharge_continuously = false;
+	jump_velocity = 6.0;
 }
 
 void	GameParameters::init_from_config(const ConfigManager& config) {
@@ -76,6 +77,7 @@ void	GameParameters::init_from_config(const ConfigManager& config) {
 	if (config.has("recharge_rate"))	recharge_rate = config.get<uint64_t>("recharge_rate");
 	if (config.has("recharge_delay"))	recharge_delay = config.get<uint64_t>("recharge_delay");
 	if (config.has("recharge_continuously"))recharge_continuously = config.get<bool>("recharge_continuously");
+	if (config.has("jump_velocity"))	jump_velocity = config.get<double>("jump_velocity");
 }
 
 bool	GameParameters::process_param_packet(PacketReader& packet) {
@@ -96,6 +98,8 @@ bool	GameParameters::process_param_packet(PacketReader& packet) {
 		packet >> recharge_delay;
 	} else if (param_name == "recharge_continuously") {
 		packet >> recharge_continuously;
+	} else if (param_name == "jump_velocity") {
+		packet >> jump_velocity;
 	} else {
 		return false;
 	}

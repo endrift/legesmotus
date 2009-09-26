@@ -69,6 +69,7 @@ namespace LM {
 		uint64_t	recharge_rate;		// How often to recharge energy
 		uint64_t	recharge_delay;		// How much long to wait after being damaged before recharging
 		uint64_t	recharge_continuously;	// Keep recharging, even when actively taking damage?
+		double		jump_velocity;		// Magnitude of velocity when jumping off an obstacle
 
 		GameParameters() { reset(); }
 
