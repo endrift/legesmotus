@@ -1180,6 +1180,7 @@ void	Server::broadcast_params(const ServerPlayer* player) {
 	broadcast_param(player, "recharge_delay", m_params.recharge_delay);
 	broadcast_param(player, "recharge_continuously", m_params.recharge_continuously);
 	broadcast_param(player, "jump_velocity", m_params.jump_velocity);
+	broadcast_param(player, "weapon_switch_delay", m_params.weapon_switch_delay);
 }
 
 void	Server::hole_punch_packet(const IPAddress& address, PacketReader& packet) {
