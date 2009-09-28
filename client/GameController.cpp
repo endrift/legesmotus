@@ -3539,3 +3539,21 @@ bool	GameController::damage (int amount, const Player* aggressor) {
 	return false;
 }
 
+void	GameController::weapon_select(PacketReader& reader)
+{
+	uint32_t		player_id;
+	string			weapon_name;
+
+	reader >> player_id >> weapon_name;
+
+	GraphicalPlayer*	player = get_player_by_id(player_id);
+
+	if (!player) {
+		return;
+	}
+
+	if (Weapon* weapon = get_weapon(weapon_name)) {
+		weapon->select(*player, *this);
+	}
+}
+

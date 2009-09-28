@@ -142,6 +142,9 @@ void	FreezeGun::hit(Player& shot_player, Player& shooting_player, bool has_effec
 	}
 }
 
+void	FreezeGun::select(Player& selecting_player, GameController& gc) {
+}
+
 void	FreezeGun::reset() {
 	m_last_fired_time = 0;
 }

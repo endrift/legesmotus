@@ -202,6 +202,10 @@ void	ClientNetwork::process_server_packet(GameController& controller, const UDPP
 	case PLAYER_DIED_PACKET:
 		controller.player_died(reader);
 		break;
+
+	case WEAPON_SELECT_PACKET:
+		controller.weapon_select(reader);
+		break;
 	}
 }
 

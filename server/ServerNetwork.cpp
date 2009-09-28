@@ -168,6 +168,10 @@ void	ServerNetwork::process_packet(Server& server, const UDPPacket& raw_packet) 
 	case PLAYER_DIED_PACKET:
 		server.player_died(address, reader);
 		break;
+
+	case WEAPON_SELECT_PACKET:
+		server.weapon_select(address, reader);
+		break;
 	}
 }
 

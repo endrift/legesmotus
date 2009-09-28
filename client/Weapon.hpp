@@ -57,6 +57,8 @@ namespace LM {
 		virtual void		discharged(Player& player, GameController& gc, PacketReader& data) = 0;
 		// When the current player (player) is hit by this weapon:
 		virtual void		hit(Player& player, Player& shooting_player, bool has_effect, GameController& gc, PacketReader& data) = 0;
+		// Call when a player selects this weapon:
+		virtual void		select(Player& player, GameController& gc) = 0;
 		// Call when the round ends to reset this weapon's state:
 		virtual void		reset() = 0;
 

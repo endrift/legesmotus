@@ -130,6 +130,9 @@ void	ImpactCannon::reset() {
 	m_last_fired_time = 0;
 }
 
+void	ImpactCannon::select(Player& selecting_player, GameController& gc) {
+}
+
 uint64_t	ImpactCannon::get_remaining_cooldown() const
 {
 	if (m_last_fired_time) {

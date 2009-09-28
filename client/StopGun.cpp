@@ -135,6 +135,9 @@ void	StopGun::reset() {
 	m_last_fired_time = 0;
 }
 
+void	StopGun::select(Player& selecting_player, GameController& gc) {
+}
+
 uint64_t	StopGun::get_remaining_cooldown() const
 {
 	if (m_last_fired_time) {
