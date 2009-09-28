@@ -105,10 +105,18 @@ void GraphicMenuItem::set_disabled_color(const Color& color) {
 
 void GraphicMenuItem::set_scale(double factor) {
 	m_normal_scale = factor;
+	if (get_state() != HOVER) {
+		m_graphic->set_scale_x(m_normal_scale);
+		m_graphic->set_scale_y(m_normal_scale);
+	}
 }
 
 void GraphicMenuItem::set_hover_scale(double factor) {
 	m_hover_scale = factor;
+	if (get_state() == HOVER) {
+		m_graphic->set_scale_x(m_hover_scale);
+		m_graphic->set_scale_y(m_hover_scale);
+	}
 }
 
 const Graphic* GraphicMenuItem::get_graphic() const {

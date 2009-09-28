@@ -16,21 +16,24 @@ extern "C" int main(int argc, char* argv[]) {
 	RadialBackground* rb = new RadialBackground(1);
 	rb->set_border_color(Color(1,1,1,0.2));
 	rb->set_inner_radius(80.0);
-	rb->set_outer_radius(50.0);
+	rb->set_outer_radius(30.0);
 	rb->set_border_radius(2.0);
 	rb->set_border_angle(1);
 	rb->set_x(250);
 	rb->set_y(250);
-	rb->set_rotation(45);
+	rb->set_rotation(0);
 
 	RadialMenu m(rb, Color(1,1,1,0.5), Color(1,1,1,1));
 
 	GraphicMenuItem *cur_item;
 	cur_item = new GraphicMenuItem(new Sprite(pman.data_path("large_gun.png", "sprites")), "gun");
+	cur_item->set_scale(0.75);
 	m.add_item(cur_item);
 	cur_item = new GraphicMenuItem(new Sprite(pman.data_path("large_mgun.png", "sprites")), "mgun");
+	cur_item->set_scale(0.75);
 	m.add_item(cur_item);
 	cur_item = new GraphicMenuItem(new Sprite(pman.data_path("large_cannon.png", "sprites")), "cannon");
+	cur_item->set_scale(0.75);
 	m.add_item(cur_item);
 
 	window->register_graphic(m.get_graphic_group());
