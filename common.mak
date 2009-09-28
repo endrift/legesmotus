@@ -96,7 +96,8 @@ endif
 
 INCLUDES = -I$(BASEDIR)
 
-CFLAGS += -Wall -Wnon-virtual-dtor
+CFLAGS += -Wall
+CXXFLAGS += -Wnon-virtual-dtor
 
 ifeq ($(DEBUG),1)
  CFLAGS += -g -O0
