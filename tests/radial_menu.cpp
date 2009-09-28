@@ -16,7 +16,7 @@ extern "C" int main(int argc, char* argv[]) {
 	RadialBackground* rb = new RadialBackground(1);
 	rb->set_border_color(Color(1,1,1,0.2));
 	rb->set_inner_radius(80.0);
-	rb->set_outer_radius(30.0);
+	rb->set_outer_radius(50.0);
 	rb->set_border_radius(2.0);
 	rb->set_border_angle(1);
 	rb->set_x(250);
@@ -26,14 +26,11 @@ extern "C" int main(int argc, char* argv[]) {
 	RadialMenu m(rb, Color(1,1,1,0.5), Color(1,1,1,1));
 
 	GraphicMenuItem *cur_item;
-	cur_item = new GraphicMenuItem(new Sprite(pman.data_path("gun_noshot.png", "sprites")), "gun");
-	cur_item->set_hover_scale(2.0);
+	cur_item = new GraphicMenuItem(new Sprite(pman.data_path("large_gun.png", "sprites")), "gun");
 	m.add_item(cur_item);
-	cur_item = new GraphicMenuItem(new Sprite(pman.data_path("mgun_noshot.png", "sprites")), "mgun");
-	cur_item->set_hover_scale(2.0);
+	cur_item = new GraphicMenuItem(new Sprite(pman.data_path("large_mgun.png", "sprites")), "mgun");
 	m.add_item(cur_item);
-	cur_item = new GraphicMenuItem(new Sprite(pman.data_path("cannon_front.png", "sprites")), "cannon", MenuItem::DISABLED);
-	cur_item->set_hover_scale(2.0);
+	cur_item = new GraphicMenuItem(new Sprite(pman.data_path("large_cannon.png", "sprites")), "cannon");
 	m.add_item(cur_item);
 
 	window->register_graphic(m.get_graphic_group());
