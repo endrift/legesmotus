@@ -69,6 +69,8 @@ namespace LM {
 		virtual uint64_t	get_remaining_cooldown() const = 0;
 		virtual uint64_t	get_total_cooldown() const = 0;
 
+		virtual const char*	hud_graphic() const { return "large_gun.png"; }
+
 		virtual const char*	gun_graphic() const = 0;
 		virtual const char*	gun_fired_graphic() const = 0;
 
