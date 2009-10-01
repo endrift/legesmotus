@@ -68,22 +68,22 @@ OBSTACLE	960,576	metal_obstacle128	rect:128,128
 OBSTACLE	992,704	metal_obstacle64	rect:64,64	tile=64,128
 OBSTACLE	992,192	metal_obstacle64	rect:64,64	tile=64,128
 
-#HAZARD		768,0		hazard64	rect:64,64	collidable	freeze=10	damage=40	team=RED
-#HAZARD		768,960		hazard64	rect:64,64	collidable	freeze=10	damage=40	team=RED
-#HAZARD		1216,0		hazard64	rect:64,64	collidable	freeze=10	damage=40	team=BLUE
-#HAZARD		1216,960	hazard64	rect:64,64	collidable	freeze=10	damage=40	team=BLUE
+#HAZARD		768,0		metal_hazard64	rect:64,64	collidable	freeze=10	damage=40	team=RED
+#HAZARD		768,960		metal_hazard64	rect:64,64	collidable	freeze=10	damage=40	team=RED
+#HAZARD		1216,0		metal_hazard64	rect:64,64	collidable	freeze=10	damage=40	team=BLUE
+#HAZARD		1216,960	metal_hazard64	rect:64,64	collidable	freeze=10	damage=40	team=BLUE
 #
-#HAZARD		768,192		hazard64	rect:64,64	collidable	freeze=10	damage=40
-#HAZARD		768,768		hazard64	rect:64,64	collidable	freeze=10	damage=40
-#HAZARD		1216,192	hazard64	rect:64,64	collidable	freeze=10	damage=40
-#HAZARD		1216,768	hazard64	rect:64,64	collidable	freeze=10	damage=40
+#HAZARD		768,192		metal_hazard64	rect:64,64	collidable	freeze=10	damage=40
+#HAZARD		768,768		metal_hazard64	rect:64,64	collidable	freeze=10	damage=40
+#HAZARD		1216,192	metal_hazard64	rect:64,64	collidable	freeze=10	damage=40
+#HAZARD		1216,768	metal_hazard64	rect:64,64	collidable	freeze=10	damage=40
 
-HAZARD		768,0		hazard64	rect:64,64	collidable	freeze=0	collision_damage=20	damage=1	team=RED	rate=100
-HAZARD		768,960		hazard64	rect:64,64	collidable	freeze=0	collision_damage=20	damage=1	team=RED	rate=100
-HAZARD		1216,0		hazard64	rect:64,64	collidable	freeze=0	collision_damage=20	damage=1	team=BLUE	rate=100
-HAZARD		1216,960	hazard64	rect:64,64	collidable	freeze=0	collision_damage=20	damage=1	team=BLUE	rate=100
+HAZARD		768,0		metal_hazard64	rect:64,64	collidable	freeze=0	collision_damage=20	damage=1	team=RED	rate=100
+HAZARD		768,960		metal_hazard64	rect:64,64	collidable	freeze=0	collision_damage=20	damage=1	team=RED	rate=100
+HAZARD		1216,0		metal_hazard64	rect:64,64	collidable	freeze=0	collision_damage=20	damage=1	team=BLUE	rate=100
+HAZARD		1216,960	metal_hazard64	rect:64,64	collidable	freeze=0	collision_damage=20	damage=1	team=BLUE	rate=100
 
-HAZARD		768,192		hazard64	rect:64,64	collidable	freeze=0	collision_damage=20	damage=1	rate=100
-HAZARD		768,768		hazard64	rect:64,64	collidable	freeze=0	collision_damage=20	damage=1	rate=100
-HAZARD		1216,192	hazard64	rect:64,64	collidable	freeze=0	collision_damage=20	damage=1	rate=100
-HAZARD		1216,768	hazard64	rect:64,64	collidable	freeze=0	collision_damage=20	damage=1	rate=100
+HAZARD		768,192		metal_hazard64	rect:64,64	collidable	freeze=0	collision_damage=20	damage=1	rate=100
+HAZARD		768,768		metal_hazard64	rect:64,64	collidable	freeze=0	collision_damage=20	damage=1	rate=100
+HAZARD		1216,192	metal_hazard64	rect:64,64	collidable	freeze=0	collision_damage=20	damage=1	rate=100
+HAZARD		1216,768	metal_hazard64	rect:64,64	collidable	freeze=0	collision_damage=20	damage=1	rate=100
