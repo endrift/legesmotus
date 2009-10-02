@@ -389,9 +389,8 @@ void	Server::player_hit(const IPAddress& address, PacketReader& inbound_packet)
 	uint32_t		shooter_id;
 	string			weapon_name;
 	uint32_t		shot_player_id;
-	double			angle;
 
-	inbound_packet >> shooter_id >> weapon_name >> shot_player_id >> angle;
+	inbound_packet >> shooter_id >> weapon_name >> shot_player_id;
 
 	if (!is_authorized(address, shooter_id)) {
 		return;
@@ -409,7 +408,7 @@ void	Server::player_hit(const IPAddress& address, PacketReader& inbound_packet)
 
 	// Inform the victim that he has been hit
 	PacketWriter		outbound_packet(PLAYER_HIT_PACKET);
-	outbound_packet << shooter_id << weapon_name << shot_player_id << has_effect << angle;
+	outbound_packet << shooter_id << weapon_name << shot_player_id << has_effect << inbound_packet;
 	m_network.send_packet(shot_player->get_address(), outbound_packet);
 	// TODO: REQUIRE ACK
 }

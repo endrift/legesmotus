@@ -1,0 +1,198 @@
+/*
+ * client/Shotgun.cpp
+ *
+ * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
+ * 
+ * Copyright 2009 Andrew Ayer, Nathan Partlan, Jeffrey Pfau
+ * 
+ * Leges Motus is free and open source software.  You may redistribute it and/or
+ * modify it under the terms of version 2, or (at your option) version 3, of the
+ * GNU General Public License (GPL), as published by the Free Software Foundation.
+ * 
+ * Leges Motus is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE.  See the full text of the GNU General Public License for
+ * further detail.
+ * 
+ * For a full copy of the GNU General Public License, please see the COPYING file
+ * in the root of the source code tree.  You may also retrieve a copy from
+ * <http://www.gnu.org/licenses/gpl-2.0.txt>, or request a copy by writing to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+ * 02111-1307  USA
+ * 
+ */
+
+#include "Shotgun.hpp"
+#include "GameController.hpp"
+#include "BaseMapObject.hpp"
+#include "common/Player.hpp"
+#include "common/PacketReader.hpp"
+#include "common/PacketWriter.hpp"
+#include "common/timer.hpp"
+#include "common/math.hpp"
+#include <map>
+#include <list>
+
+
+using namespace LM;
+using namespace std;
+
+Shotgun::Shotgun(const char* name, int damage, double damage_degradation, int nbr_projectiles, double angle, uint64_t delay, double recoil) : Weapon(name) {
+	m_last_fired_time = 0;
+	m_damage = damage;
+	m_damage_degradation = damage_degradation;
+	m_nbr_projectiles = nbr_projectiles;
+	m_angle = to_radians(angle);
+	m_delay = delay;
+	m_recoil = recoil;
+}
+
+Shotgun::Shotgun(PacketReader& gun_data) {
+	m_last_fired_time = 0;
+	string		name;
+	double		angle_degrees;
+	gun_data >> name >> m_damage >> m_damage_degradation >> m_nbr_projectiles >> angle_degrees >> m_delay >> m_recoil;
+	m_angle = to_radians(angle_degrees);
+	set_name(name.c_str());
+}
+
+void	Shotgun::fire(Player& player, GameController& gc, Point startpos, double initial_direction) {
+	if (m_last_fired_time != 0 && get_ticks() - m_last_fired_time < m_delay) {
+		// Firing too soon
+		return;
+	}
+	
+	// Cause recoil if the player is not hanging onto a wall.
+	if (!player.is_grabbing_obstacle()) {
+		player.set_velocity(player.get_velocity() - Vector::make_from_magnitude(m_recoil, initial_direction));
+	}
+
+	m_last_fired_time = get_ticks();
+	gc.play_sound("fire");
+	gc.show_muzzle_flash();
+
+	//
+	// Figure out who/what we hit
+	//
+	std::list<Point>		hit_points;
+	std::map<Player*, int>		hit_players;
+	std::map<Player*, double>	hit_player_damage;
+
+	double				direction = initial_direction - m_angle / 2;
+	const double			angle_increment = m_angle / (m_nbr_projectiles - 1.0);
+	for (int i = 0; i < m_nbr_projectiles; ++i) {
+		// Find the nearest object that this hit
+		BaseMapObject*	hit_map_object = NULL;
+		Player*		hit_player = NULL;
+		Point		hit_point(gc.find_shootable_object(startpos, direction, hit_map_object, hit_player));
+
+		// If this shot hit a map object, tell the map object about it
+		if (hit_map_object != NULL) {
+			if (!hit_map_object->shot(gc, player, hit_point, direction)) {
+				// Instead of absorbing the shot, the map object redirected it
+				hit_point = Point(-1, -1);
+			}
+		}
+		if (hit_point.x != -1 && hit_point.y != -1) {
+			hit_points.push_back(hit_point);
+		}
+		
+		if (hit_player != NULL) {
+			// A player was hit
+			++hit_players[hit_player];
+
+			double		damage = m_damage - m_damage_degradation * Point::distance(startpos, hit_point);
+			if (damage > 0) {
+				hit_player_damage[hit_player] += damage;
+			}
+			//std::cerr << "Hit with damage " << damage << '\n';
+		}
+
+		direction += angle_increment;
+	}
+
+	//
+	// Send a weapon discharged packet so other players know we fired
+	//
+	PacketWriter	discharged_packet(WEAPON_DISCHARGED_PACKET);
+	discharged_packet << player.get_id() << get_name() << startpos << initial_direction;
+	while (!hit_points.empty()) {
+		gc.show_bullet_impact(hit_points.front()); // Also show the bullet impact for each hit point
+		discharged_packet << hit_points.front();
+		hit_points.pop_front();
+	}
+	gc.send_packet(discharged_packet);
+
+	//
+	// Iterate through all the hit players and send packets about each one
+	//
+	for (std::map<Player*, int>::const_iterator it(hit_players.begin()); it != hit_players.end(); ++it) {
+		Player*	hit_player = it->first;
+		int	times_hit = it->second;
+		double	damage = hit_player_damage[hit_player];
+
+		if (!hit_player->is_frozen()) {
+			gc.play_sound("hit");
+		}
+
+		PacketWriter	hit_packet(PLAYER_HIT_PACKET);
+		hit_packet << player.get_id() << get_name() << hit_player->get_id() << times_hit << damage << initial_direction - M_PI;
+		gc.send_packet(hit_packet);
+	}
+}
+
+void	Shotgun::discharged(Player& player, GameController& gc, PacketReader& data) {
+	Point	startpos;
+	double	direction;
+	data >> startpos >> direction;
+
+	// Play a sound
+	gc.play_sound("fire");
+
+	// Activate the radar blip
+	gc.activate_radar_blip(player);
+
+	// Display a bullet impact point for every place a projectile landed
+	while (data.has_more()) {
+		Point	endpos;
+		data >> endpos;
+
+		gc.show_bullet_impact(endpos);
+	}
+}
+
+void	Shotgun::hit(Player& shot_player, Player& shooting_player, bool has_effect, GameController& gc, PacketReader& data) {
+	int	times_hit;
+	double	damage;
+	double	angle;
+	data >> times_hit >> damage >> angle;
+
+	// Adjust the shot player's velocity
+	shot_player.set_velocity(shot_player.get_velocity() - Vector::make_from_magnitude((m_recoil / m_nbr_projectiles) * times_hit, angle));
+
+	//std::cerr << "I was hit " << times_hit << " times at angle " << angle << " with a total damage of " << damage << '\n';
+
+	if (has_effect) {
+		// Deal damage to the player
+		gc.damage(damage, &shooting_player);
+	}
+}
+
+void	Shotgun::select(Player& selecting_player, GameController& gc) {
+}
+
+void	Shotgun::reset() {
+	m_last_fired_time = 0;
+}
+
+uint64_t	Shotgun::get_remaining_cooldown() const
+{
+	if (m_last_fired_time) {
+		uint64_t	time_since_fire = get_ticks() - m_last_fired_time;
+		if (time_since_fire < m_delay) {
+			return m_delay - time_since_fire;
+		}
+	}
+	return 0;
+}
+

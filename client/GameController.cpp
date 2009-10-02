@@ -38,6 +38,7 @@
 #include "FreezeGun.hpp" //TEMP
 #include "StopGun.hpp" //TEMP
 #include "ImpactCannon.hpp" //TEMP
+#include "Shotgun.hpp" //TEMP
 #include "common/PacketReader.hpp"
 #include "common/PacketWriter.hpp"
 #include "common/network.hpp"
@@ -1354,7 +1355,8 @@ void GameController::parse_key_input() {
 			attempt_jump();
 		}
 		if ((m_key_bindings.weapon_1 != -1 && m_keys[m_key_bindings.weapon_1]) || (m_alt_key_bindings.weapon_1 != -1 && m_keys[m_alt_key_bindings.weapon_1])) {
-			change_weapon("pistol");
+			//change_weapon("pistol");
+			change_weapon("shotgun");
 		}
 		if ((m_key_bindings.weapon_2 != -1 && m_keys[m_key_bindings.weapon_2]) || (m_alt_key_bindings.weapon_2 != -1 && m_keys[m_alt_key_bindings.weapon_2])) {
 			change_weapon("machinegun");
@@ -3495,7 +3497,8 @@ Weapon*	GameController::get_weapon(const string& name) {
 }
 
 void	GameController::init_weapons() { //TEMP
-	m_weapons.insert(make_pair("pistol", m_current_weapon = new FreezeGun("pistol", 0, 50, 700, 1.5, 0.0, false)));
+	//m_weapons.insert(make_pair("pistol", m_current_weapon = new FreezeGun("pistol", 0, 50, 700, 1.5, 0.0, false)));
+	m_weapons.insert(make_pair("shotgun", m_current_weapon = new Shotgun("shotgun", 30, 0.01, 5, 10, 700, 1.5)));
 	m_weapons.insert(make_pair("machinegun", new FreezeGun("machinegun", 0, 20, 100, 1.1, 0.1, true)));
 	m_weapons.insert(make_pair("jet", new FreezeGun("jet", 0, 0, 100, 2.5, 0.0, false)));
 	m_weapons.insert(make_pair("stop", new StopGun("stop", 0, 50, 1.2)));
