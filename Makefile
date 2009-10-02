@@ -138,7 +138,7 @@ install:
 	install -d $(DESTDIR)$(SHAREDIR)/icons/hicolor/256x256
 	install -m 0644 $(BASEDIR)/data/sprites/blue_head256.png $(DESTDIR)$(SHAREDIR)/icons/hicolor/256x256/legesmotus.png
 	install -d $(DESTDIR)$(BINDIR)
-	which update-desktop-database && update-desktop-database
+	which update-desktop-database && update-desktop-database || true
 	install $(BASEDIR)/server/lmserver $(BASEDIR)/client/legesmotus $(DESTDIR)$(BINDIR)
 	strip $(DESTDIR)$(BINDIR)/legesmotus
 	strip $(DESTDIR)$(BINDIR)/lmserver
