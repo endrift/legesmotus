@@ -1832,110 +1832,6 @@ void GameController::attempt_jump() {
 	}
 }
 
-/*
- * Find the first shootable object (either map object or player) in the given direction from the given start point
- * direction is in radians
- */
-Point GameController::find_shootable_object(Point startpos, double direction, BaseMapObject*& hit_map_object, Player*& hit_player) {
-	const list<BaseMapObject*>& map_objects(m_map->get_objects());
-	
-	double shortestdist = numeric_limits<double>::infinity();
-	double end_x = -1;
-	double end_y = -1;
-	
-	// Find the closest object that the shot will hit, if any.
-	hit_map_object = NULL;
-
-	for (list<BaseMapObject*>::const_iterator it(map_objects.begin()); it != map_objects.end(); it++) {
-		BaseMapObject*	thisobj = *it;
-
-		if (!thisobj->is_shootable() || !thisobj->is_intersectable()) {
-			continue;
-		}
-
-		const Shape& shape(*thisobj->get_bounding_shape());
-		//double dist_to_obstacle = Point::distance(Point(startpos.x, startpos.y), Point(thisobj->get_sprite()->get_x() + thisobj->get_sprite()->get_image_width()/2, thisobj->get_sprite()->get_y() + thisobj->get_sprite()->get_image_height()/2)) + 100.0;
-		double dist_to_obstacle = m_map_width + m_map_height; // XXX: longer than it needs to be...
-		Point endpos(startpos.x + dist_to_obstacle * cos(direction), startpos.y + dist_to_obstacle * sin(direction));
-		
-		Point newpoint = shape.intersects_line(startpos, endpos, NULL);
-		
-		if (newpoint.x == -1 && newpoint.y == -1) {
-			continue;
-		}
-		
-		double newdist = Point::distance(Point(startpos.x, startpos.y), newpoint);
-		
-		if (newdist != -1 && newdist < shortestdist) {
-			shortestdist = newdist;
-			end_x = newpoint.x;
-			end_y = newpoint.y;
-			hit_map_object = thisobj;
-		}
-	}
-	
-	// Now check if any players are closer.
-	hit_player = NULL;
-	
-	map<uint32_t, GraphicalPlayer>::iterator it;
-	for ( it=m_players.begin() ; it != m_players.end(); it++ ) {
-		GraphicalPlayer& currplayer = (*it).second;
-		if (currplayer.get_id() == m_player_id) {
-			continue;
-		}
-		double playerdist = Point::distance(Point(startpos.x, startpos.y), Point(currplayer.get_x(), currplayer.get_y()));
-		
-		if (playerdist > shortestdist) {
-			continue;
-		}
-		
-		double this_end_x = startpos.x + playerdist * cos(direction);
-		double this_end_y = startpos.y + playerdist * sin(direction);
-		vector<double> closestpoint = closest_point_on_line(startpos.x, startpos.y, this_end_x, this_end_y, currplayer.get_x(), currplayer.get_y());
-		
-		if (closestpoint.size() == 0) {
-			continue;
-		}
-		
-		double dist = Point::distance(Point(currplayer.get_x(), currplayer.get_y()), Point(closestpoint.at(0), closestpoint.at(1)));
-		
-		// If the closest point was behind the beginning of the shot, it's not a hit.
-		if (closestpoint.at(2) < 0) {
-			continue;
-		}
-		
-		// If the shot hit the player:
-		if (dist < currplayer.get_radius()) {
-			shortestdist = playerdist;
-			end_x = closestpoint.at(0);
-			end_y = closestpoint.at(1);
-			hit_player = &currplayer;
-			hit_map_object = NULL;
-		}
-	}
-	
-	// If we're still not hitting anything, find the nearest map edge where the shot will hit.
-	if (end_x == -1 && end_y == -1) {
-		double dist_to_obstacle = m_map_width + m_map_height;
-		Point endpos = Point(startpos.x + dist_to_obstacle * cos(direction), startpos.y + dist_to_obstacle * sin(direction));
-		Point newpoint = m_map_polygon.intersects_line(startpos, endpos, NULL);
-	
-		if (newpoint.x != -1 || newpoint.y != -1) {		
-			double newdist = Point::distance(Point(startpos.x, startpos.y), newpoint);
-	
-			if (newdist != -1 && newdist < shortestdist) {
-				shortestdist = newdist;
-				end_x = newpoint.x;
-				end_y = newpoint.y;
-				hit_player = NULL;
-				hit_map_object = NULL;
-			}
-		}
-	}
-
-	return Point(end_x, end_y);
-}
-
 void GameController::show_muzzle_flash() {
 	// Switch to the gun with the muzzle flash.
 	GraphicGroup* frontarm = (GraphicGroup*)m_players[m_player_id].get_sprite()->get_graphic("frontarm");
@@ -3539,6 +3435,104 @@ bool	GameController::damage (int amount, const Player* aggressor) {
 	}
 	return false;
 }
+
+GameController::HitObject::HitObject (double arg_distance, Point arg_point, BaseMapObject* arg_map_object)
+{
+	distance = arg_distance;
+	point = arg_point;
+	map_object = arg_map_object;
+	player = 0;
+}
+
+GameController::HitObject::HitObject (double arg_distance, Point arg_point, Player* arg_player)
+{
+	distance = arg_distance;
+	point = arg_point;
+	map_object = 0;
+	player = arg_player;
+}
+
+// Starting from the given point, shoot in a STRAIGHT LINE in the given direction,
+// and populate the given set with the objects that are hit.
+void	GameController::shoot_in_line(Point startpos, double direction, multiset<HitObject>& hit_objects)
+{
+	Point	endpos(startpos + Vector::make_from_magnitude(m_map_width + m_map_height, direction));
+
+	//
+	// First, find what map objects this line hits
+	//
+	const list<BaseMapObject*>& map_objects(m_map->get_objects());
+	for (list<BaseMapObject*>::const_iterator it(map_objects.begin()); it != map_objects.end(); ++it) {
+		BaseMapObject*	thisobj = *it;
+		if (!thisobj->is_shootable() || !thisobj->is_intersectable()) {
+			continue;
+		}
+
+		Point intersection = thisobj->get_bounding_shape()->intersects_line(startpos, endpos, NULL);
+		if (intersection.x == -1 && intersection.y == -1) {
+			// Not intersecting line
+			continue;
+		}
+		
+		double distance = Point::distance(startpos, intersection);
+		if (distance != -1) {
+			hit_objects.insert(HitObject(distance, intersection, thisobj));
+		}
+	}
+	
+	//
+	// Now, find what players this line hits
+	//
+	for (map<uint32_t, GraphicalPlayer>::iterator it(m_players.begin()); it != m_players.end(); ++it) {
+		GraphicalPlayer& thisplayer = it->second;
+		if (thisplayer.get_id() == m_player_id) {
+			continue;
+		}
+
+		Circle	player_circle(thisplayer.get_position(), thisplayer.get_radius());
+
+		Point	intersection = player_circle.intersects_line(startpos, endpos, NULL);
+		if (intersection.x == -1 && intersection.y == -1) {
+			// Not intersecting line
+			continue;
+		}
+		
+		double	distance = Point::distance(startpos, intersection);
+		if (distance != -1) {
+			hit_objects.insert(HitObject(distance, intersection, &thisplayer));
+		}
+	}
+	
+	//
+	// Finally, find the nearest map edge where the shot will hit.
+	//
+	Point	edge_intersection = m_map_polygon.intersects_line(startpos, endpos, NULL);
+
+	if (edge_intersection.x != -1 || edge_intersection.y != -1) {		
+		double	distance = Point::distance(startpos, edge_intersection);
+		if (distance != -1) {
+			hit_objects.insert(HitObject(distance, edge_intersection));
+		}
+	}
+}
+
+// This is a COMPATIBILITY WRAPPER around the more general shoot_in_line() function above.
+// Code should be migrated to use the new function.
+Point GameController::find_shootable_object(Point startpos, double direction, BaseMapObject*& hit_map_object, Player*& hit_player) {
+	multiset<HitObject>	hit_objects;
+	shoot_in_line(startpos, direction, hit_objects);
+
+	if (hit_objects.empty()) {
+		return Point(-1, -1);
+	}
+
+	const HitObject&	nearest_hit(*hit_objects.begin());
+	hit_map_object = nearest_hit.map_object;
+	hit_player = nearest_hit.player;
+	return nearest_hit.point;
+}
+
+
 
 void	GameController::weapon_select(PacketReader& reader)
 {

@@ -351,9 +351,28 @@ namespace LM {
 
 		void		freeze(uint64_t how_long);
 
- 		// Find the first shootable object (either map object or player) in the given direction from the given start point
-		// direction is in radians
+		// This is a COMPATIBILITY WRAPPER around the more general shoot_in_line() function below.
+		// Code should be migrated to use the new function.
 		Point		find_shootable_object(Point startpos, double direction, BaseMapObject*& hit_map_object, Player*& hit_player);
+
+		// A HitObject represents an object (player or map object) that was hit by a weapon discharge
+		struct HitObject {
+			double		distance;	// Distance from where the weapon was discharged
+			Point		point;		// Where in the arena that the object was hit
+			BaseMapObject*	map_object;	// The map object that was hit (if applicable, NULL otherwise)
+			Player*		player;		// The player that was hit (if applicable, NULL otherwise)
+
+			HitObject (double distance, Point point, BaseMapObject* map_object =NULL);
+			HitObject (double distance, Point point, Player* player);
+			bool operator<(const HitObject& other) const { return distance < other.distance; }
+		};
+
+		// Starting from the given point, shoot in a STRAIGHT LINE in the given direction,
+		// and populate the given set with the objects that are hit.
+		void		shoot_in_line(Point startpos, double direction, std::multiset<HitObject>& hit_objects);
+
+		// Find all hit objects in the given shape, and populate the given set
+		//void		shoot_in_region(const Shape& shape, bool penetrate_players, bool penetrate_obstacles, std::list<Player*>& hit_players); // TODO (#141)
 		
 		// Scan both the local network and the meta server for servers:
 		void		scan_all();
