@@ -36,7 +36,6 @@
 #include "TextMenuItem.hpp"
 #include "Weapon.hpp"
 #include "FreezeGun.hpp" //TEMP
-#include "StopGun.hpp" //TEMP
 #include "ImpactCannon.hpp" //TEMP
 #include "Shotgun.hpp" //TEMP
 #include "common/PacketReader.hpp"
@@ -3501,7 +3500,6 @@ void	GameController::init_weapons() { //TEMP
 	m_weapons.insert(make_pair("shotgun", m_current_weapon = new Shotgun("shotgun", 30, 0.01, 5, 10, 700, 1.5)));
 	m_weapons.insert(make_pair("machinegun", new FreezeGun("machinegun", 0, 20, 100, 1.1, 0.1, true)));
 	m_weapons.insert(make_pair("jet", new FreezeGun("jet", 0, 0, 100, 2.5, 0.0, false)));
-	m_weapons.insert(make_pair("stop", new StopGun("stop", 0, 50, 1.2)));
 	m_weapons.insert(make_pair("impact", new ImpactCannon("impact", 1000, 10, 20.0, 2000, 2.0)));
 }
 
