@@ -1048,7 +1048,10 @@ bool	Server::load_map(const char* map_name) {
 	// 3. Set game parameters that are specified in the server-wide config
 	m_params.init_from_config(m_config);
 
-	// 4. Initialize the game mode for this map
+	// 4. Initialize the weapon set
+	m_weapon_set.load_file(m_params.weapon_set.c_str(), m_path_manager.data_path(m_params.weapon_set.c_str(), "weapons"));
+
+	// 5. Initialize the game mode for this map
 	init_game_mode();
 
 	return true;
@@ -1313,11 +1316,35 @@ void	Server::send_new_round_packets(const ServerPlayer* player) {
 	}
 
 	broadcast_params(player);
+	broadcast_weapons(player);
 }
 
 void	Server::send_round_start_packet(const ServerPlayer* player) {
 	PacketWriter	packet(ROUND_START_PACKET);
 	packet << gametime_left();
+	if (player) {
+		m_ack_manager.add_packet(player->get_id(), packet);
+		m_network.send_packet(player->get_address(), packet);
+	} else {
+		m_ack_manager.add_broadcast_packet(packet);
+		broadcast_packet(packet);
+	}
+}
+
+void	Server::broadcast_weapons(const ServerPlayer* player) {
+	const std::list<WeaponReader>&	weapons(m_weapon_set.get_weapons());
+	size_t				index = 0;
+
+	for (std::list<WeaponReader>::const_iterator it(weapons.begin()); it != weapons.end(); ++it) {
+		broadcast_weapon_packet(player, index, *it);
+		++index;
+	}
+}
+
+void	Server::broadcast_weapon_packet(const ServerPlayer* player, size_t index, const WeaponReader& data) {
+	PacketWriter	packet(WEAPON_INFO_PACKET);
+	packet << index;
+	packet << data;
 	if (player) {
 		m_ack_manager.add_packet(player->get_id(), packet);
 		m_network.send_packet(player->get_address(), packet);

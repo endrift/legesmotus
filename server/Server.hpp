@@ -33,6 +33,7 @@
 #include "common/AckManager.hpp"
 #include "common/GameParameters.hpp"
 #include "common/team.hpp"
+#include "common/WeaponFile.hpp"
 #include <stdint.h>
 #include <math.h>
 #include <map>
@@ -94,6 +95,7 @@ namespace LM {
 		uint32_t		m_next_player_id;	// Used to allocate next player ID
 		PlayerMap		m_players;
 		ServerMap		m_current_map;
+		WeaponFile		m_weapon_set;
 		std::auto_ptr<GameModeHelper>	m_game_mode;
 		std::vector<GateStatus>	m_gates;		// [0] = Team A's gate  [1] = Team B's gate
 		uint64_t		m_game_start_time;	// Time at which the game started
@@ -160,6 +162,9 @@ namespace LM {
 		// If player is NULL, broadcast to all players, otherwise only to specific player
 		void			broadcast_params(const ServerPlayer* player =NULL);
 		template<class T> void	broadcast_param(const ServerPlayer* player, const char* param_name, const T& param_value);
+
+		void			broadcast_weapons(const ServerPlayer* player =NULL);
+		void			broadcast_weapon_packet(const ServerPlayer* player, size_t index, const WeaponReader&);
 
 		// Reset the scores for all players, broadcasting score updates for each one (call at beginning of new game)
 		void			reset_player_scores();

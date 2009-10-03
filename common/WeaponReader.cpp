@@ -41,6 +41,13 @@ WeaponReader::WeaponReader(const char* weapon_data) : StringTokenizer(weapon_dat
 	}
 }
 
+void	WeaponReader::init(const char* data) {
+	StringTokenizer::init(data, "\t", true);
+	if (const char* object_header = get_next()) {
+		StringTokenizer(object_header, ':') >> m_id >> m_type;
+	}
+}
+
 void	WeaponReader::swap(WeaponReader& other) {
 	StringTokenizer::swap(other);
 	// std:: prefix necessary here to avoid name conflicts

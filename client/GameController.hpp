@@ -272,7 +272,6 @@ namespace LM {
 
 		Weapon*		get_weapon(const std::string& name);
 		void		init_weapon_selector();
-		void		init_weapons(); //TEMP
 		void		set_weapons();
 		void		update_curr_weapon_image();
 		void		reset_weapons(); // Call reset() on all weapons. Call at end of every round.

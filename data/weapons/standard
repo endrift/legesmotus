@@ -1,0 +1,40 @@
+shotgun:SPREAD
+	name=Shotgun
+	hud=large_gun.png
+	projectiles=5
+	angle=10
+	damage=30
+	degradation=0.01
+	cooldown=700
+	recoil=1.5
+	normal=TODO
+	firing=TODO
+
+mgun:STANDARD
+	name=Machine Gun
+	hud=large_mgun.png
+	damage=20
+	cooldown=100
+	recoil=1.1
+	inaccuracy=5
+	continuous
+	normal=TODO
+	firing=TODO
+
+rifle:STANDARD
+	name=Rifle
+	hud=large_gun.png
+	damage=100
+	cooldown=1500
+	recoil=1.8
+	normal=TODO
+	firing=TODO
+
+impact:IMPACT
+	name=Impact Cannon
+	hud=large_cannon.png
+	force=20
+	cooldown=2000
+	recoil=2.0
+	normal=TODO
+	firing=TODO

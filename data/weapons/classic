@@ -1,0 +1,8 @@
+pistol:STANDARD
+	name=Pistol
+	hud=large_gun.png
+	damage=100
+	cooldown=700
+	recoil=1.5
+	normal=TODO
+	firing=TODO

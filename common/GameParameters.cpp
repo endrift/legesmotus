@@ -57,6 +57,7 @@ void 	GameParameters::reset() {
 	jump_velocity = 6.0;
 	weapon_switch_delay = 500;
 	late_spawn_frozen = true;
+	weapon_set = "standard";
 }
 
 void	GameParameters::init_from_config(const ConfigManager& config) {
@@ -82,6 +83,7 @@ void	GameParameters::init_from_config(const ConfigManager& config) {
 	if (config.has("jump_velocity"))	jump_velocity = config.get<double>("jump_velocity");
 	if (config.has("weapon_switch_delay"))	weapon_switch_delay = config.get<uint64_t>("weapon_switch_delay");
 	if (config.has("late_spawn_frozen"))	late_spawn_frozen = config.get<bool>("late_spawn_frozen");
+	if (config.has("weapon_set"))		weapon_set = config.get<string>("weapon_set");
 }
 
 bool	GameParameters::process_param_packet(PacketReader& packet) {

@@ -28,6 +28,7 @@
 #include <iosfwd>
 #include <stddef.h>
 #include <stdint.h>
+#include <string>
 
 namespace LM {
 	class StringTokenizer;
@@ -72,6 +73,7 @@ namespace LM {
 		double		jump_velocity;		// Magnitude of velocity when jumping off an obstacle
 		uint64_t	weapon_switch_delay;	// How long does it take to switch weapons?
 		bool		late_spawn_frozen;	// Players who join mid round spawn frozen?
+		std::string	weapon_set;
 
 		GameParameters() { reset(); }
 

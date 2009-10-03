@@ -74,7 +74,7 @@ bool	StandardGun::parse_param(const char* param_string) {
 	} else if (strncmp(param_string, "recoil=", 7) == 0) {
 		m_recoil = atof(param_string + 7);
 	} else if (strncmp(param_string, "inaccuracy=", 11) == 0) {
-		m_inaccuracy = atof(param_string + 11);
+		m_inaccuracy = to_radians(atof(param_string + 11));
 	} else if (strcmp(param_string, "continuous") == 0) {
 		m_is_continuous = true;
 	} else if (strcmp(param_string, "notcontinuous") == 0) {

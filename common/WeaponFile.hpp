@@ -1,5 +1,5 @@
 /*
- * common/WeaponReader.hpp
+ * common/WeaponFile.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,41 +22,36 @@
  * 
  */
 
-#ifndef LM_COMMON_WEAPONREADER_HPP
-#define LM_COMMON_WEAPONREADER_HPP
+#ifndef LM_COMMON_WEAPONFILE_HPP
+#define LM_COMMON_WEAPONFILE_HPP
 
-#include "StringTokenizer.hpp"
-#include "Map.hpp"
 #include <string>
-#include <algorithm>
+#include <list>
+#include <iosfwd>
+#include "common/WeaponReader.hpp"
 
 namespace LM {
-	class PacketReader;
-	class PacketWriter;
-
-	class WeaponReader : public StringTokenizer {
+	class WeaponFile {
 	private:
-		std::string		m_type;
-		std::string		m_id;
-	
+		std::string		m_name;
+		std::list<WeaponReader>	m_weapons;
+
 	public:
-		WeaponReader();
-		explicit WeaponReader(const char* weapon_data);
+		bool	is_empty() const { return m_weapons.empty(); }
+		bool	is_filled() const { return !m_weapons.empty(); }
 
-		void			init(const char* data);
-	
-		const std::string&	get_type() const { return m_type; }
-		const std::string&	get_id() const { return m_id; }
+		// Read and parse the given input stream and load into the current weapon set
+		bool	load(const char* name, std::istream& in);
 
-		void			swap(WeaponReader& other);
+		// load_file will preserve the current weapon set if it can't open the new set
+		// (and return false to indicate error)
+		bool	load_file(const char* name, const char* path);
 
-		friend PacketReader&	operator>>(PacketReader& packet, WeaponReader& map_object);
-		friend PacketWriter&	operator<<(PacketWriter& packet, const WeaponReader& map_object);
+		// Remove all weapons from the set:
+		void	clear();
+
+		const std::list<WeaponReader>	get_weapons() const { return m_weapons; }
 	};
-}
-
-namespace std {
-	template<> inline void swap (LM::WeaponReader& x, LM::WeaponReader& y) { x.swap(y); }
 }
 
 #endif

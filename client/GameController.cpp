@@ -36,9 +36,6 @@
 #include "TextMenuItem.hpp"
 #include "Weapon.hpp"
 #include "GraphicMenuItem.hpp"
-#include "StandardGun.hpp" //TEMP
-#include "ImpactCannon.hpp" //TEMP
-#include "SpreadGun.hpp" //TEMP
 #include "common/PacketReader.hpp"
 #include "common/PacketWriter.hpp"
 #include "common/network.hpp"
@@ -255,8 +252,6 @@ void GameController::init(GameWindow* window) {
 	m_map_height = 0;
 
 	m_round_end_time = 0;
-
-	init_weapons(); // TEMP CODE - Ultimately, get from the server when game starts
 
 	// Initialize the gun sprites.
 	gun_normal = new Sprite(m_path_manager.data_path("gun_noshot.png", "sprites"));
@@ -1437,14 +1432,13 @@ void GameController::parse_key_input() {
 			attempt_jump();
 		}
 		if ((m_key_bindings.weapon_1 != -1 && m_keys[m_key_bindings.weapon_1]) || (m_alt_key_bindings.weapon_1 != -1 && m_keys[m_alt_key_bindings.weapon_1])) {
-			//change_weapon("pistol");
-			change_weapon("shotgun");
+			change_weapon(0U);
 		}
 		if ((m_key_bindings.weapon_2 != -1 && m_keys[m_key_bindings.weapon_2]) || (m_alt_key_bindings.weapon_2 != -1 && m_keys[m_alt_key_bindings.weapon_2])) {
-			change_weapon("machinegun");
+			change_weapon(1U);
 		}
 		if ((m_key_bindings.weapon_3 != -1 && m_keys[m_key_bindings.weapon_3]) || (m_alt_key_bindings.weapon_3 != -1 && m_keys[m_alt_key_bindings.weapon_3])) {
-			change_weapon("impact");
+			change_weapon(2U);
 		}
 	}
 	
@@ -2712,8 +2706,6 @@ void GameController::new_round(PacketReader& reader) {
 		} else if (time_until_start/1000 > 0) {
 			message << "Game in progress on map " << map_name << ". " << time_until_start / 1000 << " seconds until spawn.";
 		}
-
-		toggle_score_overlay(false);
 	} else if (time_until_start/1000 > 0) {
 		message << "Game starts in " << time_until_start/1000 << " seconds on map " << map_name << ".";
 	}
@@ -2740,7 +2732,7 @@ void GameController::new_round(PacketReader& reader) {
 	 * Reset the game state (TODO: add more stuff here)
 	 */
 	m_round_end_time = 0;
-	//clear_weapons();
+	clear_weapons();
 	m_last_damage_time = 0;
 	m_last_recharge_time = 0;
 	m_last_weapon_switch = 0;
@@ -2796,6 +2788,10 @@ void GameController::round_over(PacketReader& reader) {
 void GameController::round_start(PacketReader& reader) {
 	// ACK TODO: Only accept this packet if we have gotten a related new_round packet
 
+	if (m_game_state == GAME_OVER) {
+		m_game_state = GAME_IN_PROGRESS;
+	}
+
 	uint64_t		time_left_in_game;
 	reader >> time_left_in_game;
 
@@ -2805,6 +2801,7 @@ void GameController::round_start(PacketReader& reader) {
 		m_round_end_time = get_ticks() + time_left_in_game;
 	}
 
+	toggle_score_overlay(false);
 	m_sound_controller->play_sound("begin");
 	display_message("Game started!");
 
@@ -3525,14 +3522,6 @@ void	GameController::update_curr_weapon_image() {
 	m_window->register_hud_graphic(m_curr_weapon_image);
 }
 
-void	GameController::init_weapons() { //TEMP
-	//m_weapons.insert(make_pair("pistol", m_current_weapon = new StandardGun("pistol", 0, 50, 700, 1.5, 0.0, false)));
-	m_weapons.insert(make_pair("shotgun", m_current_weapon = new SpreadGun("shotgun", 30, 0.01, 5, 10, 700, 1.5)));
-	m_weapons.insert(make_pair("machinegun", new StandardGun("machinegun", 0, 20, 100, 1.1, 0.1, true)));
-	m_weapons.insert(make_pair("jet", new StandardGun("jet", 0, 0, 100, 2.5, 0.0, false)));
-	m_weapons.insert(make_pair("impact", new ImpactCannon("impact", 1000, 10, 20.0, 2000, 2.0)));
-}
-
 void	GameController::reset_weapons() {
 	for (map<string, Weapon*>::iterator it(m_weapons.begin()); it != m_weapons.end(); ++it) {
 		it->second->reset();
@@ -3688,13 +3677,20 @@ void	GameController::weapon_select(PacketReader& reader)
 
 void	GameController::weapon_info_packet(PacketReader& reader)
 {
+	size_t			weapon_index;
 	WeaponReader		weapon_data;
+	reader >> weapon_index;
 	reader >> weapon_data;
 
 	if (!m_weapons.count(weapon_data.get_id())) {
 		if (Weapon* weapon = Weapon::new_weapon(weapon_data)) {
 			m_weapons.insert(std::make_pair(weapon->get_id(), weapon));
 			send_ack(reader);
+			if (weapon_index == 0) {
+				m_current_weapon = weapon;
+				update_curr_weapon_image();
+			}
+			init_weapon_selector();
 		}
 	}
 }
