@@ -45,6 +45,8 @@ StandardGun::StandardGun(const char* id, uint64_t freeze_time, int damage, uint6
 	m_recoil = recoil;
 	m_inaccuracy = inaccuracy;
 	m_is_continuous = iscontinuous;
+
+	m_hud_graphic = "large_mgun.png"; // TEMP
 }
 
 StandardGun::StandardGun(const char* id, StringTokenizer& gun_data) : Weapon(id) {

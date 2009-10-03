@@ -42,6 +42,8 @@ ImpactCannon::ImpactCannon(const char* id, uint64_t freeze_time, int damage, dou
 	m_force = force;
 	m_cooldown = delay;
 	m_recoil = recoil;
+
+	m_hud_graphic = "large_cannon.png";
 }
 
 ImpactCannon::ImpactCannon(const char* id, StringTokenizer& gun_data) : Weapon(id) {

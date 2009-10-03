@@ -46,6 +46,8 @@ SpreadGun::SpreadGun(const char* id, int damage, double damage_degradation, int 
 	m_angle = to_radians(angle);
 	m_cooldown = delay;
 	m_recoil = recoil;
+
+	m_hud_graphic = "large_gun.png"; // TEMP
 }
 
 SpreadGun::SpreadGun(const char* id, StringTokenizer& gun_data) : Weapon(id) {
@@ -70,6 +72,8 @@ bool	SpreadGun::parse_param(const char* param_string) {
 		m_damage_degradation = atof(param_string + 12);
 	} else if (strncmp(param_string, "projectiles=", 12) == 0) {
 		m_nbr_projectiles = atoi(param_string + 12);
+	} else if (strncmp(param_string, "angle=", 6) == 0) {
+		m_angle = to_radians(atof(param_string + 6));
 	} else if (strncmp(param_string, "cooldown=", 9) == 0) {
 		m_cooldown = atol(param_string + 9);
 	} else if (strncmp(param_string, "recoil=", 7) == 0) {
