@@ -1359,9 +1359,11 @@ void GameController::process_input() {
 	}
 	
 	// Check if the right mouse button is held down, for weapon switching.
-	if (SDL_GetMouseState(&mouse_x, &mouse_y)&SDL_BUTTON(2)) {
-		if (m_game_state == GAME_IN_PROGRESS) {
-			m_weapon_selector->get_graphic_group()->set_invisible(false);
+	if (SDL_GetMouseState(&mouse_x, &mouse_y)&SDL_BUTTON(3)) {
+		if (GraphicalPlayer* player = get_player_by_id(m_player_id)) {
+			if (m_game_state == GAME_IN_PROGRESS && !player->is_invisible() && !player->is_frozen() && !player->is_dead()) {
+				m_weapon_selector->get_graphic_group()->set_invisible(false);
+			}
 		}
 	} else {
 		if (m_game_state == GAME_IN_PROGRESS) {
