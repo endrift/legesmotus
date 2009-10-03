@@ -35,6 +35,7 @@
 #include "BaseMapObject.hpp"
 #include "TextMenuItem.hpp"
 #include "Weapon.hpp"
+#include "GraphicMenuItem.hpp"
 #include "StandardGun.hpp" //TEMP
 #include "ImpactCannon.hpp" //TEMP
 #include "SpreadGun.hpp" //TEMP
@@ -157,6 +158,8 @@ GameController::~GameController() {
 	
 	delete m_input_bar_back;
 	delete m_chat_window_back;
+	
+	delete m_weapon_selector;
 
 	// TEMPORARY MAP CODE BY ANDREW
 	delete m_map;
@@ -483,6 +486,29 @@ void GameController::init(GameWindow* window) {
 	
 	change_team_scores(0, 0);
 	update_individual_scores();
+	
+	// Initialize the weapon selector menu.
+	m_weapon_selector_back = new RadialBackground(1);
+	m_weapon_selector_back->set_border_color(Color(0.0,0.0,0.0,0.0));
+	m_weapon_selector_back->set_inner_radius(80.0);
+	m_weapon_selector_back->set_outer_radius(70.0);
+	m_weapon_selector_back->set_border_radius(3.0);
+	m_weapon_selector_back->set_border_angle(3);
+	m_weapon_selector_back->set_x(m_screen_width/2);
+	m_weapon_selector_back->set_y(m_screen_height/2);
+	m_weapon_selector_back->set_rotation(0);
+	
+	m_weapon_selector = new RadialMenu(m_weapon_selector_back, Color(0.2,0.2,0.6,0.8), Color(0.1,0.1,0.3,1));
+
+	GraphicMenuItem *cur_item;
+	for (map<std::string, Weapon*>::iterator it(m_weapons.begin()); it != m_weapons.end(); ++it) {
+		Graphic* this_graphic = m_graphics_cache.new_graphic<Sprite>(m_path_manager.data_path(it->second->hud_graphic(), "sprites"));
+		cur_item = new GraphicMenuItem(this_graphic, it->first);
+		cur_item->set_scale(0.75);
+		m_weapon_selector->add_item(cur_item);
+	}
+	
+	m_window->register_hud_graphic(m_weapon_selector->get_graphic_group());
 	
 	// Initialize the gate warning.
 	m_text_manager->set_active_font(m_menu_font);
@@ -901,6 +927,7 @@ void GameController::run(int lockfps) {
 				toggle_main_menu(true);
 				toggle_options_menu(false);
 				m_server_browser->set_visible(false);
+				m_weapon_selector->get_graphic_group()->set_invisible(true);
 			} else if (m_game_state == SHOW_OPTIONS_MENU) {
 				if (m_map != NULL) {
 					m_map->set_visible(false);
@@ -919,6 +946,7 @@ void GameController::run(int lockfps) {
 				toggle_main_menu(false);
 				toggle_options_menu(true);
 				m_server_browser->set_visible(false);
+				m_weapon_selector->get_graphic_group()->set_invisible(true);
 			} else if (m_game_state == SHOW_SERVER_BROWSER) {
 				if (m_map != NULL) {
 					m_map->set_visible(false);
@@ -937,6 +965,7 @@ void GameController::run(int lockfps) {
 				toggle_main_menu(false);
 				toggle_options_menu(false);
 				m_server_browser->set_visible(true);
+				m_weapon_selector->get_graphic_group()->set_invisible(true);
 			} else {
 				if (m_map != NULL) {
 					m_map->set_visible(true);
@@ -991,6 +1020,9 @@ void GameController::set_hud_visible(bool visible) {
 		m_energy_text->set_invisible(true);
 		m_cooldown_bar->set_invisible(true);
 		m_cooldown_bar_back->set_invisible(true);
+		if (m_curr_weapon_image != NULL) {
+			m_curr_weapon_image->set_invisible(true);
+		}
 		return;
 	}
 	
@@ -1000,6 +1032,13 @@ void GameController::set_hud_visible(bool visible) {
 	
 	m_cooldown_bar->set_invisible(!visible);
 	m_cooldown_bar_back->set_invisible(!visible);
+	if (m_curr_weapon_image != NULL) {
+		if (m_last_weapon_switch == 0 || (get_ticks() - m_last_weapon_switch) > m_params.weapon_switch_delay) {
+			m_curr_weapon_image->set_invisible(!visible);
+		} else {
+			m_curr_weapon_image->set_invisible(true);
+		}
+	}
 	
 	if (player->is_frozen() && !player->is_invisible() && m_total_time_frozen > 100) {
 		m_frozen_status_rect->set_invisible(!visible);
@@ -1050,7 +1089,7 @@ void GameController::update_cooldown_bar(double new_cooldown) {
 		if (new_cooldown == -1) {
 			new_cooldown = m_current_weapon->get_remaining_cooldown()/((double)m_current_weapon->get_total_cooldown());
 			if ((get_ticks() - m_last_weapon_switch) < m_params.weapon_switch_delay) {
-				if (new_cooldown < (m_params.weapon_switch_delay - (get_ticks() - m_last_weapon_switch))/(double)m_params.weapon_switch_delay) {
+				if (m_last_weapon_switch != 0 && new_cooldown < (m_params.weapon_switch_delay - (get_ticks() - m_last_weapon_switch))/(double)m_params.weapon_switch_delay) {
 					new_cooldown = (m_params.weapon_switch_delay - (get_ticks() - m_last_weapon_switch))/(double)m_params.weapon_switch_delay;
 				}
 			}
@@ -1244,6 +1283,9 @@ void GameController::process_input() {
 				if (!m_chat_log->is_invisible()) {
 					m_chat_log->scrollbar_motion_event(event.motion);
 				}
+				if (!m_weapon_selector->get_graphic_group()->is_invisible()) {
+					m_weapon_selector->mouse_motion_event(event.motion);
+				}
 				
 				if (m_game_state == SHOW_MENUS) {
 					m_main_menu.mouse_motion_event(event.motion);
@@ -1309,10 +1351,27 @@ void GameController::process_input() {
 				double x_dist = (mouse_x + m_offset_x) - m_players[m_player_id].get_x();
 				double y_dist = (mouse_y + m_offset_y) - m_players[m_player_id].get_y();
 				double direction = atan2(y_dist, x_dist);
-				if ((get_ticks() - m_last_weapon_switch) > m_params.weapon_switch_delay) {
+				if (m_last_weapon_switch == 0 || (get_ticks() - m_last_weapon_switch) > m_params.weapon_switch_delay) {
 					m_current_weapon->fire(m_players[m_player_id], *this, m_players[m_player_id].get_position(), direction);
 				}
 			}
+		}
+	}
+	
+	// Check if the right mouse button is held down, for weapon switching.
+	if (SDL_GetMouseState(&mouse_x, &mouse_y)&SDL_BUTTON(2)) {
+		if (m_game_state == GAME_IN_PROGRESS) {
+			m_weapon_selector->get_graphic_group()->set_invisible(false);
+		}
+	} else {
+		if (m_game_state == GAME_IN_PROGRESS) {
+			if (!m_weapon_selector->get_graphic_group()->is_invisible()) {
+				MenuItem* over = m_weapon_selector->item_at_position(mouse_x, mouse_y);
+				if (over != NULL) {
+					change_weapon(over->get_name().c_str());
+				}
+			}
+			m_weapon_selector->get_graphic_group()->set_invisible(true);
 		}
 	}
 	
@@ -1538,7 +1597,7 @@ void GameController::process_mouse_click(SDL_Event event) {
 				double x_dist = (event.button.x + m_offset_x) - m_players[m_player_id].get_x();
 				double y_dist = (event.button.y + m_offset_y) - m_players[m_player_id].get_y();
 				double direction = atan2(y_dist, x_dist);
-				if ((get_ticks() - m_last_weapon_switch) > m_params.weapon_switch_delay) {
+				if (m_last_weapon_switch == 0 || (get_ticks() - m_last_weapon_switch) > m_params.weapon_switch_delay) {
 					m_current_weapon->fire(m_players[m_player_id], *this, m_players[m_player_id].get_position(), direction);
 				}
 			}
@@ -3383,9 +3442,12 @@ void GameController::change_weapon(unsigned int n) {
 }
 
 void	GameController::change_weapon(Weapon* weapon) {
-	if (m_current_weapon != weapon) {
-		m_current_weapon = weapon;
-		m_last_weapon_switch = get_ticks();
+	if (GraphicalPlayer* player = get_player_by_id(m_player_id)) {
+		if (m_current_weapon != weapon && !player->is_frozen() && !player->is_invisible() && !player->is_dead()) {
+			m_current_weapon = weapon;
+			m_last_weapon_switch = get_ticks();
+			update_curr_weapon_image();
+		}
 	}
 }
 
@@ -3427,6 +3489,22 @@ void	GameController::play_sound(const char* sound_name) {
 Weapon*	GameController::get_weapon(const string& name) {
 	map<string, Weapon*>::iterator it(m_weapons.find(name));
 	return it == m_weapons.end() ? NULL : it->second;
+}
+
+void	GameController::update_curr_weapon_image() {
+	if (m_current_weapon == NULL) {
+		if (m_curr_weapon_image != NULL) {
+			m_curr_weapon_image->set_invisible(true);
+		}
+		return;
+	}
+	m_window->unregister_hud_graphic(m_curr_weapon_image);
+	delete m_curr_weapon_image;
+	m_curr_weapon_image = m_graphics_cache.new_graphic<Sprite>(m_path_manager.data_path(m_current_weapon->hud_graphic(), "sprites"));
+	m_curr_weapon_image->set_x(m_cooldown_bar->get_x());
+	m_curr_weapon_image->set_y(m_cooldown_bar->get_y() - m_curr_weapon_image->get_image_height()/2 - 5);
+	m_curr_weapon_image->set_invisible(false);
+	m_window->register_hud_graphic(m_curr_weapon_image);
 }
 
 void	GameController::init_weapons() { //TEMP

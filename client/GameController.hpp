@@ -51,6 +51,9 @@
 #include "TextMenuItem.hpp"
 #include "ListMenuItem.hpp"
 #include "Form.hpp"
+#include "RadialBackground.hpp"
+#include "RadialMenu.hpp"
+#include "GraphicsCache.hpp"
 
 #include <string>
 #include <vector>
@@ -184,6 +187,8 @@ namespace LM {
 		uint64_t	m_framerate;
 		
 		// TEMPORARY SPRITE CODE
+		GraphicsCache	m_graphics_cache;
+		
 		Sprite*		gun_normal;
 		Sprite*		m_gun_fired;
 		GraphicGroup 	blue_player;
@@ -227,6 +232,9 @@ namespace LM {
 		ScrollBar* 	m_overlay_scrollbar;
 		ScrollArea*	m_overlay_scrollarea;
 		
+		RadialBackground* m_weapon_selector_back;
+		RadialMenu*	m_weapon_selector;
+		
 		TableBackground* m_red_gate_status_rect;
 		TableBackground* m_blue_gate_status_rect;
 		TableBackground* m_red_gate_status_rect_back;
@@ -247,6 +255,7 @@ namespace LM {
 		
 		TableBackground* m_cooldown_bar;
 		TableBackground* m_cooldown_bar_back;
+		Graphic*	m_curr_weapon_image;
 		
 		// RADAR CODE BY JEFFREY
 		Radar*		m_radar;
@@ -263,6 +272,8 @@ namespace LM {
 
 		Weapon*		get_weapon(const std::string& name);
 		void		init_weapons(); //TEMP
+		void		set_weapons();
+		void		update_curr_weapon_image();
 		void		reset_weapons(); // Call reset() on all weapons. Call at end of every round.
 		void		clear_weapons(); // Remove all weapons, handling memory management.
 	
