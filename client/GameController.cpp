@@ -1049,6 +1049,11 @@ void GameController::update_cooldown_bar(double new_cooldown) {
 	if (m_current_weapon != NULL) {
 		if (new_cooldown == -1) {
 			new_cooldown = m_current_weapon->get_remaining_cooldown()/((double)m_current_weapon->get_total_cooldown());
+			if ((get_ticks() - m_last_weapon_switch) < m_params.weapon_switch_delay) {
+				if (new_cooldown < (m_params.weapon_switch_delay - (get_ticks() - m_last_weapon_switch))/(double)m_params.weapon_switch_delay) {
+					new_cooldown = (m_params.weapon_switch_delay - (get_ticks() - m_last_weapon_switch))/(double)m_params.weapon_switch_delay;
+				}
+			}
 		}
 	} else if (new_cooldown == -1) {
 		new_cooldown = 0;
@@ -1304,8 +1309,9 @@ void GameController::process_input() {
 				double x_dist = (mouse_x + m_offset_x) - m_players[m_player_id].get_x();
 				double y_dist = (mouse_y + m_offset_y) - m_players[m_player_id].get_y();
 				double direction = atan2(y_dist, x_dist);
-
-				m_current_weapon->fire(m_players[m_player_id], *this, m_players[m_player_id].get_position(), direction);
+				if ((get_ticks() - m_last_weapon_switch) > m_params.weapon_switch_delay) {
+					m_current_weapon->fire(m_players[m_player_id], *this, m_players[m_player_id].get_position(), direction);
+				}
 			}
 		}
 	}
@@ -1387,155 +1393,156 @@ void GameController::parse_key_input() {
  */
 void GameController::process_mouse_click(SDL_Event event) {
 	switch (m_game_state) {
-	case SHOW_MENUS: {
-		if (event.button.button != 1) {
-			return;
-		}
-		MenuItem* item = m_main_menu.mouse_button_event(event.button);
-		if (item && event.type == SDL_MOUSEBUTTONUP) {
-			item->set_state(MenuItem::NORMAL);
-			m_sound_controller->play_sound("click");
-			if (item->get_name() == "quit") {
-				m_quit_game = true;
-			} else if (item->get_name() == "resume") {
-				if (!m_players.empty()) {
-					m_game_state = GAME_IN_PROGRESS;
-				} else {
-					display_message("Not connected to server.");
-				}
-			} else if (item->get_name() == "submenu:options") {
-				m_game_state = SHOW_OPTIONS_MENU;
-			} else if (item->get_name() == "disconnect") {
-				if (!m_players.empty()) {
-					disconnect();
-				} else {
-					display_message("Not connected to server.");
-				}
-			} else if (item->get_name() == "connect") {
-				m_game_state = SHOW_SERVER_BROWSER;
+		case SHOW_MENUS: {
+			if (event.button.button != 1) {
+				return;
 			}
-		}
-	}
-	break;
-	case SHOW_OPTIONS_MENU: {
-		if (event.button.button != 1) {
-			return;
-		}
-		MenuItem* item = m_options_menu.mouse_button_event(event.button);
-		if (item && event.type == SDL_MOUSEBUTTONUP) {
-			m_sound_controller->play_sound("click");
-			if(item->get_name() == "cancel") {
-				reset_options();
-				m_game_state = SHOW_MENUS;
-			} else if(item->get_name() == "name") {
-				// Open the input bar and allow the name to be entered.
-				// Should replace later, to use a separate text entry location.
-				SDL_EnableUNICODE(1);
-				m_text_manager->set_active_color(TEXT_COLOR);
-				m_text_manager->set_active_font(m_font);
-				m_input_text = "> /name ";
-				m_text_manager->remove_string(m_input_bar);
-				m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
-				m_input_bar_back->set_image_width(m_input_bar->get_image_width() + 6);
-				if (m_configuration->get_bool_value("text_background")) {
-					m_input_bar_back->set_invisible(false);
-				}
-			} else if(item->get_name() == "apply") {
-				string resolution = m_options_form.get_item("resolution")->get_value();
-				size_t xpos = resolution.find('x');
-				int width;
-				int height;
-				istringstream wstring(resolution.substr(0, xpos));
-				istringstream hstring(resolution.substr(xpos + 1));
-				wstring >> width;
-				hstring >> height;
-				m_sound_controller->set_sound_on(m_options_form.get_item("sound")->get_value() == "on");
-				bool fullscreen = m_options_form.get_item("fullscreen")->get_value() == "on";
-				if (width != m_configuration->get_int_value("screen_width") || 
-						height != m_configuration->get_int_value("screen_height") ||
-						fullscreen != m_configuration->get_bool_value("fullscreen")) {
-					m_configuration->set_int_value("screen_width", width);
-					m_configuration->set_int_value("screen_height", height);
-					m_configuration->set_bool_value("fullscreen", fullscreen);
-					m_restart = true;
+			MenuItem* item = m_main_menu.mouse_button_event(event.button);
+			if (item && event.type == SDL_MOUSEBUTTONUP) {
+				item->set_state(MenuItem::NORMAL);
+				m_sound_controller->play_sound("click");
+				if (item->get_name() == "quit") {
 					m_quit_game = true;
-				} else {
-					m_game_state = SHOW_MENUS;
+				} else if (item->get_name() == "resume") {
+					if (!m_players.empty()) {
+						m_game_state = GAME_IN_PROGRESS;
+					} else {
+						display_message("Not connected to server.");
+					}
+				} else if (item->get_name() == "submenu:options") {
+					m_game_state = SHOW_OPTIONS_MENU;
+				} else if (item->get_name() == "disconnect") {
+					if (!m_players.empty()) {
+						disconnect();
+					} else {
+						display_message("Not connected to server.");
+					}
+				} else if (item->get_name() == "connect") {
+					m_game_state = SHOW_SERVER_BROWSER;
 				}
 			}
 		}
-	}
-	break;
-	case SHOW_SERVER_BROWSER: {
-		if (event.button.button != 1 || event.type != SDL_MOUSEBUTTONUP) {
-			return;
-		}
-		
-		string button = m_server_browser->check_button_press(event.button.x, event.button.y);
-		
-		if (button != "") {
-			m_sound_controller->play_sound("click");
-		}
-		
-		if (button == "Back") {
-			// Back.
-			m_game_state = SHOW_MENUS;
-			m_server_browser->deselect();
-		} else if (button == "Refresh") {
-			// Refresh.
-			m_server_browser->clear();
-			m_server_browser->deselect();
-			scan_all();
-		} else if (button == "Connect") {
-			// Connect.
-			int selected_item = m_server_browser->get_selected_item();
-			if (selected_item < 0 || selected_item > m_server_browser->get_count()) {
+		break;
+		case SHOW_OPTIONS_MENU: {
+			if (event.button.button != 1) {
 				return;
 			}
-			connect_to_server(selected_item);
-			m_server_browser->set_visible(false);
-			m_game_state = SHOW_MENUS;
+			MenuItem* item = m_options_menu.mouse_button_event(event.button);
+			if (item && event.type == SDL_MOUSEBUTTONUP) {
+				m_sound_controller->play_sound("click");
+				if(item->get_name() == "cancel") {
+					reset_options();
+					m_game_state = SHOW_MENUS;
+				} else if(item->get_name() == "name") {
+					// Open the input bar and allow the name to be entered.
+					// Should replace later, to use a separate text entry location.
+					SDL_EnableUNICODE(1);
+					m_text_manager->set_active_color(TEXT_COLOR);
+					m_text_manager->set_active_font(m_font);
+					m_input_text = "> /name ";
+					m_text_manager->remove_string(m_input_bar);
+					m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
+					m_input_bar_back->set_image_width(m_input_bar->get_image_width() + 6);
+					if (m_configuration->get_bool_value("text_background")) {
+						m_input_bar_back->set_invisible(false);
+					}
+				} else if(item->get_name() == "apply") {
+					string resolution = m_options_form.get_item("resolution")->get_value();
+					size_t xpos = resolution.find('x');
+					int width;
+					int height;
+					istringstream wstring(resolution.substr(0, xpos));
+					istringstream hstring(resolution.substr(xpos + 1));
+					wstring >> width;
+					hstring >> height;
+					m_sound_controller->set_sound_on(m_options_form.get_item("sound")->get_value() == "on");
+					bool fullscreen = m_options_form.get_item("fullscreen")->get_value() == "on";
+					if (width != m_configuration->get_int_value("screen_width") || 
+							height != m_configuration->get_int_value("screen_height") ||
+							fullscreen != m_configuration->get_bool_value("fullscreen")) {
+						m_configuration->set_int_value("screen_width", width);
+						m_configuration->set_int_value("screen_height", height);
+						m_configuration->set_bool_value("fullscreen", fullscreen);
+						m_restart = true;
+						m_quit_game = true;
+					} else {
+						m_game_state = SHOW_MENUS;
+					}
+				}
+			}
 		}
-		
-		if (m_server_browser->get_count() == 0) {
-			return;
-		}
-		
-		int selected_item = m_server_browser->check_item_select(event.button.x, event.button.y);
-		
-		if (selected_item < 0) {
-			return;
-		}
-		
-		m_sound_controller->play_sound("click");
-		
-		if (m_last_clicked > get_ticks() - DOUBLE_CLICK_TIME) {
-			connect_to_server(selected_item);
-			m_server_browser->set_visible(false);
-			m_server_browser->deselect();
-			m_game_state = SHOW_MENUS;
-		}
-	}
-	break;
-	case GAME_IN_PROGRESS: {
-		if (event.type != SDL_MOUSEBUTTONDOWN) {
-			return;
-		} else if (!m_overlay_background->is_invisible()) {
-			// Do nothing.
-		} else if (!m_chat_log->is_invisible()) {
-			// Do nothing.
-		} else if (event.button.button == 1) {
-			// Fire the gun if it's ready.
-			if (m_players.empty() || m_players[m_player_id].is_frozen() || !m_current_weapon)
+		break;
+		case SHOW_SERVER_BROWSER: {
+			if (event.button.button != 1 || event.type != SDL_MOUSEBUTTONUP) {
 				return;
-
-			double x_dist = (event.button.x + m_offset_x) - m_players[m_player_id].get_x();
-			double y_dist = (event.button.y + m_offset_y) - m_players[m_player_id].get_y();
-			double direction = atan2(y_dist, x_dist);
-
-			m_current_weapon->fire(m_players[m_player_id], *this, m_players[m_player_id].get_position(), direction);
+			}
+		
+			string button = m_server_browser->check_button_press(event.button.x, event.button.y);
+		
+			if (button != "") {
+				m_sound_controller->play_sound("click");
+			}
+		
+			if (button == "Back") {
+				// Back.
+				m_game_state = SHOW_MENUS;
+				m_server_browser->deselect();
+			} else if (button == "Refresh") {
+				// Refresh.
+				m_server_browser->clear();
+				m_server_browser->deselect();
+				scan_all();
+			} else if (button == "Connect") {
+				// Connect.
+				int selected_item = m_server_browser->get_selected_item();
+				if (selected_item < 0 || selected_item > m_server_browser->get_count()) {
+					return;
+				}
+				connect_to_server(selected_item);
+				m_server_browser->set_visible(false);
+				m_game_state = SHOW_MENUS;
+			}
+		
+			if (m_server_browser->get_count() == 0) {
+				return;
+			}
+		
+			int selected_item = m_server_browser->check_item_select(event.button.x, event.button.y);
+		
+			if (selected_item < 0) {
+				return;
+			}
+		
+			m_sound_controller->play_sound("click");
+		
+			if (m_last_clicked > get_ticks() - DOUBLE_CLICK_TIME) {
+				connect_to_server(selected_item);
+				m_server_browser->set_visible(false);
+				m_server_browser->deselect();
+				m_game_state = SHOW_MENUS;
+			}
 		}
-	}
+		break;
+		case GAME_IN_PROGRESS: {
+			if (event.type != SDL_MOUSEBUTTONDOWN) {
+				return;
+			} else if (!m_overlay_background->is_invisible()) {
+				// Do nothing.
+			} else if (!m_chat_log->is_invisible()) {
+				// Do nothing.
+			} else if (event.button.button == 1) {
+				// Fire the gun if it's ready.
+				if (m_players.empty() || m_players[m_player_id].is_frozen() || !m_current_weapon)
+					return;
+
+				double x_dist = (event.button.x + m_offset_x) - m_players[m_player_id].get_x();
+				double y_dist = (event.button.y + m_offset_y) - m_players[m_player_id].get_y();
+				double direction = atan2(y_dist, x_dist);
+				if ((get_ticks() - m_last_weapon_switch) > m_params.weapon_switch_delay) {
+					m_current_weapon->fire(m_players[m_player_id], *this, m_players[m_player_id].get_position(), direction);
+				}
+			}
+		}
 	}
 	m_last_clicked = get_ticks();
 }
@@ -3347,7 +3354,10 @@ void GameController::set_radar_mode(RadarMode mode) {
 
 void GameController::change_weapon(const char* weapon_name) {
 	if (Weapon* weapon = get_weapon(weapon_name)) {
-		m_current_weapon = weapon;
+		if (m_current_weapon != weapon) {
+			m_current_weapon = weapon;
+			m_last_weapon_switch = get_ticks();
+		}
 	}
 }
 
