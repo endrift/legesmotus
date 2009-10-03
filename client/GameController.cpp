@@ -2631,17 +2631,14 @@ void GameController::new_round(PacketReader& reader) {
 			m_game_state = GAME_IN_PROGRESS;
 		}
 		if (time_until_start == numeric_limits<uint64_t>::max()) {
-			message << "Game in progress.  You will spawn when the next game starts.";
+			message << "Game in progress on map " << map_name << ". You will spawn when the next game starts.";
 		} else if (time_until_start/1000 > 0) {
-			message << "Game started! " << time_until_start / 1000 << " seconds until spawn.";
-		} else {
-			message << "Game started!";
+			message << "Game in progress on map " << map_name << ". " << time_until_start / 1000 << " seconds until spawn.";
 		}
-		m_sound_controller->play_sound("begin");
-			
+
 		toggle_score_overlay(false);
 	} else if (time_until_start/1000 > 0) {
-		message << "Game starts in " << time_until_start/1000 << " seconds.";
+		message << "Game starts in " << time_until_start/1000 << " seconds on map " << map_name << ".";
 	}
 	
 	if (!message.str().empty()) {
@@ -2730,6 +2727,9 @@ void GameController::round_start(PacketReader& reader) {
 	} else {
 		m_round_end_time = get_ticks() + time_left_in_game;
 	}
+
+	m_sound_controller->play_sound("begin");
+	display_message("Game started!");
 
 	send_ack(reader);
 }
