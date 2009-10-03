@@ -23,8 +23,12 @@
  */
 
 #include "Weapon.hpp"
-#include "common/PacketReader.hpp"
+#include "common/WeaponReader.hpp"
 #include <cstring>
+
+#include "StandardGun.hpp"
+#include "ImpactCannon.hpp"
+#include "SpreadGun.hpp"
 
 using namespace LM;
 using namespace std;
@@ -32,12 +36,32 @@ using namespace std;
 Weapon::Weapon() {
 }
 
-Weapon::Weapon(const char* name) : m_name(name) {
+Weapon::Weapon(const char* id) : m_id(id) {
 }
 
-Weapon*	Weapon::create_weapon (const char* weapon_name, PacketReader& data)
-{
+Weapon*	Weapon::new_weapon (WeaponReader& data) {
+	const char*	weapon_type = data.get_type().c_str();
+	const char*	weapon_id = data.get_id().c_str();
+
+	if (strcasecmp(weapon_type, "standard") == 0)	{ return new StandardGun(weapon_id, data); }
+	if (strcasecmp(weapon_type, "spread") == 0)	{ return new SpreadGun(weapon_id, data); }
+	if (strcasecmp(weapon_type, "impact") == 0)	{ return new ImpactCannon(weapon_id, data); }
+
 	return NULL;
 }
 
 
+bool	Weapon::parse_param(const char* param_string) {
+	if (strncmp(param_string, "name=", 5) == 0) {
+		m_name = param_string + 5;
+	} else if (strncmp(param_string, "hud=", 4) == 0) {
+		m_hud_graphic = param_string + 4;
+	} else if (strncmp(param_string, "normal=", 7) == 0) {
+		m_normal_graphic_info = param_string + 7;
+	} else if (strncmp(param_string, "firing=", 7) == 0) {
+		m_firing_graphic_info = param_string + 7;
+	} else {
+		return false;
+	}
+	return true;
+}

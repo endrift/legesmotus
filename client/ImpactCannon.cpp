@@ -26,7 +26,7 @@
 #include "GameController.hpp"
 #include "BaseMapObject.hpp"
 #include "common/Player.hpp"
-#include "common/PacketReader.hpp"
+#include "common/StringTokenizer.hpp"
 #include "common/PacketWriter.hpp"
 #include "common/timer.hpp"
 #include "common/math.hpp"
@@ -34,24 +34,55 @@
 using namespace LM;
 using namespace std;
 
-ImpactCannon::ImpactCannon(const char* name, uint64_t freeze_time, int damage, double force, uint64_t delay, double recoil) : Weapon(name) {
+ImpactCannon::ImpactCannon(const char* id, uint64_t freeze_time, int damage, double force, uint64_t delay, double recoil) : Weapon(id) {
 	m_last_fired_time = 0;
+
 	m_freeze_time = freeze_time;
 	m_damage = damage;
 	m_force = force;
-	m_delay = delay;
+	m_cooldown = delay;
 	m_recoil = recoil;
 }
 
-ImpactCannon::ImpactCannon(PacketReader& gun_data) {
+ImpactCannon::ImpactCannon(const char* id, StringTokenizer& gun_data) : Weapon(id) {
 	m_last_fired_time = 0;
-	string		name;
-	gun_data >> name >> m_freeze_time >> m_damage >> m_force >> m_delay >> m_recoil;
-	set_name(name.c_str());
+
+	m_name = "Impact Cannon";
+	m_hud_graphic = "large_cannon.png";
+	m_normal_graphic_info = ""; // TODO
+	m_firing_graphic_info = ""; // TODO
+
+	m_freeze_time = 1000;
+	m_damage = 10;
+	m_force = 20.0;
+	m_cooldown = 2000;
+	m_recoil = 2.0;
+
+	while (gun_data.has_more()) {
+		parse_param(gun_data.get_next());
+	}
 }
 
+bool	ImpactCannon::parse_param(const char* param_string) {
+	if (strncmp(param_string, "freeze=", 7) == 0) {
+		m_freeze_time = atol(param_string + 7);
+	} else if (strncmp(param_string, "damage=", 7) == 0) {
+		m_damage = atoi(param_string + 7);
+	} else if (strncmp(param_string, "force=", 6) == 0) {
+		m_force = atof(param_string + 6);
+	} else if (strncmp(param_string, "cooldown=", 9) == 0) {
+		m_cooldown = atol(param_string + 9);
+	} else if (strncmp(param_string, "recoil=", 7) == 0) {
+		m_recoil = atof(param_string + 7);
+	} else {
+		return Weapon::parse_param(param_string);
+	}
+	return true;
+}
+
+
 void	ImpactCannon::fire(Player& player, GameController& gc, Point startpos, double direction) {
-	if (m_last_fired_time != 0 && get_ticks() - m_last_fired_time < m_delay) {
+	if (m_last_fired_time != 0 && get_ticks() - m_last_fired_time < m_cooldown) {
 		// Firing too soon
 		return;
 	}
@@ -79,7 +110,7 @@ void	ImpactCannon::fire(Player& player, GameController& gc, Point startpos, doub
 	
 	// Create the gun fired packet and send it, and display the shot hit point.
 	PacketWriter		fired_packet(WEAPON_DISCHARGED_PACKET);
-	fired_packet << player.get_id() << get_name() << startpos << direction;
+	fired_packet << player.get_id() << get_id() << startpos << direction;
 	if (hit_point.x != -1 && hit_point.y != -1) {
 		fired_packet << hit_point;
 	}
@@ -88,12 +119,12 @@ void	ImpactCannon::fire(Player& player, GameController& gc, Point startpos, doub
 	// If a player was hit, send a packet about it
 	if (hit_player != NULL) {
 		PacketWriter	hit_packet(PLAYER_HIT_PACKET);
-		hit_packet << player.get_id() << get_name() << hit_player->get_id() << direction - M_PI;
+		hit_packet << player.get_id() << get_id() << hit_player->get_id() << direction - M_PI;
 		gc.send_packet(hit_packet);
 	}
 }
 
-void	ImpactCannon::discharged(Player& player, GameController& gc, PacketReader& data) {
+void	ImpactCannon::discharged(Player& player, GameController& gc, StringTokenizer& data) {
 	Point	startpos;
 	double	rotation;
 	data >> startpos >> rotation;
@@ -110,7 +141,7 @@ void	ImpactCannon::discharged(Player& player, GameController& gc, PacketReader& 
 	}
 }
 
-void	ImpactCannon::hit(Player& shot_player, Player& shooting_player, bool has_effect, GameController& gc, PacketReader& data) {
+void	ImpactCannon::hit(Player& shot_player, Player& shooting_player, bool has_effect, GameController& gc, StringTokenizer& data) {
 	double	angle;
 	data >> angle;
 
@@ -137,8 +168,8 @@ uint64_t	ImpactCannon::get_remaining_cooldown() const
 {
 	if (m_last_fired_time) {
 		uint64_t	time_since_fire = get_ticks() - m_last_fired_time;
-		if (time_since_fire < m_delay) {
-			return m_delay - time_since_fire;
+		if (time_since_fire < m_cooldown) {
+			return m_cooldown - time_since_fire;
 		}
 	}
 	return 0;

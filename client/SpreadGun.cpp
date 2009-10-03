@@ -1,5 +1,5 @@
 /*
- * client/Shotgun.cpp
+ * client/SpreadGun.cpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,11 +22,11 @@
  * 
  */
 
-#include "Shotgun.hpp"
+#include "SpreadGun.hpp"
 #include "GameController.hpp"
 #include "BaseMapObject.hpp"
 #include "common/Player.hpp"
-#include "common/PacketReader.hpp"
+#include "common/StringTokenizer.hpp"
 #include "common/PacketWriter.hpp"
 #include "common/timer.hpp"
 #include "common/math.hpp"
@@ -37,27 +37,51 @@
 using namespace LM;
 using namespace std;
 
-Shotgun::Shotgun(const char* name, int damage, double damage_degradation, int nbr_projectiles, double angle, uint64_t delay, double recoil) : Weapon(name) {
+SpreadGun::SpreadGun(const char* id, int damage, double damage_degradation, int nbr_projectiles, double angle, uint64_t delay, double recoil) : Weapon(id) {
 	m_last_fired_time = 0;
+
 	m_damage = damage;
 	m_damage_degradation = damage_degradation;
 	m_nbr_projectiles = nbr_projectiles;
 	m_angle = to_radians(angle);
-	m_delay = delay;
+	m_cooldown = delay;
 	m_recoil = recoil;
 }
 
-Shotgun::Shotgun(PacketReader& gun_data) {
+SpreadGun::SpreadGun(const char* id, StringTokenizer& gun_data) : Weapon(id) {
 	m_last_fired_time = 0;
-	string		name;
-	double		angle_degrees;
-	gun_data >> name >> m_damage >> m_damage_degradation >> m_nbr_projectiles >> angle_degrees >> m_delay >> m_recoil;
-	m_angle = to_radians(angle_degrees);
-	set_name(name.c_str());
+
+	m_damage = 30;
+	m_damage_degradation = 0.01;
+	m_nbr_projectiles = 5;
+	m_angle = to_radians(10);
+	m_cooldown = 700;
+	m_recoil = 1.5;
+
+	while (gun_data.has_more()) {
+		parse_param(gun_data.get_next());
+	}
 }
 
-void	Shotgun::fire(Player& player, GameController& gc, Point startpos, double initial_direction) {
-	if (m_last_fired_time != 0 && get_ticks() - m_last_fired_time < m_delay) {
+bool	SpreadGun::parse_param(const char* param_string) {
+	if (strncmp(param_string, "damage=", 7) == 0) {
+		m_damage = atoi(param_string + 7);
+	} else if (strncmp(param_string, "degradation=", 12) == 0) {
+		m_damage_degradation = atof(param_string + 12);
+	} else if (strncmp(param_string, "projectiles=", 12) == 0) {
+		m_nbr_projectiles = atoi(param_string + 12);
+	} else if (strncmp(param_string, "cooldown=", 9) == 0) {
+		m_cooldown = atol(param_string + 9);
+	} else if (strncmp(param_string, "recoil=", 7) == 0) {
+		m_recoil = atof(param_string + 7);
+	} else {
+		return Weapon::parse_param(param_string);
+	}
+	return true;
+}
+
+void	SpreadGun::fire(Player& player, GameController& gc, Point startpos, double initial_direction) {
+	if (m_last_fired_time != 0 && get_ticks() - m_last_fired_time < m_cooldown) {
 		// Firing too soon
 		return;
 	}
@@ -115,7 +139,7 @@ void	Shotgun::fire(Player& player, GameController& gc, Point startpos, double in
 	// Send a weapon discharged packet so other players know we fired
 	//
 	PacketWriter	discharged_packet(WEAPON_DISCHARGED_PACKET);
-	discharged_packet << player.get_id() << get_name() << startpos << initial_direction;
+	discharged_packet << player.get_id() << get_id() << startpos << initial_direction;
 	while (!hit_points.empty()) {
 		gc.show_bullet_impact(hit_points.front()); // Also show the bullet impact for each hit point
 		discharged_packet << hit_points.front();
@@ -136,12 +160,12 @@ void	Shotgun::fire(Player& player, GameController& gc, Point startpos, double in
 		}
 
 		PacketWriter	hit_packet(PLAYER_HIT_PACKET);
-		hit_packet << player.get_id() << get_name() << hit_player->get_id() << times_hit << damage << initial_direction - M_PI;
+		hit_packet << player.get_id() << get_id() << hit_player->get_id() << times_hit << damage << initial_direction - M_PI;
 		gc.send_packet(hit_packet);
 	}
 }
 
-void	Shotgun::discharged(Player& player, GameController& gc, PacketReader& data) {
+void	SpreadGun::discharged(Player& player, GameController& gc, StringTokenizer& data) {
 	Point	startpos;
 	double	direction;
 	data >> startpos >> direction;
@@ -161,7 +185,7 @@ void	Shotgun::discharged(Player& player, GameController& gc, PacketReader& data)
 	}
 }
 
-void	Shotgun::hit(Player& shot_player, Player& shooting_player, bool has_effect, GameController& gc, PacketReader& data) {
+void	SpreadGun::hit(Player& shot_player, Player& shooting_player, bool has_effect, GameController& gc, StringTokenizer& data) {
 	int	times_hit;
 	double	damage;
 	double	angle;
@@ -178,19 +202,19 @@ void	Shotgun::hit(Player& shot_player, Player& shooting_player, bool has_effect,
 	}
 }
 
-void	Shotgun::select(Player& selecting_player, GameController& gc) {
+void	SpreadGun::select(Player& selecting_player, GameController& gc) {
 }
 
-void	Shotgun::reset() {
+void	SpreadGun::reset() {
 	m_last_fired_time = 0;
 }
 
-uint64_t	Shotgun::get_remaining_cooldown() const
+uint64_t	SpreadGun::get_remaining_cooldown() const
 {
 	if (m_last_fired_time) {
 		uint64_t	time_since_fire = get_ticks() - m_last_fired_time;
-		if (time_since_fire < m_delay) {
-			return m_delay - time_since_fire;
+		if (time_since_fire < m_cooldown) {
+			return m_cooldown - time_since_fire;
 		}
 	}
 	return 0;

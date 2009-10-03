@@ -39,6 +39,7 @@
 #include "common/PacketReader.hpp"
 #include "common/misc.hpp"
 #include "common/GameParameters.hpp"
+#include "common/WeaponReader.hpp"
 #include "common/Polygon.hpp"
 #include "GraphicalPlayer.hpp"
 #include "Radar.hpp"
@@ -346,6 +347,8 @@ namespace LM {
 		bool		wants_restart();
 		void		reset_options();
 		void		change_weapon(const char* name);
+		void		change_weapon(unsigned int n); // change to the nth weapon (0-indexed)
+		void		change_weapon(Weapon* weapon);
 		void		recreate_name(GraphicalPlayer* player);
 		std::string	get_server_address();
 		std::string	format_time_from_millis(uint64_t milliseconds);
@@ -404,6 +407,7 @@ namespace LM {
 		void		game_param_packet(PacketReader& reader);
 		void		player_died(PacketReader& reader);
 		void		weapon_select(PacketReader& reader);
+		void		weapon_info_packet(PacketReader& reader);
 		void		server_info(const IPAddress& server_address, PacketReader& reader);
 		void		upgrade_available(const IPAddress& server_address, PacketReader& reader);
 		void		hole_punch_packet(const IPAddress& server_address, PacketReader& reader);

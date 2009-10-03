@@ -35,9 +35,9 @@
 #include "BaseMapObject.hpp"
 #include "TextMenuItem.hpp"
 #include "Weapon.hpp"
-#include "FreezeGun.hpp" //TEMP
+#include "StandardGun.hpp" //TEMP
 #include "ImpactCannon.hpp" //TEMP
-#include "Shotgun.hpp" //TEMP
+#include "SpreadGun.hpp" //TEMP
 #include "common/PacketReader.hpp"
 #include "common/PacketWriter.hpp"
 #include "common/network.hpp"
@@ -3354,10 +3354,24 @@ void GameController::set_radar_mode(RadarMode mode) {
 
 void GameController::change_weapon(const char* weapon_name) {
 	if (Weapon* weapon = get_weapon(weapon_name)) {
-		if (m_current_weapon != weapon) {
-			m_current_weapon = weapon;
-			m_last_weapon_switch = get_ticks();
-		}
+		change_weapon(weapon);
+	}
+}
+
+void GameController::change_weapon(unsigned int n) {
+	if (n >= m_weapons.size()) {
+		return;
+	}
+
+	map<string, Weapon*>::iterator it(m_weapons.begin());
+	advance(it, n);
+	change_weapon(it->second);
+}
+
+void	GameController::change_weapon(Weapon* weapon) {
+	if (m_current_weapon != weapon) {
+		m_current_weapon = weapon;
+		m_last_weapon_switch = get_ticks();
 	}
 }
 
@@ -3402,10 +3416,10 @@ Weapon*	GameController::get_weapon(const string& name) {
 }
 
 void	GameController::init_weapons() { //TEMP
-	//m_weapons.insert(make_pair("pistol", m_current_weapon = new FreezeGun("pistol", 0, 50, 700, 1.5, 0.0, false)));
-	m_weapons.insert(make_pair("shotgun", m_current_weapon = new Shotgun("shotgun", 30, 0.01, 5, 10, 700, 1.5)));
-	m_weapons.insert(make_pair("machinegun", new FreezeGun("machinegun", 0, 20, 100, 1.1, 0.1, true)));
-	m_weapons.insert(make_pair("jet", new FreezeGun("jet", 0, 0, 100, 2.5, 0.0, false)));
+	//m_weapons.insert(make_pair("pistol", m_current_weapon = new StandardGun("pistol", 0, 50, 700, 1.5, 0.0, false)));
+	m_weapons.insert(make_pair("shotgun", m_current_weapon = new SpreadGun("shotgun", 30, 0.01, 5, 10, 700, 1.5)));
+	m_weapons.insert(make_pair("machinegun", new StandardGun("machinegun", 0, 20, 100, 1.1, 0.1, true)));
+	m_weapons.insert(make_pair("jet", new StandardGun("jet", 0, 0, 100, 2.5, 0.0, false)));
 	m_weapons.insert(make_pair("impact", new ImpactCannon("impact", 1000, 10, 20.0, 2000, 2.0)));
 }
 
@@ -3559,6 +3573,19 @@ void	GameController::weapon_select(PacketReader& reader)
 
 	if (Weapon* weapon = get_weapon(weapon_name)) {
 		weapon->select(*player, *this);
+	}
+}
+
+void	GameController::weapon_info_packet(PacketReader& reader)
+{
+	WeaponReader		weapon_data;
+	reader >> weapon_data;
+
+	if (!m_weapons.count(weapon_data.get_id())) {
+		if (Weapon* weapon = Weapon::new_weapon(weapon_data)) {
+			m_weapons.insert(std::make_pair(weapon->get_id(), weapon));
+			send_ack(reader);
+		}
 	}
 }
 

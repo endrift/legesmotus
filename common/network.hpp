@@ -74,7 +74,8 @@ namespace LM {
 		GAME_PARAM_PACKET = 24,
 		HOLE_PUNCH_PACKET = 25,		// UDP hole punching for NAT traversal
 		PLAYER_DIED_PACKET = 26,
-		WEAPON_SELECT_PACKET = 27
+		WEAPON_SELECT_PACKET = 27,
+		WEAPON_INFO_PACKET = 28
 	};
 
 	bool		resolve_hostname(IPAddress& resolved_addr, const char* hostname_port_string); // hostname_port_string should be in form "hostname:portno" (i.e. colon separator)

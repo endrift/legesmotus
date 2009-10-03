@@ -1,5 +1,5 @@
 /*
- * client/FreezeGun.cpp
+ * client/StandardGun.cpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,11 +22,11 @@
  * 
  */
 
-#include "FreezeGun.hpp"
+#include "StandardGun.hpp"
 #include "GameController.hpp"
 #include "BaseMapObject.hpp"
 #include "common/Player.hpp"
-#include "common/PacketReader.hpp"
+#include "common/StringTokenizer.hpp"
 #include "common/PacketWriter.hpp"
 #include "common/timer.hpp"
 #include "common/math.hpp"
@@ -36,25 +36,55 @@
 using namespace LM;
 using namespace std;
 
-FreezeGun::FreezeGun(const char* name, uint64_t freeze_time, int damage, uint64_t delay, double recoil, double inaccuracy, bool iscontinuous) : Weapon(name) {
+StandardGun::StandardGun(const char* id, uint64_t freeze_time, int damage, uint64_t delay, double recoil, double inaccuracy, bool iscontinuous) : Weapon(id) {
 	m_last_fired_time = 0;
+
 	m_freeze_time = freeze_time;
 	m_damage = damage;
-	m_delay = delay;
+	m_cooldown = delay;
 	m_recoil = recoil;
 	m_inaccuracy = inaccuracy;
 	m_is_continuous = iscontinuous;
 }
 
-FreezeGun::FreezeGun(PacketReader& gun_data) {
+StandardGun::StandardGun(const char* id, StringTokenizer& gun_data) : Weapon(id) {
 	m_last_fired_time = 0;
-	string		name;
-	gun_data >> name >> m_freeze_time >> m_damage >> m_delay >> m_recoil >> m_inaccuracy >> m_is_continuous;
-	set_name(name.c_str());
+
+	m_freeze_time = 0;
+	m_damage = 100;
+	m_cooldown = 700;
+	m_recoil = 1.5;
+	m_inaccuracy = 0;
+	m_is_continuous = false;
+
+	while (gun_data.has_more()) {
+		parse_param(gun_data.get_next());
+	}
 }
 
-void	FreezeGun::fire(Player& player, GameController& gc, Point startpos, double direction) {
-	if (m_last_fired_time != 0 && get_ticks() - m_last_fired_time < m_delay) {
+bool	StandardGun::parse_param(const char* param_string) {
+	if (strncmp(param_string, "freeze=", 7) == 0) {
+		m_freeze_time = atol(param_string + 7);
+	} else if (strncmp(param_string, "damage=", 7) == 0) {
+		m_damage = atoi(param_string + 7);
+	} else if (strncmp(param_string, "cooldown=", 9) == 0) {
+		m_cooldown = atol(param_string + 9);
+	} else if (strncmp(param_string, "recoil=", 7) == 0) {
+		m_recoil = atof(param_string + 7);
+	} else if (strncmp(param_string, "inaccuracy=", 11) == 0) {
+		m_inaccuracy = atof(param_string + 11);
+	} else if (strcmp(param_string, "continuous") == 0) {
+		m_is_continuous = true;
+	} else if (strcmp(param_string, "notcontinuous") == 0) {
+		m_is_continuous = false;
+	} else {
+		return Weapon::parse_param(param_string);
+	}
+	return true;
+}
+
+void	StandardGun::fire(Player& player, GameController& gc, Point startpos, double direction) {
+	if (m_last_fired_time != 0 && get_ticks() - m_last_fired_time < m_cooldown) {
 		// Firing too soon
 		return;
 	}
@@ -88,7 +118,7 @@ void	FreezeGun::fire(Player& player, GameController& gc, Point startpos, double 
 
 	// Create the gun fired packet and send it, and display the shot hit point.
 	PacketWriter		fired_packet(WEAPON_DISCHARGED_PACKET);
-	fired_packet << player.get_id() << get_name() << startpos << direction;
+	fired_packet << player.get_id() << get_id() << startpos << direction;
 	if (hit_point.x != -1 && hit_point.y != -1) {
 		fired_packet << hit_point;
 		gc.show_bullet_impact(hit_point);
@@ -102,12 +132,12 @@ void	FreezeGun::fire(Player& player, GameController& gc, Point startpos, double 
 		}
 
 		PacketWriter	hit_packet(PLAYER_HIT_PACKET);
-		hit_packet << player.get_id() << get_name() << hit_player->get_id() << direction - M_PI;
+		hit_packet << player.get_id() << get_id() << hit_player->get_id() << direction - M_PI;
 		gc.send_packet(hit_packet);
 	}
 }
 
-void	FreezeGun::discharged(Player& player, GameController& gc, PacketReader& data) {
+void	StandardGun::discharged(Player& player, GameController& gc, StringTokenizer& data) {
 	Point	startpos;
 	double	rotation;
 	data >> startpos >> rotation;
@@ -126,7 +156,7 @@ void	FreezeGun::discharged(Player& player, GameController& gc, PacketReader& dat
 	}
 }
 
-void	FreezeGun::hit(Player& shot_player, Player& shooting_player, bool has_effect, GameController& gc, PacketReader& data) {
+void	StandardGun::hit(Player& shot_player, Player& shooting_player, bool has_effect, GameController& gc, StringTokenizer& data) {
 	double	angle;
 	data >> angle;
 
@@ -142,19 +172,19 @@ void	FreezeGun::hit(Player& shot_player, Player& shooting_player, bool has_effec
 	}
 }
 
-void	FreezeGun::select(Player& selecting_player, GameController& gc) {
+void	StandardGun::select(Player& selecting_player, GameController& gc) {
 }
 
-void	FreezeGun::reset() {
+void	StandardGun::reset() {
 	m_last_fired_time = 0;
 }
 
-uint64_t	FreezeGun::get_remaining_cooldown() const
+uint64_t	StandardGun::get_remaining_cooldown() const
 {
 	if (m_last_fired_time) {
 		uint64_t	time_since_fire = get_ticks() - m_last_fired_time;
-		if (time_since_fire < m_delay) {
-			return m_delay - time_since_fire;
+		if (time_since_fire < m_cooldown) {
+			return m_cooldown - time_since_fire;
 		}
 	}
 	return 0;
