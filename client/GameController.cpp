@@ -433,6 +433,9 @@ void GameController::init(GameWindow* window) {
 	m_window->register_hud_graphic(m_options_menu.get_graphic_group());
 	toggle_options_menu(false);
 	
+	// Initialize the weapon selector menu.
+	init_weapon_selector();
+	
 	// Server browser
 	m_server_browser = new ServerBrowser(*this, m_window, m_text_manager, m_screen_width, m_screen_height, m_font, m_medium_font, m_menu_font);
 	m_server_browser->set_visible(false);
@@ -488,29 +491,6 @@ void GameController::init(GameWindow* window) {
 	
 	change_team_scores(0, 0);
 	update_individual_scores();
-	
-	// Initialize the weapon selector menu.
-	m_weapon_selector_back = new RadialBackground(1);
-	m_weapon_selector_back->set_border_color(Color(0.0,0.0,0.0,0.0));
-	m_weapon_selector_back->set_inner_radius(80.0);
-	m_weapon_selector_back->set_outer_radius(70.0);
-	m_weapon_selector_back->set_border_radius(3.0);
-	m_weapon_selector_back->set_border_angle(3);
-	m_weapon_selector_back->set_x(m_screen_width/2);
-	m_weapon_selector_back->set_y(m_screen_height/2);
-	m_weapon_selector_back->set_rotation(0);
-	
-	m_weapon_selector = new RadialMenu(m_weapon_selector_back, Color(0.2,0.2,0.6,0.8), Color(0.1,0.1,0.3,1));
-
-	GraphicMenuItem *cur_item;
-	for (map<std::string, Weapon*>::iterator it(m_weapons.begin()); it != m_weapons.end(); ++it) {
-		Graphic* this_graphic = m_graphics_cache.new_graphic<Sprite>(m_path_manager.data_path(it->second->hud_graphic(), "sprites"));
-		cur_item = new GraphicMenuItem(this_graphic, it->first);
-		cur_item->set_scale(0.75);
-		m_weapon_selector->add_item(cur_item);
-	}
-	
-	m_window->register_hud_graphic(m_weapon_selector->get_graphic_group());
 	
 	// Initialize the gate warning.
 	m_text_manager->set_active_font(m_menu_font);
@@ -998,6 +978,37 @@ void GameController::run(int lockfps) {
 	}
 }
 
+void GameController::init_weapon_selector() {
+	// Initialize the weapon selector menu.
+	if (m_weapon_selector != NULL) {
+		m_window->unregister_hud_graphic(m_weapon_selector->get_graphic_group());
+		delete m_weapon_selector;
+	}
+	
+	m_weapon_selector_back = new RadialBackground(1);
+	m_weapon_selector_back->set_border_color(Color(0.0,0.0,0.0,0.0));
+	m_weapon_selector_back->set_inner_radius(80.0);
+	m_weapon_selector_back->set_outer_radius(70.0);
+	m_weapon_selector_back->set_border_radius(3.0);
+	m_weapon_selector_back->set_border_angle(3);
+	m_weapon_selector_back->set_x(m_screen_width/2);
+	m_weapon_selector_back->set_y(m_screen_height/2);
+	m_weapon_selector_back->set_rotation(0);
+	
+	m_weapon_selector = new RadialMenu(m_weapon_selector_back, Color(0.2,0.2,0.6,0.8), Color(0.1,0.1,0.3,1));
+
+	GraphicMenuItem *cur_item;
+	for (map<std::string, Weapon*>::iterator it(m_weapons.begin()); it != m_weapons.end(); ++it) {
+		Graphic* this_graphic = m_graphics_cache.new_graphic<Sprite>(m_path_manager.data_path(it->second->hud_graphic(), "sprites"));
+		cur_item = new GraphicMenuItem(this_graphic, it->first);
+		cur_item->set_scale(0.75);
+		m_weapon_selector->add_item(cur_item);
+	}
+	
+	m_weapon_selector->get_graphic_group()->set_invisible(true);
+	m_window->register_hud_graphic(m_weapon_selector->get_graphic_group());
+}
+
 /*
  * Set the HUD visible or invisible.
  */
@@ -1034,12 +1045,15 @@ void GameController::set_hud_visible(bool visible) {
 	
 	m_cooldown_bar->set_invisible(!visible);
 	m_cooldown_bar_back->set_invisible(!visible);
+	
 	if (m_curr_weapon_image != NULL) {
-		if (m_last_weapon_switch == 0 || (get_ticks() - m_last_weapon_switch) > m_params.weapon_switch_delay) {
-			m_curr_weapon_image->set_invisible(!visible);
-		} else {
-			m_curr_weapon_image->set_invisible(true);
-		}
+		// Uncomment the following to show the current weapon image only when done switching
+		m_curr_weapon_image->set_invisible(!visible);
+//		if (m_last_weapon_switch == 0 || (get_ticks() - m_last_weapon_switch) > m_params.weapon_switch_delay) {
+//			m_curr_weapon_image->set_invisible(!visible);
+//		} else {
+//			m_curr_weapon_image->set_invisible(true);
+//		}
 	}
 	
 	if (player->is_frozen() && !player->is_invisible() && m_total_time_frozen > 100) {
@@ -1363,7 +1377,7 @@ void GameController::process_input() {
 	// Check if the right mouse button is held down, for weapon switching.
 	if (SDL_GetMouseState(&mouse_x, &mouse_y)&SDL_BUTTON(3)) {
 		if (GraphicalPlayer* player = get_player_by_id(m_player_id)) {
-			if (m_game_state == GAME_IN_PROGRESS && !player->is_invisible() && !player->is_frozen() && !player->is_dead()) {
+			if (m_weapons.size() > 0 && m_game_state == GAME_IN_PROGRESS && !player->is_invisible() && !player->is_frozen() && !player->is_dead()) {
 				m_weapon_selector->get_graphic_group()->set_invisible(false);
 			}
 		}
