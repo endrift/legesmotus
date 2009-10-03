@@ -52,15 +52,14 @@ namespace LM {
 		WEAPON_DISCHARGED_PACKET = 2,
 		PLAYER_HIT_PACKET = 3,
 		MESSAGE_PACKET = 4,
-		GAME_START_PACKET = 5,
-		GAME_STOP_PACKET = 6,
+		NEW_ROUND_PACKET = 5,
+		ROUND_OVER_PACKET = 6,
 		SCORE_UPDATE_PACKET = 7,
 		WELCOME_PACKET = 8,
 		ANNOUNCE_PACKET = 9,
 		GATE_UPDATE_PACKET = 10,
 		JOIN_PACKET = 11,
 		INFO_PACKET = 12,
-		SHUTDOWN_PACKET = 13,
 		LEAVE_PACKET = 14,
 		PLAYER_ANIMATION_PACKET = 15,
 		REQUEST_DENIED_PACKET = 16,
@@ -75,7 +74,9 @@ namespace LM {
 		HOLE_PUNCH_PACKET = 25,		// UDP hole punching for NAT traversal
 		PLAYER_DIED_PACKET = 26,
 		WEAPON_SELECT_PACKET = 27,
-		WEAPON_INFO_PACKET = 28
+		WEAPON_INFO_PACKET = 28,
+		ROUND_START_PACKET = 29,
+		SPAWN_PACKET = 30
 	};
 
 	bool		resolve_hostname(IPAddress& resolved_addr, const char* hostname_port_string); // hostname_port_string should be in form "hostname:portno" (i.e. colon separator)

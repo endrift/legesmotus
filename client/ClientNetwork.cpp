@@ -131,14 +131,14 @@ void	ClientNetwork::process_server_packet(GameController& controller, const UDPP
 		controller.message(reader);
 		break;
 
-	case GAME_START_PACKET:
+	case NEW_ROUND_PACKET:
 		//send_ack(reader.packet_id());
-		controller.game_start(reader);
+		controller.new_round(reader);
 		break;
 
-	case GAME_STOP_PACKET:
+	case ROUND_OVER_PACKET:
 		//send_ack(reader.packet_id());
-		controller.game_stop(reader);
+		controller.round_over(reader);
 		break;
 
 	case SCORE_UPDATE_PACKET:
@@ -156,10 +156,6 @@ void	ClientNetwork::process_server_packet(GameController& controller, const UDPP
 
 	case GATE_UPDATE_PACKET:
 		controller.gate_update(reader);
-		break;
-
-	case SHUTDOWN_PACKET:
-		//controller.shutdown(reader);
 		break;
 
 	case LEAVE_PACKET:
@@ -209,6 +205,14 @@ void	ClientNetwork::process_server_packet(GameController& controller, const UDPP
 
 	case WEAPON_INFO_PACKET:
 		controller.weapon_info_packet(reader);
+		break;
+
+	case ROUND_START_PACKET:
+		controller.round_start(reader);
+		break;
+
+	case SPAWN_PACKET:
+		controller.spawn_packet(reader);
 		break;
 	}
 }

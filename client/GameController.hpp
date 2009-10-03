@@ -395,8 +395,10 @@ namespace LM {
 		void		player_hit(PacketReader& reader);
 		void		message(PacketReader& reader);
 		void		gate_update(PacketReader& reader);
-		void		game_start(PacketReader& reader);
-		void		game_stop(PacketReader& reader);
+		void		new_round(PacketReader& reader);
+		void		round_over(PacketReader& reader);
+		void		round_start(PacketReader& reader);
+		void		spawn_packet(PacketReader& reader);
 		void		score_update(PacketReader& reader);
 		void		animation_packet(PacketReader& reader);
 		void		request_denied(PacketReader& reader);

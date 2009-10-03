@@ -2602,12 +2602,12 @@ void GameController::gate_update(PacketReader& reader) {
 }
 
 /*
- * When a game start packet is received.
+ * When a new round packet is received.
  */
-void GameController::game_start(PacketReader& reader) {
+void GameController::new_round(PacketReader& reader) {
 	if (m_players.empty()) {
 		// WELCOME packet not received yet
-		// do NOT send an ACK for this GAME_START packet, so that the server will resend it, hopefully after the WELCOME has come in.
+		// do NOT send an ACK for this NEW_ROUND packet, so that the server will resend it, hopefully after the WELCOME has come in.
 		return;
 	}
 
@@ -2618,16 +2618,9 @@ void GameController::game_start(PacketReader& reader) {
 	int 		map_revision;
 	bool		game_started;
 	uint64_t	time_until_start;
-	uint64_t	time_left_in_game;
-	reader >> map_name >> map_revision >> game_started >> time_until_start >> time_left_in_game;
+	reader >> map_name >> map_revision >> game_started >> time_until_start;
 
 	send_ack(reader);
-
-	if (time_left_in_game == time_until_start == numeric_limits<uint64_t>::max()) {
-		m_round_end_time = 0;
-	} else {
-		m_round_end_time = get_ticks() + time_left_in_game;
-	}
 
 	/*
 	 * Tell the player what's going on
@@ -2669,14 +2662,20 @@ void GameController::game_start(PacketReader& reader) {
 		}
 	}
 
+	/*
+	 * Reset the game state (TODO: add more stuff here)
+	 */
+	m_round_end_time = 0;
+	m_weapons.clear();
 	m_last_damage_time = 0;
 	m_last_recharge_time = 0;
+	m_last_weapon_switch = 0;
 }
 
 /*
  * Called when the game stop packet is received.
  */
-void GameController::game_stop(PacketReader& reader) {
+void GameController::round_over(PacketReader& reader) {
 	char		winningteam;
 	int 		teamascore;
 	int		teambscore;
@@ -2718,6 +2717,21 @@ void GameController::game_stop(PacketReader& reader) {
 	m_total_time_frozen = 0;
 	update_energy_bar(0);
 	reset_weapons();
+}
+
+void GameController::round_start(PacketReader& reader) {
+	// ACK TODO: Only accept this packet if we have gotten a related new_round packet
+
+	uint64_t		time_left_in_game;
+	reader >> time_left_in_game;
+
+	if (time_left_in_game == numeric_limits<uint64_t>::max()) {
+		m_round_end_time = 0;
+	} else {
+		m_round_end_time = get_ticks() + time_left_in_game;
+	}
+
+	send_ack(reader);
 }
 
 /*
@@ -3586,6 +3600,62 @@ void	GameController::weapon_info_packet(PacketReader& reader)
 			m_weapons.insert(std::make_pair(weapon->get_id(), weapon));
 			send_ack(reader);
 		}
+	}
+}
+
+void GameController::spawn_packet(PacketReader& reader) {
+	// ACK TODO: ignore packet if we have already spawned, or if round has not started yet
+	Point			position;
+	Vector			velocity;
+	bool			is_grabbing_obstacle;
+	bool			is_alive;
+	uint64_t		freeze_time;
+
+	reader >> position >> velocity >> is_grabbing_obstacle >> is_alive >> freeze_time;
+	send_ack(reader);
+
+	GraphicalPlayer*	player = get_player_by_id(m_player_id);
+
+	if (!player) {
+		return;
+	}
+
+	player->set_position(position);
+	player->set_velocity(velocity);
+	player->set_is_grabbing_obstacle(is_grabbing_obstacle);
+
+	if (is_alive) {
+		player->reset_energy();
+		player->set_is_invisible(false);
+		player->set_is_frozen(false);
+		if (freeze_time) {
+			freeze(freeze_time);
+		}
+	} else {
+		player->set_energy(0);
+		player->set_is_invisible(true);
+		player->set_is_frozen(true);
+	}
+
+	update_energy_bar();
+
+	// TODO: Move all this code below into a helper function!
+
+	// Update the radar and name sprite
+	m_radar->move_blip(player->get_id(), player->get_x(), player->get_y());
+	m_radar->set_blip_invisible(player->get_id(), player->is_invisible());
+	player->get_name_sprite()->set_invisible(player->is_invisible());
+	
+	// If invisible or frozen, set these things appropriately and show/hide the sprite.
+	if (player->is_invisible()) {
+		player->set_velocity(0, 0);
+	} else {
+		// Reposition the name sprite to reflect the player's new position
+		m_text_manager->reposition_string(player->get_name_sprite(), player->get_x(), player->get_y() - (player->get_radius()+30), TextManager::CENTER);
+	}
+	
+	if (m_radar->get_mode() == RADAR_ON) {
+		m_radar->set_blip_alpha(player->get_id(), player->is_frozen() ? 0.5 : 1.0);
 	}
 }
 

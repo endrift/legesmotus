@@ -152,13 +152,14 @@ namespace LM {
 	
 		/* */
 
+		// Broadcast various packets (if player is NULL, broadcast to all players, otherwise send only to the one player)
+		void			send_new_round_packets(const ServerPlayer* player =NULL); // Also broadcasts game and weapon info
+		void			send_round_start_packet(const ServerPlayer* player =NULL);
+
 		// Send all the relevant game parameters to the client (should be called at the beginning of each new game)
 		// If player is NULL, broadcast to all players, otherwise only to specific player
 		void			broadcast_params(const ServerPlayer* player =NULL);
 		template<class T> void	broadcast_param(const ServerPlayer* player, const char* param_name, const T& param_value);
-
-		// Reset the energy for all players (call at beginning of new game)
-		void			reset_player_energy();
 
 		// Reset the scores for all players, broadcasting score updates for each one (call at beginning of new game)
 		void			reset_player_scores();
@@ -175,7 +176,7 @@ namespace LM {
 		// Send a packet to spawn a player at specified point
 		// If is_alive is true, the player will be un-frozen and visible.
 		// If is_alive is false, the player will be frozen and invisible.
-		void			send_spawn_packet(ServerPlayer& player, const Spawnpoint* spawnpoint, bool is_alive);
+		void			send_spawn_packet(ServerPlayer& player, const Spawnpoint* spawnpoint, bool is_alive, uint64_t freeze_time =0);
 	
 		// Server command support
 		void			broadcast_system_message(const char* message);

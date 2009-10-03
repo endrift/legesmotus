@@ -537,26 +537,18 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 	if (is_first_player) {
 		// This is the first player.  Start a new game.
 		new_game();
-	} else if (!m_players_have_spawned) {
-		// Joining a game that hasn't started yet.
-		// Tell the player what map is currently in use, and how much time until the round starts (i.e. players spawn)
-		PacketWriter		game_start_packet(GAME_START_PACKET);
-		game_start_packet << m_current_map.get_name() << m_current_map.get_revision() << 0 << time_until_spawn() << gametime_left();
-		m_ack_manager.add_packet(player_id, game_start_packet);
-		m_network.send_packet(address, game_start_packet);
-
-		broadcast_params(&new_player);
 	} else {
-		// Joining a game that has already started
-		// Add the player to the join queue
-		m_waiting_players.push_back(&new_player);
-		// Tell the player what map is currently in use, and how much time until he spawns
-		PacketWriter		game_start_packet(GAME_START_PACKET);
-		game_start_packet << m_current_map.get_name() << m_current_map.get_revision() << 1 << m_params.late_join_delay << gametime_left();
-		m_ack_manager.add_packet(player_id, game_start_packet);
-		m_network.send_packet(address, game_start_packet);
+		// Tell the player about the game
+		send_new_round_packets(&new_player);
 
-		broadcast_params(&new_player);
+		if (m_players_have_spawned) {
+			// Joining a game that has already started
+			// Add the player to the join queue
+			m_waiting_players.push_back(&new_player);
+
+			// Tell the player that the round has already started
+			send_round_start_packet(&new_player);
+		}
 	}
 
 	// Send the new player an announce packet and score update packet for every player currently in the game (except for the one just added)
@@ -600,13 +592,6 @@ void	Server::info(const IPAddress& address, PacketReader& request_packet) {
 	PacketWriter	response_packet(INFO_PACKET);
 	response_packet << scan_id << scan_start_time << SERVER_PROTOCOL_VERSION << m_current_map.get_name() << m_team_count[0] << m_team_count[1] << m_params.max_players << get_ticks() << gametime_left() << m_server_name << m_server_location;
 	m_network.send_packet(address, response_packet);
-}
-
-// Reset the energy for all players
-void	Server::reset_player_energy() {
-	for (PlayerMap::iterator it(m_players.begin()); it != m_players.end(); ++it) {
-		it->second.reset_energy();
-	}
 }
 
 // Reset the scores for all players, broadcasting score updates for each one
@@ -857,12 +842,7 @@ void	Server::new_game() {
 	m_waiting_players.clear(); // Waiting players get cleared out and put in general queue...
 	m_game_mode->new_game();
 
-	PacketWriter		packet(GAME_START_PACKET);
-	packet << m_current_map.get_name() << m_current_map.get_revision() << 0 << m_params.game_start_delay << gametime_left();
-	m_ack_manager.add_broadcast_packet(packet);
-	broadcast_packet(packet);
-
-	broadcast_params();
+	send_new_round_packets();
 }
 
 void	Server::game_over(char winning_team) {
@@ -872,7 +852,7 @@ void	Server::game_over(char winning_team) {
 		winning_team = '-';
 	}
 
-	PacketWriter		packet(GAME_STOP_PACKET);
+	PacketWriter		packet(ROUND_OVER_PACKET);
 	packet << winning_team << m_team_score[0] << m_team_score[1];
 	m_ack_manager.add_broadcast_packet(packet);
 	broadcast_packet(packet);
@@ -886,8 +866,6 @@ void	Server::start_game() {
 	// Only reset player scores when players spawn, so players have an opportunity between rounds to check the leader board for the prior round
 	reset_player_scores();
 
-	reset_player_energy();
-
 	m_players_have_spawned = true;
 	m_current_map.reset();
 
@@ -895,11 +873,8 @@ void	Server::start_game() {
 		spawn_player(it->second);
 	}
 
-	// Send the game start packet
-	PacketWriter		packet(GAME_START_PACKET);
-	packet << m_current_map.get_name() << m_current_map.get_revision() << 1 << 0 << gametime_left();
-	m_ack_manager.add_broadcast_packet(packet);
-	broadcast_packet(packet);
+	// Send the round start packet
+	send_round_start_packet();
 }
 
 void	Server::spawn_waiting_players() {
@@ -1106,27 +1081,23 @@ void	Server::ServerAckManager::add_broadcast_packet(const PacketWriter& packet) 
 	AckManager::add_broadcast_packet(player_ids, packet);
 }
 
-void	Server::send_spawn_packet(ServerPlayer& player, const Spawnpoint* spawnpoint, bool is_alive) {
+void	Server::send_spawn_packet(ServerPlayer& player, const Spawnpoint* spawnpoint, bool is_alive, uint64_t freeze_time) {
+	// Format:
+	//  point~velocity~grabbing?~alive?~freeze_time
+	PacketWriter	spawn_packet(SPAWN_PACKET);
+
 	if (spawnpoint) {
-		player.set_position(spawnpoint->get_point());
-		player.set_velocity(spawnpoint->get_initial_velocity());
-		player.set_is_grabbing_obstacle(spawnpoint->is_grabbing_obstacle());
+		spawn_packet << spawnpoint->get_point() << spawnpoint->get_initial_velocity() << spawnpoint->is_grabbing_obstacle();
 	} else {
-		player.set_position(0, 0);
-		player.set_velocity(0, 0);
-		player.set_is_grabbing_obstacle(false);
-	}
-	player.set_rotation_degrees(0);
-	player.set_is_frozen(!is_alive);
-	player.set_is_invisible(!is_alive);
-	if (is_alive) {
-		player.reset_energy();
-	} else {
-		player.set_energy(0);
+		spawn_packet << Point() << Vector() << false;
 	}
 
-	PacketWriter	spawn_packet(PLAYER_UPDATE_PACKET);
-	player.write_update_packet(spawn_packet);
+	spawn_packet << is_alive;
+
+	if (is_alive) {
+		spawn_packet << freeze_time;
+	}
+
 	m_ack_manager.add_packet(player.get_id(), spawn_packet);
 	m_network.send_packet(player.get_address(), spawn_packet);
 }
@@ -1317,4 +1288,37 @@ uint64_t	Server::gametime_left() const {
 	return m_params.game_timeout ? m_params.game_timeout - time_since_spawn() : std::numeric_limits<uint64_t>::max();
 }
 
+
+void	Server::send_new_round_packets(const ServerPlayer* player) {
+	PacketWriter	packet(NEW_ROUND_PACKET);
+	packet << m_current_map.get_name() << m_current_map.get_revision();
+	if (m_players_have_spawned) {
+		// Round already in progress
+		packet << 1 << m_params.late_join_delay;
+	} else {
+		// Round not yet started
+		packet << 0 << time_until_spawn();
+	}
+	if (player) {
+		m_ack_manager.add_packet(player->get_id(), packet);
+		m_network.send_packet(player->get_address(), packet);
+	} else {
+		m_ack_manager.add_broadcast_packet(packet);
+		broadcast_packet(packet);
+	}
+
+	broadcast_params(player);
+}
+
+void	Server::send_round_start_packet(const ServerPlayer* player) {
+	PacketWriter	packet(ROUND_START_PACKET);
+	packet << gametime_left();
+	if (player) {
+		m_ack_manager.add_packet(player->get_id(), packet);
+		m_network.send_packet(player->get_address(), packet);
+	} else {
+		m_ack_manager.add_broadcast_packet(packet);
+		broadcast_packet(packet);
+	}
+}
 
