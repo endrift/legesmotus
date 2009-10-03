@@ -2666,7 +2666,7 @@ void GameController::new_round(PacketReader& reader) {
 	 * Reset the game state (TODO: add more stuff here)
 	 */
 	m_round_end_time = 0;
-	m_weapons.clear();
+	//clear_weapons();
 	m_last_damage_time = 0;
 	m_last_recharge_time = 0;
 	m_last_weapon_switch = 0;
