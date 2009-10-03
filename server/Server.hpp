@@ -212,7 +212,7 @@ namespace LM {
 		// Spawn the given player:
 		//  Unfreeze and place the player at the next available spawn point on the current map.
 		//  Returns true if player spawned, false if there's no space on map.
-		bool			spawn_player(ServerPlayer& player);
+		bool			spawn_player(ServerPlayer& player, uint64_t freeze_time =0);
 	
 		// Call this when a game ends: broadcasts the game over packet and resets the game state
 		void			game_over(char winning_team);

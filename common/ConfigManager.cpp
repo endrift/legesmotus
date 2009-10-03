@@ -159,7 +159,6 @@ template<> uint64_t	ConfigManager::get(const char* option_name) const {
 }
 
 template<> void	ConfigManager::set(const char* option_name, const uint64_t& option_value) {
-	m_options[option_name] = option_value == numeric_limits<uint64_t>::max() ? "inf" : "no";
 	if (option_value == numeric_limits<uint64_t>::max()) {
 		m_options[option_name] = "forever";
 	} else {

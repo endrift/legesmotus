@@ -542,9 +542,10 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 		send_new_round_packets(&new_player);
 
 		if (m_players_have_spawned) {
-			// Joining a game that has already started
-			// Add the player to the join queue
-			m_waiting_players.push_back(&new_player);
+			if (!m_params.late_spawn_frozen && m_params.late_join_delay != numeric_limits<uint64_t>::max()) {
+				// Add the player to the spawn queue
+				m_waiting_players.push_back(&new_player);
+			}
 
 			// Tell the player that the round has already started
 			send_round_start_packet(&new_player);
@@ -581,6 +582,10 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 	m_ack_manager.add_broadcast_packet(announce_packet);
 	broadcast_packet(announce_packet);
 
+	if (m_players_have_spawned && m_params.late_spawn_frozen && m_params.late_join_delay != numeric_limits<uint64_t>::max()) {
+		// Spawn this player frozen
+		spawn_player(new_player, m_params.late_join_delay);
+	}
 }
 
 void	Server::info(const IPAddress& address, PacketReader& request_packet) {
@@ -884,10 +889,10 @@ void	Server::spawn_waiting_players() {
 	}
 }
 
-bool	Server::spawn_player(ServerPlayer& player) {
+bool	Server::spawn_player(ServerPlayer& player, uint64_t freeze_time) {
 	if (const Spawnpoint* point = m_current_map.next_spawnpoint(player.get_team())) {
 		player.set_spawnpoint(point);
-		send_spawn_packet(player, point, true);
+		send_spawn_packet(player, point, true, freeze_time);
 		return true;
 	} else {
 		// Oh noes! No place to spawn this player.

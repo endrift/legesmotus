@@ -56,6 +56,7 @@ void 	GameParameters::reset() {
 	recharge_continuously = false;
 	jump_velocity = 6.0;
 	weapon_switch_delay = 500;
+	late_spawn_frozen = true;
 }
 
 void	GameParameters::init_from_config(const ConfigManager& config) {
@@ -80,6 +81,7 @@ void	GameParameters::init_from_config(const ConfigManager& config) {
 	if (config.has("recharge_continuously"))recharge_continuously = config.get<bool>("recharge_continuously");
 	if (config.has("jump_velocity"))	jump_velocity = config.get<double>("jump_velocity");
 	if (config.has("weapon_switch_delay"))	weapon_switch_delay = config.get<uint64_t>("weapon_switch_delay");
+	if (config.has("late_spawn_frozen"))	late_spawn_frozen = config.get<bool>("late_spawn_frozen");
 }
 
 bool	GameParameters::process_param_packet(PacketReader& packet) {

@@ -71,6 +71,7 @@ namespace LM {
 		uint64_t	recharge_continuously;	// Keep recharging, even when actively taking damage?
 		double		jump_velocity;		// Magnitude of velocity when jumping off an obstacle
 		uint64_t	weapon_switch_delay;	// How long does it take to switch weapons?
+		bool		late_spawn_frozen;	// Players who join mid round spawn frozen?
 
 		GameParameters() { reset(); }
 
