@@ -1,0 +1,28 @@
+pistol:STANDARD
+	name=Pistol
+	hud=large_gun.png
+	damage=60
+	cooldown=700
+	recoil=1.5
+	normal=3,19:-15:1:gun_noshot.png
+	firing=3,19:-15:1:gun_shot.png
+
+mgun:STANDARD
+	name=Machine Gun
+	hud=large_mgun.png
+	damage=20
+	cooldown=100
+	recoil=1.1
+	inaccuracy=5
+	continuous
+	normal=TODO
+	firing=TODO
+
+impact:IMPACT
+	name=Impact Cannon
+	hud=large_cannon.png
+	force=20
+	cooldown=2000
+	recoil=2.0
+	normal=7,0:-15:-1:cannon_back.png;7,0:-15:1:cannon_front.png
+	firing=7,0:-15:-1:cannon_back.png;7,0:-15:1:cannon_front.png
