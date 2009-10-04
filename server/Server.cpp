@@ -219,10 +219,17 @@ void	Server::change_team(ServerPlayer& player, char new_team, bool respawn_playe
 		} else {
 			// Hide and freeze the player
 			send_spawn_packet(player, NULL, false);
-
-			// Add them to the waiting to spawn list
 			player.reset_join_time();
-			m_waiting_players.push_back(&player);
+
+			if (m_params.late_join_delay != numeric_limits<uint64_t>::max()) {
+				if (m_params.late_spawn_frozen) {
+					// Spawn this player frozen
+					spawn_player(player, m_params.late_join_delay);
+				} else {
+					// Add the player to the spawn queue
+					m_waiting_players.push_back(&player);
+				}
+			}
 		}
 	}
 
