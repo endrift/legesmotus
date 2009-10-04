@@ -229,6 +229,7 @@ void GameController::init(GameWindow* window) {
 	m_muzzle_flash_start = 0;
 	
 	m_curr_weapon_image = NULL;
+	m_weapon_selector = NULL;
 
 	m_font = new Font(m_path_manager.data_path("JuraMedium.ttf", "fonts"), 14);
 	m_bold_font = new Font(m_path_manager.data_path("JuraDemiBold.ttf", "fonts"), 14);
