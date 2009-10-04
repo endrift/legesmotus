@@ -26,6 +26,7 @@
 #include "common/WeaponReader.hpp"
 #include <cstring>
 
+#include "GameController.hpp"
 #include "StandardGun.hpp"
 #include "ImpactCannon.hpp"
 #include "SpreadGun.hpp"
@@ -65,3 +66,8 @@ bool	Weapon::parse_param(const char* param_string) {
 	}
 	return true;
 }
+
+void	Weapon::select(Player& player, GameController& gc) {
+	gc.register_front_arm_graphic(player, m_normal_graphic_info.c_str(), m_firing_graphic_info.c_str());
+}
+

@@ -189,17 +189,11 @@ namespace LM {
 		// TEMPORARY SPRITE CODE
 		GraphicsCache	m_graphics_cache;
 		
-		Sprite*		gun_normal;
-		Sprite*		m_gun_fired;
 		GraphicGroup 	blue_player;
-		GraphicGroup	blue_arm_gun;
 		Sprite*		blue_sprite;
-		Sprite*		blue_front_arm;
 		Sprite*		blue_back_arm;
 		GraphicGroup 	red_player;
-		GraphicGroup	red_arm_gun;
 		Sprite*		red_sprite;
-		Sprite*		red_front_arm;
 		Sprite*		red_back_arm;
 		Sprite*		m_crosshairs;
 		Graphic*	m_input_bar;
@@ -314,6 +308,10 @@ namespace LM {
 		// Return the current angle (in radians) from the player to the crosshairs
 		//  Doesn't take into account the player rotation
 		double		get_crosshairs_angle() const;
+
+		void		add_front_arm(GraphicGroup& group, const char* sprite_name);
+		void		populate_graphic_group(GraphicGroup& group, const char* str);
+		void		make_front_arm_graphic(GraphicGroup& player_sprite, const char* arm, const char* gun_normal, const char* gun_firing);
 		
 	public:
 		explicit GameController(PathManager& pathman, ClientConfiguration* config);
@@ -433,6 +431,7 @@ namespace LM {
 		void		activate_radar_blip(const Player& player);
 		void		show_muzzle_flash();
 		void		show_bullet_impact(Point position);
+		void		register_front_arm_graphic(Player& player, const char* normal, const char* firing);
 
 		// Damage the player by this amount of energy
 		// aggressor is the player who did the damage, or NULL if no player did it (e.g. hazerdous map object)

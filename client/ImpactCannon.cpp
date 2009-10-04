@@ -110,11 +110,15 @@ void	ImpactCannon::fire(Player& player, GameController& gc, Point startpos, doub
 		}
 	}
 	
+	// Flash the muzzle
+	gc.show_muzzle_flash();
+
 	// Create the gun fired packet and send it, and display the shot hit point.
 	PacketWriter		fired_packet(WEAPON_DISCHARGED_PACKET);
 	fired_packet << player.get_id() << get_id() << startpos << direction;
 	if (hit_point.x != -1 && hit_point.y != -1) {
 		fired_packet << hit_point;
+		//gc.show_bullet_impact(hit_point);
 	}
 	gc.send_packet(fired_packet);
 	
@@ -163,8 +167,10 @@ void	ImpactCannon::reset() {
 	m_last_fired_time = 0;
 }
 
+/*
 void	ImpactCannon::select(Player& selecting_player, GameController& gc) {
 }
+*/
 
 uint64_t	ImpactCannon::get_remaining_cooldown() const
 {

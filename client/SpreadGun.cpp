@@ -206,8 +206,10 @@ void	SpreadGun::hit(Player& shot_player, Player& shooting_player, bool has_effec
 	}
 }
 
+/*
 void	SpreadGun::select(Player& selecting_player, GameController& gc) {
 }
+*/
 
 void	SpreadGun::reset() {
 	m_last_fired_time = 0;

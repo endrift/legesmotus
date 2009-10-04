@@ -117,13 +117,10 @@ GameController::GameController(PathManager& path_manager, ClientConfiguration* c
 GameController::~GameController() {
 	// TEMPORARY SPRITE CODE
 	delete blue_sprite;
-	delete blue_front_arm;
 	delete blue_back_arm;
 	delete red_sprite;
-	delete red_front_arm;
 	delete red_back_arm;
 	delete m_crosshairs;
-	delete gun_normal;
 
 	for (unsigned int i = 0; i < m_shots.size(); i++) {
 		m_window->unregister_graphic(m_shots[i].first);
@@ -253,71 +250,31 @@ void GameController::init(GameWindow* window) {
 
 	m_round_end_time = 0;
 
-	// Initialize the gun sprites.
-	gun_normal = new Sprite(m_path_manager.data_path("gun_noshot.png", "sprites"));
-	gun_normal->set_x(3);
-	gun_normal->set_y(19);
-	gun_normal->set_rotation(-15);
-	gun_normal->set_priority(-1);
-	
-	m_gun_fired = new Sprite(m_path_manager.data_path("gun_shot.png", "sprites"));
-	m_gun_fired->set_x(3);
-	m_gun_fired->set_y(19);
-	m_gun_fired->set_rotation(-15);
-	m_gun_fired->set_priority(-1);
-	m_gun_fired->set_invisible(true);
-	
 	// Initialize all of the components of the player sprites.
 	blue_sprite = new Sprite(m_path_manager.data_path("blue_armless.png","sprites"));
 	blue_back_arm = new Sprite(m_path_manager.data_path("blue_backarm.png","sprites"));
-	blue_front_arm = new Sprite(m_path_manager.data_path("blue_frontarm.png","sprites"));
 	blue_back_arm->set_center_x(27);
 	blue_back_arm->set_center_y(29);
 	blue_back_arm->set_x(-5);
 	blue_back_arm->set_y(-20);
-	blue_front_arm->set_center_x(49);
-	blue_front_arm->set_center_y(33);
-	blue_front_arm->set_x(17);
-	blue_front_arm->set_y(-16);
-	blue_front_arm->set_priority(-2);
 	blue_back_arm->set_priority(1);
 	
 	blue_player.add_graphic(blue_sprite, "torso");
 	blue_player.add_graphic(blue_back_arm, "backarm");
-	blue_arm_gun.add_graphic(gun_normal, "gun");
-	blue_arm_gun.add_graphic(m_gun_fired, "gun_fired");
-	blue_arm_gun.add_graphic(blue_front_arm, "arm");
-	blue_arm_gun.set_center_x(13);
-	blue_arm_gun.set_center_y(-18);
-	blue_arm_gun.set_x(13);
-	blue_arm_gun.set_y(-18);
-	blue_player.add_graphic(&blue_arm_gun, "frontarm");
+	make_front_arm_graphic(blue_player, "blue_frontarm.png", NULL, NULL);
 	blue_player.set_invisible(true);
 	
 	red_sprite = new Sprite(m_path_manager.data_path("red_armless.png","sprites"));
 	red_back_arm = new Sprite(m_path_manager.data_path("red_backarm.png","sprites"));
-	red_front_arm = new Sprite(m_path_manager.data_path("red_frontarm.png","sprites"));
-	red_front_arm->set_center_x(49);
-	red_front_arm->set_center_y(33);
-	red_front_arm->set_x(17);
-	red_front_arm->set_y(-16);
 	red_back_arm->set_center_x(27);
 	red_back_arm->set_center_y(29);
 	red_back_arm->set_x(-5);
 	red_back_arm->set_y(-20);
-	red_front_arm->set_priority(-2);
 	red_back_arm->set_priority(1);
 	
 	red_player.add_graphic(red_sprite, "torso");
 	red_player.add_graphic(red_back_arm, "backarm");
-	red_arm_gun.add_graphic(gun_normal, "gun");
-	red_arm_gun.add_graphic(m_gun_fired, "gun_fired");
-	red_arm_gun.add_graphic(red_front_arm, "arm");
-	red_arm_gun.set_center_x(13);
-	red_arm_gun.set_center_y(-18);
-	red_arm_gun.set_x(13);
-	red_arm_gun.set_y(-18);
-	red_player.add_graphic(&red_arm_gun, "frontarm");
+	make_front_arm_graphic(red_player, "red_frontarm.png", NULL, NULL);
 	red_player.set_invisible(true);
 	
 	m_crosshairs = new Sprite(m_path_manager.data_path("crosshairs.png", "sprites"));
@@ -847,11 +804,11 @@ void GameController::run(int lockfps) {
 								
 				// Change gun sprite if muzzle flash is done.
 				Graphic* frontarm = m_players[m_player_id].get_sprite()->get_graphic("frontarm");
-				if (m_muzzle_flash_start != 0 && get_ticks() - m_muzzle_flash_start >= MUZZLE_FLASH_LENGTH && frontarm->get_graphic("gun")->is_invisible()) {
-					frontarm->get_graphic("gun")->set_invisible(false);
-					send_animation_packet("frontarm/gun", "invisible", false);
-					frontarm->get_graphic("gun_fired")->set_invisible(true);
-					send_animation_packet("frontarm/gun_fired", "invisible", true);
+				if (m_muzzle_flash_start != 0 && get_ticks() - m_muzzle_flash_start >= MUZZLE_FLASH_LENGTH && frontarm->get_graphic("normal")->is_invisible()) {
+					frontarm->get_graphic("normal")->set_invisible(false);
+					send_animation_packet("frontarm/normal", "invisible", false);
+					frontarm->get_graphic("firing")->set_invisible(true);
+					send_animation_packet("frontarm/firing", "invisible", true);
 					m_muzzle_flash_start = 0;
 				}
 
@@ -1912,11 +1869,11 @@ void GameController::attempt_jump() {
 
 void GameController::show_muzzle_flash() {
 	// Switch to the gun with the muzzle flash.
-	GraphicGroup* frontarm = (GraphicGroup*)m_players[m_player_id].get_sprite()->get_graphic("frontarm");
-	frontarm->get_graphic("gun")->set_invisible(true);
-	send_animation_packet("frontarm/gun", "invisible", true);
-	frontarm->get_graphic("gun_fired")->set_invisible(false);
-	send_animation_packet("frontarm/gun_fired", "invisible", false);
+	Graphic*	frontarm = m_players[m_player_id].get_sprite()->get_graphic("frontarm");
+	frontarm->get_graphic("firing")->set_invisible(false);
+	send_animation_packet("frontarm/firing", "invisible", false);
+	frontarm->get_graphic("normal")->set_invisible(true);
+	send_animation_packet("frontarm/normal", "invisible", true);
 	m_muzzle_flash_start = get_ticks();
 }
 
@@ -3462,6 +3419,7 @@ void	GameController::change_weapon(Weapon* weapon) {
 			m_current_weapon = weapon;
 			m_last_weapon_switch = get_ticks();
 			update_curr_weapon_image();
+			m_current_weapon->select(*player, *this);
 		}
 	}
 }
@@ -3749,5 +3707,73 @@ void GameController::spawn_packet(PacketReader& reader) {
 	if (m_radar->get_mode() == RADAR_ON) {
 		m_radar->set_blip_alpha(player->get_id(), player->is_frozen() ? 0.5 : 1.0);
 	}
+}
+
+void GameController::populate_graphic_group(GraphicGroup& group, const char* str) {
+	StringTokenizer	item_tokenizer(str, ';');
+	while (item_tokenizer) {
+		string	item_string;
+		item_tokenizer >> item_string;
+
+		Point	position;
+		double	rotation;
+		int	priority;
+		string	sprite_name;
+
+		StringTokenizer(item_string, ':') >> position >> rotation >> priority >> sprite_name;
+
+		Sprite*	sprite = m_graphics_cache.new_graphic<Sprite>(m_path_manager.data_path(sprite_name.c_str(), "sprites"));
+		sprite->set_x(position.x);
+		sprite->set_y(position.y);
+		sprite->set_rotation(rotation);
+		sprite->set_priority(priority);
+
+		group.add_graphic(sprite);
+	}
+}
+
+void GameController::add_front_arm(GraphicGroup& group, const char* sprite_name) {
+	Sprite*	sprite = m_graphics_cache.new_graphic<Sprite>(m_path_manager.data_path(sprite_name, "sprites"));
+	sprite->set_x(0);
+	sprite->set_y(0);
+	sprite->set_rotation(0);
+	sprite->set_priority(0);
+	group.add_graphic(sprite);
+}
+
+void GameController::register_front_arm_graphic(Player& base_player, const char* normal_str, const char* firing_str) {
+	if (GraphicalPlayer* player = get_player_by_id(base_player.get_id())) {
+		make_front_arm_graphic(*player->get_sprite(), player->get_team() == 'A' ? "blue_frontarm.png" : "red_frontarm.png", normal_str, firing_str);
+	}
+}
+
+void GameController::make_front_arm_graphic(GraphicGroup& player_sprite, const char* arm_sprite, const char* normal_str, const char* firing_str) {
+	GraphicGroup	normal_group;
+	GraphicGroup	firing_group;
+
+	if (normal_str) {
+		populate_graphic_group(normal_group, normal_str);
+	}
+	if (firing_str) {
+		populate_graphic_group(firing_group, firing_str);
+	}
+
+	if (arm_sprite) {
+		add_front_arm(normal_group, arm_sprite);
+		add_front_arm(firing_group, arm_sprite);
+	}
+
+	firing_group.set_invisible(true);
+
+	GraphicGroup	frontarm;
+	frontarm.add_graphic(&normal_group, "normal");
+	frontarm.add_graphic(&firing_group, "firing");
+	frontarm.set_x(13);
+	frontarm.set_y(-18);
+	frontarm.set_center_x(13);
+	frontarm.set_center_y(-18);
+
+	player_sprite.remove_graphic("frontarm");
+	player_sprite.add_graphic(&frontarm, "frontarm");
 }
 

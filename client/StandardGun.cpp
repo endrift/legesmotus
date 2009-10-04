@@ -174,8 +174,10 @@ void	StandardGun::hit(Player& shot_player, Player& shooting_player, bool has_eff
 	}
 }
 
+/*
 void	StandardGun::select(Player& selecting_player, GameController& gc) {
 }
+*/
 
 void	StandardGun::reset() {
 	m_last_fired_time = 0;

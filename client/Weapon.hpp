@@ -65,7 +65,7 @@ namespace LM {
 		// When the current player (player) is hit by this weapon:
 		virtual void		hit(Player& player, Player& shooting_player, bool has_effect, GameController& gc, StringTokenizer& data) = 0;
 		// Call when a player selects this weapon:
-		virtual void		select(Player& player, GameController& gc) = 0;
+		virtual void		select(Player& player, GameController& gc);
 		// Call when the round ends to reset this weapon's state:
 		virtual void		reset() = 0;
 

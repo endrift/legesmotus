@@ -52,7 +52,7 @@ namespace LM {
 		virtual void		fire(Player& player, GameController& gc, Point start, double direction);
 		virtual void		discharged(Player& player, GameController& gc, StringTokenizer& data);
 		virtual void		hit(Player& player, Player& shooting_player, bool has_effect, GameController& gc, StringTokenizer& data);
-		virtual void		select(Player& player, GameController& gc);
+		//virtual void		select(Player& player, GameController& gc);
 		virtual void		reset();
 		virtual bool		is_continuous() { return false; }
 		virtual uint64_t	get_remaining_cooldown() const;

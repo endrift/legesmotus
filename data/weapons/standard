@@ -36,5 +36,5 @@ impact:IMPACT
 	force=20
 	cooldown=2000
 	recoil=2.0
-	normal=TODO
-	firing=TODO
+	normal=7,0:-15:-1:cannon_back.png;7,0:-15:1:cannon_front.png
+	firing=7,0:-15:-1:cannon_back.png;7,0:-15:1:cannon_front.png
