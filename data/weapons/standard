@@ -13,7 +13,7 @@ shotgun:SPREAD
 mgun:STANDARD
 	name=Machine Gun
 	hud=large_mgun.png
-	damage=20
+	damage=7
 	cooldown=100
 	recoil=1.1
 	inaccuracy=5
