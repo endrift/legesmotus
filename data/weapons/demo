@@ -15,8 +15,8 @@ mgun:STANDARD
 	recoil=1.1
 	inaccuracy=5
 	continuous
-	normal=2,16:-15:1:mgun_noshot.png
-	firing=2,16:-15:1:mgun_shot.png
+	normal=3,16:-15:1:mgun_noshot.png
+	firing=3,16:-15:1:mgun_shot.png
 
 impact:IMPACT
 	name=Impact Cannon
@@ -24,5 +24,5 @@ impact:IMPACT
 	force=20
 	cooldown=2000
 	recoil=2.0
-	normal=9,-1:-15:-1:cannon_back.png;9,-1:-15:1:cannon_front.png
-	firing=9,-1:-15:-1:cannon_back.png;9,-1:-15:1:cannon_front.png
+	normal=10,-1:-15:-1:cannon_back.png;10,-1:-15:1:cannon_front.png
+	firing=10,-1:-15:-1:cannon_back.png;10,-1:-15:1:cannon_front.png
