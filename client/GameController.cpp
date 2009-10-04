@@ -3649,6 +3649,9 @@ void	GameController::weapon_info_packet(PacketReader& reader)
 			if (weapon_index == 0) {
 				m_current_weapon = weapon;
 				update_curr_weapon_image();
+				if (Player* curr_player = get_player_by_id(m_player_id)) {
+					weapon->select(*curr_player, *this);
+				}
 			}
 			init_weapon_selector();
 		}
