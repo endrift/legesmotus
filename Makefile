@@ -126,6 +126,8 @@ install:
 	install -m 0644 $(BASEDIR)/data/sounds/* $(DESTDIR)$(DATADIR)/sounds
 	install -d $(DESTDIR)$(DATADIR)/sprites
 	install -m 0644 $(BASEDIR)/data/sprites/* $(DESTDIR)$(DATADIR)/sprites
+	install -d $(DESTDIR)$(DATADIR)/weapons
+	install -m 0644 $(BASEDIR)/data/weapons/* $(DESTDIR)$(DATADIR)/weapons
 	install -d $(DESTDIR)$(MANDIR)/man6
 	install -m 0644 $(BASEDIR)/man/man6/* $(DESTDIR)$(MANDIR)/man6
 	install -d $(DESTDIR)$(MANDIR)/man6
