@@ -23,12 +23,12 @@ mgun:STANDARD
 
 rifle:STANDARD
 	name=Rifle
-	hud=large_gun.png
+	hud=large_rifle.png
 	damage=100
 	cooldown=1500
 	recoil=1.8
-	normal=TODO
-	firing=TODO
+	normal=4,20:-15:1:rifle_noshot.png
+	firing=4,20:-15:1:rifle_shot.png
 
 impact:IMPACT
 	name=Impact Cannon
