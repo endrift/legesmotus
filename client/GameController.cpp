@@ -1365,6 +1365,11 @@ void GameController::initialize_key_bindings() {
 	m_key_bindings.weapon_1 = SDLK_1;
 	m_key_bindings.weapon_2 = SDLK_2;
 	m_key_bindings.weapon_3 = SDLK_3;
+	m_key_bindings.weapon_4 = SDLK_4;
+	m_key_bindings.weapon_5 = SDLK_5;
+	m_key_bindings.weapon_6 = SDLK_6;
+	m_key_bindings.weapon_7 = SDLK_7;
+	m_key_bindings.weapon_8 = SDLK_8;
 
 	m_alt_key_bindings.quit = -1;
 	m_alt_key_bindings.jump = -1;
@@ -1377,6 +1382,11 @@ void GameController::initialize_key_bindings() {
 	m_alt_key_bindings.weapon_1 = SDLK_KP1;
 	m_alt_key_bindings.weapon_2 = SDLK_KP2;
 	m_alt_key_bindings.weapon_3 = SDLK_KP3;
+	m_alt_key_bindings.weapon_4 = SDLK_KP4;
+	m_alt_key_bindings.weapon_5 = SDLK_KP5;
+	m_alt_key_bindings.weapon_6 = SDLK_KP6;
+	m_alt_key_bindings.weapon_7 = SDLK_KP7;
+	m_alt_key_bindings.weapon_8 = SDLK_KP8;
 }
 
 /*
@@ -1398,6 +1408,21 @@ void GameController::parse_key_input() {
 		}
 		if ((m_key_bindings.weapon_3 != -1 && m_keys[m_key_bindings.weapon_3]) || (m_alt_key_bindings.weapon_3 != -1 && m_keys[m_alt_key_bindings.weapon_3])) {
 			change_weapon(2U);
+		}
+		if ((m_key_bindings.weapon_4 != -1 && m_keys[m_key_bindings.weapon_4]) || (m_alt_key_bindings.weapon_4 != -1 && m_keys[m_alt_key_bindings.weapon_4])) {
+			change_weapon(3U);
+		}
+		if ((m_key_bindings.weapon_5 != -1 && m_keys[m_key_bindings.weapon_5]) || (m_alt_key_bindings.weapon_5 != -1 && m_keys[m_alt_key_bindings.weapon_5])) {
+			change_weapon(4U);
+		}
+		if ((m_key_bindings.weapon_6 != -1 && m_keys[m_key_bindings.weapon_6]) || (m_alt_key_bindings.weapon_6 != -1 && m_keys[m_alt_key_bindings.weapon_6])) {
+			change_weapon(5U);
+		}
+		if ((m_key_bindings.weapon_7 != -1 && m_keys[m_key_bindings.weapon_7]) || (m_alt_key_bindings.weapon_7 != -1 && m_keys[m_alt_key_bindings.weapon_7])) {
+			change_weapon(6U);
+		}
+		if ((m_key_bindings.weapon_8 != -1 && m_keys[m_key_bindings.weapon_8]) || (m_alt_key_bindings.weapon_8 != -1 && m_keys[m_alt_key_bindings.weapon_8])) {
+			change_weapon(7U);
 		}
 	}
 	

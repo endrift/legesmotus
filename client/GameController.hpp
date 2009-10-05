@@ -112,6 +112,11 @@ namespace LM {
 			int weapon_1;
 			int weapon_2;
 			int weapon_3;
+			int weapon_4;
+			int weapon_5;
+			int weapon_6;
+			int weapon_7;
+			int weapon_8;
 		};
 		
 		enum {
