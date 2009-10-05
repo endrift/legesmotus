@@ -45,7 +45,6 @@ namespace LM {
 		virtual bool		parse_param(const char* param_string);
 
 	public:
-		ImpactCannon(const char* name, uint64_t freeze_time, int damage, double force, uint64_t delay, double recoil);
 		ImpactCannon(const char* id, StringTokenizer& gun_data);
 
 		virtual void		fire(Player& player, GameController& gc, Point start, double direction);
@@ -56,9 +55,6 @@ namespace LM {
 		virtual bool		is_continuous() { return false; }
 		virtual uint64_t	get_remaining_cooldown() const;
 		virtual uint64_t	get_total_cooldown() const { return m_cooldown; }
-
-		virtual const char*	gun_graphic() const { return "gun_noshot"; }
-		virtual const char*	gun_fired_graphic() const { return "gun_fired"; }
 	};
 }
 

@@ -30,24 +30,11 @@
 #include "common/PacketWriter.hpp"
 #include "common/timer.hpp"
 #include "common/math.hpp"
-
+#include <algorithm>
 #include <stdlib.h>
 
 using namespace LM;
 using namespace std;
-
-StandardGun::StandardGun(const char* id, uint64_t freeze_time, int damage, uint64_t delay, double recoil, double inaccuracy, bool iscontinuous) : Weapon(id) {
-	m_last_fired_time = 0;
-
-	m_freeze_time = freeze_time;
-	m_damage = damage;
-	m_cooldown = delay;
-	m_recoil = recoil;
-	m_inaccuracy = inaccuracy;
-	m_is_continuous = iscontinuous;
-
-	m_hud_graphic = "large_mgun.png"; // TEMP
-}
 
 StandardGun::StandardGun(const char* id, StringTokenizer& gun_data) : Weapon(id) {
 	m_last_fired_time = 0;
@@ -58,10 +45,14 @@ StandardGun::StandardGun(const char* id, StringTokenizer& gun_data) : Weapon(id)
 	m_recoil = 1.5;
 	m_inaccuracy = 0;
 	m_is_continuous = false;
+	m_total_ammo = 0;
+	m_ammo_recharge = 500;
 
 	while (gun_data.has_more()) {
 		parse_param(gun_data.get_next());
 	}
+
+	reset();
 }
 
 bool	StandardGun::parse_param(const char* param_string) {
@@ -75,6 +66,12 @@ bool	StandardGun::parse_param(const char* param_string) {
 		m_recoil = atof(param_string + 7);
 	} else if (strncmp(param_string, "inaccuracy=", 11) == 0) {
 		m_inaccuracy = to_radians(atof(param_string + 11));
+	} else if (strcmp(param_string, "ammo=unlimited") == 0) {
+		m_total_ammo = 0;
+	} else if (strncmp(param_string, "ammo=", 5) == 0) {
+		m_total_ammo = atoi(param_string + 5);
+	} else if (strncmp(param_string, "ammo_recharge=", 14) == 0) {
+		m_ammo_recharge = atol(param_string + 14);
 	} else if (strcmp(param_string, "continuous") == 0) {
 		m_is_continuous = true;
 	} else if (strcmp(param_string, "notcontinuous") == 0) {
@@ -90,7 +87,22 @@ void	StandardGun::fire(Player& player, GameController& gc, Point startpos, doubl
 		// Firing too soon
 		return;
 	}
-	
+
+	// Recharge ammo, if applicable
+	if (m_total_ammo) {
+		m_current_ammo = get_current_ammo();
+	}
+
+	m_last_fired_time = get_ticks(); // Record this *before* checking for ammo, so that the player has to ease off the trigger before ammo starts recharging
+
+	if (m_total_ammo) {
+		if (m_current_ammo == 0) {
+			// Out of ammo
+			return;
+		}
+		--m_current_ammo;
+	}
+
 	// Randomly change the direction anywhere within the + or - m_inaccuracy angle.
 	direction += (rand()/(RAND_MAX+1.0)) * (m_inaccuracy*2) - m_inaccuracy;
 
@@ -99,7 +111,6 @@ void	StandardGun::fire(Player& player, GameController& gc, Point startpos, doubl
 		player.set_velocity(player.get_velocity() - Vector::make_from_magnitude(m_recoil, direction));
 	}
 
-	m_last_fired_time = get_ticks();
 	gc.play_sound("fire");
 
 	// Find the nearest object that this hit
@@ -181,6 +192,7 @@ void	StandardGun::select(Player& selecting_player, GameController& gc) {
 
 void	StandardGun::reset() {
 	m_last_fired_time = 0;
+	m_current_ammo = m_total_ammo;
 }
 
 uint64_t	StandardGun::get_remaining_cooldown() const
@@ -192,5 +204,15 @@ uint64_t	StandardGun::get_remaining_cooldown() const
 		}
 	}
 	return 0;
+}
+
+int	StandardGun::get_current_ammo () const
+{
+	if (m_last_fired_time && m_ammo_recharge) {
+		// Take into account the ammo recharge that has occurred since last firing
+		uint64_t	time_since_fire = get_ticks() - m_last_fired_time;
+		return min<int>(m_total_ammo, m_current_ammo + time_since_fire / m_ammo_recharge);
+	}
+	return m_current_ammo;
 }
 

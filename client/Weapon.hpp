@@ -76,8 +76,9 @@ namespace LM {
 		virtual uint64_t	get_remaining_cooldown() const = 0;
 		virtual uint64_t	get_total_cooldown() const = 0;
 
-		virtual const char*	gun_graphic() const = 0;		// XXX: REMOVE
-		virtual const char*	gun_fired_graphic() const = 0;		// XXX: REMOVE
+		virtual int		get_total_ammo () const { return 0; }
+		virtual int		get_current_ammo () const { return 0; }
+		virtual bool		has_limited_ammo () const { return get_total_ammo() != 0; }
 
 		static Weapon*		new_weapon (WeaponReader&);
 	};

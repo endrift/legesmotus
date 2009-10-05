@@ -1057,7 +1057,12 @@ void GameController::update_energy_bar(int new_energy) {
 void GameController::update_cooldown_bar(double new_cooldown) {
 	if (m_current_weapon != NULL) {
 		if (new_cooldown == -1) {
-			new_cooldown = m_current_weapon->get_remaining_cooldown()/((double)m_current_weapon->get_total_cooldown());
+			if (m_current_weapon->has_limited_ammo()) {
+				// Show ammo consumption in cooldown bar
+				new_cooldown = 1.0 - m_current_weapon->get_current_ammo()/((double)m_current_weapon->get_total_ammo());
+			} else {
+				new_cooldown = m_current_weapon->get_remaining_cooldown()/((double)m_current_weapon->get_total_cooldown());
+			}
 			if ((get_ticks() - m_last_weapon_switch) < m_params.weapon_switch_delay) {
 				if (m_last_weapon_switch != 0 && new_cooldown < (m_params.weapon_switch_delay - (get_ticks() - m_last_weapon_switch))/(double)m_params.weapon_switch_delay) {
 					new_cooldown = (m_params.weapon_switch_delay - (get_ticks() - m_last_weapon_switch))/(double)m_params.weapon_switch_delay;

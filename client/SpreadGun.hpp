@@ -46,7 +46,6 @@ namespace LM {
 		virtual bool		parse_param(const char* param_string);
 
 	public:
-		SpreadGun(const char* name, int damage, double damage_degradation, int nbr_projectiles, double angle, uint64_t delay, double recoil); // angle specified in DEGREES here
 		SpreadGun(const char* id, StringTokenizer& gun_data);
 
 		virtual void		fire(Player& player, GameController& gc, Point start, double direction);
@@ -57,9 +56,6 @@ namespace LM {
 		virtual bool		is_continuous() { return false; }
 		virtual uint64_t	get_remaining_cooldown() const;
 		virtual uint64_t	get_total_cooldown() const { return m_cooldown; }
-
-		virtual const char*	gun_graphic() const { return "gun_noshot"; }
-		virtual const char*	gun_fired_graphic() const { return "gun_fired"; }
 	};
 }
 

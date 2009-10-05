@@ -20,6 +20,8 @@ mgun:STANDARD
 	continuous
 	normal=3,16:-15:1:mgun_noshot.png
 	firing=3,16:-15:1:mgun_shot.png
+	ammo=50
+	ammo_recharge=500
 
 rifle:STANDARD
 	name=Rifle

@@ -34,25 +34,8 @@
 using namespace LM;
 using namespace std;
 
-ImpactCannon::ImpactCannon(const char* id, uint64_t freeze_time, int damage, double force, uint64_t delay, double recoil) : Weapon(id) {
-	m_last_fired_time = 0;
-
-	m_freeze_time = freeze_time;
-	m_damage = damage;
-	m_force = force;
-	m_cooldown = delay;
-	m_recoil = recoil;
-
-	m_hud_graphic = "large_cannon.png";
-}
-
 ImpactCannon::ImpactCannon(const char* id, StringTokenizer& gun_data) : Weapon(id) {
 	m_last_fired_time = 0;
-
-	m_name = "Impact Cannon";
-	m_hud_graphic = "large_cannon.png";
-	m_normal_graphic_info = ""; // TODO
-	m_firing_graphic_info = ""; // TODO
 
 	m_freeze_time = 1000;
 	m_damage = 10;

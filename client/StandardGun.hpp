@@ -38,15 +38,17 @@ namespace LM {
 		double			m_recoil;
 		double			m_inaccuracy;		// The angle by which firing may deviate randomly
 		bool			m_is_continuous;
+		int			m_total_ammo;		// 0 == unlimited
+		uint64_t		m_ammo_recharge;	// Give back one unit of ammo this often
 
 		// Weapon state
 		uint64_t		m_last_fired_time;	// Time that this gun was last fired (to enforce cooldown)
+		int			m_current_ammo;
 
 	protected:
 		virtual bool		parse_param(const char* param_string);
 
 	public:
-		StandardGun(const char* name, uint64_t freeze_time, int damage, uint64_t delay, double recoil, double inaccuracy, bool is_continuous);
 		StandardGun(const char* id, StringTokenizer& gun_data);
 
 		virtual void		fire(Player& player, GameController& gc, Point start, double direction);
@@ -58,8 +60,8 @@ namespace LM {
 		virtual uint64_t	get_remaining_cooldown() const;
 		virtual uint64_t	get_total_cooldown() const { return m_cooldown; }
 
-		virtual const char*	gun_graphic() const { return "gun_noshot"; }
-		virtual const char*	gun_fired_graphic() const { return "gun_fired"; }
+		virtual int		get_total_ammo () const { return m_total_ammo; }
+		virtual int		get_current_ammo () const;
 	};
 }
 

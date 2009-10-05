@@ -37,19 +37,6 @@
 using namespace LM;
 using namespace std;
 
-SpreadGun::SpreadGun(const char* id, int damage, double damage_degradation, int nbr_projectiles, double angle, uint64_t delay, double recoil) : Weapon(id) {
-	m_last_fired_time = 0;
-
-	m_damage = damage;
-	m_damage_degradation = damage_degradation;
-	m_nbr_projectiles = nbr_projectiles;
-	m_angle = to_radians(angle);
-	m_cooldown = delay;
-	m_recoil = recoil;
-
-	m_hud_graphic = "large_gun.png"; // TEMP
-}
-
 SpreadGun::SpreadGun(const char* id, StringTokenizer& gun_data) : Weapon(id) {
 	m_last_fired_time = 0;
 
