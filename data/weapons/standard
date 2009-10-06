@@ -1,14 +1,14 @@
 shotgun:SPREAD
 	name=Shotgun
-	hud=large_gun.png
+	hud=large_sgun.png
 	projectiles=5
 	angle=10
 	damage=30
 	degradation=0.01
 	cooldown=700
 	recoil=1.5
-	normal=TODO
-	firing=TODO
+	normal=5,20:-15:1:sgun_noshot.png
+	firing=5,20:-15:1:sgun_shot.png
 
 mgun:STANDARD
 	name=Machine Gun
