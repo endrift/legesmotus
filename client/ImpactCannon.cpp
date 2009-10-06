@@ -101,7 +101,7 @@ void	ImpactCannon::fire(Player& player, GameController& gc, Point startpos, doub
 	fired_packet << player.get_id() << get_id() << startpos << direction;
 	if (hit_point.x != -1 && hit_point.y != -1) {
 		fired_packet << hit_point;
-		//gc.show_bullet_impact(hit_point);
+		//gc.show_bullet_impact(hit_point, m_impact_graphic.c_str());
 	}
 	gc.send_packet(fired_packet);
 	

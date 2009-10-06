@@ -45,6 +45,7 @@ namespace LM {
 		std::string		m_hud_graphic;		// Name of graphic that is used in HUD/UI
 		std::string		m_normal_graphic_info;	// Graphic info when player is not firing
 		std::string		m_firing_graphic_info;	// Graphic info when player is firing
+		std::string		m_impact_graphic;	// Graphic displayed where shot lands
 	
 		virtual bool		parse_param(const char* param_data);
 

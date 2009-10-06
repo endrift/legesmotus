@@ -61,6 +61,8 @@ bool	Weapon::parse_param(const char* param_string) {
 		m_normal_graphic_info = param_string + 7;
 	} else if (strncmp(param_string, "firing=", 7) == 0) {
 		m_firing_graphic_info = param_string + 7;
+	} else if (strncmp(param_string, "impact=", 7) == 0) {
+		m_impact_graphic = param_string + 7;
 	} else {
 		return false;
 	}

@@ -47,6 +47,8 @@ SpreadGun::SpreadGun(const char* id, StringTokenizer& gun_data) : Weapon(id) {
 	m_cooldown = 700;
 	m_recoil = 1.5;
 
+	m_impact_graphic = "sshot.png";
+
 	while (gun_data.has_more()) {
 		parse_param(gun_data.get_next());
 	}
@@ -132,7 +134,7 @@ void	SpreadGun::fire(Player& player, GameController& gc, Point startpos, double 
 	PacketWriter	discharged_packet(WEAPON_DISCHARGED_PACKET);
 	discharged_packet << player.get_id() << get_id() << startpos << initial_direction;
 	while (!hit_points.empty()) {
-		gc.show_bullet_impact(hit_points.front()); // Also show the bullet impact for each hit point
+		gc.show_bullet_impact(hit_points.front(), m_impact_graphic.c_str()); // Also show the bullet impact for each hit point
 		discharged_packet << hit_points.front();
 		hit_points.pop_front();
 	}
@@ -172,7 +174,7 @@ void	SpreadGun::discharged(Player& player, GameController& gc, StringTokenizer& 
 		Point	endpos;
 		data >> endpos;
 
-		gc.show_bullet_impact(endpos);
+		gc.show_bullet_impact(endpos, m_impact_graphic.c_str());
 	}
 }
 

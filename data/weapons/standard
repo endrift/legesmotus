@@ -1,3 +1,12 @@
+rifle:STANDARD
+	name=Rifle
+	hud=large_rifle.png
+	damage=100
+	cooldown=1200
+	recoil=1.7
+	normal=4,20:-15:1:rifle_noshot.png
+	firing=4,20:-15:1:rifle_shot.png
+
 shotgun:SPREAD
 	name=Shotgun
 	hud=large_sgun.png
@@ -5,7 +14,7 @@ shotgun:SPREAD
 	angle=10
 	damage=30
 	degradation=0.01
-	cooldown=700
+	cooldown=600
 	recoil=1.5
 	normal=5,20:-15:1:sgun_noshot.png
 	firing=5,20:-15:1:sgun_shot.png
@@ -15,28 +24,19 @@ mgun:STANDARD
 	hud=large_mgun.png
 	damage=7
 	cooldown=100
-	recoil=1.1
+	recoil=1.01
 	inaccuracy=5
 	continuous
 	normal=3,16:-15:1:mgun_noshot.png
 	firing=3,16:-15:1:mgun_shot.png
-	ammo=50
-	ammo_recharge=500
-
-rifle:STANDARD
-	name=Rifle
-	hud=large_rifle.png
-	damage=100
-	cooldown=1500
-	recoil=1.8
-	normal=4,20:-15:1:rifle_noshot.png
-	firing=4,20:-15:1:rifle_shot.png
+	ammo=25
+	ammo_recharge=250
 
 impact:IMPACT
 	name=Impact Cannon
 	hud=large_cannon.png
 	force=20
-	cooldown=2000
+	cooldown=4000
 	recoil=2.0
 	normal=10,-1:-15:-1:cannon_back.png;10,-1:-15:1:cannon_front.png
 	firing=10,-1:-15:-1:cannon_back.png;10,-1:-15:1:cannon_front.png

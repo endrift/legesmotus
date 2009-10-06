@@ -210,8 +210,6 @@ namespace LM {
 		TextMenuItem*	m_version_nag1;
 		TextMenuItem*	m_version_nag2;
 
-		Sprite*		m_shot;
-	
 		Sprite*		m_logo;
 
 		TextMenuItem*	m_item_resume;
@@ -435,7 +433,7 @@ namespace LM {
 		// Weapon callbacks:
 		void		activate_radar_blip(const Player& player);
 		void		show_muzzle_flash();
-		void		show_bullet_impact(Point position);
+		void		show_bullet_impact(Point position, const char* sprite_name);
 		void		register_front_arm_graphic(Player& player, const char* normal, const char* firing);
 
 		// Damage the player by this amount of energy

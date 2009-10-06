@@ -167,7 +167,6 @@ GameController::~GameController() {
 	delete m_menu_font;
 	delete m_medium_font;
 
-	delete m_shot;
 	delete m_logo;
 
 	m_radar->unregister_with_window(m_window);
@@ -282,9 +281,6 @@ void GameController::init(GameWindow* window) {
 	m_crosshairs = new Sprite(m_path_manager.data_path("crosshairs.png", "sprites"));
 	m_crosshairs->set_priority(-10);
 	m_window->register_hud_graphic(m_crosshairs);
-	
-	m_shot = new Sprite(m_path_manager.data_path("shot.png", "sprites"));
-	m_shot->set_invisible(true);
 	
 	m_logo = new Sprite(m_path_manager.data_path("legesmotuslogo.png", "sprites"));
 	m_logo->set_x(m_screen_width/2);
@@ -1336,7 +1332,7 @@ void GameController::process_input() {
 	// Check if the right mouse button is held down, for weapon switching.
 	if (SDL_GetMouseState(&mouse_x, &mouse_y)&SDL_BUTTON(3)) {
 		if (GraphicalPlayer* player = get_player_by_id(m_player_id)) {
-			if (m_weapons.size() > 0 && m_game_state == GAME_IN_PROGRESS && !player->is_invisible() /*&& !player->is_frozen() && !player->is_dead()*/) {
+			if (m_weapons.size() > 0 && m_game_state == GAME_IN_PROGRESS /*&& !player->is_invisible() && !player->is_frozen() && !player->is_dead()*/) {
 				m_weapon_selector->get_graphic_group()->set_invisible(false);
 			}
 		}
@@ -1909,8 +1905,11 @@ void GameController::show_muzzle_flash() {
 	m_muzzle_flash_start = get_ticks();
 }
 
-void GameController::show_bullet_impact(Point position) {
-	Graphic* this_shot = new Sprite(*m_shot);
+void GameController::show_bullet_impact(Point position, const char* sprite_name) {
+	if (!sprite_name[0]) {
+		return;
+	}
+	Sprite*	this_shot = m_graphics_cache.new_graphic<Sprite>(m_path_manager.data_path(sprite_name, "sprites"));
 	this_shot->set_x(position.x);
 	this_shot->set_y(position.y);
 	this_shot->set_scale_x(.1);
@@ -3447,7 +3446,7 @@ void GameController::change_weapon(unsigned int n) {
 
 void	GameController::change_weapon(Weapon* weapon) {
 	if (GraphicalPlayer* player = get_player_by_id(m_player_id)) {
-		if (m_current_weapon != weapon && !player->is_invisible() /*&& !player->is_frozen() && !player->is_dead()*/) {
+		if (m_current_weapon != weapon /*&& !player->is_invisible() && !player->is_frozen() && !player->is_dead()*/) {
 			m_current_weapon = weapon;
 			m_last_weapon_switch = get_ticks();
 			update_curr_weapon_image();

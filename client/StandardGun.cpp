@@ -48,6 +48,8 @@ StandardGun::StandardGun(const char* id, StringTokenizer& gun_data) : Weapon(id)
 	m_total_ammo = 0;
 	m_ammo_recharge = 500;
 
+	m_impact_graphic = "shot.png";
+
 	while (gun_data.has_more()) {
 		parse_param(gun_data.get_next());
 	}
@@ -134,7 +136,7 @@ void	StandardGun::fire(Player& player, GameController& gc, Point startpos, doubl
 	fired_packet << player.get_id() << get_id() << startpos << direction;
 	if (hit_point.x != -1 && hit_point.y != -1) {
 		fired_packet << hit_point;
-		gc.show_bullet_impact(hit_point);
+		gc.show_bullet_impact(hit_point, m_impact_graphic.c_str());
 	}
 	gc.send_packet(fired_packet);
 	
@@ -165,7 +167,7 @@ void	StandardGun::discharged(Player& player, GameController& gc, StringTokenizer
 		Point	endpos;
 		data >> endpos;
 
-		gc.show_bullet_impact(endpos);
+		gc.show_bullet_impact(endpos, m_impact_graphic.c_str());
 	}
 }
 
