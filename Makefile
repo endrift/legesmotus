@@ -134,13 +134,13 @@ install:
 	install -m 0644 $(BASEDIR)/man/man6/* $(DESTDIR)$(MANDIR)/man6
 	install -d $(DESTDIR)$(SHAREDIR)/applications
 	install -m 0644 $(BASEDIR)/client/legesmotus.desktop $(DESTDIR)$(SHAREDIR)/applications/legesmotus.desktop
-	sed -e 's/\$$VERSION/$(subst /,\/,$(VERSION))/' -i'' $(DESTDIR)$(SHAREDIR)/applications/legesmotus.desktop
-	sed -e 's/\$$SHAREDIR/$(subst /,\/,$(SHAREDIR))/' -i'' $(DESTDIR)$(SHAREDIR)/applications/legesmotus.desktop
-	sed -e 's/\$$BINDIR/$(subst /,\/,$(BINDIR))/' -i'' $(DESTDIR)$(SHAREDIR)/applications/legesmotus.desktop
+	sed -e 's/\$$VERSION/$(subst /,\/,$(VERSION))/' $(INPLACE) $(DESTDIR)$(SHAREDIR)/applications/legesmotus.desktop
+	sed -e 's/\$$SHAREDIR/$(subst /,\/,$(SHAREDIR))/' $(INPLACE) $(DESTDIR)$(SHAREDIR)/applications/legesmotus.desktop
+	sed -e 's/\$$BINDIR/$(subst /,\/,$(BINDIR))/' $(INPLACE) $(DESTDIR)$(SHAREDIR)/applications/legesmotus.desktop
 	install -d $(DESTDIR)$(SHAREDIR)/icons/hicolor/256x256
 	install -m 0644 $(BASEDIR)/data/sprites/blue_head256.png $(DESTDIR)$(SHAREDIR)/icons/hicolor/256x256/legesmotus.png
 	install -d $(DESTDIR)$(BINDIR)
-	which update-desktop-database && update-desktop-database || true
+	which update-desktop-database && update-desktop-database $(DESTDIR)$(SHAREDIR)/applications || true
 	install $(BASEDIR)/server/lmserver $(BASEDIR)/client/legesmotus $(DESTDIR)$(BINDIR)
 	strip $(DESTDIR)$(BINDIR)/legesmotus
 	strip $(DESTDIR)$(BINDIR)/lmserver
