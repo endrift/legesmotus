@@ -223,20 +223,23 @@ then
 		echo "If you install a distro package, please make sure you also install the -devel package."
 		die
 	fi
-	printf '%s' "Checking for SDL_mixer... "
-	if find_sdl_include SDL_mixer.h
+	if [ $sound -ne 0 ]
 	then
-		echo "Found"
-	else
-		echo "Not found"
-		echo
-		echo "SDL_mixer is required to build and run Leges Motus."
-		echo "You can obtain SDL_mixer from http://www.libsdl.org/projects/SDL_mixer/"
-		echo "or install the appropriate package for your distro."
-		echo "If you install a distro package, please make sure you also install the -devel package."
-		echo
-		echo "If you don't feel like installing SDL_mixer, you can compile without sound support by passing the --disable-sound option to configure."
-		die
+		printf '%s' "Checking for SDL_mixer... "
+		if find_sdl_include SDL_mixer.h
+		then
+			echo "Found"
+		else
+			echo "Not found"
+			echo
+			echo "SDL_mixer is required to build and run Leges Motus."
+			echo "You can obtain SDL_mixer from http://www.libsdl.org/projects/SDL_mixer/"
+			echo "or install the appropriate package for your distro."
+			echo "If you install a distro package, please make sure you also install the -devel package."
+			echo
+			echo "If you don't feel like installing SDL_mixer, you can compile without sound support by passing the --disable-sound option to configure."
+			die
+		fi
 	fi
 fi
 echo
