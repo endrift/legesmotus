@@ -60,6 +60,8 @@ namespace LM {
 		size_t		m_tokens_left;	// Number of tokens left to extract
 	
 		bool		is_delimiter(char c) const;
+
+		void		deinit();
 	
 	public:
 		StringTokenizer();

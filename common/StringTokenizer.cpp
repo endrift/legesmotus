@@ -83,6 +83,14 @@ const char*	StringTokenizer::get_next() {
 
 
 
+void	StringTokenizer::deinit() {
+	delete[] m_buffer;
+	m_buffer = NULL;
+	m_next_token = NULL;
+	m_tokens_left = 0;
+}
+
+
 void	StringTokenizer::init(const char* str, char delimiter) {
 	set_delimiter(delimiter);
 	init_from_raw_data(str, strlen(str), false);
@@ -293,6 +301,10 @@ void	StringTokenizer::set_delimiters(const char* delimiters) {
 }
 
 StringTokenizer& StringTokenizer::operator=(const StringTokenizer& other) {
-	init(other.m_next_token, other.m_delimiters, false, other.m_tokens_left);
+	if (other.m_next_token) {
+		init(other.m_next_token, other.m_delimiters, false, other.m_tokens_left);
+	} else {
+		deinit();
+	}
 	return *this;
 }
