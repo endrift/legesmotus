@@ -59,9 +59,6 @@ namespace LM {
 		char*		m_next_token;	// A pointer into m_buffer to the start of the next token to extract
 		size_t		m_tokens_left;	// Number of tokens left to extract
 	
-		// Disallow assignment
-		StringTokenizer& operator=(const StringTokenizer&) { return *this; }
-
 		bool		is_delimiter(char c) const;
 	
 	public:
@@ -88,6 +85,8 @@ namespace LM {
 		void			init_from_raw_data(const char* str, size_t len, bool condense =false); // Initialize from the first len characters of str
 		void			set_delimiter(char);
 		void			set_delimiters(const char*);
+
+		StringTokenizer& operator=(const StringTokenizer&);
 	
 		// Get the next token
 		const char*		get_next ();

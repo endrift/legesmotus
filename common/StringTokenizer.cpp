@@ -156,7 +156,7 @@ StringTokenizer::~StringTokenizer() {
 }
 
 const char*	StringTokenizer::get_rest() const {
-	return m_next_token;
+	return m_next_token ? m_next_token : "";
 }
 
 StringTokenizer&	StringTokenizer::operator>> (bool& b) {
@@ -292,3 +292,7 @@ void	StringTokenizer::set_delimiters(const char* delimiters) {
 	}
 }
 
+StringTokenizer& StringTokenizer::operator=(const StringTokenizer& other) {
+	init(other.m_next_token, other.m_delimiters, false, other.m_tokens_left);
+	return *this;
+}
