@@ -144,6 +144,9 @@ The time for which players are frozen after being shot.  (default: 10000 ms)
 \fBfriendly_fire [ \fIon\fP | \fIoff\fP ]\fR
 When off, players are immune to shots from their teammates.   (default: on)
 .TP 
+\fBgame_timeout <\fItime\fP>\fR
+If specified, the maximum duration of a game before a stalemate is declared.  (default: none)
+.TP 
 \fBradar_mode [ \fIon\fP | \fIoff\fP | \fIaural\fP ]\fR
 Determines how the radar (minimap) operates.  When \fIon\fP, all players within range (see \fBradar_scale\fR below) are visible on radar.  When \fIoff\fP, no other players are visible on radar.  When set to \fIaural\fP, only players who are in range and have fired recently (see \fBradar_blip_duration\fR below) are visible.  (default: on)
 .TP 
@@ -164,6 +167,30 @@ The minimum time that a player must wait after switching teams before being allo
 .TP 
 \fBautobalance [\fI yes \fP|\fI no \fP]\fR
 Specifies whether to enforce balanced teams.  When enabled, players are not permitted to switch teams if it would cause an imbalance, and when imbalances are caused by player departures, random players are switched until the teams are balanced.  (default: disabled)
+.TP 
+\fBjump_velocity <\fImagnitude\fP>\fR
+The magnitude of the player's velocity when jumping from an obstacle.  (default: 6.0)
+.TP 
+\fBlate_spawn_frozen [ \fIyes\fP | \fIno\fP ]\fR
+If enabled, players who join mid-round are spawned immediately, but are frozen for "\fBlate_join_delay\fR" milliseconds.  If disabled, players spawn thawed after waiting this amount of time (this was the behavior prior to Leges Motus 0.3.0).  (default: yes)
+.TP 
+\fBrecharge_rate <\fItime\fP>\fR
+How often energy should be recharged.  (default: 150 ms)
+.TP 
+\fBrecharge_delay <\fItime\fP>\fR
+The amount of time that must elapse after receiving damage before energy starts recharging.  (default: 0 ms)
+.TP 
+\fBrecharge_amount <\fIamount\fP>\fR
+The amount of energy that should be recharged every "\fBrecharge_rate\fR" milliseconds.  (default: 1 unit)
+.TP 
+\fBrecharge_continuously [ \fIyes\fP | \fIno\fP ]\fR
+If enabled, health is always recharged, even when actively taking damage.  (default: no)
+.TP 
+\fBweapon_switch_delay <\fItime\fP>\fR
+The amount of time it takes to switch weapons.  During this time the player may not fire his weapon.  (default: 500 ms)
+.TP 
+\fBweapon_set <\fIname\fP>\fR
+The weapon set to use.  If you would like to disable weapons (behavior prior to Leges Motus 0.3.0), use the weapon set "classic".  (default: standard)
 .SH "NOTES"
 .LP 
 If no operator password is set, then any player connecting from the localhost (127.0.0.1) will be given operator status.  If this is undesirable behavior, then be sure to set an operator password.
@@ -174,6 +201,8 @@ If a server is run behind a firewall, and it is registered with the meta server,
 .SH "FILES"
 .LP 
 \fI$LM_DATA_DIR/maps\fP
+.LP 
+\fI$LM_DATA_DIR/weapons\fP
 .br 
 .SH "ENVIRONMENT VARIABLES"
 .LP 
