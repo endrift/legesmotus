@@ -942,7 +942,7 @@ void GameController::init_weapon_selector() {
 	m_weapon_selector_back->set_border_angle(3);
 	m_weapon_selector_back->set_x(m_screen_width/2);
 	m_weapon_selector_back->set_y(m_screen_height/2);
-	m_weapon_selector_back->set_rotation(0);
+	m_weapon_selector_back->set_rotation(180.0/m_weapons.size());
 	
 	m_weapon_selector = new RadialMenu(m_weapon_selector_back, Color(0.2,0.2,0.6,0.8), Color(0.1,0.1,0.3,1));
 
