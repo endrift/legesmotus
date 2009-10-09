@@ -1,5 +1,20 @@
 #!/bin/sh
 
+if [ x$CXX = x ]
+then
+	CXX=g++
+fi
+
+if [ x$CC = x ]
+then
+	CC=gcc
+fi
+
+if [ x$SDL_CONFIG = x ]
+then
+	SDL_CONFIG=sdl-config
+fi
+
 prefix=/usr/local
 sound=1
 unix_style=1
@@ -16,12 +31,24 @@ display_help () {
 	echo "Usage: $0 [OPTION]"
 	echo "Options:"
 	echo "  --prefix=PREFIX	Install Leges Motus program and data at PREFIX [default: $prefix]"
-	echo "  --disable-sound		Disable sound support in this build"
-	echo "  --debug			Enable a debug build"
+	echo "  --bindir=DIR		Install executable binaries at DIR [default: PREFIX/bin]"
+	echo "  --mandir=DIR		Install manual pages at DIR [default: PREFIX/man]"
+	echo "  --datadir=DIR		Install data files at DIR [default: PREFIX/share/games/legesmotus]"
+	echo "  --sharedir=DIR	Install shared files at DIR [default: PREFIX/share]"
+	echo "  --disable-sound	Disable sound support in this build"
+	echo "  --debug		Enable a debug build"
 	echo "  --unix-style		(Mac OS X only) Build without frameworks or .app bundle"
 	echo "  --disable-universal	(Mac OS X only) Do not build universal binary"
 	echo "  --force		Force configure to continue even if required libraries aren't found"
 	echo "  --help		Display this help"
+	echo
+	echo "Influential environment variables:"
+	echo "  CC		C/Objective-C compiler command"
+	echo "  CFLAGS	C/Objective-C compiler flags"
+	echo "  CXX		C++ compiler command"
+	echo "  CXXFLAGS	C++ compiler flags"
+	echo "  LDFLAGS	linker flags"
+	echo "  SDL_CONFIG	sdl-config command"
 }
 
 format_boolean () {
@@ -34,7 +61,7 @@ format_boolean () {
 }
 
 find_sdl_include () {
-	for part in `sdl-config --cflags`
+	for part in `$SDL_CONFIG --cflags`
 	do
 		if echo "$part" | grep "^-I" >/dev/null
 		then
@@ -54,39 +81,96 @@ die () {
 	fi
 }
 
+# Check args
+
 for arg
 do
-	if [ "$arg" = "--help" ]
-	then
+	case $arg in
+	--help)
 		display_help
 		exit 0
-	elif [ "`echo "$arg" | cut -f1 -d=`" = "--prefix" ]
-	then
+		;;
+	--prefix=*)
 		prefix="`echo "$arg" | cut -f2 -d=`"
-	elif [ "$arg" = "--debug" ]
-	then
+		;;
+	--bindir=*)
+		bindir="`echo "$arg" | cut -f2 -d=`"
+		;;
+	--mandir=*)
+		mandir="`echo "$arg" | cut -f2 -d=`"
+		;;
+	--datadir=*)
+		datadir="`echo "$arg" | cut -f2 -d=`"
+		;;
+	--sharedir=*)
+		sharedir="`echo "$arg" | cut -f2 -d=`"
+		;;
+	--debug)
 		debug=1
-	elif [ "$arg" = "--unix-style" ]
-	then
+		;;
+	--unix-style)
 		unix_style=1
-	elif [ "$arg" = "--disable-sound" ]
-	then
+		;;
+	--disable-sound)
 		sound=0
-	elif [ "$arg" = "--disable-universal" ]
-	then
+		;;
+	--disable-universal)
 		universal=0
-	elif [ "$arg" = "--force" ]
-	then
+		;;
+	--force)
 		force=1
-	else
+		;;
+	*)
 		echo "$arg: Unknown argument" >&2
 		display_help
 		exit 2
-	fi
+		;;
+	esac
 done
 
-echo -n "Checking for g++... "
-if which g++ >/dev/null 2>/dev/null
+# Set defaults
+
+if [ x$bindir = x ]
+then
+	bindir="$prefix/bin"
+fi
+
+if [ $unix_style -eq 1 ]
+then
+	if [ x$mandir = x ]
+	then
+		mandir="$prefix/man"
+	fi
+
+	if [ x$datadir = x ]
+	then
+		datadir="$prefix/share/games/legesmotus"
+	fi
+
+	if [ x$sharedir = x ]
+	then
+		sharedir="$prefix/share"
+	fi
+else
+	if [ x$mandir = x ]
+	then
+		mandir="$prefix/share/man"
+	fi
+
+	if [ x$datadir = x ]
+	then
+		datadir="/Applications/Leges Motus.app/Contents/Resources/data"
+	fi
+
+	if [ x$sharedir = x ]
+	then
+		sharedir="$prefix/share"
+	fi
+fi
+
+
+printf '%s' "Checking for g++... "
+if which $CXX >/dev/null 2>/dev/null && $CXX --version | grep g++ >/dev/null 2>/dev/null
 then
 	echo "Found"
 else
@@ -100,8 +184,8 @@ fi
 
 if [ $unix_style -eq 1 ]
 then
-	echo -n "Checking for SDL... "
-	if sdl-config --version >/dev/null 2>/dev/null
+	printf '%s' "Checking for SDL... "
+	if $SDL_CONFIG --version >/dev/null 2>/dev/null
 	then
 		echo "Found"
 	else
@@ -113,7 +197,7 @@ then
 		echo "If you install a distro package, please make sure you also install the -devel package."
 		die
 	fi
-	echo -n "Checking for SDL_image... "
+	printf '%s' "Checking for SDL_image... "
 	if find_sdl_include SDL_image.h
 	then
 		echo "Found"
@@ -126,7 +210,7 @@ then
 		echo "If you install a distro package, please make sure you also install the -devel package."
 		die
 	fi
-	echo -n "Checking for SDL_ttf... "
+	printf '%s' "Checking for SDL_ttf... "
 	if find_sdl_include SDL_ttf.h
 	then
 		echo "Found"
@@ -139,7 +223,7 @@ then
 		echo "If you install a distro package, please make sure you also install the -devel package."
 		die
 	fi
-	echo -n "Checking for SDL_mixer... "
+	printf '%s' "Checking for SDL_mixer... "
 	if find_sdl_include SDL_mixer.h
 	then
 		echo "Found"
@@ -157,14 +241,18 @@ then
 fi
 echo
 echo
-echo "Prefix:           $prefix"
-echo "Sound:            `format_boolean $sound`"
-echo "Debug:            `format_boolean $debug`"
+echo "Prefix:             $prefix"
+echo "Binaries directory: $bindir"
+echo "Manuals directory:  $mandir"
+echo "Data directory:     $datadir"
+echo "Share directory:    $sharedir"
+echo "Sound:              `format_boolean $sound`"
+echo "Debug:              `format_boolean $debug`"
 
 if [ `uname -s` = Darwin ]
 then
-	echo "Unix-style build: `format_boolean $unix_style`"
-	echo "Universal build:  `format_boolean $universal`"
+	echo "Unix-style build:   `format_boolean $unix_style`"
+	echo "Universal build:    `format_boolean $universal`"
 fi
 
 echo
@@ -181,19 +269,12 @@ echo '# This file was generated by running configure' >> config.mak
 echo '#' >> config.mak
 echo >> config.mak
 
-echo "PREFIX = $prefix" >> config.mak
-echo 'BINDIR = $(PREFIX)/bin' >> config.mak
-if [ $unix_style -ne 0 ]
-then
-	echo 'MANDIR = $(PREFIX)/man' >> config.mak
-	echo 'DATADIR = $(PREFIX)/share/games/legesmotus' >> config.mak
-	echo 'SHAREDIR = $(PREFIX)/share' >> config.mak
-	echo "UNIXSTYLE = 1" >> config.mak
-else
-	echo 'MANDIR = $(PREFIX)/share/man' >> config.mak
-	echo 'DATADIR = /Applications/Leges\ Motus.app/Contents/Resources/data' >> config.mak
-	echo "UNIXSTYLE =" >> config.mak
-fi
+echo "PREFIX = \"${prefix}\"" >> config.mak
+echo "BINDIR = \"${bindir}\"" >> config.mak
+echo "MANDIR = \"${mandir}\"" >> config.mak
+echo "DATADIR = \"${datadir}\"" >> config.mak
+echo "SHAREDIR = \"${sharedir}\"" >> config.mak
+
 if [ $sound -ne 0 ]
 then
 	echo "NOSOUND =" >> config.mak
@@ -212,3 +293,16 @@ then
 else
 	echo "DEBUG =" >> config.mak
 fi
+if [ $unix_style -ne 0 ]
+then
+	echo "UNIXSTYLE = 1" >> config.mak
+else
+	echo "UNIXSTYLE =" >> config.mak
+fi
+
+echo "CC = $CC" >> config.mak
+echo "CXX = $CXX" >> config.mak
+echo "SDL_CONIFG = $SDL_CONFIG" >> config.mak
+echo "CFLAGS += $CFLAGS" >> config.mak
+echo "CXXFLAGS += $CXXFLAGS" >> config.mak
+echo "LDFLAGS += $LDFLAGS" >> config.mak

@@ -4,10 +4,6 @@ CLIENT = $(BASEDIR)/client
 SERVER = $(BASEDIR)/server
 FRAMEWORKS = /Library/Frameworks
 
-ifeq ($(SDL_CONFIG),)
- SDL_CONFIG = sdl-config
-endif
-
 # Version strings
 VERSION = 0.3.0-svn
 
@@ -18,6 +14,10 @@ DATADIR = data
 
 ifneq ($(shell test -r $(BASEDIR)/config.mak && echo 1),)
  include $(BASEDIR)/config.mak
+endif
+
+ifeq ($(SDL_CONFIG),)
+ SDL_CONFIG = sdl-config
 endif
 
 ifeq ($(SHAREDIR),)
@@ -65,11 +65,13 @@ else
 endif
 
 ifeq ($(MACHINE),Darwin)
+ ifeq ($(UNIXSTYLE),)
+  CFLAGS += -DLM_FWBASED
+ endif
  ifneq ($(UNIVERSAL),)
   CFLAGS += -arch ppc -arch i386
  else
   ifeq ($(UNIXSTYLE),)
-   CFLAGS += -DLM_FWBASED
    # Test for Snow Leopard
    ifeq ($(shell test `uname -r | cut -f 1 -d .` -ge 10 && echo 1),1) 
     CFLAGS += -arch i386
