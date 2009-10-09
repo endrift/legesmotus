@@ -1,16 +1,16 @@
 #!/bin/sh
 
-if [ x$CXX = x ]
+if [ -z $CXX ]
 then
 	CXX=g++
 fi
 
-if [ x$CC = x ]
+if [ -z $CC ]
 then
 	CC=gcc
 fi
 
-if [ x$SDL_CONFIG = x ]
+if [ -z $SDL_CONFIG ]
 then
 	SDL_CONFIG=sdl-config
 fi
@@ -130,39 +130,39 @@ done
 
 # Set defaults
 
-if [ x$bindir = x ]
+if [ -z $bindir ]
 then
 	bindir="$prefix/bin"
 fi
 
 if [ $unix_style -eq 1 ]
 then
-	if [ x$mandir = x ]
+	if [ -z $mandir ]
 	then
 		mandir="$prefix/man"
 	fi
 
-	if [ x$datadir = x ]
+	if [ -z $datadir ]
 	then
 		datadir="$prefix/share/games/legesmotus"
 	fi
 
-	if [ x$sharedir = x ]
+	if [ -z $sharedir ]
 	then
 		sharedir="$prefix/share"
 	fi
 else
-	if [ x$mandir = x ]
+	if [ -z $mandir ]
 	then
 		mandir="$prefix/share/man"
 	fi
 
-	if [ x$datadir = x ]
+	if [ -z $datadir ]
 	then
 		datadir="/Applications/Leges Motus.app/Contents/Resources/data"
 	fi
 
-	if [ x$sharedir = x ]
+	if [ -z $sharedir ]
 	then
 		sharedir="$prefix/share"
 	fi
