@@ -17,6 +17,8 @@ Leges Motus is a 2D networked, team-based shooter set in zero gravity.
 
 BUILDING AND INSTALLING
 
+Please note that only GNU Make is supported. If the default 'make' command is not GNU Make, please install and use it where appropriate. Generally it is called gmake when it is not make.
+
 1. Run './configure' in the top level directory.
    This script will check to make sure you have the required libraries installed.
 
