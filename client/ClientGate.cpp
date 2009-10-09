@@ -62,7 +62,7 @@ void	ClientGate::interact (GameController& gc, Player& player) {
 	m_is_engaged = true;
 
 	if (player.get_team() != m_team) {
-		gc.set_gate_hold(!player.is_frozen());
+		gc.set_gate_hold(!player.is_frozen() && !player.is_dead());
 	}
 }
 

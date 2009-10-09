@@ -148,7 +148,7 @@ void	SpreadGun::fire(Player& player, GameController& gc, Point startpos, double 
 		int	times_hit = it->second;
 		double	damage = hit_player_damage[hit_player];
 
-		if (!hit_player->is_frozen()) {
+		if (!hit_player->is_frozen() && !hit_player->is_dead()) {
 			gc.play_sound("hit");
 		}
 

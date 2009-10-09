@@ -814,7 +814,7 @@ void GameController::run(int lockfps) {
 				m_crosshairs->set_y(m_mouse_y);
 				
 				// Turn arm of player to face crosshairs.
-				if (!m_players[m_player_id].is_frozen()) {
+				if (!m_players[m_player_id].is_frozen() && !m_players[m_player_id].is_dead()) {
 					double	angle = get_normalized_angle(to_degrees(get_crosshairs_angle()) - m_players[m_player_id].get_rotation_degrees());
 					
 					if (angle < 90 || angle > 270) {
@@ -1311,7 +1311,7 @@ void GameController::process_input() {
 	int mouse_y = 0;
 	if (SDL_GetMouseState(&mouse_x, &mouse_y)&SDL_BUTTON(1)) {
 		if (m_game_state == GAME_IN_PROGRESS) {
-			if (m_players.empty() || m_players[m_player_id].is_frozen() || !m_current_weapon) {
+			if (m_players.empty() || m_players[m_player_id].is_frozen() || m_players[m_player_id].is_dead() || !m_current_weapon) {
 				// Do nothing. We don't have a current player or weapon.
 			} else if (!m_overlay_background->is_invisible()) {
 				// Do nothing. The overlay is up.
@@ -1332,7 +1332,7 @@ void GameController::process_input() {
 	// Check if the right mouse button is held down, for weapon switching.
 	if (SDL_GetMouseState(&mouse_x, &mouse_y)&SDL_BUTTON(3)) {
 		if (GraphicalPlayer* player = get_player_by_id(m_player_id)) {
-			if (m_weapons.size() > 0 && m_game_state == GAME_IN_PROGRESS /*&& !player->is_invisible() && !player->is_frozen() && !player->is_dead()*/) {
+			if (m_weapons.size() > 0 && m_game_state == GAME_IN_PROGRESS) {
 				m_weapon_selector->get_graphic_group()->set_invisible(false);
 			}
 		}
@@ -1588,7 +1588,7 @@ void GameController::process_mouse_click(SDL_Event event) {
 				// Do nothing.
 			} else if (event.button.button == 1) {
 				// Fire the gun if it's ready.
-				if (m_players.empty() || m_players[m_player_id].is_frozen() || !m_current_weapon)
+				if (m_players.empty() || m_players[m_player_id].is_frozen() || m_players[m_player_id].is_dead() || !m_current_weapon)
 					return;
 
 				double x_dist = (event.button.x + m_offset_x) - m_players[m_player_id].get_x();
@@ -1634,10 +1634,11 @@ void GameController::move_objects(float timescale) {
 	double	half_height = player.get_radius();
 	
 	// Check if the player is hitting a map edge.
+	bool	is_frozen = player.is_frozen() || player.is_dead();
 	if (player.get_x() - half_width < 0) {
 		player.set_x(half_width);
 		player.set_y(oldpos.y);
-		if (player.is_frozen() && !player.is_invisible()) {
+		if (is_frozen && !player.is_invisible()) {
 			player.bounce(0, 0.9);
 		} else {
 			player.stop();
@@ -1648,7 +1649,7 @@ void GameController::move_objects(float timescale) {
 	} else if (player.get_x() + half_width > m_map_width) {
 		player.set_x(m_map_width - half_width);
 		player.set_y(oldpos.y);
-		if (player.is_frozen() && !player.is_invisible()) {
+		if (is_frozen && !player.is_invisible()) {
 			player.bounce(180, 0.9);
 		} else {
 			player.stop();
@@ -1661,7 +1662,7 @@ void GameController::move_objects(float timescale) {
 	if (player.get_y() - half_height < 0) {
 		player.set_x(oldpos.x);
 		player.set_y(half_height);
-		if (player.is_frozen() && !player.is_invisible()) {
+		if (is_frozen && !player.is_invisible()) {
 			player.bounce(90, 0.9);
 		} else {
 			player.stop();
@@ -1672,7 +1673,7 @@ void GameController::move_objects(float timescale) {
 	} else if (player.get_y() + half_height > m_map_height) {
 		player.set_x(oldpos.x);
 		player.set_y(m_map_height - half_height);
-		if (player.is_frozen() && !player.is_invisible()) {
+		if (is_frozen && !player.is_invisible()) {
 			player.bounce(270, 0.9);
 		} else {
 			player.stop();
@@ -1789,7 +1790,7 @@ void GameController::attempt_jump() {
 	//
 	// Make sure the player is able to jump right now
 	//
-	if (player.is_frozen() || player.is_invisible() || !player.is_grabbing_obstacle()) {
+	if (player.is_frozen() || player.is_dead() || player.is_invisible() || !player.is_grabbing_obstacle()) {
 		return;
 	}
 
@@ -2501,7 +2502,7 @@ void GameController::player_died(PacketReader& reader) {
 		return;
 	}
 
-	if (!dead_player->is_frozen() && time_to_unfreeze != 0) {
+	if (time_to_unfreeze != 0) {
 		ostringstream message;
 		bool bold = false;
 		if (killer_id == m_player_id) {
@@ -3446,7 +3447,7 @@ void GameController::change_weapon(unsigned int n) {
 
 void	GameController::change_weapon(Weapon* weapon) {
 	if (GraphicalPlayer* player = get_player_by_id(m_player_id)) {
-		if (m_current_weapon != weapon /*&& !player->is_invisible() && !player->is_frozen() && !player->is_dead()*/) {
+		if (m_current_weapon != weapon) {
 			m_current_weapon = weapon;
 			m_last_weapon_switch = get_ticks();
 			update_curr_weapon_image();

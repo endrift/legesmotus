@@ -54,7 +54,9 @@ void	ForceField::interact (GameController& gc, Player& player) {
 		return;
 	}
 
-	if ((player.is_frozen() && m_affects_frozen || !player.is_frozen() && m_affects_thawed) && (m_sucks_off_obstacles || !player.is_grabbing_obstacle())) {
+	bool	is_frozen = player.is_frozen() || player.is_dead();
+
+	if ((is_frozen && m_affects_frozen || !is_frozen && m_affects_thawed) && (m_sucks_off_obstacles || !player.is_grabbing_obstacle())) {
 		// Apply vector force
 		player.set_velocity(player.get_velocity() + m_force);
 

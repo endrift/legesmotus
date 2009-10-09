@@ -52,7 +52,9 @@ void	RepulsionField::interact (GameController& gc, Player& player) {
 		return;
 	}
 
-	if (player.is_frozen() && m_affects_frozen || !player.is_frozen() && m_affects_thawed) {
+	bool	is_frozen = player.is_frozen() || player.is_dead();
+
+	if (is_frozen && m_affects_frozen || !is_frozen && m_affects_thawed) {
 		double	angle = (get_position() - player.get_position()).get_angle();
 		player.set_velocity(player.get_velocity() - Vector::make_from_magnitude(m_strength, angle));
 	}

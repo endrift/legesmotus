@@ -142,7 +142,7 @@ void	StandardGun::fire(Player& player, GameController& gc, Point startpos, doubl
 	
 	// If a player was hit, send a packet about it
 	if (hit_player != NULL) {
-		if (!hit_player->is_frozen()) {
+		if (!hit_player->is_frozen() && !hit_player->is_dead()) {
 			gc.play_sound("hit");
 		}
 

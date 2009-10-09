@@ -58,7 +58,7 @@ void	Hazard::collide(GameController& gc, Player& player, Point old_position, dou
 
 	player.set_x(old_position.x);
 	player.set_y(old_position.y);
-	if (player.is_frozen() && !player.is_invisible()) {
+	if ((player.is_dead() || player.is_frozen()) && !player.is_invisible()) {
 		// Bounce off the wall
 		player.bounce(angle_of_incidence, 0.9);
 	} else if (!player.is_dead()) {

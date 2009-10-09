@@ -41,7 +41,7 @@ Obstacle::Obstacle (Point position) : BaseMapObject(position) {
 void	Obstacle::collide(GameController& gc, Player& player, Point old_position, double angle_of_incidence) {
 	player.set_x(old_position.x);
 	player.set_y(old_position.y);
-	if (m_is_slippery || player.is_frozen() && !player.is_invisible()) {
+	if (m_is_slippery || (player.is_dead() || player.is_frozen()) && !player.is_invisible()) {
 		// Bounce off the wall
 		player.bounce(angle_of_incidence, 0.9);
 	} else {
