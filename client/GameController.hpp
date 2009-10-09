@@ -97,8 +97,7 @@ namespace LM {
 		const static int TEXT_LAYER;
 		const static unsigned int PING_FREQUENCY;
 		const static unsigned int CHAT_TRANSITION_TIME;
-		const static unsigned int ROTATION_ADJUST_SPEED;
-		
+
 	private:
 		struct KeyBindings {
 			int quit;
@@ -326,7 +325,6 @@ namespace LM {
 		void		initialize_key_bindings();
 		void		parse_key_input();
 		void		move_objects(float timescale);
-		void		rotate_towards_angle(double angle_of_incidence, uint64_t duration);
 		void		connect_to_server(const IPAddress& server_address, char team =0);
 		void		connect_to_server(int servernum);
 		void		disconnect();

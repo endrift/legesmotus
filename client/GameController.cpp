@@ -92,7 +92,6 @@ const int GameController::NETWORK_TIMEOUT_LIMIT = 10000;
 const int GameController::TEXT_LAYER = -4;
 const unsigned int GameController::PING_FREQUENCY = 2000;
 const unsigned int GameController::CHAT_TRANSITION_TIME = 200;
-const unsigned int GameController::ROTATION_ADJUST_SPEED = 500;
 
 static bool	sort_resolution(pair<int, int> pairone, pair<int, int> pairtwo) {
 	if (pairone.first == pairtwo.first) {
@@ -1643,8 +1642,6 @@ void GameController::move_objects(float timescale) {
 		} else {
 			player.stop();
 			player.set_is_grabbing_obstacle(true);
-			// Rotate to a good orientation:
-			//rotate_towards_angle(0, ROTATION_ADJUST_SPEED);
 		}
 	} else if (player.get_x() + half_width > m_map_width) {
 		player.set_x(m_map_width - half_width);
@@ -1654,8 +1651,6 @@ void GameController::move_objects(float timescale) {
 		} else {
 			player.stop();
 			player.set_is_grabbing_obstacle(true);
-			// Rotate to a good orientation:
-			//rotate_towards_angle(180, ROTATION_ADJUST_SPEED);
 		}
 	}
 	
@@ -1667,8 +1662,6 @@ void GameController::move_objects(float timescale) {
 		} else {
 			player.stop();
 			player.set_is_grabbing_obstacle(true);
-			// Rotate to a good orientation:
-			//rotate_towards_angle(90, ROTATION_ADJUST_SPEED);
 		}
 	} else if (player.get_y() + half_height > m_map_height) {
 		player.set_x(oldpos.x);
@@ -1678,8 +1671,6 @@ void GameController::move_objects(float timescale) {
 		} else {
 			player.stop();
 			player.set_is_grabbing_obstacle(true);
-			// Rotate to a good orientation:
-			//rotate_towards_angle(270, ROTATION_ADJUST_SPEED);
 		}
 	}
 
@@ -1729,11 +1720,6 @@ void GameController::move_objects(float timescale) {
 		}
 	}
 	
-	// If the player rotation is presently being controlld by a transition, don't update it here
-	if (!m_transition_manager.get_transition("player_rotation")) {
-		player.update_rotation(timescale);
-	}
-	
 	// Set the player position and radar position.
 	m_radar->move_blip(m_player_id, player.get_x(), player.get_y());
 	m_radar->recenter(player.get_x(), player.get_y());
@@ -1755,25 +1741,6 @@ void GameController::move_objects(float timescale) {
 		
 		currplayer.update_position(timescale);
 		m_radar->move_blip(currplayer.get_id(), currplayer.get_x(), currplayer.get_y());
-	}
-}
-
-void GameController::rotate_towards_angle(double angle_of_incidence, uint64_t duration) {
-	if (GraphicalPlayer* player = get_player_by_id(m_player_id)) {
-		double	currangle = player->get_sprite()->get_rotation();
-		double	adjusted_angle = get_normalized_angle(currangle + 90 - angle_of_incidence);
-		double	newangle = currangle;
-		if (adjusted_angle < 90) {
-			newangle = currangle + (90 - adjusted_angle);
-		} else if (adjusted_angle > 270) {
-			newangle = currangle - (adjusted_angle - 270);
-		}
-
-		if (newangle != currangle && !m_transition_manager.get_transition("player_rotation")) {
-			Transition* rotation_transition = new Transition(m_players[m_player_id].get_sprite(), &Graphic::set_rotation, new LinearCurve(currangle, newangle), get_ticks(), duration);
-			rotation_transition->set_curve_ownership(true);
-			m_transition_manager.add_transition(rotation_transition, "player_rotation", false, TransitionManager::DELETE);
-		}
 	}
 }
 
@@ -1865,7 +1832,6 @@ void GameController::attempt_jump() {
 	//
 	player.set_velocity(new_velocity);
 	player.set_rotational_vel(new_rotation);
-	m_transition_manager.remove_transition(m_transition_manager.get_transition("player_rotation"));
 
 	if (finite(shortest_dist)) {
 		//
