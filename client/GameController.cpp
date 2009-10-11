@@ -3693,6 +3693,7 @@ void GameController::spawn_packet(PacketReader& reader) {
 	// TODO: Move all this code below into a helper function!
 
 	// Update the radar and name sprite
+	recreate_name(player);
 	m_radar->move_blip(player->get_id(), player->get_x(), player->get_y());
 	m_radar->set_blip_invisible(player->get_id(), player->is_invisible());
 	player->get_name_sprite()->set_invisible(player->is_invisible());
