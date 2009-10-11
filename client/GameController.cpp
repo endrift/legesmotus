@@ -1253,7 +1253,7 @@ void GameController::process_input() {
 				if (!m_chat_log->is_invisible()) {
 					m_chat_log->scrollbar_motion_event(event.motion);
 				}
-				if (!m_weapon_selector->get_graphic_group()->is_invisible()) {
+				if (m_weapon_selector != NULL && m_weapons.size() > 0 /*&& !m_weapon_selector->get_graphic_group()->is_invisible()*/) {
 					m_weapon_selector->mouse_motion_event(event.motion);
 				}
 				
@@ -1308,7 +1308,8 @@ void GameController::process_input() {
 	// Check if left mouse button is held down, for weapon firing code.
 	int mouse_x = 0;
 	int mouse_y = 0;
-	if (SDL_GetMouseState(&mouse_x, &mouse_y)&SDL_BUTTON(1)) {
+	Uint8 mouse_state = SDL_GetMouseState(&mouse_x, &mouse_y);
+	if (mouse_state&SDL_BUTTON(1)) {
 		if (m_game_state == GAME_IN_PROGRESS) {
 			if (m_players.empty() || m_players[m_player_id].is_frozen() || m_players[m_player_id].is_dead() || !m_current_weapon) {
 				// Do nothing. We don't have a current player or weapon.
@@ -1329,7 +1330,7 @@ void GameController::process_input() {
 	}
 	
 	// Check if the right mouse button is held down, for weapon switching.
-	if (SDL_GetMouseState(&mouse_x, &mouse_y)&SDL_BUTTON(3)) {
+	if (mouse_state&SDL_BUTTON(3)) {
 		if (GraphicalPlayer* player = get_player_by_id(m_player_id)) {
 			if (m_weapons.size() > 0 && m_game_state == GAME_IN_PROGRESS) {
 				m_weapon_selector->get_graphic_group()->set_invisible(false);
