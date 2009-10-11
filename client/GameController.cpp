@@ -1756,6 +1756,9 @@ void GameController::move_objects(float timescale) {
 			thisobj->disengage(*this, player);
 		}
 	}
+
+	// Update player rotation
+	player.update_rotation(timescale);
 	
 	// Set the player position and radar position.
 	m_radar->move_blip(m_player_id, player.get_x(), player.get_y());
