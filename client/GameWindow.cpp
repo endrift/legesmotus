@@ -33,6 +33,7 @@ using namespace std;
 
 GameWindow* GameWindow::m_instance = NULL;
 SDL_Surface* GameWindow::m_icon = NULL;
+const int GameWindow::MAX_MSAA = 5;
 
 GameWindow::GameWindow(int width, int height, int depth, bool fullscreen, int msaa) {
 	m_width = width;

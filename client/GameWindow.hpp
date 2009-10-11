@@ -30,6 +30,9 @@
 
 namespace LM {
 	class GameWindow {
+	public:
+		static const int MAX_MSAA;
+
 	private:
 		static GameWindow*	m_instance;
 		SDL_Surface*		m_context;
@@ -48,8 +51,8 @@ namespace LM {
 	
 		GameWindow(int width, int height, int depth, bool fullscreen, int msaa = 0);
 		~GameWindow();
+
 	public:
-	
 		// Initialize the video subsystem, if it hasn't been already
 		// This will return true iff the subsystem is initialized
 		// NB: It will return true if the system was already initialized

@@ -64,8 +64,8 @@ void TiledGraphic::init() {
 	m_green = 1.0;
 	m_blue = 1.0;
 	m_alpha = 1.0;
-	m_tile_width = toPow2(int(get_image_width()));
-	m_tile_height = toPow2(int(get_image_height()));
+	m_tile_width = to_pow_2(int(get_image_width()));
+	m_tile_height = to_pow_2(int(get_image_height()));
 	m_width = m_tile_width;
 	m_height = m_tile_height;
 }

@@ -326,22 +326,46 @@ void GameController::init(GameWindow* window) {
 	ListMenuItem* current_lmi;
 	m_options_menu.add_item(TextMenuItem::with_manager(m_text_manager, "Cancel", "cancel", 50, m_screen_height - 50));
 	m_options_menu.add_item(TextMenuItem::with_manager(m_text_manager, "Enter Name", "name", 50, 200));
-	current_lmi = new ListMenuItem("sound", TextMenuItem::with_manager(m_text_manager, "Toggle Sound:", "sound", 50, 240));
-	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "On", "on", 300, 240));
-	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "Off", "off", 300, 240));
+	current_lmi = new ListMenuItem("sound", TextMenuItem::with_manager(m_text_manager, "Sound:", "sound", 50, 240));
+	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "On", "on", 240, 240));
+	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "Off", "off", 240, 240));
 	current_lmi->set_default_index(m_sound_controller->is_sound_on() ? 0 : 1);
 	current_lmi->set_current_index(m_sound_controller->is_sound_on() ? 0 : 1);
 	m_options_form.add_item("sound", current_lmi);
 	m_options_menu.add_item(current_lmi);
-	current_lmi = new ListMenuItem("fullscreen", TextMenuItem::with_manager(m_text_manager, "Fullscreen:", "fullscreen", 50, 320));
-	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "On", "on", 300, 320));
-	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "Off", "off", 300, 320));
+	current_lmi = new ListMenuItem("fullscreen", TextMenuItem::with_manager(m_text_manager, "Fullscreen:", "fullscreen", 50, 280));
+	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "On", "on", 240, 280));
+	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "Off", "off", 240, 280));
 	current_lmi->set_default_index(m_configuration->get_bool_value("fullscreen") ? 0 : 1);
 	current_lmi->set_current_index(m_configuration->get_bool_value("fullscreen") ? 0 : 1);
 	m_options_form.add_item("fullscreen", current_lmi);
 	m_options_menu.add_item(current_lmi);
+	current_lmi = new ListMenuItem("text_background", TextMenuItem::with_manager(m_text_manager, "Text Background:", "text_background", 420, 200));
+	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "On", "on", 700, 200));
+	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "Off", "off", 700, 200));
+	current_lmi->set_default_index(m_configuration->get_bool_value("text_background") ? 0 : 1);
+	current_lmi->set_current_index(m_configuration->get_bool_value("text_background") ? 0 : 1);
+	m_options_form.add_item("text_background", current_lmi);
+	m_options_menu.add_item(current_lmi);
+	current_lmi = new ListMenuItem("text_shadow", TextMenuItem::with_manager(m_text_manager, "Text Shadow:", "text_shadow", 420, 240));
+	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "On", "on", 700, 240));
+	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "Off", "off", 700, 240));
+	current_lmi->set_default_index(m_configuration->get_bool_value("text_shadow") ? 0 : 1);
+	current_lmi->set_current_index(m_configuration->get_bool_value("text_shadow") ? 0 : 1);
+	m_options_form.add_item("text_shadow", current_lmi);
+	m_options_menu.add_item(current_lmi);
+	current_lmi = new ListMenuItem("multisample", TextMenuItem::with_manager(m_text_manager, "Multisample:", "multisample", 420, 280));
+	for (int i = 0; i <= GameWindow::MAX_MSAA; ++i) {
+		stringstream s;
+		s << i;
+		current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, s.str(), s.str(), 700, 280));
+	}
+	current_lmi->set_default_index(min<int>(m_configuration->get_int_value("multisample"), GameWindow::MAX_MSAA));
+	current_lmi->set_current_index(min<int>(m_configuration->get_int_value("multisample"), GameWindow::MAX_MSAA));
+	m_options_form.add_item("multisample", current_lmi);
+	m_options_menu.add_item(current_lmi);
 	m_options_menu.add_item(TextMenuItem::with_manager(m_text_manager, "Apply", "apply", m_screen_width - 200, m_screen_height - 50));
-	current_lmi = new ListMenuItem("resolution", TextMenuItem::with_manager(m_text_manager, "Screen Resolution:", "resolution", 50, 280));
+	current_lmi = new ListMenuItem("resolution", TextMenuItem::with_manager(m_text_manager, "Resolution:", "resolution", 50, 320));
 	m_options_form.add_item("resolution", current_lmi);
 	m_options_menu.add_item(current_lmi);
 
@@ -373,7 +397,7 @@ void GameController::init(GameWindow* window) {
 		int height = m_resolutions[i].second;
 		stringstream resolution;
 		resolution << width << "x" << height;
-		current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, resolution.str(), resolution.str(), 400, 280));
+		current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, resolution.str(), resolution.str(), 240, 320));
 		if (m_screen_width == width && m_screen_height == height) {
 			current_lmi->set_current_index(i);
 			current_lmi->set_default_index(i);
@@ -1507,18 +1531,30 @@ void GameController::process_mouse_click(SDL_Event event) {
 					size_t xpos = resolution.find('x');
 					int width;
 					int height;
+					int multisample;
 					istringstream wstring(resolution.substr(0, xpos));
 					istringstream hstring(resolution.substr(xpos + 1));
+					istringstream mstring(m_options_form.get_item("multisample")->get_value());
 					wstring >> width;
 					hstring >> height;
+					mstring >> multisample;
+					cout << multisample << endl;
 					m_sound_controller->set_sound_on(m_options_form.get_item("sound")->get_value() == "on");
 					bool fullscreen = m_options_form.get_item("fullscreen")->get_value() == "on";
+					bool text_shadow = m_options_form.get_item("text_shadow")->get_value() == "on";
+					bool text_background = m_options_form.get_item("text_background")->get_value() == "on";
 					if (width != m_configuration->get_int_value("screen_width") || 
 							height != m_configuration->get_int_value("screen_height") ||
-							fullscreen != m_configuration->get_bool_value("fullscreen")) {
+							fullscreen != m_configuration->get_bool_value("fullscreen") ||
+							multisample != m_configuration->get_int_value("multisample") ||
+							text_shadow != m_configuration->get_bool_value("text_shadow") ||
+							text_background != m_configuration->get_bool_value("text_background")) {
 						m_configuration->set_int_value("screen_width", width);
 						m_configuration->set_int_value("screen_height", height);
 						m_configuration->set_bool_value("fullscreen", fullscreen);
+						m_configuration->set_int_value("multisample", multisample);
+						m_configuration->set_bool_value("text_shadow", text_shadow);
+						m_configuration->set_bool_value("text_background", text_background);
 						m_restart = true;
 						m_quit_game = true;
 					} else {

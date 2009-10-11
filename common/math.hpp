@@ -43,7 +43,7 @@ namespace LM {
 	extern const double RADIANS_TO_DEGREES;
 	extern const double DEGREES_TO_RADIANS;
 
-	inline uint32_t toPow2(uint32_t num) {
+	inline uint32_t to_pow_2(uint32_t num) {
 		--num;
 		for (int i = 1; i < 32; i <<= 1) {
 			num |= num >> i;

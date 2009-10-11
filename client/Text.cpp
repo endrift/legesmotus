@@ -169,7 +169,7 @@ bool Text::is_over(int x, int y) const {
 void Text::draw(const GameWindow* window) const {
 	glPushMatrix();
 	transform_gl();
-	if (m_shadow_enabled) {
+	if (m_shadow_enabled && m_shadow != NULL) {
 		m_shadow->draw(window);
 	}
 	if (m_fg != NULL) {
