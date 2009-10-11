@@ -293,7 +293,6 @@ namespace LM {
 		void		map_info_packet(const IPAddress& address, PacketReader& packet);
 		void		hole_punch_packet(const IPAddress& address, PacketReader& packet);
 		void		player_died(const IPAddress& address, PacketReader& packet);
-		void		weapon_select(const IPAddress& address, PacketReader& packet);
 	
 		void		start();
 		void		run();

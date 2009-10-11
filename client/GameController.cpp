@@ -2271,6 +2271,7 @@ void GameController::player_update(PacketReader& reader) {
 	}
 
 	bool wasfrozen = currplayer->is_frozen();
+	string old_weapon_id = currplayer->get_current_weapon_id();
 
 	currplayer->read_update_packet(reader);
 
@@ -2293,6 +2294,13 @@ void GameController::player_update(PacketReader& reader) {
 	} else {
 		// Reposition the name sprite to reflect the player's new position
 		m_text_manager->reposition_string(currplayer->get_name_sprite(), currplayer->get_x(), currplayer->get_y() - (currplayer->get_radius()+30), TextManager::CENTER);
+	}
+
+	if (old_weapon_id != currplayer->get_current_weapon_id()) {
+		// TODO: make this triggered by GraphicalPlayer::set_current_weapon_id()
+		if (Weapon* new_weapon = get_weapon(currplayer->get_current_weapon_id())) {
+			new_weapon->select(*currplayer, *this);
+		}
 	}
 	
 	if (m_radar->get_mode() == RADAR_ON) {
@@ -2411,16 +2419,16 @@ void GameController::leave(PacketReader& reader) {
  */
 void GameController::weapon_discharged(PacketReader& reader) {
 	uint32_t	player_id;
-	string		weapon_name;
+	string		weapon_id;
 
-	reader >> player_id >> weapon_name;
+	reader >> player_id >> weapon_id;
 
 	if (player_id == m_player_id) {
 		// Ignore discharge packets from ourself
 		return;
 	}
 
-	Weapon*		weapon = get_weapon(weapon_name);
+	Weapon*		weapon = get_weapon(weapon_id);
 	Player*		player = get_player_by_id(player_id);
 
 	if (!weapon || !player) {
@@ -2435,11 +2443,11 @@ void GameController::weapon_discharged(PacketReader& reader) {
  */
 void GameController::player_hit(PacketReader& reader) {
 	uint32_t	shooter_id;
-	string		weapon_name;
+	string		weapon_id;
 	uint32_t	shot_player_id;
 	bool		has_effect;
 
-	reader >> shooter_id >> weapon_name >> shot_player_id >> has_effect;
+	reader >> shooter_id >> weapon_id >> shot_player_id >> has_effect;
 
 	GraphicalPlayer*	shooter = get_player_by_id(shooter_id);
 	GraphicalPlayer*	shot_player = get_player_by_id(shot_player_id);
@@ -2449,7 +2457,7 @@ void GameController::player_hit(PacketReader& reader) {
 	}
 
 	if (shot_player_id == m_player_id) {
-		if (Weapon* weapon = get_weapon(weapon_name)) {
+		if (Weapon* weapon = get_weapon(weapon_id)) {
 			weapon->hit(*shot_player, *shooter, has_effect, *this, reader);
 		}
 	}
@@ -3396,8 +3404,8 @@ void GameController::set_radar_mode(RadarMode mode) {
 	}
 }
 
-void GameController::change_weapon(const char* weapon_name) {
-	if (Weapon* weapon = get_weapon(weapon_name)) {
+void GameController::change_weapon(const char* weapon_id) {
+	if (Weapon* weapon = get_weapon(weapon_id)) {
 		change_weapon(weapon);
 	}
 }
@@ -3413,13 +3421,10 @@ void GameController::change_weapon(unsigned int n) {
 }
 
 void	GameController::change_weapon(Weapon* weapon) {
-	if (GraphicalPlayer* player = get_player_by_id(m_player_id)) {
-		if (m_current_weapon != weapon) {
-			m_current_weapon = weapon;
-			m_last_weapon_switch = get_ticks();
-			update_curr_weapon_image();
-			m_current_weapon->select(*player, *this);
-		}
+	if (m_current_weapon != weapon) {
+		m_current_weapon = weapon;
+		m_last_weapon_switch = get_ticks();
+		update_curr_weapon_image();
 	}
 }
 
@@ -3477,6 +3482,11 @@ void	GameController::update_curr_weapon_image() {
 	m_curr_weapon_image->set_y(m_cooldown_bar->get_y() - m_curr_weapon_image->get_image_height()/2 - 5);
 	m_curr_weapon_image->set_invisible(false);
 	m_window->register_hud_graphic(m_curr_weapon_image);
+
+	if (Player* curr_player = get_player_by_id(m_player_id)) {
+		curr_player->set_current_weapon_id(m_current_weapon->get_id());
+		m_current_weapon->select(*curr_player, *this); // TODO: make this triggered by GraphicalPlayer::set_current_weapon_id()
+	}
 }
 
 void	GameController::reset_weapons() {
@@ -3614,24 +3624,6 @@ Point GameController::find_shootable_object(Point startpos, double direction, Ba
 
 
 
-void	GameController::weapon_select(PacketReader& reader)
-{
-	uint32_t		player_id;
-	string			weapon_name;
-
-	reader >> player_id >> weapon_name;
-
-	GraphicalPlayer*	player = get_player_by_id(player_id);
-
-	if (!player) {
-		return;
-	}
-
-	if (Weapon* weapon = get_weapon(weapon_name)) {
-		weapon->select(*player, *this);
-	}
-}
-
 void	GameController::weapon_info_packet(PacketReader& reader)
 {
 	size_t			weapon_index;
@@ -3646,9 +3638,6 @@ void	GameController::weapon_info_packet(PacketReader& reader)
 			if (weapon_index == 0) {
 				m_current_weapon = weapon;
 				update_curr_weapon_image();
-				if (Player* curr_player = get_player_by_id(m_player_id)) {
-					weapon->select(*curr_player, *this);
-				}
 			}
 			init_weapon_selector();
 		}

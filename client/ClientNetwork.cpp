@@ -199,10 +199,6 @@ void	ClientNetwork::process_server_packet(GameController& controller, const UDPP
 		controller.player_died(reader);
 		break;
 
-	case WEAPON_SELECT_PACKET:
-		controller.weapon_select(reader);
-		break;
-
 	case WEAPON_INFO_PACKET:
 		controller.weapon_info_packet(reader);
 		break;

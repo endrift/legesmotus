@@ -418,7 +418,6 @@ namespace LM {
 		void		map_object_packet(PacketReader& reader);
 		void		game_param_packet(PacketReader& reader);
 		void		player_died(PacketReader& reader);
-		void		weapon_select(PacketReader& reader);
 		void		weapon_info_packet(PacketReader& reader);
 		void		server_info(const IPAddress& server_address, PacketReader& reader);
 		void		upgrade_available(const IPAddress& server_address, PacketReader& reader);

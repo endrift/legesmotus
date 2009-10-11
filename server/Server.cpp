@@ -113,20 +113,6 @@ void	Server::player_animation(const IPAddress& address, PacketReader& inbound_pa
 	}
 }
 
-void	Server::weapon_select(const IPAddress& address, PacketReader& inbound_packet)
-{
-	// Just broadcast this packet to all other players
-	uint32_t		player_id;
-	inbound_packet >> player_id;
-
-	if (is_authorized(address, player_id)) {
-		// Re-broadcast the packet to all _other_ players
-		PacketWriter	outbound_packet(WEAPON_SELECT_PACKET);
-		outbound_packet << player_id << inbound_packet;
-		broadcast_packet_except(outbound_packet, player_id);
-	}
-}
-
 void	Server::name_change(const IPAddress& address, PacketReader& packet)
 {
 	uint32_t		sender_id = 0;

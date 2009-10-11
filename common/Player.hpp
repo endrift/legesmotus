@@ -61,6 +61,7 @@ namespace LM {
 		bool		m_is_invisible;	// Is this player inivisible? (should be true while player is waiting to spawn)
 		bool		m_is_frozen;	// Is this player frozen? (should be true after the player gets shot)
 		bool		m_is_grabbing_obstacle;	// Is the player grabbing an obstacle?
+		std::string	m_current_weapon_id;	// ID of the current weapon
 	
 	public:
 		Player();
@@ -93,6 +94,7 @@ namespace LM {
 		bool is_frozen() const { return m_is_frozen; }
 		bool is_unfrozen() const { return !m_is_frozen; }
 		bool is_grabbing_obstacle() const { return m_is_grabbing_obstacle; }
+		const char* get_current_weapon_id() const { return m_current_weapon_id.c_str(); }
 	
 		// Return true if this player has the same canonical name as the specified string.
 		// Name comparisons are case-insensitive.
@@ -121,6 +123,7 @@ namespace LM {
 		virtual void set_is_invisible(bool is_invisible);
 		virtual void set_is_frozen(bool is_frozen);
 		virtual void set_is_grabbing_obstacle(bool);
+		virtual void set_current_weapon_id(const char*);
 	
 		// Update the player's position as if the specified amount of time has elapsed
 		virtual void update_position(float timescale);
