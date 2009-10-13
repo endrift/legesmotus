@@ -354,11 +354,18 @@ void GameController::init(GameWindow* window) {
 	current_lmi->set_current_index(m_configuration->get_bool_value("text_shadow") ? 0 : 1);
 	m_options_form.add_item("text_shadow", current_lmi);
 	m_options_menu.add_item(current_lmi);
-	current_lmi = new ListMenuItem("multisample", TextMenuItem::with_manager(m_text_manager, "Multisample:", "multisample", 420, 280));
+	current_lmi = new ListMenuItem("text_sliding", TextMenuItem::with_manager(m_text_manager, "Text Sliding:", "text_sliding", 420, 280));
+	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "On", "on", 700, 280));
+	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "Off", "off", 700, 280));
+	current_lmi->set_default_index(m_configuration->get_bool_value("text_sliding") ? 0 : 1);
+	current_lmi->set_current_index(m_configuration->get_bool_value("text_sliding") ? 0 : 1);
+	m_options_form.add_item("text_sliding", current_lmi);
+	m_options_menu.add_item(current_lmi);
+	current_lmi = new ListMenuItem("multisample", TextMenuItem::with_manager(m_text_manager, "Multisample:", "multisample", 420, 320));
 	for (int i = 0; i <= GameWindow::MAX_MSAA; ++i) {
 		stringstream s;
 		s << i;
-		current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, s.str(), s.str(), 700, 280));
+		current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, s.str(), s.str(), 700, 320));
 	}
 	current_lmi->set_default_index(min<int>(m_configuration->get_int_value("multisample"), GameWindow::MAX_MSAA));
 	current_lmi->set_current_index(min<int>(m_configuration->get_int_value("multisample"), GameWindow::MAX_MSAA));
@@ -587,14 +594,20 @@ void GameController::init(GameWindow* window) {
 	m_chat_window_back->set_invisible(true);
 	m_window->register_hud_graphic(m_chat_window_back);
 
-	m_chat_window_transition_x = new Transition(m_chat_window_back, &Graphic::set_width, new LinearCurve(0,0));
-	m_chat_window_transition_x->set_curve_ownership(true);
-	m_transition_manager.add_transition(m_chat_window_transition_x);
-
-	m_chat_window_transition_y = new Transition(m_chat_window_back, &Graphic::set_height, new LinearCurve(0,0));
-	m_chat_window_transition_y->set_curve_ownership(true);
-	m_transition_manager.add_transition(m_chat_window_transition_y);
+	// TODO: add dynamically, not at allocation
+	if (m_configuration->get_bool_value("text_sliding")) {
+		m_chat_window_transition_x = new Transition(m_chat_window_back, &Graphic::set_width, new LinearCurve(0,0));
+		m_chat_window_transition_x->set_curve_ownership(true);
+		m_transition_manager.add_transition(m_chat_window_transition_x);
 	
+		m_chat_window_transition_y = new Transition(m_chat_window_back, &Graphic::set_height, new LinearCurve(0,0));
+		m_chat_window_transition_y->set_curve_ownership(true);
+		m_transition_manager.add_transition(m_chat_window_transition_y);
+	} else {
+		m_chat_window_transition_x = NULL;
+		m_chat_window_transition_y = NULL;
+	}
+
 	// Set up the radar.
 	m_radar = new Radar(m_path_manager, m_params.radar_scale, m_params.radar_mode);
 	m_radar->set_x(m_screen_width - 120);
@@ -749,14 +762,21 @@ void GameController::run(int lockfps) {
 		
 			bool erasedone = false;
 			// Erase messages that are too old.
-			double height = m_chat_window_transition_y->get_curve()->get_end();
+			double height;
+			if (m_configuration->get_bool_value("text_sliding")) {
+				height = m_chat_window_transition_y->get_curve()->get_end();
+			} else {
+				height = m_chat_window_back->get_row_height(0);
+			}
 			for (vector<Message>::iterator iter = m_messages.begin();
 					iter != m_messages.end();) {
 				if (iter->timeout < currframe || m_messages.size() > MAX_MESSAGES_TO_DISPLAY) {
 					height -= iter->message->get_image_height();
 					m_text_manager->remove_string(iter->message);
-					m_transition_manager.remove_transition(iter->transition);
-					delete iter->transition;
+					if (iter->transition != NULL) {
+						m_transition_manager.remove_transition(iter->transition);
+						delete iter->transition;
+					}
 					iter = m_messages.erase(iter);
 					erasedone = true;
 				} else {
@@ -766,16 +786,25 @@ void GameController::run(int lockfps) {
 
 			
 			if (erasedone) {
-				m_chat_window_transition_y->change_curve(currframe, new LinearCurve(0, height), CHAT_TRANSITION_TIME);
 				m_chat_window_back->set_image_width(0);
 				// Reposition messages that remain after removing.
 				double max_w = 0;
 				for (unsigned int i = 0; i < m_messages.size(); i++) {
 					int y = 20 + (m_font->ascent() + m_font->descent() + 5) * i;
-					m_messages[i].transition->change_curve(currframe, new LinearCurve(0, y), CHAT_TRANSITION_TIME);
+					if (m_configuration->get_bool_value("text_sliding")) {
+						m_messages[i].transition->change_curve(currframe, new LinearCurve(0, y), CHAT_TRANSITION_TIME);
+					} else {
+						m_messages[i].message->set_y(y);
+					}
 					max_w = max<double>(m_messages[i].message->get_image_width() + 6, max_w);
 				}
-				m_chat_window_transition_x->change_curve(currframe, new LinearCurve(0, max_w), CHAT_TRANSITION_TIME);
+				if (m_configuration->get_bool_value("text_sliding")) {
+					m_chat_window_transition_x->change_curve(currframe, new LinearCurve(0, max_w), CHAT_TRANSITION_TIME);
+					m_chat_window_transition_y->change_curve(currframe, new LinearCurve(0, height), CHAT_TRANSITION_TIME);
+				} else {
+					m_chat_window_back->set_width(max_w);
+					m_chat_window_back->set_height(height);
+				}
 				if (m_messages.size() == 0) {
 					m_chat_window_back->set_invisible(true);
 				}
@@ -1542,18 +1571,21 @@ void GameController::process_mouse_click(SDL_Event event) {
 					m_sound_controller->set_sound_on(m_options_form.get_item("sound")->get_value() == "on");
 					bool fullscreen = m_options_form.get_item("fullscreen")->get_value() == "on";
 					bool text_shadow = m_options_form.get_item("text_shadow")->get_value() == "on";
+					bool text_sliding = m_options_form.get_item("text_sliding")->get_value() == "on";
 					bool text_background = m_options_form.get_item("text_background")->get_value() == "on";
 					if (width != m_configuration->get_int_value("screen_width") || 
 							height != m_configuration->get_int_value("screen_height") ||
 							fullscreen != m_configuration->get_bool_value("fullscreen") ||
 							multisample != m_configuration->get_int_value("multisample") ||
 							text_shadow != m_configuration->get_bool_value("text_shadow") ||
+							text_sliding != m_configuration->get_bool_value("text_sliding") ||
 							text_background != m_configuration->get_bool_value("text_background")) {
 						m_configuration->set_int_value("screen_width", width);
 						m_configuration->set_int_value("screen_height", height);
 						m_configuration->set_bool_value("fullscreen", fullscreen);
 						m_configuration->set_int_value("multisample", multisample);
 						m_configuration->set_bool_value("text_shadow", text_shadow);
+						m_configuration->set_bool_value("text_sliding", text_sliding);
 						m_configuration->set_bool_value("text_background", text_background);
 						m_restart = true;
 						m_quit_game = true;
@@ -3081,15 +3113,24 @@ void GameController::display_message(string message, Color color, Color shadow, 
 	uint64_t currframe = get_ticks();
 	Message new_message;
 	new_message.message = message_sprite;
-	new_message.transition = new Transition(new_message.message, &Graphic::set_y, new LinearCurve(y, y), currframe, 1);
 	new_message.timeout = currframe + MESSAGE_DISPLAY_TIME;
-	m_transition_manager.add_transition(new_message.transition, false, TransitionManager::KEEP);
-	m_messages.push_back(new_message);
-	m_chat_window_transition_y->change_curve(currframe, new LinearCurve(0, y + message_sprite->get_image_height() + 6 - m_chat_window_back->get_y()), 1);
-	double max_w = m_chat_window_transition_x->get_curve()->get_end();
-	if (max_w < message_sprite->get_image_width() + 6) {
-		m_chat_window_transition_x->change_curve(currframe, new LinearCurve(0, message_sprite->get_image_width() + 6), 1);
+	if (m_chat_window_transition_x != NULL) {
+		new_message.transition = new Transition(new_message.message, &Graphic::set_y, new LinearCurve(y, y), currframe, 1);
+		m_transition_manager.add_transition(new_message.transition, false, TransitionManager::KEEP);
+		m_chat_window_transition_y->change_curve(currframe, new LinearCurve(0, y + message_sprite->get_image_height() + 6 - m_chat_window_back->get_y()), 1);
+		double max_w = m_chat_window_transition_x->get_curve()->get_end();
+		if (max_w < message_sprite->get_image_width() + 6) {
+			m_chat_window_transition_x->change_curve(currframe, new LinearCurve(0, message_sprite->get_image_width() + 6), 1);
+		}
+	} else {
+		new_message.transition = NULL;
+		m_chat_window_back->set_row_height(0, y + message_sprite->get_image_height() + 6 - m_chat_window_back->get_y());
+		double max_w = m_chat_window_back->get_image_width();
+		if (max_w < message_sprite->get_image_width() + 6) {
+			m_chat_window_back->set_width(message_sprite->get_image_width() + 6);
+		}
 	}
+	m_messages.push_back(new_message);
 	m_chat_log->add_message(message, color, shadow);
 	if (m_configuration->get_bool_value("text_background")) {
 		m_chat_window_back->set_invisible(false);

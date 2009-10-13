@@ -37,6 +37,7 @@ ClientConfiguration::ClientConfiguration() {
 	m_bool_defaults["fullscreen"] = false;
 	m_bool_defaults["text_shadow"] = false;
 	m_bool_defaults["text_background"] = true;
+	m_bool_defaults["text_sliding"] = true;
 	m_bool_defaults["sound"] = true;
 	reload_config();
 }
