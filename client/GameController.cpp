@@ -3586,6 +3586,7 @@ void	GameController::clear_weapons() {
 		delete it->second;
 	}
 	m_weapons.clear();
+	m_current_weapon = NULL;
 }
 
 void	GameController::activate_radar_blip(const Player& player) {
