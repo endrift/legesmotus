@@ -22,21 +22,21 @@ shotgun:SPREAD
 mgun:STANDARD
 	name=Machine Gun
 	hud=large_mgun.png
-	damage=7
+	damage=8
 	cooldown=100
 	recoil=1.01
-	inaccuracy=5
+	inaccuracy=10
 	continuous
 	normal=3,16:-15:1:mgun_noshot.png
 	firing=3,16:-15:1:mgun_shot.png
-	ammo=25
-	ammo_recharge=250
+	ammo=30
+	ammo_recharge=200
 
 impact:IMPACT
 	name=Impact Cannon
 	hud=large_cannon.png
 	force=20
-	cooldown=4000
+	cooldown=3000
 	recoil=2.0
 	normal=10,-1:-15:-1:cannon_back.png;10,-1:-15:1:cannon_front.png
 	firing=10,-1:-15:-1:cannon_back.png;10,-1:-15:1:cannon_front.png

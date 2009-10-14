@@ -55,7 +55,7 @@ void 	GameParameters::reset() {
 	recharge_delay = 0;
 	recharge_continuously = false;
 	jump_velocity = 6.0;
-	weapon_switch_delay = 500;
+	weapon_switch_delay = 300;
 	late_spawn_frozen = true;
 	weapon_set = "standard";
 }
