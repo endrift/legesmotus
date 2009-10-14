@@ -24,6 +24,10 @@ ifeq ($(SHAREDIR),)
  SHAREDIR = $(PREFIX)/share
 endif
 
+ifneq ($(NO_UPGRADE_NAG),)
+ CFLAGS += -DLM_NO_UPGRADE_NAG
+endif
+
 CFLAGS += -DLM_DATA_DIR=\"$(DATADIR)\" -DLM_VERSION="\"$(VERSION)\""
 
 MACHINE = $(shell uname -s)

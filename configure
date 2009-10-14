@@ -21,6 +21,7 @@ unix_style=1
 universal=1
 force=0
 debug=0
+upgrade_nag=1
 
 if [ `uname -s` = Darwin ]
 then
@@ -30,17 +31,18 @@ fi
 display_help () {
 	echo "Usage: $0 [OPTION]"
 	echo "Options:"
-	echo "  --prefix=PREFIX	Install Leges Motus program and data at PREFIX [default: $prefix]"
-	echo "  --bindir=DIR		Install executable binaries at DIR [default: PREFIX/bin]"
-	echo "  --mandir=DIR		Install manual pages at DIR [default: PREFIX/man]"
-	echo "  --datadir=DIR		Install data files at DIR [default: PREFIX/share/games/legesmotus]"
-	echo "  --sharedir=DIR	Install shared files at DIR [default: PREFIX/share]"
-	echo "  --disable-sound	Disable sound support in this build"
-	echo "  --debug		Enable a debug build"
-	echo "  --unix-style		(Mac OS X only) Build without frameworks or .app bundle"
-	echo "  --disable-universal	(Mac OS X only) Do not build universal binary"
-	echo "  --force		Force configure to continue even if required libraries aren't found"
-	echo "  --help		Display this help"
+	echo "  --prefix=PREFIX          Install Leges Motus program and data at PREFIX [default: $prefix]"
+	echo "  --bindir=DIR             Install executable binaries at DIR [default: PREFIX/bin]"
+	echo "  --mandir=DIR             Install manual pages at DIR [default: PREFIX/man]"
+	echo "  --datadir=DIR            Install data files at DIR [default: PREFIX/share/games/legesmotus]"
+	echo "  --sharedir=DIR           Install shared files at DIR [default: PREFIX/share]"
+	echo "  --disable-sound          Disable sound support in this build"
+	echo "  --disable-upgrade-check  Disable upgrade checking in this build"
+	echo "  --debug                  Enable a debug build"
+	echo "  --unix-style             (Mac OS X only) Build without frameworks or .app bundle"
+	echo "  --disable-universal      (Mac OS X only) Do not build universal binary"
+	echo "  --force                  Force configure to continue even if required libraries aren't found"
+	echo "  --help                   Display this help"
 	echo
 	echo "Influential environment variables:"
 	echo "  CC		C/Objective-C compiler command"
@@ -113,6 +115,9 @@ do
 		;;
 	--disable-sound)
 		sound=0
+		;;
+	--disable-upgrade-check)
+		upgrade_nag=0
 		;;
 	--disable-universal)
 		universal=0
@@ -283,6 +288,12 @@ then
 	echo "NOSOUND =" >> config.mak
 else
 	echo "NOSOUND = 1" >> config.mak
+fi
+if [ $upgrade_nag -ne 0 ]
+then
+	echo "NO_UPGRADE_NAG =" >> config.mak
+else
+	echo "NO_UPGRADE_NAG = 1" >> config.mak
 fi
 if [ $universal -ne 0 ]
 then

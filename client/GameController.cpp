@@ -625,7 +625,9 @@ void GameController::init(GameWindow* window) {
 		cerr << "Unable to resolve metaserver hostname.  Internet-wide server browsing will not be enabled." << endl;
 	}
 
+	#ifndef LM_NO_UPGRADE_NAG
 	check_for_upgrade();
+	#endif
 }
 
 /*
