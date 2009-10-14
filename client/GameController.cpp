@@ -2540,6 +2540,8 @@ void GameController::player_died(PacketReader& reader) {
 	uint64_t	time_to_unfreeze;
 
 	reader >> dead_player_id >> killer_id >> time_to_unfreeze;
+
+	send_ack(reader);
 	
 	GraphicalPlayer* dead_player = get_player_by_id(dead_player_id);
 	GraphicalPlayer* killer = killer_id ? get_player_by_id(killer_id) : NULL;

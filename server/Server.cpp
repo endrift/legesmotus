@@ -425,8 +425,8 @@ void	Server::player_died(const IPAddress& address, PacketReader& packet)
 	// Inform all players that this player died, and include the freeze time
 	PacketWriter		outbound_packet(PLAYER_DIED_PACKET);
 	outbound_packet << killed_player_id << killer_id << freeze_time;
+	m_ack_manager.add_broadcast_packet(outbound_packet);
 	broadcast_packet(outbound_packet);
-	// TODO: REQUIRE ACK
 }
 
 void	Server::weapon_discharged(const IPAddress& address, PacketReader& inbound_packet)
