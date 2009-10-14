@@ -35,6 +35,7 @@
 #include "ClientConfiguration.hpp"
 #include "TransitionManager.hpp"
 #include "ChatLog.hpp"
+#include "common/AckManager.hpp"
 #include "common/PathManager.hpp"
 #include "common/PacketReader.hpp"
 #include "common/misc.hpp"
@@ -126,6 +127,19 @@ namespace LM {
 			SHOW_SERVER_BROWSER = 4
 		};
 
+		class ClientAckManager : public AckManager {
+			GameController&	m_gc;
+		public:
+			explicit ClientAckManager(GameController& gc) : m_gc(gc) { }
+
+			virtual void kick_peer(uint32_t);
+			virtual void resend_packet(uint32_t, const std::string& data);
+
+			void add_packet(const PacketWriter& packet) { AckManager::add_packet(0, packet); }
+			void ack(uint32_t packet_id) { AckManager::ack(0, packet_id); }
+		};
+		friend class ClientAckManager;
+
 		struct Message {
 			Text*		message;
 			Transition*	transition;
@@ -137,6 +151,7 @@ namespace LM {
 	
 		GameWindow* 	m_window;
 		ClientNetwork	m_network;
+		ClientAckManager m_ack_manager;
 		TextManager*	m_text_manager;
 		SoundController* m_sound_controller;
 		TransitionManager m_transition_manager;
@@ -398,6 +413,7 @@ namespace LM {
 		void		send_packet(PacketWriter& packet);
 
 		void		welcome(PacketReader& reader);
+		void		ack(PacketReader& reader);
 		void		player_update(PacketReader& reader);
 		void		announce(PacketReader& reader);
 		void		leave(PacketReader& reader);

@@ -416,6 +416,8 @@ void	Server::player_died(const IPAddress& address, PacketReader& packet)
 		return;
 	}
 
+	send_ack(address, packet);
+
 	ServerPlayer&		killed_player = *get_player(killed_player_id);
 	ServerPlayer*		killer = killer_id ? get_player(killer_id) : NULL;
 
@@ -1345,5 +1347,11 @@ void	Server::broadcast_weapon_packet(const ServerPlayer* player, size_t index, c
 		m_ack_manager.add_broadcast_packet(packet);
 		broadcast_packet(packet);
 	}
+}
+
+void	Server::send_ack(const IPAddress& addr, const PacketReader& packet) {
+	PacketWriter		ack_packet(ACK_PACKET);
+	ack_packet << packet.packet_type() << packet.packet_id();
+	m_network.send_packet(addr, ack_packet);
 }
 

@@ -84,9 +84,11 @@ namespace LM {
 	
 		// Send the given packet to the server
 		void		send_packet(const PacketWriter& packet);
+		void		send_packet(const std::string& packet_data);
 	
 		// Send the given packet to the specific address
 		void		send_packet_to(const IPAddress& dest, const PacketWriter& packet);
+		void		send_packet_to(const IPAddress& dest, const std::string& packet_data);
 	
 		// Send the given packet to all systems on the LAN
 		void		broadcast_packet(unsigned int portno, const PacketWriter& packet);

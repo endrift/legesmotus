@@ -151,6 +151,9 @@ namespace LM {
 	
 		// Relay the received packet to all connected players, except for the given player
 		void			rebroadcast_packet_except(const PacketReader& packet, uint32_t excluded_player_id);
+
+		// Send an ACK to the given address
+		void			send_ack(const IPAddress& addr, const PacketReader& packet);
 	
 		/* */
 

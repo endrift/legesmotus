@@ -100,12 +100,12 @@ static bool	sort_resolution(pair<int, int> pairone, pair<int, int> pairtwo) {
 	return pairone.first < pairtwo.first;
 }
 
-GameController::GameController(PathManager& path_manager, ClientConfiguration* config) : m_path_manager(path_manager) {
+GameController::GameController(PathManager& path_manager, ClientConfiguration* config) : m_path_manager(path_manager), m_ack_manager(*this) {
 	preinit(config);
 	init(GameWindow::get_optimal_instance(config->get_int_value("multisample")));
 }
 
-GameController::GameController(PathManager& path_manager, ClientConfiguration* config, int width, int height, bool fullscreen, int depth) : m_path_manager(path_manager) {
+GameController::GameController(PathManager& path_manager, ClientConfiguration* config, int width, int height, bool fullscreen, int depth) : m_path_manager(path_manager), m_ack_manager(*this) {
 	preinit(config);
 	init(GameWindow::get_instance(width, height, depth, fullscreen, config->get_int_value("multisample")));
 }
@@ -646,6 +646,8 @@ void GameController::run(int lockfps) {
 	while(m_quit_game == false) {
 		process_input();
 		
+		m_ack_manager.resend();
+
 		m_network.receive_packets(*this);
 		
 		if (m_quit_game == true) {
@@ -3601,6 +3603,7 @@ bool	GameController::damage (int amount, const Player* aggressor) {
 		// Inform the server that we died
 		PacketWriter		died_packet(PLAYER_DIED_PACKET);
 		died_packet << m_player_id << (aggressor ? aggressor->get_id() : 0);
+		m_ack_manager.add_packet(died_packet);
 		m_network.send_packet(died_packet);
 
 		return true;
@@ -3849,5 +3852,22 @@ void GameController::make_front_arm_graphic(GraphicGroup& player_sprite, const c
 
 	player_sprite.remove_graphic("frontarm");
 	player_sprite.add_graphic(&frontarm, "frontarm");
+}
+
+
+void	GameController::ClientAckManager::kick_peer(uint32_t peer_id) {
+	m_gc.display_message("Too much packet loss to server.", RED_COLOR, RED_SHADOW);
+	m_gc.disconnect();
+}
+
+void	GameController::ClientAckManager::resend_packet(uint32_t peer_id, const std::string& data) {
+	m_gc.m_network.send_packet(data);
+}
+
+void	GameController::ack(PacketReader& ack_packet) {
+	uint32_t		packet_type;
+	uint32_t		packet_id;
+	ack_packet >> packet_type >> packet_id;
+	m_ack_manager.ack(packet_id);
 }
 

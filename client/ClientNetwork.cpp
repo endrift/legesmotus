@@ -73,7 +73,21 @@ void	ClientNetwork::send_packet(const PacketWriter& packet) {
 	}
 }
 
+void	ClientNetwork::send_packet(const std::string& packet_data) {
+	if (is_connected()) {
+		send_packet_to(m_server_address, packet_data);
+	}
+}
+
+
 void	ClientNetwork::send_packet_to(const IPAddress& dest, const PacketWriter& packet) {
+	UDPPacket	raw_packet(MAX_PACKET_LENGTH);
+	raw_packet.set_address(dest);
+	raw_packet.fill(packet);
+	send_raw_packet(raw_packet);
+}
+
+void	ClientNetwork::send_packet_to(const IPAddress& dest, const std::string& packet) {
 	UDPPacket	raw_packet(MAX_PACKET_LENGTH);
 	raw_packet.set_address(dest);
 	raw_packet.fill(packet);
@@ -114,6 +128,10 @@ void	ClientNetwork::process_server_packet(GameController& controller, const UDPP
 	m_last_packet_time = get_ticks();
 
 	switch (reader.packet_type()) {
+	case ACK_PACKET:
+		controller.ack(reader);
+		break;
+
 	case PLAYER_UPDATE_PACKET:
 		controller.player_update(reader);
 		break;
