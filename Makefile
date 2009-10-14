@@ -52,6 +52,7 @@ README.rtf: README
 ifeq ($(MACHINE)$(UNIXSTYLE),Darwin)
 
 CLI_INSTALLER = Install\ Command\ Line\ Tools.app
+DMG = legesmotus-$(VERSION)-mac.dmg
 
 Leges\ Motus.app: client server
 	mkdir -p "Leges Motus.app/Contents/MacOS"
@@ -72,7 +73,7 @@ Leges\ Motus.app: client server
 	test -d "Leges Motus.app/Contents/Frameworks/SDL_mixer.framework" || cp -Rf /Library/Frameworks/SDL_mixer.framework "Leges Motus.app/Contents/Frameworks"
 
 legesmotus-$(VERSION).pkg: bundle README.rtf
-	rm -Rf tmp
+	$(RM) -r tmp
 	mkdir -p tmp/Leges\ Motus/Applications
 	mkdir -p tmp/Leges\ Motus/usr/bin
 	mkdir -p tmp/Leges\ Motus/usr/share/man/man6
@@ -91,6 +92,27 @@ legesmotus-$(VERSION).pkg: bundle README.rtf
 	defaults delete "`pwd`/legesmotus-$(VERSION).pkg/Contents/Info" IFPkgPathMappings
 	$(RM) -r tmp
 
+$(DMG): bundle $(CLI_INSTALLER)
+	$(RM) -r tmp
+	mkdir -p tmp
+	cp client/legesmotus.icns tmp/.VolumeIcon.icns
+	SetFile -c icnC tmp/.VolumeIcon.icns
+	cp README tmp/README.TXT
+	cp -R Leges\ Motus.app tmp
+	cp -R $(CLI_INSTALLER) tmp
+	hdiutil create -srcfolder tmp -volname "Leges Motus $(VERSION)" -format UDRW -ov raw-$(DMG)
+	$(RM) -r tmp
+	mkdir -p tmp
+	# This is to set the volume icon. No really
+	hdiutil attach raw-$(DMG) -mountpoint tmp
+	SetFile -a C tmp
+	hdiutil detach tmp
+	$(RM) $(DMG)
+	hdiutil convert raw-$(DMG) -format UDZO -o $(DMG)
+	$(RM) raw-$(DMG)
+	$(RM) -r tmp
+	
+
 $(CLI_INSTALLER): mac/install.applescript mac/install.sh
 	osacompile -o $(CLI_INSTALLER) mac/install.applescript
 	cp -f man/man6/* $(CLI_INSTALLER)/Contents/Resources
@@ -98,7 +120,7 @@ $(CLI_INSTALLER): mac/install.applescript mac/install.sh
 
 bundle: Leges\ Motus.app
 
-package: legesmotus-$(VERSION).pkg
+package: $(DMG)
 
 cli-installer: $(CLI_INSTALLER)
 
