@@ -255,6 +255,7 @@ echo "Manuals directory:  $mandir"
 echo "Data directory:     $datadir"
 echo "Share directory:    $sharedir"
 echo "Sound:              `format_boolean $sound`"
+echo "Upgrade check:      `format_boolean $upgrade_nag`"
 echo "Debug:              `format_boolean $debug`"
 
 if [ `uname -s` = Darwin ]
