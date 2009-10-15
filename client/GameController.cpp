@@ -3824,6 +3824,7 @@ void GameController::add_front_arm(GraphicGroup& group, const char* sprite_name)
 void GameController::register_front_arm_graphic(Player& base_player, const char* normal_str, const char* firing_str) {
 	if (GraphicalPlayer* player = get_player_by_id(base_player.get_id())) {
 		make_front_arm_graphic(*player->get_sprite(), player->get_team() == 'A' ? "blue_frontarm.png" : "red_frontarm.png", normal_str, firing_str);
+		player->set_is_frozen(player->is_frozen());
 	}
 }
 
@@ -3852,6 +3853,9 @@ void GameController::make_front_arm_graphic(GraphicGroup& player_sprite, const c
 	frontarm.set_y(-18);
 	frontarm.set_center_x(13);
 	frontarm.set_center_y(-18);
+	if (Graphic* oldarm = player_sprite.get_graphic("frontarm")) {
+		frontarm.set_rotation(oldarm->get_rotation());
+	}
 
 	player_sprite.remove_graphic("frontarm");
 	player_sprite.add_graphic(&frontarm, "frontarm");
