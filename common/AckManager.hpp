@@ -57,6 +57,7 @@ namespace LM {
 			void			reset_send_time();
 			bool			has_peers() const { return !peer_ids.empty(); }
 		};
+		friend class SentPacket;
 	
 		virtual void	kick_peer(uint32_t peer_id) = 0;
 		virtual void	resend_packet(uint32_t peer_id, const std::string& data) = 0;
