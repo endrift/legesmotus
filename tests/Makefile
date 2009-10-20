@@ -2,7 +2,7 @@ BASEDIR = ..
 UNIXSTYLE = 1
 include ../common.mak
 OBJS = client_network config_test simple_sprite simple_text simple_scroll simple_transition \
-	simple_menu radial_menu
+	simple_menu radial_menu text_input
 
 all: $(OBJS)
 
