@@ -46,6 +46,7 @@ namespace LM {
 		int	line_skip() const;
 		int	ascent() const;
 		int	descent() const;
+		int max_height() const;
 	};
 }
 

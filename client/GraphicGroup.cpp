@@ -71,6 +71,20 @@ void GraphicGroup::remove_graphic(const string& name) {
 	delete g;
 }
 
+Graphic* GraphicGroup::take_graphic(const string& name) {
+	Graphic* g = get_graphic(name);
+	if (g == NULL) {
+		return NULL;
+	}
+	m_names.erase(name);
+	m_graphics.remove(g);
+	return g;
+}
+
+Graphic* GraphicGroup::take_graphic(const char* name) {
+	return take_graphic(string(name));
+}
+
 void GraphicGroup::take_all_graphics() {
 	m_names.clear();
 	m_graphics.clear();

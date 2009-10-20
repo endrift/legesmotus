@@ -87,3 +87,7 @@ int Font::ascent() const {
 int Font::descent() const {
 	return TTF_FontDescent(m_font);
 }
+
+int Font::max_height() const {
+	return TTF_FontHeight(m_font);
+}

@@ -49,6 +49,8 @@ namespace LM {
 		template<class T> void	give_graphic(T* graphic, const std::string& name);
 		Graphic*	get_graphic(const std::string& name);
 		// Taking the graphic doesn't delete it -- you must delete it yourself
+		Graphic*	take_graphic(const std::string& name);
+		Graphic*	take_graphic(const char* name);
 		template<class T> void	take_graphic(T* graphic);
 		void		take_all_graphics();
 		// Removing the graphic does delete it

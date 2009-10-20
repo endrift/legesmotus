@@ -80,6 +80,8 @@ namespace LM {
 		void	set_shadow_offset(double x, double y);
 		void	set_shadow_convolve(Curve* curve, int diameter, double normalization = 0.0);
 		void	set_shadow(bool enable);
+
+		Font*	get_font();
 	};
 }
 

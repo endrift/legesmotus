@@ -56,7 +56,7 @@ TextManager::~TextManager() {
 Text* TextManager::render_string(const string& text, double x, double y, Align align) {
 	Text *rendered;
 	try {
-		rendered = new Text(text, m_font, m_shadow_kernel);
+		rendered = new Text(text, m_font, m_shadow?m_shadow_kernel:NULL);
 	} catch(Exception e) {
 		cerr << "Error rendering string: " << e.what() << endl;
 		return NULL;
@@ -187,4 +187,8 @@ void TextManager::set_shadow(bool enable) {
 
 void TextManager::set_window(GameWindow* window) {
 	m_window = window;
+}
+
+Font* TextManager::get_font() {
+	return m_font;
 }

@@ -212,7 +212,11 @@ void TableBackground::set_height(double height) {
 		total_height += get_row_height(i);
 	}
 	for (int i = 0; i < m_num_rows; ++i) {
-		set_row_height(i, get_row_height(i)/total_height*height);
+		if (total_height == 0) {
+			set_row_height(i, height/m_num_rows);
+		} else {
+			set_row_height(i, get_row_height(i)/total_height*height);
+		}
 	}
 }
 
