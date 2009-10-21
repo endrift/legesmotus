@@ -37,6 +37,6 @@ impact:IMPACT
 	hud=large_cannon.png
 	force=20
 	cooldown=3000
-	recoil=2.0
+	recoil=4.0
 	normal=10,-1:-15:-1:cannon_back.png;10,-1:-15:1:cannon_front.png
-	firing=10,-1:-15:-1:cannon_back.png;10,-1:-15:1:cannon_front.png
+	firing=10,-1:-15:-1:cannon_back.png;10,-1:-15:1:cannon_front_shot.png
