@@ -92,6 +92,7 @@ const int GameController::NETWORK_TIMEOUT_LIMIT = 10000;
 const int GameController::TEXT_LAYER = -4;
 const unsigned int GameController::PING_FREQUENCY = 2000;
 const unsigned int GameController::CHAT_TRANSITION_TIME = 200;
+const unsigned int GameController::CHAT_LIMIT = 120;
 
 static bool	sort_resolution(pair<int, int> pairone, pair<int, int> pairtwo) {
 	if (pairone.first == pairtwo.first) {
@@ -120,6 +121,7 @@ GameController::~GameController() {
 	delete red_sprite;
 	delete red_back_arm;
 	delete m_crosshairs;
+	delete m_chat_input;
 
 	for (unsigned int i = 0; i < m_shots.size(); i++) {
 		m_window->unregister_graphic(m_shots[i].first);
@@ -149,7 +151,6 @@ GameController::~GameController() {
 	delete m_energy_bar;
 	delete m_energy_bar_back;
 	
-	delete m_input_bar_back;
 	delete m_chat_window_back;
 	
 	delete m_weapon_selector;
@@ -204,10 +205,7 @@ void GameController::init(GameWindow* window) {
 	
 	m_screen_width = window->get_width();
 	m_screen_height = window->get_height();
-	
-	m_input_text = "> ";
-	m_input_bar = NULL;
-	
+
 	m_join_sent_time = 0;
 	m_last_ping_sent = 0;
 	
@@ -235,7 +233,7 @@ void GameController::init(GameWindow* window) {
 	m_bold_font->set_font_style(true, false);
 	m_text_manager = new TextManager(m_font, m_window);
 	
-	m_menu_font = new Font(m_path_manager.data_path("JuraDemiBold.ttf", "fonts"), 30);
+	m_menu_font = new Font(m_path_manager.data_path("JuraDemiBold.ttf", "fonts"), 24);
 	m_medium_font = new Font(m_path_manager.data_path("JuraMedium.ttf", "fonts"), 20);
 	
 	m_sound_controller = SoundController::get_instance(*this, m_path_manager);
@@ -304,17 +302,17 @@ void GameController::init(GameWindow* window) {
 	
 	// Main menu
 	m_main_menu.add_item(TextMenuItem::with_manager(m_text_manager, "Connect to Server", "connect", 50, 200));
-	m_item_resume = TextMenuItem::with_manager(m_text_manager, "Resume Game", "resume", 50, 240, MenuItem::DISABLED);
+	m_item_resume = TextMenuItem::with_manager(m_text_manager, "Resume Game", "resume", 50, 230, MenuItem::DISABLED);
 	m_main_menu.add_item(m_item_resume);
-	m_item_disconnect = TextMenuItem::with_manager(m_text_manager, "Disconnect", "disconnect", 50, 280, MenuItem::DISABLED);
+	m_item_disconnect = TextMenuItem::with_manager(m_text_manager, "Disconnect", "disconnect", 50, 260, MenuItem::DISABLED);
 	m_main_menu.add_item(m_item_disconnect);
-	m_main_menu.add_item(TextMenuItem::with_manager(m_text_manager, "Options", "submenu:options", 50, 320));
-	m_main_menu.add_item(TextMenuItem::with_manager(m_text_manager, "Quit", "quit", 50, 360));
-	m_main_menu.add_item(TextMenuItem::with_manager(m_text_manager, "Thanks for playing! Please visit", "", 50, 420, MenuItem::STATIC));
-	TextMenuItem* thanks2 = TextMenuItem::with_manager(m_text_manager, "http://legesmotus.cs.brown.edu", "", 50, 460, MenuItem::STATIC);
+	m_main_menu.add_item(TextMenuItem::with_manager(m_text_manager, "Options", "submenu:options", 50, 290));
+	m_main_menu.add_item(TextMenuItem::with_manager(m_text_manager, "Quit", "quit", 50, 320));
+	m_main_menu.add_item(TextMenuItem::with_manager(m_text_manager, "Thanks for playing! Please visit", "", 50, 380, MenuItem::STATIC));
+	TextMenuItem* thanks2 = TextMenuItem::with_manager(m_text_manager, "http://legesmotus.cs.brown.edu", "", 50, 410, MenuItem::STATIC);
 	thanks2->set_plain_fg_color(Color(0.4, 1.0, 0.4));
 	m_main_menu.add_item(thanks2);
-	m_main_menu.add_item(TextMenuItem::with_manager(m_text_manager, "to leave feedback for us!", "", 50, 500, MenuItem::STATIC));
+	m_main_menu.add_item(TextMenuItem::with_manager(m_text_manager, "to leave feedback for us!", "", 50, 440, MenuItem::STATIC));
 
 	m_text_manager->set_active_font(m_font);
 	m_main_menu.add_item(TextMenuItem::with_manager(m_text_manager, string("v. ").append(m_client_version), "", m_screen_width - 90, m_screen_height - 40, MenuItem::STATIC));
@@ -325,43 +323,43 @@ void GameController::init(GameWindow* window) {
 	// Options menu
 	ListMenuItem* current_lmi;
 	m_options_menu.add_item(TextMenuItem::with_manager(m_text_manager, "Cancel", "cancel", 50, m_screen_height - 50));
-	m_options_menu.add_item(TextMenuItem::with_manager(m_text_manager, "Enter Name", "name", 50, 200));
+	m_options_menu.add_item(TextMenuItem::with_manager(m_text_manager, "Enter Name:", "name", 50, 200));
 	current_lmi = new ListMenuItem("sound", TextMenuItem::with_manager(m_text_manager, "Sound:", "sound", 50, 240));
-	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "On", "on", 240, 240));
-	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "Off", "off", 240, 240));
+	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "On", "on", 210, 240));
+	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "Off", "off", 210, 240));
 	current_lmi->set_default_index(m_sound_controller->is_sound_on() ? 0 : 1);
 	current_lmi->set_current_index(m_sound_controller->is_sound_on() ? 0 : 1);
 	m_options_form.add_item("sound", current_lmi);
 	m_options_menu.add_item(current_lmi);
 	current_lmi = new ListMenuItem("fullscreen", TextMenuItem::with_manager(m_text_manager, "Fullscreen:", "fullscreen", 50, 280));
-	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "On", "on", 240, 280));
-	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "Off", "off", 240, 280));
+	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "On", "on", 210, 280));
+	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "Off", "off", 210, 280));
 	current_lmi->set_default_index(m_configuration->get_bool_value("fullscreen") ? 0 : 1);
 	current_lmi->set_current_index(m_configuration->get_bool_value("fullscreen") ? 0 : 1);
 	m_options_form.add_item("fullscreen", current_lmi);
 	m_options_menu.add_item(current_lmi);
-	current_lmi = new ListMenuItem("text_background", TextMenuItem::with_manager(m_text_manager, "Text Background:", "text_background", 420, 200));
+	current_lmi = new ListMenuItem("text_background", TextMenuItem::with_manager(m_text_manager, "Text Background:", "text_background", 460, 200));
 	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "On", "on", 700, 200));
 	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "Off", "off", 700, 200));
 	current_lmi->set_default_index(m_configuration->get_bool_value("text_background") ? 0 : 1);
 	current_lmi->set_current_index(m_configuration->get_bool_value("text_background") ? 0 : 1);
 	m_options_form.add_item("text_background", current_lmi);
 	m_options_menu.add_item(current_lmi);
-	current_lmi = new ListMenuItem("text_shadow", TextMenuItem::with_manager(m_text_manager, "Text Shadow:", "text_shadow", 420, 240));
+	current_lmi = new ListMenuItem("text_shadow", TextMenuItem::with_manager(m_text_manager, "Text Shadow:", "text_shadow", 460, 240));
 	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "On", "on", 700, 240));
 	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "Off", "off", 700, 240));
 	current_lmi->set_default_index(m_configuration->get_bool_value("text_shadow") ? 0 : 1);
 	current_lmi->set_current_index(m_configuration->get_bool_value("text_shadow") ? 0 : 1);
 	m_options_form.add_item("text_shadow", current_lmi);
 	m_options_menu.add_item(current_lmi);
-	current_lmi = new ListMenuItem("text_sliding", TextMenuItem::with_manager(m_text_manager, "Text Sliding:", "text_sliding", 420, 280));
+	current_lmi = new ListMenuItem("text_sliding", TextMenuItem::with_manager(m_text_manager, "Text Sliding:", "text_sliding", 460, 280));
 	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "On", "on", 700, 280));
 	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "Off", "off", 700, 280));
 	current_lmi->set_default_index(m_configuration->get_bool_value("text_sliding") ? 0 : 1);
 	current_lmi->set_current_index(m_configuration->get_bool_value("text_sliding") ? 0 : 1);
 	m_options_form.add_item("text_sliding", current_lmi);
 	m_options_menu.add_item(current_lmi);
-	current_lmi = new ListMenuItem("multisample", TextMenuItem::with_manager(m_text_manager, "Multisample:", "multisample", 420, 320));
+	current_lmi = new ListMenuItem("multisample", TextMenuItem::with_manager(m_text_manager, "Multisample:", "multisample", 460, 320));
 	for (int i = 0; i <= GameWindow::MAX_MSAA; ++i) {
 		stringstream s;
 		s << i;
@@ -375,6 +373,21 @@ void GameController::init(GameWindow* window) {
 	current_lmi = new ListMenuItem("resolution", TextMenuItem::with_manager(m_text_manager, "Resolution:", "resolution", 50, 320));
 	m_options_form.add_item("resolution", current_lmi);
 	m_options_menu.add_item(current_lmi);
+
+	// Initialize the name input box
+	m_name_bar_back = new TableBackground(1, 0);
+	m_name_bar_back->set_cell_color(0, TEXT_BG_COLOR);
+	m_name_bar_back->set_border_color(Color(0, 0, 0, 0));
+	m_name_input = new TextInput(m_text_manager, 210, 200);
+	m_name_input->set_window(m_window);
+	m_name_input->set_background(m_name_bar_back);
+	m_name_input->set_background_scale(true);
+	m_name_input->set_background_padding(2);
+	m_name_input->set_invisible(true);
+	m_name_input->set_priority(0);
+	m_name_input->set_crop_width(230);
+	m_name_bar_back->set_priority(1);
+	m_options_form.add_item("name", m_name_input);
 
 	// TODO: move this to preinit--it doesn't require a GameWindow, and should be done before one is made
 	int depth;
@@ -404,7 +417,7 @@ void GameController::init(GameWindow* window) {
 		int height = m_resolutions[i].second;
 		stringstream resolution;
 		resolution << width << "x" << height;
-		current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, resolution.str(), resolution.str(), 240, 320));
+		current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, resolution.str(), resolution.str(), 210, 320));
 		if (m_screen_width == width && m_screen_height == height) {
 			current_lmi->set_current_index(i);
 			current_lmi->set_default_index(i);
@@ -574,15 +587,18 @@ void GameController::init(GameWindow* window) {
 	
 	update_cooldown_bar(0);
 
-	// Initialize the input bar background
-	m_input_bar_back = new TableBackground(1, 0);
-	m_input_bar_back->set_row_height(0, 20);
-	m_input_bar_back->set_priority(0);
-	m_input_bar_back->set_cell_color(0, TEXT_BG_COLOR);
-	m_input_bar_back->set_x(17);
-	m_input_bar_back->set_y(m_screen_height - 102);
-	m_input_bar_back->set_invisible(true);
-	m_window->register_hud_graphic(m_input_bar_back);
+	// Initialize the input bar
+	TableBackground* input_bar_back = new TableBackground(1, 0);
+	input_bar_back->set_cell_color(0, TEXT_BG_COLOR);
+	m_chat_input = new TextInput(m_text_manager, 20, m_screen_height - 100, CHAT_LIMIT);
+	m_chat_input->set_window(m_window);
+	m_chat_input->set_background(input_bar_back);
+	m_chat_input->set_background_scale(true);
+	m_chat_input->set_background_padding(2);
+	m_chat_input->set_invisible(true);
+	m_chat_input->set_priority(0);
+	input_bar_back->set_priority(1);
+	m_team_chatting = false;
 	
 	// Initialize the chat window background
 	m_chat_window_back = new TableBackground(1, 0);
@@ -624,6 +640,8 @@ void GameController::init(GameWindow* window) {
 	} else if (!resolve_hostname(m_metaserver_address, METASERVER_HOSTNAME, METASERVER_PORTNO)) {
 		cerr << "Unable to resolve metaserver hostname.  Internet-wide server browsing will not be enabled." << endl;
 	}
+
+	m_focus = NULL;
 
 	#ifndef LM_NO_UPGRADE_NAG
 	check_for_upgrade();
@@ -1150,7 +1168,7 @@ void GameController::process_input() {
 				}
 				
 				// If we're typing into the input bar...
-				if (m_input_bar != NULL) {
+				if (m_focus != NULL) {
 					if (event.key.keysym.sym == m_key_bindings.show_overlay || event.key.keysym.sym == m_alt_key_bindings.show_overlay) {
 						parse_key_input();
 						break;
@@ -1164,88 +1182,64 @@ void GameController::process_input() {
 						}
 						SDL_EnableUNICODE(0);
 						SDL_EnableKeyRepeat(0, 0); // Disable key repeat
-						m_text_manager->remove_string(m_input_bar);
-						m_input_bar = NULL;
-						m_input_bar_back->set_invisible(true);
-						m_input_text = "> ";
+						m_chat_input->set_invisible(true);
+						m_chat_input->reset();
+						m_focus = NULL;
+						//m_input_text = "> ";
 					} else if (event.key.keysym.sym == m_key_bindings.send_chat || event.key.keysym.sym == m_alt_key_bindings.send_chat) {
-						if (m_input_text.find("[TEAM]> ") == 0) {
-							string msg = m_input_text.substr(8);
-							m_input_text = ((string)"> /tchat ").append(msg);
-						}
-						
-						// Remove the "> " from the front.
-						string message = m_input_text.substr(2);
-						
-						// Check message for commands.
-						if (message == "/quit") {
-							m_quit_game = true;
-						} else if (message.find("/name ") == 0) {
-							string new_name(message.substr(6));
-							if (m_network.is_connected()) {
-								send_name_change_packet(new_name.c_str());
-							} else {
-								ostringstream	msg;
-								msg << "You are now known as " << new_name;
-								display_message(msg.str());
+						if (m_focus == m_chat_input) {
+							if (m_input_text.find("[TEAM]> ") == 0) {
+								string msg = m_input_text.substr(8);
+								m_input_text = ((string)"> /tchat ").append(msg);
+							}
+							
+							string message = m_chat_input->get_value();
+							
+							// Check message for commands.
+							if (message == "/quit") {
+								m_quit_game = true;
+							} else if (message.find("/name ") == 0) {
+								string new_name(message.substr(6));
+								if (!m_network.is_connected()) {
+									ostringstream	msg;
+									msg << "You are now known as " << new_name;
+									display_message(msg.str());
+								}
 								set_player_name(new_name);
-							}
-						} else if (message.find("/team ") == 0) {
-							string	new_team_string(message.substr(6));
-							char	new_team = parse_team_string(new_team_string.c_str());
-							if (is_valid_team(new_team)) {
-								send_team_change_packet(new_team);
+							} else if (message.find("/team ") == 0) {
+								string	new_team_string(message.substr(6));
+								char	new_team = parse_team_string(new_team_string.c_str());
+								if (is_valid_team(new_team)) {
+									send_team_change_packet(new_team);
+								} else {
+									display_message("Please enter '/team blue' or '/team red'");
+								}
+							} else if (message == "/copying" || message == "/warranty" || message == "/legal" || message == "/copyright") {
+								display_legalese();
+							} else if (message.find("/tchat ") == 0) {
+								send_team_message(message.substr(7));
+							} else if (m_team_chatting) {
+								send_team_message(message);
 							} else {
-								display_message("Please enter '/team blue' or '/team red'");
+								send_message(message);
 							}
-						} else if (message.find("/tchat ") == 0) {
-							send_team_message(message.substr(7));
-						} else if (message == "/copying" || message == "/warranty" || message == "/legal" || message == "/copyright") {
-							display_legalese();
-						} else {
-							send_message(message);
+							m_chat_input->set_invisible(true);
+							m_chat_input->reset();
+						} else if (m_focus == m_name_input) {
+							m_name_bar_back->set_border_color(Color(0, 0, 0, 0));
 						}
 					
 						// Remove the input bar.
 						SDL_EnableUNICODE(0);
 						SDL_EnableKeyRepeat(0, 0); // Disable key repeat
-						m_text_manager->remove_string(m_input_bar);
-						m_input_bar = NULL;
-						m_input_bar_back->set_invisible(true);
-						m_input_text = "> ";
-					} else if (event.key.keysym.sym == SDLK_BACKSPACE) {
-						// Delete text.
-						if (m_input_text.length() <= 2) {
-							break;
-						}
-						if (m_input_text.find("[TEAM]> ") == 0 && m_input_text.length() <= 8) {
-							break;
-						}
-						m_input_text.erase(m_input_text.length() - 1);
-						m_text_manager->remove_string(m_input_bar);
-						m_text_manager->set_active_color(TEXT_COLOR);
-						m_text_manager->set_active_font(m_font);
-						m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
-						m_input_bar_back->set_image_width(m_input_bar->get_image_width() + 6);
-						if (m_configuration->get_bool_value("text_background")) {
-							m_input_bar_back->set_invisible(false);
-						}
+						m_focus = NULL;
 					} else {
-						// Otherwise, it's a regular character. Type it in.
-						if ( (event.key.keysym.unicode & 0xFF80) == 0 && event.key.keysym.unicode != 0) {
-							m_input_text.push_back(event.key.keysym.unicode & 0x7F);
-						} else {
-							// INTERNATIONAL CHARACTER... DO SOMETHING.
+						if (m_focus == m_chat_input) {
+							m_text_manager->set_active_font(m_font);
+						} else if (m_focus == m_name_input) {
+							m_text_manager->set_active_font(m_menu_font);
 						}
-						// Replace the text display with the new one.
-						m_text_manager->remove_string(m_input_bar);
-						m_text_manager->set_active_color(TEXT_COLOR);
-						m_text_manager->set_active_font(m_font);
-						m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
-						m_input_bar_back->set_image_width(m_input_bar->get_image_width() + 6);
-						if (m_configuration->get_bool_value("text_background")) {
-							m_input_bar_back->set_invisible(false);
-						}
+						m_focus->keyboard_event(event.key);
 					}
 				} else {
 					//Check which key using: event.key.keysym.sym == SDLK_<SOMETHING>
@@ -1255,14 +1249,13 @@ void GameController::process_input() {
 						SDL_EnableUNICODE(1);
 						SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 						m_text_manager->set_active_color(TEXT_COLOR);
-						if (m_input_bar == NULL) {
-							m_text_manager->set_active_font(m_font);
-							m_input_bar = m_text_manager->place_string("> ", 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
-							m_input_bar_back->set_image_width(m_input_bar->get_image_width() + 6);
-							if (m_configuration->get_bool_value("text_background")) {
-								m_input_bar_back->set_invisible(false);
-							}
-						}
+						m_team_chatting = false;
+						m_chat_input->reset();
+						m_text_manager->set_active_font(m_bold_font);
+						m_text_manager->set_active_color(TEXT_COLOR);
+						m_chat_input->set_prefix("> ");
+						m_chat_input->set_invisible(false);
+						m_focus = m_chat_input;
 						if (event.key.keysym.sym == m_key_bindings.open_console || event.key.keysym.sym == m_alt_key_bindings.open_console) {
 							m_chat_log->set_visible(true);
 						}
@@ -1271,14 +1264,13 @@ void GameController::process_input() {
 						SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 						m_text_manager->set_active_color(TEXT_COLOR);
 						m_text_manager->set_active_font(m_font);
-						m_input_text = "[TEAM]> ";
-						if (m_input_bar == NULL) {
-							m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
-							m_input_bar_back->set_image_width(m_input_bar->get_image_width() + 6);
-							if (m_configuration->get_bool_value("text_background")) {
-								m_input_bar_back->set_invisible(false);
-							}
-						}
+						m_team_chatting = true;
+						m_chat_input->reset();
+						m_text_manager->set_active_font(m_bold_font);
+						m_text_manager->set_active_color(TEXT_COLOR);
+						m_chat_input->set_prefix("[TEAM]> ");
+						m_chat_input->set_invisible(false);
+						m_focus = m_chat_input;
 					} else if (event.key.keysym.sym == m_key_bindings.show_menu || event.key.keysym.sym == m_alt_key_bindings.show_menu) {
 						if (!m_chat_log->is_invisible()) {
 							m_chat_log->set_visible(false);
@@ -1454,7 +1446,7 @@ void GameController::parse_key_input() {
 	// For keys that can be held down:
    	m_keys = SDL_GetKeyState(NULL);
    	
-   	if (m_game_state == GAME_IN_PROGRESS && m_input_bar == NULL) {
+   	if (m_game_state == GAME_IN_PROGRESS && m_focus == NULL) {
 		if ((m_key_bindings.jump != -1 && m_keys[m_key_bindings.jump]) || (m_alt_key_bindings.jump != -1 && m_keys[m_alt_key_bindings.jump])) {
 			attempt_jump();
 		}
@@ -1544,57 +1536,73 @@ void GameController::process_mouse_click(SDL_Event event) {
 			if (item && event.type == SDL_MOUSEBUTTONUP) {
 				m_sound_controller->play_sound("click");
 				if(item->get_name() == "cancel") {
+					if (m_focus == m_name_input) {
+						// TODO generalize
+						m_name_bar_back->set_border_color(Color(0, 0, 0, 0));
+						m_focus = NULL;
+					}
 					reset_options();
 					m_game_state = SHOW_MENUS;
 				} else if(item->get_name() == "name") {
 					// Open the input bar and allow the name to be entered.
-					// Should replace later, to use a separate text entry location.
 					SDL_EnableUNICODE(1);
-					m_text_manager->set_active_color(TEXT_COLOR);
-					m_text_manager->set_active_font(m_font);
-					m_input_text = "> /name ";
-					m_text_manager->remove_string(m_input_bar);
-					m_input_bar = m_text_manager->place_string(m_input_text, 20, m_screen_height-100, TextManager::LEFT, TextManager::LAYER_HUD);
-					m_input_bar_back->set_image_width(m_input_bar->get_image_width() + 6);
-					if (m_configuration->get_bool_value("text_background")) {
-						m_input_bar_back->set_invisible(false);
+					SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
+					if (m_focus != NULL && m_focus != m_name_input) {
+						m_focus->reset();
+						m_focus->set_invisible(true);
 					}
-				} else if(item->get_name() == "apply") {
-					string resolution = m_options_form.get_item("resolution")->get_value();
-					size_t xpos = resolution.find('x');
-					int width;
-					int height;
-					int multisample;
-					istringstream wstring(resolution.substr(0, xpos));
-					istringstream hstring(resolution.substr(xpos + 1));
-					istringstream mstring(m_options_form.get_item("multisample")->get_value());
-					wstring >> width;
-					hstring >> height;
-					mstring >> multisample;
-					cout << multisample << endl;
-					m_sound_controller->set_sound_on(m_options_form.get_item("sound")->get_value() == "on");
-					bool fullscreen = m_options_form.get_item("fullscreen")->get_value() == "on";
-					bool text_shadow = m_options_form.get_item("text_shadow")->get_value() == "on";
-					bool text_sliding = m_options_form.get_item("text_sliding")->get_value() == "on";
-					bool text_background = m_options_form.get_item("text_background")->get_value() == "on";
-					if (width != m_configuration->get_int_value("screen_width") || 
-							height != m_configuration->get_int_value("screen_height") ||
-							fullscreen != m_configuration->get_bool_value("fullscreen") ||
-							multisample != m_configuration->get_int_value("multisample") ||
-							text_shadow != m_configuration->get_bool_value("text_shadow") ||
-							text_sliding != m_configuration->get_bool_value("text_sliding") ||
-							text_background != m_configuration->get_bool_value("text_background")) {
-						m_configuration->set_int_value("screen_width", width);
-						m_configuration->set_int_value("screen_height", height);
-						m_configuration->set_bool_value("fullscreen", fullscreen);
-						m_configuration->set_int_value("multisample", multisample);
-						m_configuration->set_bool_value("text_shadow", text_shadow);
-						m_configuration->set_bool_value("text_sliding", text_sliding);
-						m_configuration->set_bool_value("text_background", text_background);
-						m_restart = true;
-						m_quit_game = true;
-					} else {
-						m_game_state = SHOW_MENUS;
+					m_name_bar_back->set_border_color(TEXT_COLOR);
+					m_focus = m_name_input;
+				} else {
+					m_name_bar_back->set_border_color(Color(0, 0, 0, 0));
+					m_focus = NULL;
+					if(item->get_name() == "apply") {
+						string resolution = m_options_form.get_item("resolution")->get_value();
+						size_t xpos = resolution.find('x');
+						int width;
+						int height;
+						int multisample;
+						istringstream wstring(resolution.substr(0, xpos));
+						istringstream hstring(resolution.substr(xpos + 1));
+						istringstream mstring(m_options_form.get_item("multisample")->get_value());
+						wstring >> width;
+						hstring >> height;
+						mstring >> multisample;
+						cout << multisample << endl;
+						m_sound_controller->set_sound_on(m_options_form.get_item("sound")->get_value() == "on");
+						bool fullscreen = m_options_form.get_item("fullscreen")->get_value() == "on";
+						bool text_shadow = m_options_form.get_item("text_shadow")->get_value() == "on";
+						bool text_sliding = m_options_form.get_item("text_sliding")->get_value() == "on";
+						bool text_background = m_options_form.get_item("text_background")->get_value() == "on";
+						if (width != m_configuration->get_int_value("screen_width") || 
+								height != m_configuration->get_int_value("screen_height") ||
+								fullscreen != m_configuration->get_bool_value("fullscreen") ||
+								multisample != m_configuration->get_int_value("multisample") ||
+								text_shadow != m_configuration->get_bool_value("text_shadow") ||
+								text_sliding != m_configuration->get_bool_value("text_sliding") ||
+								text_background != m_configuration->get_bool_value("text_background")) {
+							m_configuration->set_int_value("screen_width", width);
+							m_configuration->set_int_value("screen_height", height);
+							m_configuration->set_bool_value("fullscreen", fullscreen);
+							m_configuration->set_int_value("multisample", multisample);
+							m_configuration->set_bool_value("text_shadow", text_shadow);
+							m_configuration->set_bool_value("text_sliding", text_sliding);
+							m_configuration->set_bool_value("text_background", text_background);
+							m_restart = true;
+							m_quit_game = true;
+						} else {
+							m_game_state = SHOW_MENUS;
+						}
+
+						string new_name(m_name_input->get_value());
+						if (new_name != m_name) {
+							if (!m_network.is_connected()) {
+								ostringstream	msg;
+								msg << "You are now known as " << new_name;
+								display_message(msg.str());
+							}
+							set_player_name(new_name);
+						}
 					}
 				}
 			}
@@ -1679,6 +1687,8 @@ void GameController::process_mouse_click(SDL_Event event) {
  * Reset the options menu, without applying the changes.
  */
 void GameController::reset_options() {
+	m_text_manager->set_active_font(m_menu_font);
+	m_text_manager->set_active_color(TEXT_COLOR);
 	m_options_form.reset();
 }
 
@@ -2016,6 +2026,7 @@ void GameController::toggle_main_menu(bool visible) {
  */
 void GameController::toggle_options_menu(bool visible) {
 	m_options_menu.get_graphic_group()->set_invisible(!visible);
+	m_name_input->set_invisible(!visible);
 }
 
 /*
@@ -3319,6 +3330,9 @@ void	GameController::set_player_name(string name) {
 	if (m_network.is_connected()) {
 		send_name_change_packet(m_name.c_str());
 	}
+	m_text_manager->set_active_font(m_menu_font);
+	m_name_input->set_default_value(name);
+	m_name_input->reset();
 }
 
 void	GameController::clear_players() {

@@ -51,8 +51,7 @@ TextInput::TextInput(TextManager* manager, double x, double y, unsigned int limi
 
 TextInput::~TextInput() {
 	if (m_crop_area != NULL) {
-		GraphicGroup* group = m_crop_area->get_group();
-		group->take_graphic(m_group);
+		m_crop_area->get_group()->take_graphic(m_group);
 		if (m_window != NULL) {
 			m_window->unregister_hud_graphic(m_crop_area);
 		}
@@ -63,7 +62,6 @@ TextInput::~TextInput() {
 	if (m_window != NULL) {
 		m_window->unregister_hud_graphic(m_background);
 	}
-
 	delete m_group;
 	delete m_background;
 }
@@ -243,6 +241,30 @@ void TextInput::set_background_scale(bool enable) {
 void TextInput::set_background_padding(double padding) {
 	m_bg_padding = padding;
 	recalc();
+}
+
+void TextInput::set_invisible(bool invisible) {
+	if (m_background != NULL) {
+		m_background->set_invisible(invisible);
+	}
+	if (m_crop_area != NULL) {
+		m_crop_area->set_invisible(invisible);
+	}
+	m_group->set_invisible(invisible);
+}
+
+void TextInput::set_priority(int priority) {
+	if (m_window == NULL) {
+		if (m_crop_area != NULL) {
+			m_crop_area->set_priority(priority);
+		}
+		m_group->set_priority(priority);
+	} else {
+		if (m_crop_area != NULL) {
+			m_window->reprioritize_hud_graphic(m_crop_area, priority);
+		}
+		m_window->reprioritize_hud_graphic(m_group, priority);
+	}
 }
 
 string TextInput::get_value() const {

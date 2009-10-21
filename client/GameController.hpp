@@ -55,6 +55,7 @@
 #include "RadialBackground.hpp"
 #include "RadialMenu.hpp"
 #include "GraphicsCache.hpp"
+#include "TextInput.hpp"
 
 #include <string>
 #include <vector>
@@ -98,6 +99,7 @@ namespace LM {
 		const static int TEXT_LAYER;
 		const static unsigned int PING_FREQUENCY;
 		const static unsigned int CHAT_TRANSITION_TIME;
+		const static unsigned int CHAT_LIMIT;
 
 	private:
 		struct KeyBindings {
@@ -215,8 +217,7 @@ namespace LM {
 		Sprite*		red_sprite;
 		Sprite*		red_back_arm;
 		Sprite*		m_crosshairs;
-		Graphic*	m_input_bar;
-		TableBackground* m_input_bar_back;
+		TextInput*	m_chat_input;
 		TableBackground* m_chat_window_back;
 		Transition*	m_chat_window_transition_x;
 		Transition*	m_chat_window_transition_y;
@@ -232,7 +233,6 @@ namespace LM {
 		ArbitraryMenu	m_options_menu;
 		Form		m_options_form;
 
-		//std::map<std::string, Text*> m_options_menu_items;
 		size_t		m_num_resolutions;
 		size_t		m_resolution_selected;
 		std::vector<std::pair<int, int> > m_resolutions;
@@ -280,6 +280,12 @@ namespace LM {
 		// NEW WEAPON CODE
 		Weapon*		m_current_weapon;
 		std::map<std::string, Weapon*>	m_weapons;
+
+		// NEW INPUT CODE
+		TextInput*	m_focus;
+		TextInput*	m_name_input;
+		TableBackground* m_name_bar_back;
+		bool		m_team_chatting;
 
 		Weapon*		get_weapon(const std::string& name);
 		void		init_weapon_selector();

@@ -54,6 +54,7 @@ namespace LM {
 		GameWindow*	m_window;
 		double		m_x;
 		double		m_y;
+		
 
 		void	recalc();
 
@@ -77,6 +78,8 @@ namespace LM {
 		void	set_background_padding(double padding);
 		void	set_x(double x);
 		void	set_y(double y);
+		void	set_invisible(bool invisible);
+		void	set_priority(int priority);
 
 		virtual std::string	get_value() const;
 		virtual std::string	get_default_value() const;
