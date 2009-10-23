@@ -194,6 +194,11 @@ To install in a different directory (useful for making packages):
 
 	make install DESTDIR=/path/to/package/root
 
+Note that, by default, the version of Leges Motus that is built on an OS X computer running 10.6 (Snow Leopard) or higher will not work on older versions of Mac OS X. To fix this, you must configure Leges Motus to use an older version of GCC. This can be accomplished by running the configure script with an environment variable set, like so:
+
+	CXX=g++-4.0 ./configure
+
+When build with a configuration like this, it should work on 10.5, and, assuming you have the SDK for 10.4 installed, 10.4 as well.
 
 CREDITS
 

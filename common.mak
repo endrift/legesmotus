@@ -48,7 +48,6 @@ endif
 
 ifeq ($(MACHINE)$(UNIXSTYLE),Darwin)
  export MACOSX_DEPLOYMENT_TARGET=10.4
- CFLAGS += -mmacosx-version-min=10.4
  FLAGS_SDL  = -I$(FRAMEWORKS)/SDL.framework/Headers
  FLAGS_SDL += -I$(FRAMEWORKS)/SDL_image.framework/Headers
  FLAGS_SDL += -I$(FRAMEWORKS)/SDL_ttf.framework/Headers
@@ -116,12 +115,7 @@ CXXFLAGS += -Wnon-virtual-dtor
 ifeq ($(DEBUG),1)
  CFLAGS += -g -O0
 else
- ifeq ($(MACHINE)$(UNIXSTYLE),Darwin)
-  # Optimizations cause it to not work on Tiger
-  CFLAGS += -O0
- else
-  CFLAGS += -O2
- endif
+ CFLAGS += -O2
 endif
 
 LDFLAGS += $(CFLAGS)
