@@ -172,6 +172,8 @@ GameController::~GameController() {
 	m_radar->unregister_with_window(m_window);
 	delete m_radar;
 
+	m_graphics_cache.clear(); // Make sure the graphics cache is clear before m_window is destroyed, or bad stuff may happen (TODO: make GameWindow managed in a more sensible way)
+
 	// The GameWindow instance should always be destroyed last, since other stuff may depend on it.
 	m_window->deinit_video();
 	m_window->destroy_instance();
