@@ -116,7 +116,12 @@ CXXFLAGS += -Wnon-virtual-dtor
 ifeq ($(DEBUG),1)
  CFLAGS += -g -O0
 else
- CFLAGS += -O2
+ ifeq ($(MACHINE)$(UNIXSTYLE),Darwin)
+  # Optimizations cause it to not work on Tiger
+  CFLAGS += -O0
+ else
+  CFLAGS += -O2
+ endif
 endif
 
 LDFLAGS += $(CFLAGS)
