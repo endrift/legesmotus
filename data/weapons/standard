@@ -1,4 +1,4 @@
-rifle:STANDARD
+1-rifle:STANDARD
 	name=Rifle
 	hud=large_rifle.png
 	damage=100
@@ -7,7 +7,7 @@ rifle:STANDARD
 	normal=4,20:-15:1:rifle_noshot.png
 	firing=4,20:-15:1:rifle_shot.png
 
-shotgun:SPREAD
+2-shotgun:SPREAD
 	name=Shotgun
 	hud=large_sgun.png
 	projectiles=5
@@ -19,7 +19,7 @@ shotgun:SPREAD
 	normal=5,20:-15:1:sgun_noshot.png
 	firing=5,20:-15:1:sgun_shot.png
 
-mgun:STANDARD
+3-mgun:STANDARD
 	name=Machine Gun
 	hud=large_mgun.png
 	damage=8
@@ -32,11 +32,11 @@ mgun:STANDARD
 	ammo=30
 	ammo_recharge=200
 
-impact:IMPACT
+4-impact:IMPACT
 	name=Impact Cannon
 	hud=large_cannon.png
 	force=20
-	cooldown=3000
+	cooldown=2000
 	recoil=4.0
 	normal=10,-1:-15:-1:cannon_back.png;10,-1:-15:1:cannon_front.png
 	firing=10,-1:-15:-1:cannon_back.png;10,-1:-15:1:cannon_front_shot.png
