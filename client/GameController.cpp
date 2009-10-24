@@ -101,12 +101,12 @@ static bool	sort_resolution(pair<int, int> pairone, pair<int, int> pairtwo) {
 	return pairone.first < pairtwo.first;
 }
 
-GameController::GameController(PathManager& path_manager, ClientConfiguration* config) : m_path_manager(path_manager), m_ack_manager(*this) {
+GameController::GameController(PathManager& path_manager, ClientConfiguration* config) : m_path_manager(path_manager), m_network(*this) {
 	preinit(config);
 	init(GameWindow::get_optimal_instance(config->get_int_value("multisample")));
 }
 
-GameController::GameController(PathManager& path_manager, ClientConfiguration* config, int width, int height, bool fullscreen, int depth) : m_path_manager(path_manager), m_ack_manager(*this) {
+GameController::GameController(PathManager& path_manager, ClientConfiguration* config, int width, int height, bool fullscreen, int depth) : m_path_manager(path_manager), m_network(*this) {
 	preinit(config);
 	init(GameWindow::get_instance(width, height, depth, fullscreen, config->get_int_value("multisample")));
 }
@@ -212,7 +212,7 @@ void GameController::init(GameWindow* window) {
 	m_last_ping_sent = 0;
 	
 	m_client_version = LM_VERSION;
-	m_protocol_number = 3;
+	m_protocol_number = 4;
 	
 	m_pixel_depth = window->get_depth();
 	m_fullscreen = window->is_fullscreen();
@@ -668,9 +668,8 @@ void GameController::run(int lockfps) {
 	while(m_quit_game == false) {
 		process_input();
 		
-		m_ack_manager.resend();
-
-		m_network.receive_packets(*this);
+		m_network.resend_acks();
+		m_network.receive_packets();
 		
 		if (m_quit_game == true) {
 			break;
@@ -2187,7 +2186,7 @@ void GameController::connect_to_server(const IPAddress& server_address, char tea
 	
 	m_join_sent_time = get_ticks();
 	
-	m_network.send_packet(join_request);
+	m_network.send_reliable_packet(join_request);
 }
 
 /*
@@ -2233,7 +2232,6 @@ void GameController::welcome(PacketReader& reader) {
 	m_name = playername;
 
 	cout << "Received welcome packet. Version: " << serverversion << ", Player ID: " << playerid << ", Name: " << playername << ", Team: " << team << endl;
-	send_ack(reader);
 	
 	if (serverversion != m_protocol_number) {
 		ostringstream serveraddress;
@@ -2299,8 +2297,6 @@ void GameController::announce(PacketReader& reader) {
 		return;
 	}
 
-	send_ack(reader);
-	
 	reader >> playerid >> playername >> team;
 	
 	string joinmsg = "";
@@ -2349,7 +2345,6 @@ void GameController::player_update(PacketReader& reader) {
 
 	if (player_id == m_player_id) {
 		// If the player update packet is for this player, send an ACK for it
-		send_ack(reader);
 	}
 
 	GraphicalPlayer* currplayer = get_player_by_id(player_id);
@@ -2558,8 +2553,6 @@ void GameController::player_died(PacketReader& reader) {
 
 	reader >> dead_player_id >> killer_id >> time_to_unfreeze;
 
-	send_ack(reader);
-	
 	GraphicalPlayer* dead_player = get_player_by_id(dead_player_id);
 	GraphicalPlayer* killer = killer_id ? get_player_by_id(killer_id) : NULL;
 
@@ -2745,8 +2738,6 @@ void GameController::new_round(PacketReader& reader) {
 	uint64_t	time_until_start;
 	reader >> map_name >> map_revision >> game_started >> time_until_start;
 
-	send_ack(reader);
-
 	/*
 	 * Tell the player what's going on
 	 */
@@ -2802,8 +2793,6 @@ void GameController::round_over(PacketReader& reader) {
 	
 	reader >> winningteam >> teamascore >> teambscore;
 
-	send_ack(reader);
-	
 	m_game_state = GAME_OVER;
 	
 	if (winningteam == '-') {
@@ -2858,8 +2847,6 @@ void GameController::round_start(PacketReader& reader) {
 	toggle_score_overlay(false);
 	m_sound_controller->play_sound("begin");
 	display_message("Game started!");
-
-	send_ack(reader);
 }
 
 /*
@@ -2875,8 +2862,6 @@ void GameController::score_update(PacketReader& reader) {
 	std::string	subject;
 	int		score;
 	reader >> subject >> score;
-
-	send_ack(reader);
 
 	if (is_valid_team(subject[0])) {
 		char	team = subject[0];
@@ -3060,7 +3045,7 @@ void GameController::send_gate_hold(bool holding) {
 	} else {
 		gate_hold << m_player_id << get_other_team(m_players[m_player_id].get_team()) << 0;
 	}
-	m_network.send_packet(gate_hold);
+	m_network.send_reliable_packet(gate_hold);
 }
 
 void GameController::set_gate_hold(bool holding_gate) {
@@ -3077,7 +3062,7 @@ void GameController::set_gate_hold(bool holding_gate) {
 void GameController::send_name_change_packet(const char* new_name) {
 	PacketWriter packet(NAME_CHANGE_PACKET);
 	packet << m_player_id << new_name;
-	m_network.send_packet(packet);
+	m_network.send_reliable_packet(packet);
 }
 
 /*
@@ -3110,7 +3095,7 @@ void GameController::recreate_name(GraphicalPlayer* player) {
 void GameController::send_team_change_packet(char new_team) {
 	PacketWriter packet(TEAM_CHANGE_PACKET);
 	packet << m_player_id << new_team;
-	m_network.send_packet(packet);
+	m_network.send_reliable_packet(packet);
 }
 
 /*
@@ -3183,13 +3168,6 @@ GraphicalPlayer* GameController::get_player_by_name(const char* name) {
 /*
  * Send an ack packet.
  */
-void	GameController::send_ack(const PacketReader& packet) {
-	PacketWriter		ack_packet(ACK_PACKET);
-	ack_packet << m_player_id << packet.packet_type() << packet.packet_id();
-	m_network.send_packet(ack_packet);
-}
-
-
 void	GameController::server_info(const IPAddress& server_address, PacketReader& info_packet) {
 	uint32_t	request_packet_id;
 	uint64_t	scan_start_time;
@@ -3283,7 +3261,7 @@ void	GameController::upgrade_available(const IPAddress& server_address, PacketRe
 
 void	GameController::scan_all() {
 	PacketWriter info_request_packet(INFO_PACKET);
-	m_current_scan_id = info_request_packet.packet_id();
+	m_current_scan_id = get_next_scan_id();
 	info_request_packet << m_protocol_number << m_current_scan_id << get_ticks() << m_client_version;
 	m_network.broadcast_packet(DEFAULT_PORTNO, info_request_packet);
 	IPAddress localhostip;
@@ -3301,21 +3279,21 @@ void    GameController::check_for_upgrade() {
 
 void	GameController::scan_local_network() {
 	PacketWriter info_request_packet(INFO_PACKET);
-	m_current_scan_id = info_request_packet.packet_id();
+	m_current_scan_id = get_next_scan_id();
 	info_request_packet << m_protocol_number << m_current_scan_id << get_ticks();
 	m_network.broadcast_packet(DEFAULT_PORTNO, info_request_packet);
 }
 
 void	GameController::contact_metaserver() {
 	PacketWriter info_request_packet(INFO_PACKET);
-	m_current_scan_id = info_request_packet.packet_id();
+	m_current_scan_id = get_next_scan_id();
 	info_request_packet << m_protocol_number << m_current_scan_id << get_ticks() << m_client_version;
 	m_network.send_packet_to(m_metaserver_address, info_request_packet);
 }
 
 void	GameController::ping_server(const IPAddress& server_address) {
 	PacketWriter info_request_packet(INFO_PACKET);
-	m_current_ping_id = info_request_packet.packet_id();
+	m_current_scan_id = get_next_scan_id();
 	info_request_packet << m_protocol_number << m_current_ping_id << get_ticks();
 	m_network.send_packet_to(server_address, info_request_packet);
 }
@@ -3402,7 +3380,6 @@ void GameController::map_info_packet(PacketReader& reader) {
 		if (m_map_receiver->is_done()) {
 			m_map_receiver.reset();
 		}
-		send_ack(reader);
 	}
 }
 
@@ -3411,16 +3388,16 @@ void GameController::map_object_packet(PacketReader& reader) {
 		if (m_map_receiver->is_done()) {
 			m_map_receiver.reset();
 		}
-		send_ack(reader);
 	}
 }
 
 void	GameController::request_map() {
 	m_map->clear();
+	m_map_receiver.reset(new MapReceiver(*m_map));
+
 	PacketWriter		packet(MAP_INFO_PACKET);
-	packet << m_player_id;
-	m_network.send_packet(packet);
-	m_map_receiver.reset(new MapReceiver(*m_map, packet.packet_id()));
+	packet << m_player_id << m_map_receiver->transmission_id();
+	m_network.send_reliable_packet(packet);
 }
 
 bool	GameController::load_map(const char* map_name, int map_revision) {
@@ -3482,8 +3459,6 @@ void GameController::game_param_packet(PacketReader& packet) {
 		// Parameter not recognized - reject the packet
 		return;
 	}
-
-	send_ack(packet);
 
 	set_radar_mode(m_params.radar_mode);
 	m_radar->set_scale(m_params.radar_scale);
@@ -3557,10 +3532,6 @@ void	GameController::freeze(uint64_t time_to_unfreeze) {
 	}
 }
 
-void	GameController::send_packet(PacketWriter& packet) {
-	m_network.send_packet(packet);
-}
-
 void	GameController::play_sound(const char* sound_name) {
 	m_sound_controller->play_sound(sound_name);
 }
@@ -3622,8 +3593,7 @@ bool	GameController::damage (int amount, const Player* aggressor) {
 		// Inform the server that we died
 		PacketWriter		died_packet(PLAYER_DIED_PACKET);
 		died_packet << m_player_id << (aggressor ? aggressor->get_id() : 0);
-		m_ack_manager.add_packet(died_packet);
-		m_network.send_packet(died_packet);
+		m_network.send_reliable_packet(died_packet);
 
 		return true;
 	}
@@ -3738,7 +3708,6 @@ void	GameController::weapon_info_packet(PacketReader& reader)
 	if (!m_weapons.count(weapon_data.get_id())) {
 		if (Weapon* weapon = Weapon::new_weapon(weapon_data)) {
 			m_weapons.insert(std::make_pair(weapon->get_id(), weapon));
-			send_ack(reader);
 			if (weapon_index == 0) {
 				m_current_weapon = weapon;
 				update_curr_weapon_image();
@@ -3757,7 +3726,6 @@ void GameController::spawn_packet(PacketReader& reader) {
 	uint64_t		freeze_time;
 
 	reader >> position >> velocity >> is_grabbing_obstacle >> is_alive >> freeze_time;
-	send_ack(reader);
 
 	GraphicalPlayer*	player = get_player_by_id(m_player_id);
 
@@ -3878,19 +3846,21 @@ void GameController::make_front_arm_graphic(GraphicGroup& player_sprite, const c
 }
 
 
-void	GameController::ClientAckManager::kick_peer(uint32_t peer_id) {
-	m_gc.display_message("Too much packet loss to server.", RED_COLOR, RED_SHADOW);
-	m_gc.disconnect();
+void	GameController::send_packet(const PacketWriter& packet) {
+	m_network.send_packet(packet);
 }
 
-void	GameController::ClientAckManager::resend_packet(uint32_t peer_id, const std::string& data) {
-	m_gc.m_network.send_packet(data);
+void	GameController::send_reliable_packet(const PacketWriter& packet) {
+	m_network.send_reliable_packet(packet);
 }
 
-void	GameController::ack(PacketReader& ack_packet) {
-	uint32_t		packet_type;
-	uint32_t		packet_id;
-	ack_packet >> packet_type >> packet_id;
-	m_ack_manager.ack(packet_id);
+uint32_t	GameController::get_next_scan_id() {
+	static uint32_t		next_scan_id = 1L;
+	return next_scan_id++;
+}
+
+void		GameController::excessive_packet_drop() {
+	display_message("Too much packet loss to server.", RED_COLOR, RED_SHADOW);
+	disconnect();
 }
 

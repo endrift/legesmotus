@@ -26,6 +26,7 @@
 #define LM_COMMON_PACKETREADER_HPP
 
 #include "network.hpp"
+#include "PacketHeader.hpp"
 #include "StringTokenizer.hpp"
 #include <string>
 #include <stdint.h>
@@ -57,17 +58,17 @@ namespace LM {
 	
 	class PacketReader : public StringTokenizer {
 	private:
-		uint32_t	m_packet_type;
-		uint32_t	m_packet_id;
+		PacketHeader	m_header;
 	
 	public:
 		// Construct a packet reader from the given raw packet data
 		explicit PacketReader(const char* packet_data, char separator =PACKET_FIELD_SEPARATOR);
 		explicit PacketReader(const UDPPacket& packet);
 	
-		// Get the packet type and packet ID at any time:
-		uint32_t	packet_type() const { return m_packet_type; }
-		uint32_t	packet_id() const { return m_packet_id; }
+		// Get the packet type and sequence NO at any time:
+		uint32_t	packet_type() const { return m_header.packet_type; }
+		uint64_t	sequence_no() const { return m_header.sequence_no; }
+		uint32_t	connection_id() const { return m_header.connection_id; }
 	
 		// Import operations from the base class:
 		using StringTokenizer::discard_next;

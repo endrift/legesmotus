@@ -1,5 +1,5 @@
 /*
- * common/PacketReader.cpp
+ * common/PacketHeader.cpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,37 +22,24 @@
  * 
  */
 
-#include "PacketReader.hpp"
-#include "UDPPacket.hpp"
-#include <cstring>
-#include <cstdlib>
-#include <ostream>
-#include <algorithm>
-
-// See .hpp file for extensive comments.
+#include "PacketHeader.hpp"
+#include "StringTokenizer.hpp"
+#include "network.hpp"
+#include <sstream>
 
 using namespace LM;
 using namespace std;
 
-PacketReader::PacketReader(const char* packet_data, char separator) : StringTokenizer(packet_data, separator) {
-	// Process the packet header, which consists of the first fields
-	m_header.read(*this);
+string	PacketHeader::make_string() const {
+	ostringstream	str;
+	str << packet_type << PACKET_FIELD_SEPARATOR << sequence_no;
+	if (connection_id) {
+		str << ':' << connection_id;
+	}
+	return str.str();
 }
-
-PacketReader::PacketReader(const UDPPacket& packet) {
-	StringTokenizer::set_delimiter(PACKET_FIELD_SEPARATOR);
-	StringTokenizer::init_from_raw_data(packet.get_data(), packet.get_length(), false);
-	// Process the packet header, which consists of the first fields
-	m_header.read(*this);
+void	PacketHeader::read(StringTokenizer& tok) {
+	string		packet_id_string;
+	tok >> packet_type >> packet_id_string;
+	StringTokenizer(packet_id_string, ':') >> sequence_no >> connection_id;
 }
-
-std::ostream&   LM::operator<<(std::ostream& out, const PacketReader& packet_reader) {
-	return out << packet_reader.get_rest();
-}
-
-void	PacketReader::swap(PacketReader& other) {
-	StringTokenizer::swap(other);
-	// std:: prefix necessary here to avoid name conflicts
-	std::swap(m_header, other.m_header);
-}
-

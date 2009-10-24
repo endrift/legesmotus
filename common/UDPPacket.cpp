@@ -72,15 +72,21 @@ void	UDPPacket::clear() {
 }
 
 void	UDPPacket::fill(const char* data, size_t data_length) {
-	// Don't store the null terminator in the raw data.
-	m_length = std::min(m_max_length, data_length);
-	memcpy(m_data, data, m_length);
-}
-
-void	UDPPacket::fill(const PacketWriter& packet) {
-	fill(packet.packet_data());
+	clear();
+	append(data, data_length);
 }
 
 void	UDPPacket::fill(const string& data) {
 	fill(data.c_str(), data.size());
+}
+
+void	UDPPacket::append(const char* data, size_t data_length) {
+	// Note: don't store the null terminator in the raw data.
+	data_length = std::min(m_max_length - m_length, data_length);
+	memcpy(m_data + m_length, data, data_length);
+	m_length += data_length;
+}
+
+void	UDPPacket::append(const string& data) {
+	append(data.c_str(), data.size());
 }

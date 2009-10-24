@@ -31,8 +31,10 @@
 using namespace LM;
 using namespace std;
 
-MapReceiver::MapReceiver(Map& map, uint32_t transmission_id) : m_map(map) {
-	m_transmission_id = transmission_id;
+uint32_t MapReceiver::next_transmission_id = 1L;
+
+MapReceiver::MapReceiver(Map& map) : m_map(map) {
+	m_transmission_id = next_transmission_id++;
 	m_has_info = false;
 	m_nbr_expected_objects = 0;
 	m_nbr_received_objects = 0;
@@ -57,15 +59,13 @@ bool	MapReceiver::map_object(PacketReader& packet) {
 	uint32_t	transmission_id;
 	packet >> transmission_id;
 
-	if (transmission_id != m_transmission_id || !m_has_info || is_done() || m_seen_packets.count(packet.packet_id())) {
+	if (transmission_id != m_transmission_id || !m_has_info || is_done()) {
 		// Packet rejected, beacuse:
 		//  wrong transmission ID (probably from an old transmission), or
 		//  map info not received yet, or
-		//  map already completely received, or
-		//  this packet already seen
+		//  map already completely received
 		return false;
 	}
-	m_seen_packets.insert(packet.packet_id());
 
 	MapReader		map_object;
 	packet >> map_object;

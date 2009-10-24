@@ -28,6 +28,7 @@
 #include "common/network.hpp"
 #include "common/PacketWriter.hpp"
 #include "common/PacketReader.hpp"
+#include "common/PacketHeader.hpp"
 #include "common/UDPPacket.hpp"
 #include "common/UDPSocket.hpp"
 #include "common/IPAddress.hpp"
@@ -37,12 +38,11 @@
 using namespace LM;
 using namespace std;
 
-ClientNetwork::ClientNetwork() {
+uint32_t	ClientNetwork::next_connection_id = 1;
+
+ClientNetwork::ClientNetwork(GameController& controller) : m_controller(controller) {
 	m_is_connected = false;
 	m_last_packet_time = 0;
-}
-
-ClientNetwork::~ClientNetwork() {
 }
 
 bool	ClientNetwork::connect(const char* hostname, unsigned int portno) {
@@ -52,204 +52,212 @@ bool	ClientNetwork::connect(const char* hostname, unsigned int portno) {
 		return false;
 	}
 
+	m_ack_manager.clear();
 	m_is_connected = true;
+	m_last_packet_time = 0;
 	return true;
 }
 
 bool	ClientNetwork::connect(const IPAddress& address) {
 	disconnect();
+	m_ack_manager.clear();
 	m_server_address = address;
 	m_is_connected = true;
+	m_last_packet_time = 0;
 	return true;
 }
 
 void	ClientNetwork::disconnect() {
 	m_is_connected = false;
+	m_server_peer.init(next_connection_id++);
 }
 
-void	ClientNetwork::send_packet(const PacketWriter& packet) {
+
+void	ClientNetwork::send_reliable_packet(const PacketWriter& packet) {
+	if (!is_connected()) {
+		return;
+	}
+
+	PacketHeader	header(packet.packet_type(), m_server_peer.next_sequence_no++, m_server_peer.connection_id);
+	send_packet_to(m_server_address, header, packet.packet_data());
+	m_ack_manager.add_packet(m_server_address, header, packet.packet_data());
+}
+
+
+void	ClientNetwork::send_packet(const PacketHeader& packet_header, const std::string& packet_data) {
 	if (is_connected()) {
-		send_packet_to(m_server_address, packet);
+		send_packet_to(m_server_address, packet_header, packet_data);
 	}
 }
 
-void	ClientNetwork::send_packet(const std::string& packet_data) {
-	if (is_connected()) {
-		send_packet_to(m_server_address, packet_data);
-	}
-}
-
-
-void	ClientNetwork::send_packet_to(const IPAddress& dest, const PacketWriter& packet) {
-	UDPPacket	raw_packet(MAX_PACKET_LENGTH);
-	raw_packet.set_address(dest);
-	raw_packet.fill(packet);
-	send_raw_packet(raw_packet);
-}
-
-void	ClientNetwork::send_packet_to(const IPAddress& dest, const std::string& packet) {
-	UDPPacket	raw_packet(MAX_PACKET_LENGTH);
-	raw_packet.set_address(dest);
-	raw_packet.fill(packet);
-	send_raw_packet(raw_packet);
-}
 
 void	ClientNetwork::broadcast_packet(unsigned int portno, const PacketWriter& packet) {
-	UDPPacket	raw_packet(MAX_PACKET_LENGTH);
-	raw_packet.set_address(IPAddress(htonl(INADDR_BROADCAST), htons(portno))); // TODO: abstract the INADDR_BROADCAST and the htonl/htons
-	raw_packet.fill(packet);
-	send_raw_packet(raw_packet);
+	send_packet_to(IPAddress(htonl(INADDR_BROADCAST), htons(portno)), packet);
 }
 
-void	ClientNetwork::send_raw_packet(const UDPPacket& raw_packet) {
-	m_socket.send(raw_packet);
-}
-
-bool	ClientNetwork::receive_raw_packet(UDPPacket& raw_packet) {
-	return m_socket.has_packets() && m_socket.recv(raw_packet);
-}
-
-void	ClientNetwork::receive_packets(GameController& controller) {
+void	ClientNetwork::receive_packets() {
 	UDPPacket	raw_packet(MAX_PACKET_LENGTH);
 
 	// Keep receiving packets for as long as we can.
 	while (receive_raw_packet(raw_packet)) {
 		if (is_connected() && raw_packet.get_address() == m_server_address) {
-			process_server_packet(controller, raw_packet);
+			PacketReader		packet(raw_packet);
+
+			if (packet.sequence_no()) {
+				// High reliability packet
+				if (packet.connection_id() == m_server_peer.connection_id && m_server_peer.packet_queue.push(packet)) {
+					// Ready to be processed now.
+					process_server_packet(packet);
+
+					// Process any other packets that might be waiting in the queue.
+					while (m_server_peer.packet_queue.has_packet()) {
+						process_server_packet(m_server_peer.packet_queue.peek());
+						m_server_peer.packet_queue.pop();
+					}
+				}
+			} else {
+				// Low reliability packet - we don't care if, when, or how often it arrives
+				process_server_packet(packet);
+			}
 		} else {
-			process_unbound_packet(controller, raw_packet);
+			process_unbound_packet(raw_packet);
 		}
 	}
 }
 
-void	ClientNetwork::process_server_packet(GameController& controller, const UDPPacket& raw_packet) {
-	PacketReader	reader(raw_packet);
-
+void	ClientNetwork::process_server_packet(PacketReader& reader) {
 	m_last_packet_time = get_ticks();
+
+	if (reader.sequence_no()) {
+		// High reliability packet - send an ACK
+		send_ack(m_server_address, reader);
+	}
 
 	switch (reader.packet_type()) {
 	case ACK_PACKET:
-		controller.ack(reader);
+		process_ack(m_server_address, reader);
 		break;
 
 	case PLAYER_UPDATE_PACKET:
-		controller.player_update(reader);
+		m_controller.player_update(reader);
 		break;
 
 	case WEAPON_DISCHARGED_PACKET:
-		controller.weapon_discharged(reader);
+		m_controller.weapon_discharged(reader);
 		break;
 
 	case PLAYER_HIT_PACKET:
-		//send_ack(reader.packet_id());
-		controller.player_hit(reader);
+		m_controller.player_hit(reader);
 		break;
 
 	case MESSAGE_PACKET:
-		controller.message(reader);
+		m_controller.message(reader);
 		break;
 
 	case NEW_ROUND_PACKET:
-		//send_ack(reader.packet_id());
-		controller.new_round(reader);
+		m_controller.new_round(reader);
 		break;
 
 	case ROUND_OVER_PACKET:
-		//send_ack(reader.packet_id());
-		controller.round_over(reader);
+		m_controller.round_over(reader);
 		break;
 
 	case SCORE_UPDATE_PACKET:
-		controller.score_update(reader);
+		m_controller.score_update(reader);
 		break;
 
 	case WELCOME_PACKET:
-		//send_ack(reader.packet_id());
-		controller.welcome(reader);
+		m_controller.welcome(reader);
 		break;
 
 	case ANNOUNCE_PACKET:
-		controller.announce(reader);
+		m_controller.announce(reader);
 		break;
 
 	case GATE_UPDATE_PACKET:
-		controller.gate_update(reader);
+		m_controller.gate_update(reader);
 		break;
 
 	case LEAVE_PACKET:
-		controller.leave(reader);
+		m_controller.leave(reader);
 		break;
 
 	case PLAYER_ANIMATION_PACKET:
-		controller.animation_packet(reader);
+		m_controller.animation_packet(reader);
 		break;
 
 	case REQUEST_DENIED_PACKET:
-		controller.request_denied(reader);
+		m_controller.request_denied(reader);
 		break;
 
 	case NAME_CHANGE_PACKET:
-		controller.name_change(reader);
+		m_controller.name_change(reader);
 		break;
 
 	case TEAM_CHANGE_PACKET:
-		controller.team_change(reader);
+		m_controller.team_change(reader);
 		break;
 
 
 	case MAP_INFO_PACKET:
-		controller.map_info_packet(reader);
+		m_controller.map_info_packet(reader);
 		break;
 
 	case MAP_OBJECT_PACKET:
-		controller.map_object_packet(reader);
+		m_controller.map_object_packet(reader);
 		break;
 
 	case GAME_PARAM_PACKET:
-		controller.game_param_packet(reader);
+		m_controller.game_param_packet(reader);
 		break;
 
 	case INFO_PACKET:
-		controller.server_info(raw_packet.get_address(), reader);
+		m_controller.server_info(m_server_address, reader);
 		break;
 
 	case PLAYER_DIED_PACKET:
-		controller.player_died(reader);
+		m_controller.player_died(reader);
 		break;
 
 	case WEAPON_INFO_PACKET:
-		controller.weapon_info_packet(reader);
+		m_controller.weapon_info_packet(reader);
 		break;
 
 	case ROUND_START_PACKET:
-		controller.round_start(reader);
+		m_controller.round_start(reader);
 		break;
 
 	case SPAWN_PACKET:
-		controller.spawn_packet(reader);
+		m_controller.spawn_packet(reader);
 		break;
 	}
 }
 
-void	ClientNetwork::process_unbound_packet(GameController& controller, const UDPPacket& raw_packet) {
+void	ClientNetwork::process_unbound_packet(const UDPPacket& raw_packet) {
 	PacketReader	reader(raw_packet);
 	
 	switch (reader.packet_type()) {
 	case INFO_PACKET:
-		controller.server_info(raw_packet.get_address(), reader);
+		m_controller.server_info(raw_packet.get_address(), reader);
 		break;
 	#ifndef LM_NO_UPGRADE_NAG
 	case UPGRADE_AVAILABLE_PACKET:
-		controller.upgrade_available(raw_packet.get_address(), reader);
+		m_controller.upgrade_available(raw_packet.get_address(), reader);
 		break;
 	#endif
 	case HOLE_PUNCH_PACKET:
-		controller.hole_punch_packet(raw_packet.get_address(), reader);
+		m_controller.hole_punch_packet(raw_packet.get_address(), reader);
 		break;
 	}
 }
 
 uint64_t ClientNetwork::get_last_packet_time() {
 	return m_last_packet_time;
+}
+
+void	ClientNetwork::excessive_packet_drop(const IPAddress& peer) {
+	if (m_is_connected && peer == m_server_address) {
+		m_controller.excessive_packet_drop();
+	}
 }
 

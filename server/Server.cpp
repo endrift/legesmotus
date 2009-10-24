@@ -50,11 +50,11 @@ using namespace LM;
 using namespace std;
 
 // This can't be an enum because we want overloading of operator<< to work OK.
-const int	Server::SERVER_PROTOCOL_VERSION = 3;
+const int	Server::SERVER_PROTOCOL_VERSION = 4;
 
 const char	Server::SERVER_VERSION[] = LM_VERSION;
 
-Server::Server (ServerConfig& config, PathManager& path_manager) : m_config(config), m_path_manager(path_manager), m_ack_manager(*this), m_gates(2, GateStatus(*this))
+Server::Server (ServerConfig& config, PathManager& path_manager) : m_config(config), m_path_manager(path_manager), m_network(*this), m_gates(2, GateStatus(*this))
 {
 	m_next_player_id = 1;
 	m_is_running = false;
@@ -68,14 +68,6 @@ Server::Server (ServerConfig& config, PathManager& path_manager) : m_config(conf
 
 	m_team_count[0] = m_team_count[1] = 0;
 	m_team_score[0] = m_team_score[1] = 0;
-}
-
-void	Server::ack(const IPAddress& /*address*/, PacketReader& ack_packet) {
-	uint32_t		player_id;
-	uint32_t		packet_type;
-	uint32_t		packet_id;
-	ack_packet >> player_id >> packet_type >> packet_id;
-	m_ack_manager.ack(player_id, packet_id);
 }
 
 void	Server::player_update(const IPAddress& address, PacketReader& inbound_packet)
@@ -139,7 +131,7 @@ void	Server::name_change(const IPAddress& address, PacketReader& packet)
 
 	PacketWriter		outbound_packet(NAME_CHANGE_PACKET);
 	outbound_packet << player->get_id() << player->get_name();
-	broadcast_packet(outbound_packet);
+	m_network.broadcast_reliable_packet(outbound_packet);
 }
 
 void	Server::team_change(const IPAddress& address, PacketReader& packet)
@@ -222,7 +214,7 @@ void	Server::change_team(ServerPlayer& player, char new_team, bool respawn_playe
 	// Notify all players that this player has switched teams:
 	PacketWriter		outbound_packet(TEAM_CHANGE_PACKET);
 	outbound_packet << player.get_id() << player.get_team();
-	broadcast_packet(outbound_packet);
+	m_network.broadcast_reliable_packet(outbound_packet);
 }
 
 void	Server::message(const IPAddress& address, PacketReader& packet)
@@ -246,7 +238,7 @@ void	Server::message(const IPAddress& address, PacketReader& packet)
 
 	if (recipient.empty()) {
 		// To everyone
-		broadcast_packet(outbound_packet);
+		m_network.broadcast_packet(outbound_packet);
 	} else if (is_valid_team(recipient[0])) {
 		// Specific Team
 		broadcast_team_packet(outbound_packet, recipient[0]);
@@ -262,13 +254,13 @@ void	Server::message(const IPAddress& address, PacketReader& packet)
 void	Server::send_system_message(const ServerPlayer& recipient_player, const char* message) {
 	PacketWriter	outbound_packet(MESSAGE_PACKET);
 	outbound_packet << 0L << recipient_player.get_id() << message;
-	m_network.send_packet(recipient_player.get_address(), outbound_packet);
+	m_network.send_reliable_packet(recipient_player.get_address(), outbound_packet);
 }
 
 void	Server::broadcast_system_message(const char* message) {
 	PacketWriter	outbound_packet(MESSAGE_PACKET);
 	outbound_packet << 0L << 0L << message;
-	broadcast_packet(outbound_packet);
+	m_network.broadcast_reliable_packet(outbound_packet);
 }
 
 void	Server::send_map_list(const ServerPlayer& player) {
@@ -402,8 +394,7 @@ void	Server::player_hit(const IPAddress& address, PacketReader& inbound_packet)
 	// Inform the victim that he has been hit
 	PacketWriter		outbound_packet(PLAYER_HIT_PACKET);
 	outbound_packet << shooter_id << weapon_name << shot_player_id << has_effect << inbound_packet;
-	m_network.send_packet(shot_player->get_address(), outbound_packet);
-	// TODO: REQUIRE ACK
+	m_network.send_reliable_packet(shot_player->get_address(), outbound_packet);
 }
 
 void	Server::player_died(const IPAddress& address, PacketReader& packet)
@@ -416,8 +407,6 @@ void	Server::player_died(const IPAddress& address, PacketReader& packet)
 		return;
 	}
 
-	send_ack(address, packet);
-
 	ServerPlayer&		killed_player = *get_player(killed_player_id);
 	ServerPlayer*		killer = killer_id ? get_player(killer_id) : NULL;
 
@@ -427,8 +416,7 @@ void	Server::player_died(const IPAddress& address, PacketReader& packet)
 	// Inform all players that this player died, and include the freeze time
 	PacketWriter		outbound_packet(PLAYER_DIED_PACKET);
 	outbound_packet << killed_player_id << killer_id << freeze_time;
-	m_ack_manager.add_broadcast_packet(outbound_packet);
-	broadcast_packet(outbound_packet);
+	m_network.broadcast_reliable_packet(outbound_packet);
 }
 
 void	Server::weapon_discharged(const IPAddress& address, PacketReader& inbound_packet)
@@ -442,14 +430,12 @@ void	Server::weapon_discharged(const IPAddress& address, PacketReader& inbound_p
 		PacketWriter	outbound_packet(WEAPON_DISCHARGED_PACKET);
 		outbound_packet << shooter_id << inbound_packet;
 		broadcast_packet_except(outbound_packet, shooter_id);
-
-		// TODO: REQUIRE ACK
 	}
 }
 
 
 void	Server::join(const IPAddress& address, PacketReader& packet) {
-	// Kick dead players
+	// Kick unresponsive clients
 	timeout_players();
 
 	// Parse the join packet
@@ -476,6 +462,14 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 		cerr << "Rejected join for empty player name." << endl;
 		reject_join(address, "Invalid player name.");
 		return;
+	}
+
+	// See if this address is already connected to the server
+	// This could happen if a player disconnects from the server, but the leave packet is dropped, and they immediately
+	// try to join again
+	if (ServerPlayer* duplicate_player = get_player_by_address(address)) {
+		// Kick the old player
+		remove_player(*duplicate_player, "Player joined from same address");
 	}
 
 	if (!m_game_mode->is_team_play()) {
@@ -506,6 +500,9 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 		return;
 	}
 
+	// Register this player with the network
+	m_network.register_peer(address, packet.connection_id(), 1, packet.sequence_no() + 1);
+
 	// Get a unique name for the player
 	string			name(get_unique_player_name(requested_name.c_str()));
 
@@ -526,8 +523,7 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 	// Send the welcome packet back to this client.
 	PacketWriter		welcome_packet(WELCOME_PACKET);
 	welcome_packet << SERVER_PROTOCOL_VERSION << player_id << name << team;
-	m_ack_manager.add_packet(player_id, welcome_packet);
-	m_network.send_packet(address, welcome_packet);
+	m_network.send_reliable_packet(address, welcome_packet);
 
 	if (is_first_player) {
 		// This is the first player.  Start a new game.
@@ -559,13 +555,11 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 
 		PacketWriter	announce_packet(ANNOUNCE_PACKET);
 		announce_packet << player.get_id() << player.get_name() << player.get_team();
-		m_ack_manager.add_packet(player_id, announce_packet);
-		m_network.send_packet(address, announce_packet);
+		m_network.send_reliable_packet(address, announce_packet);
 
 		PacketWriter	score_packet(SCORE_UPDATE_PACKET);
 		score_packet << player.get_id() << player.get_score();
-		m_ack_manager.add_packet(player_id, score_packet);
-		m_network.send_packet(address, score_packet);
+		m_network.send_reliable_packet(address, score_packet);
 	}
 
 	// Send the player the team scores
@@ -574,8 +568,7 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 	// Announce the new player
 	PacketWriter		announce_packet(ANNOUNCE_PACKET);
 	announce_packet << new_player.get_id() << new_player.get_name() << new_player.get_team();
-	m_ack_manager.add_broadcast_packet(announce_packet);
-	broadcast_packet(announce_packet);
+	m_network.broadcast_reliable_packet(announce_packet);
 
 	if (m_players_have_spawned && m_params.late_spawn_frozen && m_params.late_join_delay != numeric_limits<uint64_t>::max()) {
 		// Spawn this player frozen
@@ -608,8 +601,7 @@ void	Server::reset_player_scores() {
 void	Server::broadcast_score_update(const ServerPlayer& player) {
 	PacketWriter	score_packet(SCORE_UPDATE_PACKET);
 	score_packet << player.get_id() << player.get_score();
-	m_ack_manager.add_broadcast_packet(score_packet);
-	broadcast_packet(score_packet);
+	m_network.broadcast_reliable_packet(score_packet);
 }
 
 // Report the team scores to given player
@@ -617,14 +609,12 @@ void	Server::report_team_scores(const ServerPlayer& recipient_player) {
 	{
 		PacketWriter	score_packet(SCORE_UPDATE_PACKET);
 		score_packet << 'A' << m_team_score[0];
-		m_ack_manager.add_packet(recipient_player.get_id(), score_packet);
-		m_network.send_packet(recipient_player.get_address(), score_packet);
+		m_network.send_reliable_packet(recipient_player.get_address(), score_packet);
 	}
 	{
 		PacketWriter	score_packet(SCORE_UPDATE_PACKET);
 		score_packet << 'B' << m_team_score[1];
-		m_ack_manager.add_packet(recipient_player.get_id(), score_packet);
-		m_network.send_packet(recipient_player.get_address(), score_packet);
+		m_network.send_reliable_packet(recipient_player.get_address(), score_packet);
 	}
 }
 
@@ -648,10 +638,13 @@ void	Server::remove_player(ServerPlayer& player, const char* leave_message) {
 	// Broadcast to the game that this player has left
 	PacketWriter	leave_packet(LEAVE_PACKET);
 	leave_packet << player_id << leave_message;
-	broadcast_packet(leave_packet);
+	m_network.broadcast_reliable_packet(leave_packet);
 
 	// Release resources held by the player (gates, spawn points, team count, etc.)
 	release_player_resources(player);
+
+	// Unregister the player from the network
+	m_network.unregister_peer(player.get_address());
 
 	// Fully remove the player
 	m_players.erase(player_id);
@@ -724,7 +717,7 @@ void	Server::run()
 	m_is_running = true;
 	while (m_is_running) {
 		timeout_players();
-		m_ack_manager.resend();
+		m_network.resend_acks();
 
 		if (m_register_with_metaserver && get_ticks() - m_last_metaserver_contact_time >= m_metaserver_contact_frequency) {
 			register_with_metaserver();
@@ -760,7 +753,7 @@ void	Server::run()
 			}
 		}
 		
-		m_network.receive_packets(*this, server_sleep_time());
+		m_network.receive_packets(server_sleep_time());
 	}
 
 	// Kick any players still in the game!
@@ -794,14 +787,6 @@ bool	Server::is_authorized(const IPAddress& address, uint32_t player_id) const {
 	return player != NULL && player->get_address() == address;
 }
 
-void	Server::broadcast_packet(const PacketWriter& packet) {
-	PlayerMap::const_iterator	it(m_players.begin());
-	while (it != m_players.end()) {
-		m_network.send_packet(it->second.get_address(), packet);
-		++it;
-	}
-}
-
 void	Server::broadcast_team_packet(const PacketWriter& packet, char team) {
 	PlayerMap::const_iterator	it(m_players.begin());
 	while (it != m_players.end()) {
@@ -812,26 +797,26 @@ void	Server::broadcast_team_packet(const PacketWriter& packet, char team) {
 	}
 }
 
-void	Server::broadcast_packet_except(const PacketWriter& packet, uint32_t excluded_player_id) {
+void	Server::broadcast_reliable_team_packet(const PacketWriter& packet, char team) {
 	PlayerMap::const_iterator	it(m_players.begin());
 	while (it != m_players.end()) {
-		if (it->second.get_id() != excluded_player_id) {
-			m_network.send_packet(it->second.get_address(), packet);
+		if (it->second.get_team() == team) {
+			m_network.send_reliable_packet(it->second.get_address(), packet);
 		}
 		++it;
 	}
 }
 
-void	Server::rebroadcast_packet(const PacketReader& packet) {
-	PacketWriter		resent_packet(packet.packet_type());
-	resent_packet << packet;
-	broadcast_packet(resent_packet);
+void	Server::broadcast_packet_except(const PacketWriter& packet, uint32_t excluded_player_id) {
+	const ServerPlayer*		excluded_player = get_player(excluded_player_id);
+
+	m_network.broadcast_packet(packet, excluded_player ? &excluded_player->get_address() : NULL);
 }
 
-void	Server::rebroadcast_packet_except(const PacketReader& packet, uint32_t excluded_player_id) {
-	PacketWriter		resent_packet(packet.packet_type());
-	resent_packet << packet;
-	broadcast_packet_except(resent_packet, excluded_player_id);
+void	Server::broadcast_reliable_packet_except(const PacketWriter& packet, uint32_t excluded_player_id) {
+	const ServerPlayer*		excluded_player = get_player(excluded_player_id);
+
+	m_network.broadcast_reliable_packet(packet, excluded_player ? &excluded_player->get_address() : NULL);
 }
 
 void	Server::new_game() {
@@ -854,8 +839,7 @@ void	Server::game_over(char winning_team) {
 
 	PacketWriter		packet(ROUND_OVER_PACKET);
 	packet << winning_team << m_team_score[0] << m_team_score[1];
-	m_ack_manager.add_broadcast_packet(packet);
-	broadcast_packet(packet);
+	m_network.broadcast_reliable_packet(packet);
 	m_gates[0].reset();
 	m_gates[1].reset();
 	m_game_start_time = 0;
@@ -950,8 +934,8 @@ uint32_t	Server::server_sleep_time() const {
 		sleep_time = std::min(sleep_time, time_until_spawn());
 	}
 
-	if (m_ack_manager.has_packets()) {
-		sleep_time = std::min(sleep_time, m_ack_manager.time_until_resend());
+	if (m_network.has_ack_packets()) {
+		sleep_time = std::min(sleep_time, m_network.time_until_ack_resend());
 	}
 
 	return sleep_time;
@@ -961,7 +945,13 @@ void	Server::report_gate_status(char team, int change_in_players, uint32_t actin
 	const GateStatus&	gate(get_gate(team));
 	PacketWriter		packet(GATE_UPDATE_PACKET);
 	packet << acting_player_id << team << gate.get_progress() << change_in_players << gate.get_nbr_players();
-	broadcast_packet(packet);
+	if (change_in_players) {
+		// This is a specific event - it should be reliable
+		m_network.broadcast_reliable_packet(packet);
+	} else {
+		// This is a general update - it is sent often, so reliability isn't important
+		m_network.broadcast_packet(packet);
+	}
 }
 
 bool	Server::waiting_to_spawn() const {
@@ -1020,6 +1010,15 @@ const ServerPlayer*	Server::get_player_by_name(const char* name) const {
 	return NULL;
 }
 
+ServerPlayer*		Server::get_player_by_address(const IPAddress& address) {
+	for (PlayerMap::iterator it(m_players.begin()); it != m_players.end(); ++it) {
+		if (it->second.get_address() == address) {
+			return &it->second;
+		}
+	}
+	return NULL;
+}
+
 void	Server::reject_join(const IPAddress& addr, const char* why) {
 	PacketWriter	packet(REQUEST_DENIED_PACKET);
 	packet << int(JOIN_PACKET) << why;
@@ -1063,27 +1062,6 @@ string	Server::get_unique_player_name(const char* requested_name) const {
 	return name;
 }
 
-void	Server::ServerAckManager::kick_peer(uint32_t player_id) {
-	if (ServerPlayer* player = m_server.get_player(player_id)) {
-		m_server.remove_player(*player, "Too much packet drop");
-	}
-}
-
-void	Server::ServerAckManager::resend_packet(uint32_t player_id, const std::string& data) {
-	if (ServerPlayer* player = m_server.get_player(player_id)) {
-		m_server.m_network.send_packet(player->get_address(), data);
-	}
-}
-
-void	Server::ServerAckManager::add_broadcast_packet(const PacketWriter& packet) {
-	set<uint32_t>			player_ids;
-	PlayerMap::const_iterator	it(m_server.m_players.begin());
-	while (it != m_server.m_players.end()) {
-		player_ids.insert((it++)->first);
-	}
-	AckManager::add_broadcast_packet(player_ids, packet);
-}
-
 void	Server::send_spawn_packet(ServerPlayer& player, const Spawnpoint* spawnpoint, bool is_alive, uint64_t freeze_time) {
 	// Format:
 	//  point~velocity~grabbing?~alive?~freeze_time
@@ -1101,8 +1079,7 @@ void	Server::send_spawn_packet(ServerPlayer& player, const Spawnpoint* spawnpoin
 		spawn_packet << freeze_time;
 	}
 
-	m_ack_manager.add_packet(player.get_id(), spawn_packet);
-	m_network.send_packet(player.get_address(), spawn_packet);
+	m_network.send_reliable_packet(player.get_address(), spawn_packet);
 }
 
 void	Server::register_with_metaserver() {
@@ -1127,22 +1104,21 @@ void	Server::register_server_packet(const IPAddress& address, PacketReader& pack
 
 void	Server::map_info_packet(const IPAddress& address, PacketReader& request_packet) {
 	uint32_t	player_id;
-	request_packet >> player_id;
+	uint32_t	transmission_id;
+	request_packet >> player_id >> transmission_id;
 	if (!is_authorized(address, player_id)) {
 		return;
 	}
 
 	PacketWriter	info_packet(MAP_INFO_PACKET);
-	info_packet << request_packet.packet_id() << m_current_map << m_current_map.nbr_objects();
-	m_network.send_packet(address, info_packet);
-	m_ack_manager.add_packet(player_id, info_packet);
+	info_packet << transmission_id << m_current_map << m_current_map.nbr_objects();
+	m_network.send_reliable_packet(address, info_packet);
 
 	const list<MapReader>&	map_objects(m_current_map.get_objects());
 	for (list<MapReader>::const_iterator it(map_objects.begin()); it != map_objects.end(); ++it) {
 		PacketWriter	object_packet(MAP_OBJECT_PACKET);
-		object_packet << request_packet.packet_id() << *it;
-		m_network.send_packet(address, object_packet);
-		m_ack_manager.add_packet(player_id, object_packet);
+		object_packet << transmission_id << *it;
+		m_network.send_reliable_packet(address, object_packet);
 	}
 }
 
@@ -1150,11 +1126,9 @@ template<class T> void Server::broadcast_param(const ServerPlayer* player, const
 	PacketWriter	packet(GAME_PARAM_PACKET);
 	packet << param_name << param_value;
 	if (player) {
-		m_ack_manager.add_packet(player->get_id(), packet);
-		m_network.send_packet(player->get_address(), packet);
+		m_network.send_reliable_packet(player->get_address(), packet);
 	} else {
-		m_ack_manager.add_broadcast_packet(packet);
-		broadcast_packet(packet);
+		m_network.broadcast_reliable_packet(packet);
 	}
 }
 
@@ -1303,11 +1277,9 @@ void	Server::send_new_round_packets(const ServerPlayer* player) {
 		packet << 0 << time_until_spawn();
 	}
 	if (player) {
-		m_ack_manager.add_packet(player->get_id(), packet);
-		m_network.send_packet(player->get_address(), packet);
+		m_network.send_reliable_packet(player->get_address(), packet);
 	} else {
-		m_ack_manager.add_broadcast_packet(packet);
-		broadcast_packet(packet);
+		m_network.broadcast_reliable_packet(packet);
 	}
 
 	broadcast_params(player);
@@ -1318,11 +1290,9 @@ void	Server::send_round_start_packet(const ServerPlayer* player) {
 	PacketWriter	packet(ROUND_START_PACKET);
 	packet << gametime_left();
 	if (player) {
-		m_ack_manager.add_packet(player->get_id(), packet);
-		m_network.send_packet(player->get_address(), packet);
+		m_network.send_reliable_packet(player->get_address(), packet);
 	} else {
-		m_ack_manager.add_broadcast_packet(packet);
-		broadcast_packet(packet);
+		m_network.broadcast_reliable_packet(packet);
 	}
 }
 
@@ -1341,17 +1311,15 @@ void	Server::broadcast_weapon_packet(const ServerPlayer* player, size_t index, c
 	packet << index;
 	packet << data;
 	if (player) {
-		m_ack_manager.add_packet(player->get_id(), packet);
-		m_network.send_packet(player->get_address(), packet);
+		m_network.send_reliable_packet(player->get_address(), packet);
 	} else {
-		m_ack_manager.add_broadcast_packet(packet);
-		broadcast_packet(packet);
+		m_network.broadcast_reliable_packet(packet);
 	}
 }
 
-void	Server::send_ack(const IPAddress& addr, const PacketReader& packet) {
-	PacketWriter		ack_packet(ACK_PACKET);
-	ack_packet << packet.packet_type() << packet.packet_id();
-	m_network.send_packet(addr, ack_packet);
+void	Server::excessive_packet_drop(const IPAddress& peer) {
+	if (ServerPlayer* player = get_player_by_address(peer)) {
+		remove_player(*player, "Excessive packet drop");
+	}
 }
 

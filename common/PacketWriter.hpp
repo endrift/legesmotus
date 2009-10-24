@@ -30,6 +30,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include "network.hpp"
+#include "PacketHeader.hpp"
 
 /*
  * The packet reader provides a convenient inteface for sequentially writing fields to packets.
@@ -39,31 +40,30 @@
  * 	PacketWriter		packet(MESSAGE_PACKET);
  * 	packet << this_player_id << recipient_player_id << message_text;
  *
- * 	packet.packet_data(); // Would return something like "4\f41251231\f5\fB\fCover me, I'm going for the gate!"
+ * 	packet.packet_data(); // Would return something like "5\fB\fCover me, I'm going for the gate!"
  */
 
 namespace LM {
 	class PacketWriter {
 	private:
+		// Packet header for this packet:
+		PacketHeader		m_header;
+	
 		// Raw packet data is written into this string stream:
+		// Note: this does NOT include the values in the header - you have to write those to the raw packet yourself
 		std::ostringstream	m_out;
-	
-		// The next packet ID to use - starts at 1 and increments:
-		static uint32_t		m_next_packet_id;
-	
-		// The packet type and ID for this packet:
-		uint32_t		m_packet_type;
-		uint32_t		m_packet_id;
-	
+
 	public:
 		explicit PacketWriter(uint32_t packet_type);
 	
 		// Getters
-		uint32_t	packet_type() const { return m_packet_type; }
-		uint32_t	packet_id() const { return m_packet_id; }
+		const PacketHeader&	get_header () const { return m_header; }
+		uint32_t		packet_type() const { return m_header.packet_type; }
+		uint64_t		sequence_no() const { return m_header.sequence_no; }
+		uint32_t		connection_id() const { return m_header.connection_id; }
 	
 		// Get the raw packet data:
-		std::string	packet_data() const { return m_out.str(); }
+		std::string		packet_data() const { return m_out.str(); }
 	
 		// Write a field into the packet:
 		template<class T> PacketWriter& operator<<(const T& obj) {

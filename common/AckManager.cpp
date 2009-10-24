@@ -25,29 +25,32 @@
 #include "AckManager.hpp"
 #include "PacketWriter.hpp"
 #include "PacketWriter.hpp"
+#include "CommonNetwork.hpp"
 #include "timer.hpp"
 #include <limits>
+#include <iostream>
 
 using namespace LM;
 using namespace std;
 
-AckManager::SentPacket::SentPacket(uint32_t arg_peer_id, const PacketWriter& arg_packet) : data(arg_packet.packet_data()) {
+
+AckManager::SentPacket::SentPacket(const IPAddress& peer_addr, const PacketHeader& arg_header, const string& arg_data) : packet_data(arg_data) {
 	send_time = get_ticks();
-	peer_ids.insert(arg_peer_id);
-	packet_type = arg_packet.packet_type();
-	packet_id = arg_packet.packet_id();
+	tries_left = RETRIES;
+	add_recipient(peer_addr, arg_header);
+}
+
+AckManager::SentPacket::SentPacket(const string& arg_data) : packet_data(arg_data) {
+	send_time = get_ticks();
 	tries_left = RETRIES;
 }
 
-AckManager::SentPacket::SentPacket(const set<uint32_t>& arg_peer_ids, const PacketWriter& arg_packet) : peer_ids(arg_peer_ids), data(arg_packet.packet_data()) {
-	send_time = get_ticks();
-	packet_type = arg_packet.packet_type();
-	packet_id = arg_packet.packet_id();
-	tries_left = RETRIES;
+void	AckManager::SentPacket::add_recipient(const IPAddress& addr, const PacketHeader& header) {
+	recipients.insert(make_pair(addr, header));
 }
 
-void AckManager::SentPacket::ack(uint32_t peer_id) {
-	peer_ids.erase(peer_id);
+void AckManager::SentPacket::ack(const IPAddress& peer_addr) {
+	recipients.erase(peer_addr);
 }
 
 void AckManager::SentPacket::reset_send_time() {
@@ -67,25 +70,33 @@ uint64_t AckManager::SentPacket::time_until_resend() const {
 	}
 }
 
-void AckManager::add_packet(uint32_t peer_id, const PacketWriter& packet) {
-	m_packets.push_back(SentPacket(peer_id, packet));
-	m_packets_by_id.insert(make_pair(packet.packet_id(), --m_packets.end()));
+void	AckManager::add_packet(const IPAddress& peer_addr, const PacketHeader& packet_header, const std::string& packet_data) {
+	m_packets.push_back(SentPacket(peer_addr, packet_header, packet_data));
+	m_packets_by_id.insert(make_pair(make_pair(peer_addr, packet_header.sequence_no), --m_packets.end()));
 }
 
-void AckManager::add_broadcast_packet(const set<uint32_t>& peer_ids, const PacketWriter& packet) {
-	m_packets.push_back(SentPacket(peer_ids, packet));
-	m_packets_by_id.insert(make_pair(packet.packet_id(), --m_packets.end()));
+
+AckManager::PacketHandle AckManager::add_broadcast_packet(const std::string& packet_data) {
+	m_packets.push_back(SentPacket(packet_data));
+	return --m_packets.end();
 }
 
-void AckManager::ack(uint32_t peer_id, uint32_t packet_id) {
-	std::map<uint32_t, Queue::iterator>::iterator it(m_packets_by_id.find(packet_id));
+void AckManager::add_broadcast_recipient(AckManager::PacketHandle packet, const IPAddress& peer_addr, const PacketHeader& header) {
+	packet->add_recipient(peer_addr, header);
+	m_packets_by_id.insert(make_pair(make_pair(peer_addr, header.sequence_no), packet));
+}
+
+void AckManager::ack(const IPAddress& peer_addr, uint64_t sequence_no) {
+	Map::iterator it(m_packets_by_id.find(make_pair(peer_addr, sequence_no)));
 	if (it != m_packets_by_id.end()) {
-		it->second->ack(peer_id);
-		if (!it->second->has_peers()) {
-			// no more peers on this packet -> erase it
+		it->second->ack(peer_addr);
+		if (!it->second->has_recipients()) {
+			// no more recipients on this packet
+			// that means everyone has received it OK
+			// so it can be erased...
 			m_packets.erase(it->second);
-			m_packets_by_id.erase(it);
 		}
+		m_packets_by_id.erase(it);
 	}
 }
 
@@ -93,22 +104,21 @@ uint64_t AckManager::time_until_resend() const {
 	return m_packets.empty() ? numeric_limits<uint64_t>::max() : m_packets.front().time_until_resend();
 }
 
-void AckManager::resend() {
+void AckManager::resend(CommonNetwork& network) {
 	while (!m_packets.empty() && m_packets.front().time_until_resend() == 0) {
 		SentPacket&	packet(m_packets.front());
 		if (packet.tries_left == 0) {
-			// Kick every peer in this packet
-			for (set<uint32_t>::iterator peer_id(packet.peer_ids.begin()); peer_id != packet.peer_ids.end(); ++peer_id) {
-				kick_peer(*peer_id);
+			// Kick every recipient in this packet
+			for (map<IPAddress, PacketHeader>::iterator recipient(packet.recipients.begin()); recipient != packet.recipients.end(); ++recipient) {
+				network.excessive_packet_drop(recipient->first);
+				m_packets_by_id.erase(make_pair(recipient->first, recipient->second.sequence_no));
 			}
 
-			// Remove from containers
-			m_packets_by_id.erase(packet.packet_id);
 			m_packets.pop_front();
 		} else {
-			// Re-send packet to every peer
-			for (set<uint32_t>::iterator peer_id(packet.peer_ids.begin()); peer_id != packet.peer_ids.end(); ++peer_id) {
-				resend_packet(*peer_id, packet.data);
+			// Re-send packet to every recipient
+			for (map<IPAddress, PacketHeader>::iterator recipient(packet.recipients.begin()); recipient != packet.recipients.end(); ++recipient) {
+				network.send_packet(recipient->first, recipient->second, packet.packet_data);
 			}
 
 			// Mark that this packet has been re-sent
@@ -118,6 +128,25 @@ void AckManager::resend() {
 			// Move to the back of the queue
 			m_packets.splice(m_packets.end(), m_packets, m_packets.begin());
 		}
+	}
+}
+
+void	AckManager::clear() {
+	m_packets.clear();
+	m_packets_by_id.clear();
+}
+
+void	AckManager::clear_peer(const IPAddress& peer) {
+	pair<IPAddress, uint64_t>	search_key(peer, 0);
+	Map::iterator			it(m_packets_by_id.lower_bound(search_key));
+
+	while (it != m_packets_by_id.end() && it->first.first == peer) {
+		it->second->ack(peer); // simulate an ACK on this packet
+		if (!it->second->has_recipients()) {
+			// no more recipients on this packet, so erase it
+			m_packets.erase(it->second);
+		}
+		m_packets_by_id.erase(it++);
 	}
 }
 

@@ -35,7 +35,6 @@
 #include "ClientConfiguration.hpp"
 #include "TransitionManager.hpp"
 #include "ChatLog.hpp"
-#include "common/AckManager.hpp"
 #include "common/PathManager.hpp"
 #include "common/PacketReader.hpp"
 #include "common/misc.hpp"
@@ -129,19 +128,6 @@ namespace LM {
 			SHOW_SERVER_BROWSER = 4
 		};
 
-		class ClientAckManager : public AckManager {
-			GameController&	m_gc;
-		public:
-			explicit ClientAckManager(GameController& gc) : m_gc(gc) { }
-
-			virtual void kick_peer(uint32_t);
-			virtual void resend_packet(uint32_t, const std::string& data);
-
-			void add_packet(const PacketWriter& packet) { AckManager::add_packet(0, packet); }
-			void ack(uint32_t packet_id) { AckManager::ack(0, packet_id); }
-		};
-		friend class ClientAckManager;
-
 		struct Message {
 			Text*		message;
 			Transition*	transition;
@@ -153,7 +139,6 @@ namespace LM {
 	
 		GameWindow* 	m_window;
 		ClientNetwork	m_network;
-		ClientAckManager m_ack_manager;
 		TextManager*	m_text_manager;
 		SoundController* m_sound_controller;
 		TransitionManager m_transition_manager;
@@ -298,6 +283,7 @@ namespace LM {
 		IPAddress	m_metaserver_address;
 		uint32_t	m_current_scan_id;
 
+		static uint32_t	get_next_scan_id();
 		void		preinit(ClientConfiguration* config);
 		void		init(GameWindow* window);
 		void		process_input();
@@ -416,10 +402,9 @@ namespace LM {
 		void		check_for_upgrade();
 		
 		// Network callbacks:
-		void		send_packet(PacketWriter& packet);
-
+		void		send_packet(const PacketWriter& packet);
+		void		send_reliable_packet(const PacketWriter& packet);
 		void		welcome(PacketReader& reader);
-		void		ack(PacketReader& reader);
 		void		player_update(PacketReader& reader);
 		void		announce(PacketReader& reader);
 		void		leave(PacketReader& reader);
@@ -444,6 +429,7 @@ namespace LM {
 		void		server_info(const IPAddress& server_address, PacketReader& reader);
 		void		upgrade_available(const IPAddress& server_address, PacketReader& reader);
 		void		hole_punch_packet(const IPAddress& server_address, PacketReader& reader);
+		void		excessive_packet_drop();
 	
 		// Sound callbacks:
 		void		play_sound(const char* name);

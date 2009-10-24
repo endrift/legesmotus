@@ -35,24 +35,25 @@ namespace LM {
 
 	class MapReceiver {
 	private:
+		static uint32_t		next_transmission_id;
+
 		Map&			m_map;
 		uint32_t		m_transmission_id;
 		bool			m_has_info;
 		size_t			m_nbr_expected_objects;
 		size_t			m_nbr_received_objects;
-		std::set<uint32_t>	m_seen_packets;
 
 	public:
-		MapReceiver(Map& map, uint32_t transmission_id);
+		explicit MapReceiver(Map& map);
+
+		uint32_t		transmission_id () const { return m_transmission_id; }
 
 		// This function returns true when the entire map has been received
 		// Returns false if there is still more data to be received
 		bool			is_done() const { return m_has_info && m_nbr_received_objects >= m_nbr_expected_objects; }
 
 		// These functions return true if the packet was accepted,
-		// or false if it was rejected (e.g. because it's not ready for the packet,
-		// or the packet ID has already been seen)
-		// Only send an ACK to the server if the packet was accepted.
+		// or false if it was rejected (e.g. because it's not ready for the packet)
 		bool			map_info(PacketReader& map_info_packet);
 		bool			map_object(PacketReader& map_object_packet);
 	};

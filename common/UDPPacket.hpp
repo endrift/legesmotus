@@ -29,8 +29,6 @@
 #include <string>
 
 namespace LM {
-	class PacketWriter;
-	
 	class UDPPacket {
 	private:
 		char*		m_data;
@@ -55,10 +53,12 @@ namespace LM {
 	
 		// Fill this packet with the given data of the given length:
 		void			fill(const char* data, size_t length);
-		// Fill this packet with the data in the given PacketWriter:
-		void			fill(const PacketWriter& data);
 		// Fill this packet with the data in the given string:
 		void			fill(const std::string& data);
+	
+		// Following functions like fill, but append to the end of the current raw data:
+		void			append(const char* data, size_t length);
+		void			append(const std::string& data);
 	
 		void			clear();
 	};

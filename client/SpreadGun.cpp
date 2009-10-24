@@ -154,7 +154,7 @@ void	SpreadGun::fire(Player& player, GameController& gc, Point startpos, double 
 
 		PacketWriter	hit_packet(PLAYER_HIT_PACKET);
 		hit_packet << player.get_id() << get_id() << hit_player->get_id() << times_hit << damage << initial_direction - M_PI;
-		gc.send_packet(hit_packet);
+		gc.send_reliable_packet(hit_packet);
 	}
 }
 

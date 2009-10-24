@@ -109,7 +109,7 @@ void	ImpactCannon::fire(Player& player, GameController& gc, Point startpos, doub
 	if (hit_player != NULL) {
 		PacketWriter	hit_packet(PLAYER_HIT_PACKET);
 		hit_packet << player.get_id() << get_id() << hit_player->get_id() << direction - M_PI;
-		gc.send_packet(hit_packet);
+		gc.send_reliable_packet(hit_packet);
 	}
 }
 

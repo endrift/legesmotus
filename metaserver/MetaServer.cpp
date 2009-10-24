@@ -202,7 +202,8 @@ void	MetaServer::upgrade_available(const IPAddress& address, PacketReader& reque
 void	MetaServer::send_packet(const PacketWriter& packet_data, const IPAddress& address) {
 	UDPPacket	raw_packet(MAX_PACKET_LENGTH);
 	raw_packet.set_address(address);
-	raw_packet.fill(packet_data);
+	raw_packet.fill(packet_data.get_header().make_string());
+	raw_packet.append(packet_data.packet_data());
 	m_socket.send(raw_packet);
 }
 

@@ -30,7 +30,6 @@
 #include "ServerMap.hpp"
 #include "GateStatus.hpp"
 #include "GameModeHelper.hpp"
-#include "common/AckManager.hpp"
 #include "common/GameParameters.hpp"
 #include "common/team.hpp"
 #include "common/WeaponFile.hpp"
@@ -64,17 +63,6 @@ namespace LM {
 	private:
 		typedef std::map<uint32_t, ServerPlayer> PlayerMap;	// A std::map from player_id to the player object
 	
-		class ServerAckManager : public AckManager {
-			Server&		m_server;
-		public:
-			explicit ServerAckManager(Server& server) : m_server(server) { }
-			virtual void	kick_peer(uint32_t player_id);
-			virtual void	resend_packet(uint32_t player_id, const std::string& data);
-	
-			void		add_broadcast_packet(const PacketWriter& packet);
-		};
-		friend class ServerAckManager;
-
 		friend class GameModeHelper;
 		friend class ClassicMode;
 		friend class DeathmatchMode;
@@ -91,7 +79,6 @@ namespace LM {
 		std::string		m_server_name;		// Informative name to display in server browser
 		std::string		m_server_location;	// Informative location to display in server browser
 		ServerNetwork		m_network;
-		ServerAckManager	m_ack_manager;
 		uint32_t		m_next_player_id;	// Used to allocate next player ID
 		PlayerMap		m_players;
 		ServerMap		m_current_map;
@@ -137,23 +124,13 @@ namespace LM {
 		// Make sure the given address is authorized to speak for given player ID
 		bool			is_authorized(const IPAddress& address, uint32_t player_id) const;
 	
-		// Broadcast a packet to all connected players
-		void			broadcast_packet(const PacketWriter& packet);
-	
 		// Broadcast a packet to all connected players on the given team
 		void			broadcast_team_packet(const PacketWriter& packet, char team);
+		void			broadcast_reliable_team_packet(const PacketWriter& packet, char team);
 	
 		// Broadcast a packet to all connected players, except to the given player
 		void			broadcast_packet_except(const PacketWriter& packet, uint32_t excluded_player_id);
-	
-		// Relay the received packet to all connected players
-		void			rebroadcast_packet(const PacketReader& packet);
-	
-		// Relay the received packet to all connected players, except for the given player
-		void			rebroadcast_packet_except(const PacketReader& packet, uint32_t excluded_player_id);
-
-		// Send an ACK to the given address
-		void			send_ack(const IPAddress& addr, const PacketReader& packet);
+		void			broadcast_reliable_packet_except(const PacketWriter& packet, uint32_t excluded_player_id);
 	
 		/* */
 
@@ -244,6 +221,7 @@ namespace LM {
 		const ServerPlayer*	get_player(uint32_t player_id) const;
 		ServerPlayer*		get_player_by_name(const char* name);
 		const ServerPlayer*	get_player_by_name(const char* name) const;
+		ServerPlayer*		get_player_by_address(const IPAddress&);
 	
 		// Given a player name, return a name that is unique among all player names.
 		// Does so by appending a number until no player has the name.
@@ -280,7 +258,6 @@ namespace LM {
 		uint64_t get_gate_stick_time() const { return m_params.gate_stick_time; }
 	
 		// Called upon receipt of network packets:
-		void		ack(const IPAddress& address, PacketReader& packet);
 		void		player_update(const IPAddress& address, PacketReader& packet);
 		void		join(const IPAddress& address, PacketReader& packet);
 		void		info(const IPAddress& address, PacketReader& packet);
@@ -296,6 +273,8 @@ namespace LM {
 		void		map_info_packet(const IPAddress& address, PacketReader& packet);
 		void		hole_punch_packet(const IPAddress& address, PacketReader& packet);
 		void		player_died(const IPAddress& address, PacketReader& packet);
+
+		void		excessive_packet_drop(const IPAddress& address);
 	
 		void		start();
 		void		run();

@@ -39,37 +39,52 @@
 using namespace LM;
 using namespace std;
 
-ServerNetwork::ServerNetwork() {
-}
-
-ServerNetwork::~ServerNetwork() {
-}
-
 bool	ServerNetwork::start(const IPAddress& bind_address) {
 	// TODO: check to make sure server isn't listening already
+
+	m_ack_manager.clear();
+	m_peers.clear();
 
 	return m_socket.bind(bind_address);
 }
 
-void	ServerNetwork::send_packet(const IPAddress& address, const PacketWriter& packet_data) {
-	UDPPacket	raw_packet(MAX_PACKET_LENGTH);
-	raw_packet.set_address(address);
-	raw_packet.fill(packet_data);
-	send_raw_packet(raw_packet);
+void	ServerNetwork::send_reliable_packet(const IPAddress& address, const PacketWriter& packet) {
+	Peer*	peer = get_peer(address);
+	if (!peer) {
+		// Can only send reliable packets to registered peers
+		return;
+	}
+
+	PacketHeader	header(packet.packet_type(), peer->next_sequence_no++, peer->connection_id);
+	send_packet(address, header, packet.packet_data());
+	m_ack_manager.add_packet(address, header, packet.packet_data());
 }
 
-void	ServerNetwork::send_packet(const IPAddress& address, const std::string& packet_data) {
-	UDPPacket	raw_packet(MAX_PACKET_LENGTH);
-	raw_packet.set_address(address);
-	raw_packet.fill(packet_data);
-	send_raw_packet(raw_packet);
+void	ServerNetwork::broadcast_packet(const PacketWriter& packet, const IPAddress* exclude_peer) {
+	for (std::map<IPAddress, Peer>::iterator it(m_peers.begin()); it != m_peers.end(); ++it) {
+		if (exclude_peer && *exclude_peer == it->first) {
+			continue;
+		}
+
+		send_packet(it->first, packet);
+	}
 }
 
-void	ServerNetwork::send_raw_packet(const UDPPacket& raw_packet) {
-	m_socket.send(raw_packet);
+void	ServerNetwork::broadcast_reliable_packet(const PacketWriter& packet, const IPAddress* exclude_peer) {
+	AckManager::PacketHandle	ack_handle(m_ack_manager.add_broadcast_packet(packet.packet_data()));
+
+	for (std::map<IPAddress, Peer>::iterator it(m_peers.begin()); it != m_peers.end(); ++it) {
+		if (exclude_peer && *exclude_peer == it->first) {
+			continue;
+		}
+
+		PacketHeader	header(packet.packet_type(), it->second.next_sequence_no++, it->second.connection_id);
+		send_packet(it->first, header, packet.packet_data());
+		m_ack_manager.add_broadcast_recipient(ack_handle, it->first, header);
+	}
 }
 
-bool	ServerNetwork::receive_packets(Server& server, uint32_t timeout) {
+bool	ServerNetwork::receive_packets(uint32_t timeout) {
 #ifndef __WIN32
 	// Now is an ideal time to handle signals, so unblock all signals
 	sigset_t		old_sigset;
@@ -94,80 +109,128 @@ bool	ServerNetwork::receive_packets(Server& server, uint32_t timeout) {
 	UDPPacket	raw_packet(MAX_PACKET_LENGTH);
 
 	// Receive all the packets we can.
-	while (m_socket.has_packets() && m_socket.recv(raw_packet)) {
-		process_packet(server, raw_packet);
+	while (receive_raw_packet(raw_packet)) {
+		PacketReader	packet(raw_packet);
+
+		if (packet.sequence_no()) {
+			// High reliability packet
+			if (Peer* peer = get_peer(raw_packet.get_address())) {
+				if (packet.connection_id() == peer->connection_id && peer->packet_queue.push(packet)) {
+					// Ready to be processed now.
+					process_packet(raw_packet.get_address(), packet);
+
+					// Process any other packets that might be waiting in the queue from this peer.
+					while (peer->packet_queue.has_packet()) {
+						process_packet(raw_packet.get_address(), peer->packet_queue.peek());
+						peer->packet_queue.pop();
+					}
+				} else if (packet.connection_id() > peer->connection_id) {
+					// From a newer connection than is currently registered
+					// Process the packet, but we can't attempt any re-ordering.
+					// What should happen (on a JOIN) is the Server class detects the duplicate connection,
+					// un-registers the current peer, and re-registers it with the new connection ID
+					process_packet(raw_packet.get_address(), packet);
+				}
+			} else {
+				// From an unbound peer, so we can't attempt to re-order it, but we can process it anyways
+				process_packet(raw_packet.get_address(), packet);
+			}
+		} else {
+			// Low reliability packet - we don't care if, when, or how often it arrives
+			process_packet(raw_packet.get_address(), packet);
+		}
 	}
 	return true;
 }
 
-void	ServerNetwork::process_packet(Server& server, const UDPPacket& raw_packet) {
-	const IPAddress&	address = raw_packet.get_address();
-	PacketReader		reader(raw_packet);
+void	ServerNetwork::process_packet(const IPAddress& address, PacketReader& reader) {
+	if (reader.sequence_no()) {
+		// High reliability packet - send an ACK
+		send_ack(address, reader);
+	}
 
 	switch (reader.packet_type()) {
 	case ACK_PACKET:
-		server.ack(address, reader);
+		process_ack(address, reader);
 		break;
 
 	case PLAYER_UPDATE_PACKET:
-		server.player_update(address, reader);
+		m_server.player_update(address, reader);
 		break;
 
 	case WEAPON_DISCHARGED_PACKET:
-		server.weapon_discharged(address, reader);
+		m_server.weapon_discharged(address, reader);
 		break;
 
 	case PLAYER_HIT_PACKET:
-		server.player_hit(address, reader);
+		m_server.player_hit(address, reader);
 		break;
 
 	case MESSAGE_PACKET:
-		server.message(address, reader);
+		m_server.message(address, reader);
 		break;
 
 	case GATE_UPDATE_PACKET:
-		server.gate_update(address, reader);
+		m_server.gate_update(address, reader);
 		break;
 
 	case JOIN_PACKET:
-		server.join(address, reader);
+		m_server.join(address, reader);
 		break;
 
 	case INFO_PACKET:
-		server.info(address, reader);
+		m_server.info(address, reader);
 		break;
 
 	case LEAVE_PACKET:
-		server.leave(address, reader);
+		m_server.leave(address, reader);
 		break;
 
 	case PLAYER_ANIMATION_PACKET:
-		server.player_animation(address, reader);
+		m_server.player_animation(address, reader);
 		break;
 
 	case NAME_CHANGE_PACKET:
-		server.name_change(address, reader);
+		m_server.name_change(address, reader);
 		break;
 
 	case TEAM_CHANGE_PACKET:
-		server.team_change(address, reader);
+		m_server.team_change(address, reader);
 		break;
 
 	case REGISTER_SERVER_PACKET:
-		server.register_server_packet(address, reader);
+		m_server.register_server_packet(address, reader);
 		break;
 
 	case MAP_INFO_PACKET:
-		server.map_info_packet(address, reader);
+		m_server.map_info_packet(address, reader);
 		break;
 
 	case HOLE_PUNCH_PACKET:
-		server.hole_punch_packet(address, reader);
+		m_server.hole_punch_packet(address, reader);
 		break;
 
 	case PLAYER_DIED_PACKET:
-		server.player_died(address, reader);
+		m_server.player_died(address, reader);
 		break;
 	}
+}
+
+CommonNetwork::Peer*	ServerNetwork::get_peer(const IPAddress& addr) {
+	map<IPAddress, Peer>::iterator	it(m_peers.find(addr));
+	return it != m_peers.end() ? &it->second : NULL;
+}
+
+void	ServerNetwork::register_peer(const IPAddress& address, uint32_t connection_id, uint64_t next_send_sequence_no, uint64_t next_receive_sequence_no) {
+	m_ack_manager.clear_peer(address);
+	m_peers[address].init(connection_id, next_send_sequence_no, next_receive_sequence_no);
+}
+
+void	ServerNetwork::unregister_peer(const IPAddress& address) {
+	m_peers.erase(address);
+}
+
+void	ServerNetwork::excessive_packet_drop(const IPAddress& peer) {
+	m_server.excessive_packet_drop(peer);
 }
 

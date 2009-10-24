@@ -1,5 +1,5 @@
 /*
- * common/PacketReader.cpp
+ * common/PacketQueue.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,37 +22,38 @@
  * 
  */
 
+#ifndef LM_COMMON_PACKETQUEUE_HPP
+#define LM_COMMON_PACKETQUEUE_HPP
+
+#include <list>
 #include "PacketReader.hpp"
-#include "UDPPacket.hpp"
-#include <cstring>
-#include <cstdlib>
-#include <ostream>
-#include <algorithm>
 
-// See .hpp file for extensive comments.
+namespace LM {
+	class PacketQueue {
+	private:
+		size_t			m_max_size;
+		uint64_t		m_next_expected_sequence_no;
+		std::list<PacketReader>	m_queued_packets;
 
-using namespace LM;
-using namespace std;
+	public:
+		explicit PacketQueue(uint64_t next_expected_sequence_no =1, size_t max_size =16);
 
-PacketReader::PacketReader(const char* packet_data, char separator) : StringTokenizer(packet_data, separator) {
-	// Process the packet header, which consists of the first fields
-	m_header.read(*this);
+		void			init(uint64_t next_expected_sequence_no =1, size_t max_size =16);
+
+		// Returns true if the given packet is ready to be processed NOW:
+		bool			push(const PacketReader& packet);
+
+		// Returns true if there is a packet ready to be processed:
+		bool			has_packet() const { return !m_queued_packets.empty() && m_queued_packets.front().sequence_no() == m_next_expected_sequence_no; }
+
+		// Return the next packet that is ready to be processed (ONLY CALL if has_packet() returns TRUE!)
+		PacketReader&		peek();
+
+		// Pop the next packet that was ready to be processed (ONLY CALL if has_packet() returns TRUE!)
+		void			pop();
+
+		class EmptyQueueException { };
+	};
 }
 
-PacketReader::PacketReader(const UDPPacket& packet) {
-	StringTokenizer::set_delimiter(PACKET_FIELD_SEPARATOR);
-	StringTokenizer::init_from_raw_data(packet.get_data(), packet.get_length(), false);
-	// Process the packet header, which consists of the first fields
-	m_header.read(*this);
-}
-
-std::ostream&   LM::operator<<(std::ostream& out, const PacketReader& packet_reader) {
-	return out << packet_reader.get_rest();
-}
-
-void	PacketReader::swap(PacketReader& other) {
-	StringTokenizer::swap(other);
-	// std:: prefix necessary here to avoid name conflicts
-	std::swap(m_header, other.m_header);
-}
-
+#endif

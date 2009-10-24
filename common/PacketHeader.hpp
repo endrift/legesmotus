@@ -1,5 +1,5 @@
 /*
- * common/PacketWriter.cpp
+ * common/PacketHeader.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,16 +22,26 @@
  * 
  */
 
-#include "PacketWriter.hpp"
-#include <iomanip>
+#ifndef LM_COMMON_PACKETHEADER_HPP
+#define LM_COMMON_PACKETHEADER_HPP
 
-// See .hpp file for extensive comments.
+#include <string>
 
-using namespace LM;
-using namespace std;
+namespace LM {
+	class StringTokenizer;
 
-PacketWriter::PacketWriter(uint32_t packet_type) {
-	m_out.setf(ios::boolalpha);		// use true/false when outputting bools
-	m_header.packet_type = packet_type;
+	class PacketHeader {
+	public:
+		uint32_t	packet_type;
+		uint64_t	sequence_no;
+		uint32_t	connection_id;
+
+		PacketHeader (uint32_t type, uint64_t seqno, uint32_t cid) { packet_type = type; sequence_no = seqno; connection_id = cid; }
+		PacketHeader () { packet_type = 0; sequence_no = 0; connection_id = 0; }
+
+		std::string	make_string() const;
+		void		read(StringTokenizer&);
+	};
 }
 
+#endif

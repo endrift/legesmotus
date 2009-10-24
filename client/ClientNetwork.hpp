@@ -26,30 +26,35 @@
 #define LM_CLIENT_CLIENTNETWORK_HPP
 
 #include "common/IPAddress.hpp"
-#include "common/UDPSocket.hpp"
+#include "common/CommonNetwork.hpp"
+#include "common/PacketWriter.hpp"
 #include <stdint.h>
 
 namespace LM {
 	class GameController;
-	class PacketWriter;
+	class PacketHeader;
 	class UDPPacket;
 	
-	class ClientNetwork {
+	class ClientNetwork : public CommonNetwork {
 	private:
-		UDPSocket	m_socket;		// The socket we use for UDP communication
+		static uint32_t	next_connection_id;
+
+		GameController&	m_controller;		// Our owning Game Controller, which we inform of packet receipts
 		IPAddress	m_server_address;	// The resolved address of the server (host & port)
+		Peer		m_server_peer;		// Details about the server connection
 		bool		m_is_connected;		// Are we currently connected to the server?
-		uint64_t	m_last_packet_time;	// The time we last received a packet.
+		uint64_t	m_last_packet_time;	// The time we last received a packet from the server
 	
 		// Process the individual packet which has been received.
 		// Packets from our bound server
-		void		process_server_packet(GameController& controller, const UDPPacket& packet);
+		void		process_server_packet(PacketReader& packet);
 		// Packets from other sources (e.g. for server browsing)
-		void		process_unbound_packet(GameController& controller, const UDPPacket& packet);
+		void		process_unbound_packet(const UDPPacket& packet);
 	
+		virtual void	excessive_packet_drop(const IPAddress& peer);
+
 	public:
-		ClientNetwork();
-		~ClientNetwork();
+		explicit ClientNetwork(GameController& gc);
 	
 		/*
 		 * Connection functions - for connecting and disconnecting with the server
@@ -69,13 +74,16 @@ namespace LM {
 	
 		const IPAddress& get_server_address() const { return m_server_address; }
 	
+		// Return the last tick on which a packet was received from the server.
+		uint64_t	get_last_packet_time();
+	
 	
 		/*
 		 * Receiving packets
 		 */
 	
 		// Process all the pending packets and notify the game controller of their receipt
-		void		receive_packets(GameController& game_controller);
+		void		receive_packets();
 	
 	
 		/*
@@ -83,31 +91,16 @@ namespace LM {
 		 */
 	
 		// Send the given packet to the server
-		void		send_packet(const PacketWriter& packet);
-		void		send_packet(const std::string& packet_data);
+		void		send_reliable_packet(const PacketWriter& packet);
+		void		send_packet(const PacketWriter& packet) { send_packet(packet.get_header(), packet.packet_data()); }
+		void		send_packet(const PacketHeader& header, const std::string& data);
 	
 		// Send the given packet to the specific address
-		void		send_packet_to(const IPAddress& dest, const PacketWriter& packet);
-		void		send_packet_to(const IPAddress& dest, const std::string& packet_data);
+		void		send_packet_to(const IPAddress& dest, const PacketWriter& packet) { CommonNetwork::send_packet(dest, packet); }
+		void		send_packet_to(const IPAddress& dest, const PacketHeader& header, const std::string& data) { CommonNetwork::send_packet(dest, header, data); }
 	
 		// Send the given packet to all systems on the LAN
 		void		broadcast_packet(unsigned int portno, const PacketWriter& packet);
-	
-	
-		/*
-		 * Specialized communication functions - for sending and receiving RAW packets
-		 *  Primarily for internal use, but are made public for TESTING PURPOSES ONLY
-		 *  Use receive_packets and send_packet instead!
-		 */
-	
-		// Receive a _single_ packet, in raw form.  You should use receive_packets instead.
-		// Returns true if a packet was received, false if no packets waiting to be received
-		bool		receive_raw_packet(UDPPacket& raw_packet);
-		// Send a packet, in raw form.  You should not use this function; use send_packet instead.
-		void		send_raw_packet(const UDPPacket& raw_packet);
-	
-		// Return the last tick on which a packet was received from the server.
-		uint64_t	get_last_packet_time();
 	};
 }
 
