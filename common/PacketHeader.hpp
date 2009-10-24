@@ -26,6 +26,7 @@
 #define LM_COMMON_PACKETHEADER_HPP
 
 #include <string>
+#include <stdint.h>
 
 namespace LM {
 	class StringTokenizer;
