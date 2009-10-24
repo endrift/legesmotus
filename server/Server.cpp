@@ -472,8 +472,15 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 		remove_player(*duplicate_player, "Player joined from same address");
 	}
 
+	const bool		is_first_player = m_players.empty();
+
+	if (is_first_player) {
+		// This is the first player - reset the team scores
+		m_team_score[0] = m_team_score[1] = 0;
+	}
+
 	if (!m_game_mode->is_team_play()) {
-		team = 'A';
+		team = 'A'; // If team play is not in effect (e.g. for racing or death match), put all players on team A (XXX: a bit hackish)
 	} else if (m_params.autobalance_teams || !is_valid_team(team)) {
 		// Assign to team equitably.
 		if (m_team_count[0] < m_team_count[1]) {
@@ -481,7 +488,16 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 		} else if (m_team_count[0] > m_team_count[1]) {
 			team = 'B';
 		} else if (!is_valid_team(team)) {
-			team = 'A' + rand() % 2;
+			// If teams are equal in size, and the player doesn't have a preference,
+			// assign the player to whichever team is losing.
+			if (m_team_score[0] < m_team_score[1]) {
+				team = 'A';
+			} else if (m_team_score[0] > m_team_score[1]) {
+				team = 'B';
+			} else {
+				// Teams are 100% equal - in both size and score -> RANDOM assignment
+				team = 'A' + rand() % 2;
+			}
 		}
 		// Note that if autobalancing is enabled but the teams are equal in size, the server will honor the player's team request, if there was one.
 	}
@@ -507,8 +523,6 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 	string			name(get_unique_player_name(requested_name.c_str()));
 
 	++m_team_count[team - 'A'];
-
-	bool			is_first_player = m_players.empty();
 
 	uint32_t		player_id = m_next_player_id++;
 	ServerPlayer&		new_player = m_players[player_id].init(player_id, address, client_version, name.c_str(), team, m_timeout_queue);
