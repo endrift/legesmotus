@@ -148,6 +148,7 @@ namespace LM {
 		Font*		m_bold_font;
 		Font*		m_medium_font;
 		Font*		m_menu_font;
+		Font*		m_large_menu_font;
 		
 		std::string	m_name;
 		std::string 	m_client_version;

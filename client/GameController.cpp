@@ -236,6 +236,7 @@ void GameController::init(GameWindow* window) {
 	m_text_manager = new TextManager(m_font, m_window);
 	
 	m_menu_font = new Font(m_path_manager.data_path("JuraDemiBold.ttf", "fonts"), 24);
+	m_large_menu_font = new Font(m_path_manager.data_path("JuraDemiBold.ttf", "fonts"), 30);
 	m_medium_font = new Font(m_path_manager.data_path("JuraMedium.ttf", "fonts"), 20);
 	
 	m_sound_controller = SoundController::get_instance(*this, m_path_manager);
@@ -289,7 +290,7 @@ void GameController::init(GameWindow* window) {
 	
 	// Set the text manager to draw a shadow behind everything.
 	ConstantCurve curve(0, 1);
-	m_text_manager->set_active_font(m_menu_font);
+	m_text_manager->set_active_font(m_large_menu_font);
 	m_text_manager->set_shadow_alpha(1.0);
 	m_text_manager->set_shadow_offset(1.0, 1.0);
 	if (m_configuration->get_bool_value("text_shadow")) {
@@ -304,17 +305,17 @@ void GameController::init(GameWindow* window) {
 	
 	// Main menu
 	m_main_menu.add_item(TextMenuItem::with_manager(m_text_manager, "Connect to Server", "connect", 50, 200));
-	m_item_resume = TextMenuItem::with_manager(m_text_manager, "Resume Game", "resume", 50, 230, MenuItem::DISABLED);
+	m_item_resume = TextMenuItem::with_manager(m_text_manager, "Resume Game", "resume", 50, 240, MenuItem::DISABLED);
 	m_main_menu.add_item(m_item_resume);
-	m_item_disconnect = TextMenuItem::with_manager(m_text_manager, "Disconnect", "disconnect", 50, 260, MenuItem::DISABLED);
+	m_item_disconnect = TextMenuItem::with_manager(m_text_manager, "Disconnect", "disconnect", 50, 280, MenuItem::DISABLED);
 	m_main_menu.add_item(m_item_disconnect);
-	m_main_menu.add_item(TextMenuItem::with_manager(m_text_manager, "Options", "submenu:options", 50, 290));
-	m_main_menu.add_item(TextMenuItem::with_manager(m_text_manager, "Quit", "quit", 50, 320));
-	m_main_menu.add_item(TextMenuItem::with_manager(m_text_manager, "Thanks for playing! Please visit", "", 50, 380, MenuItem::STATIC));
-	TextMenuItem* thanks2 = TextMenuItem::with_manager(m_text_manager, "http://legesmotus.cs.brown.edu", "", 50, 410, MenuItem::STATIC);
+	m_main_menu.add_item(TextMenuItem::with_manager(m_text_manager, "Options", "submenu:options", 50, 320));
+	m_main_menu.add_item(TextMenuItem::with_manager(m_text_manager, "Quit", "quit", 50, 360));
+	m_main_menu.add_item(TextMenuItem::with_manager(m_text_manager, "Thanks for playing! Please visit", "", 50, 430, MenuItem::STATIC));
+	TextMenuItem* thanks2 = TextMenuItem::with_manager(m_text_manager, "http://legesmotus.cs.brown.edu", "", 50, 470, MenuItem::STATIC);
 	thanks2->set_plain_fg_color(Color(0.4, 1.0, 0.4));
 	m_main_menu.add_item(thanks2);
-	m_main_menu.add_item(TextMenuItem::with_manager(m_text_manager, "to leave feedback for us!", "", 50, 440, MenuItem::STATIC));
+	m_main_menu.add_item(TextMenuItem::with_manager(m_text_manager, "to leave feedback for us!", "", 50, 510, MenuItem::STATIC));
 
 	m_text_manager->set_active_font(m_font);
 	m_main_menu.add_item(TextMenuItem::with_manager(m_text_manager, string("v. ").append(m_client_version), "", m_screen_width - 90, m_screen_height - 40, MenuItem::STATIC));
@@ -488,7 +489,7 @@ void GameController::init(GameWindow* window) {
 	update_individual_scores();
 	
 	// Initialize the gate warning.
-	m_text_manager->set_active_font(m_menu_font);
+	m_text_manager->set_active_font(m_large_menu_font);
 	m_text_manager->set_active_color(1.0, 0.4, 0.4);
 	m_gate_warning = m_text_manager->place_string("Your gate is going down!", m_screen_width/2, m_screen_height - 200, TextManager::CENTER, TextManager::LAYER_HUD);
 	m_gate_warning->set_invisible(true);
