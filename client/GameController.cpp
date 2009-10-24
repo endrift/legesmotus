@@ -3003,10 +3003,10 @@ void GameController::team_change(PacketReader& reader) {
 		msg << player->get_name() << " has switched teams";
 		
 		// Remove the name and sprite.
-		m_text_manager->remove_string(m_players[playerid].get_name_sprite());
-		m_window->unregister_graphic(m_players[playerid].get_sprite());
+		m_text_manager->remove_string(player->get_name_sprite());
+		m_window->unregister_graphic(player->get_sprite());
 		m_radar->remove_blip(playerid);
-		delete m_players[playerid].get_sprite();
+		delete player->get_sprite();
 
 		// Generate new graphics for it.
 		if (team == 'A') {
@@ -3020,8 +3020,12 @@ void GameController::team_change(PacketReader& reader) {
 		}
 		m_radar->add_blip(playerid,team,0,0);
 		
-		m_window->register_graphic(m_players[playerid].get_sprite());
-		m_players[playerid].set_name_sprite(m_text_manager->place_string(m_players[playerid].get_name(), m_players[playerid].get_x(), m_players[playerid].get_y()-(m_players[playerid].get_radius()+30), TextManager::CENTER, TextManager::LAYER_MAIN));
+		if (Weapon* new_weapon = get_weapon(player->get_current_weapon_id())) {
+			new_weapon->select(*player, *this);
+		}
+		
+		m_window->register_graphic(player->get_sprite());
+		player->set_name_sprite(m_text_manager->place_string(player->get_name(), player->get_x(), player->get_y()-(player->get_radius()+30), TextManager::CENTER, TextManager::LAYER_MAIN));
 		update_individual_scores();
 	}
 }
