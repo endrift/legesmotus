@@ -42,7 +42,7 @@ namespace LM {
 		// Parameters controlling ACKs
 		enum {
 			ACK_TIME = 500,
-			RETRIES = 5
+			RETRIES = 10
 		};
 
 		// This class represents a packet which has been sent (possibly to multiple recipients), and is awaiting ACKs
