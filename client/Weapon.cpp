@@ -30,6 +30,7 @@
 #include "StandardGun.hpp"
 #include "ImpactCannon.hpp"
 #include "SpreadGun.hpp"
+#include "ThawGun.hpp"
 
 using namespace LM;
 using namespace std;
@@ -47,6 +48,7 @@ Weapon*	Weapon::new_weapon (WeaponReader& data) {
 	if (strcasecmp(weapon_type, "standard") == 0)	{ return new StandardGun(weapon_id, data); }
 	if (strcasecmp(weapon_type, "spread") == 0)	{ return new SpreadGun(weapon_id, data); }
 	if (strcasecmp(weapon_type, "impact") == 0)	{ return new ImpactCannon(weapon_id, data); }
+	if (strcasecmp(weapon_type, "thaw") == 0)	{ return new ThawGun(weapon_id, data); }
 
 	return NULL;
 }
