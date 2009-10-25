@@ -3523,22 +3523,24 @@ void	GameController::freeze(uint64_t time_to_unfreeze) {
 }
 
 void	GameController::unfreeze() {
-	m_sound_controller->play_sound("unfreeze");
-	if (m_players[m_player_id].is_dead()) {
-		// If we were dead (i.e. at 0 energy), reset our energy
-		// Otherwise, we continue with the energy we had before getting killed
-		m_players[m_player_id].reset_energy();
-		update_energy_bar();
-		m_last_damage_time = 0;
+	if (GraphicalPlayer* player = get_player_by_id(m_player_id)) {
+		m_sound_controller->play_sound("unfreeze");
+		if (player->is_dead()) {
+			// If we were dead (i.e. at 0 energy), reset our energy
+			// Otherwise, we continue with the energy we had before getting killed
+			player->reset_energy();
+			update_energy_bar();
+			m_last_damage_time = 0;
+		}
+		player->set_is_frozen(false);
+		m_last_recharge_time = 0;
+		recreate_name(player);
+		if (m_radar->get_mode() == RADAR_ON) {
+			m_radar->set_blip_alpha(m_player_id, 1.0);
+		}
+		m_time_to_unfreeze = 0;
+		m_total_time_frozen = 0;
 	}
-	m_players[m_player_id].set_is_frozen(false);
-	m_last_recharge_time = 0;
-	recreate_name(get_player_by_id(m_player_id));
-	if (m_radar->get_mode() == RADAR_ON) {
-		m_radar->set_blip_alpha(m_player_id, 1.0);
-	}
-	m_time_to_unfreeze = 0;
-	m_total_time_frozen = 0;
 }
 
 void	GameController::reduce_freeze_time(uint64_t milliseconds) {
