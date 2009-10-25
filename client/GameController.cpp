@@ -684,22 +684,7 @@ void GameController::run(int lockfps) {
 		
 		// Check if my player is set to unfreeze.
 		if (!m_players.empty() && m_time_to_unfreeze < get_ticks() && m_time_to_unfreeze != 0) {
-			m_sound_controller->play_sound("unfreeze");
-			if (m_players[m_player_id].is_dead()) {
-				// If we were dead (i.e. at 0 energy), reset our energy
-				// Otherwise, we continue with the energy we had before getting killed
-				m_players[m_player_id].reset_energy();
-				update_energy_bar();
-				m_last_damage_time = 0;
-			}
-			m_players[m_player_id].set_is_frozen(false);
-			m_last_recharge_time = 0;
-			recreate_name(get_player_by_id(m_player_id));
-			if (m_radar->get_mode() == RADAR_ON) {
-				m_radar->set_blip_alpha(m_player_id, 1.0);
-			}
-			m_time_to_unfreeze = 0;
-			m_total_time_frozen = 0;
+			unfreeze();
 		}
 
 		if (!m_players.empty() && m_players[m_player_id].is_damaged() && !m_players[m_player_id].is_dead() && !m_players[m_player_id].is_frozen()) {
@@ -3537,17 +3522,39 @@ void	GameController::freeze(uint64_t time_to_unfreeze) {
 	}
 }
 
+void	GameController::unfreeze() {
+	m_sound_controller->play_sound("unfreeze");
+	if (m_players[m_player_id].is_dead()) {
+		// If we were dead (i.e. at 0 energy), reset our energy
+		// Otherwise, we continue with the energy we had before getting killed
+		m_players[m_player_id].reset_energy();
+		update_energy_bar();
+		m_last_damage_time = 0;
+	}
+	m_players[m_player_id].set_is_frozen(false);
+	m_last_recharge_time = 0;
+	recreate_name(get_player_by_id(m_player_id));
+	if (m_radar->get_mode() == RADAR_ON) {
+		m_radar->set_blip_alpha(m_player_id, 1.0);
+	}
+	m_time_to_unfreeze = 0;
+	m_total_time_frozen = 0;
+}
+
 void	GameController::reduce_freeze_time(uint64_t milliseconds) {
 	if (GraphicalPlayer* player = get_player_by_id(m_player_id)) {
 		if (player->is_frozen()) {
+			if (m_time_to_unfreeze <= milliseconds || m_total_time_frozen <= milliseconds) {
+				unfreeze();
+			}
+			
 			m_time_to_unfreeze -= milliseconds;
-			if (m_time_to_unfreeze <= 0) {
-				m_time_to_unfreeze = 1;
+			
+			if (get_ticks() > m_time_to_unfreeze) {
+				unfreeze();
 			}
+			
 			m_total_time_frozen -= milliseconds;
-			if (m_total_time_frozen <= 0) {
-				m_total_time_frozen = 1;
-			}
 		}
 	}
 }

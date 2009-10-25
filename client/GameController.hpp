@@ -372,6 +372,7 @@ namespace LM {
 		std::string	format_time_from_millis(uint64_t milliseconds);
 		void		reduce_freeze_time(uint64_t milliseconds);
 		void		freeze(uint64_t how_long);
+		void		unfreeze();
 
 		// This is a COMPATIBILITY WRAPPER around the more general shoot_in_line() function below.
 		// Code should be migrated to use the new function.
