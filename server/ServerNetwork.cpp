@@ -114,6 +114,9 @@ bool	ServerNetwork::receive_packets(uint32_t timeout) {
 
 		if (packet.sequence_no()) {
 			// High reliability packet
+			// Immediately send an ACK
+			send_ack(raw_packet.get_address(), packet);
+
 			if (Peer* peer = get_peer(raw_packet.get_address())) {
 				if (packet.connection_id() == peer->connection_id && peer->packet_queue.push(packet)) {
 					// Ready to be processed now.
@@ -144,11 +147,6 @@ bool	ServerNetwork::receive_packets(uint32_t timeout) {
 }
 
 void	ServerNetwork::process_packet(const IPAddress& address, PacketReader& reader) {
-	if (reader.sequence_no()) {
-		// High reliability packet - send an ACK
-		send_ack(address, reader);
-	}
-
 	switch (reader.packet_type()) {
 	case ACK_PACKET:
 		process_ack(address, reader);

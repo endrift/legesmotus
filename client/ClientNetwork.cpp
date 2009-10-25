@@ -105,6 +105,8 @@ void	ClientNetwork::receive_packets() {
 
 			if (packet.sequence_no()) {
 				// High reliability packet
+				// Immediately send an ACK
+				send_ack(raw_packet.get_address(), packet);
 				if (packet.connection_id() == m_server_peer.connection_id && m_server_peer.packet_queue.push(packet)) {
 					// Ready to be processed now.
 					process_server_packet(packet);
@@ -127,11 +129,6 @@ void	ClientNetwork::receive_packets() {
 
 void	ClientNetwork::process_server_packet(PacketReader& reader) {
 	m_last_packet_time = get_ticks();
-
-	if (reader.sequence_no()) {
-		// High reliability packet - send an ACK
-		send_ack(m_server_address, reader);
-	}
 
 	switch (reader.packet_type()) {
 	case ACK_PACKET:
