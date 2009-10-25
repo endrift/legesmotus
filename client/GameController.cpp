@@ -3537,6 +3537,21 @@ void	GameController::freeze(uint64_t time_to_unfreeze) {
 	}
 }
 
+void	GameController::reduce_freeze_time(uint64_t milliseconds) {
+	if (GraphicalPlayer* player = get_player_by_id(m_player_id)) {
+		if (player->is_frozen()) {
+			m_time_to_unfreeze -= milliseconds;
+			if (m_time_to_unfreeze <= 0) {
+				m_time_to_unfreeze = 1;
+			}
+			m_total_time_frozen -= milliseconds;
+			if (m_total_time_frozen <= 0) {
+				m_total_time_frozen = 1;
+			}
+		}
+	}
+}
+
 void	GameController::play_sound(const char* sound_name) {
 	m_sound_controller->play_sound(sound_name);
 }

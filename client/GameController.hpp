@@ -370,7 +370,7 @@ namespace LM {
 		void		recreate_name(GraphicalPlayer* player);
 		std::string	get_server_address();
 		std::string	format_time_from_millis(uint64_t milliseconds);
-
+		void		reduce_freeze_time(uint64_t milliseconds);
 		void		freeze(uint64_t how_long);
 
 		// This is a COMPATIBILITY WRAPPER around the more general shoot_in_line() function below.
