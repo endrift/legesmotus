@@ -39,6 +39,7 @@ namespace LM {
 		MapObjectParams		m_params;
 		Graphic*		m_graphic;
 		std::auto_ptr<Shape>	m_bounding_shape;
+		bool			m_is_slippery;
 
 		char			m_team;			// What team this affects (0 for all players)
 		int			m_damage;		// Damage when player interacts with object
@@ -47,6 +48,7 @@ namespace LM {
 		int			m_collision_damage;	// Damage when player collides with obstacle
 		uint64_t		m_freeze_time;		// How long you're frozen for (only when colliding)
 		double			m_repel_velocity;	// The magnitude of velocity at which killed player should be pushed away
+		double			m_bounce_factor;	// How much your velocity changes when you bounce off
 
 		uint64_t		m_last_damage_time;	// 0 if not engaged
 		double			m_angle_of_incidence;	// Angle of incidence of the surface we landed on (used for repelling players)

@@ -36,6 +36,7 @@ Obstacle::Obstacle (Point position) : BaseMapObject(position) {
 	m_graphic = NULL;
 	m_params.priority = 256; // TODO: use enum
 	m_is_slippery = false;
+	m_bounce_factor = 0.9;
 }
 
 void	Obstacle::collide(GameController& gc, Player& player, Point old_position, double angle_of_incidence) {
@@ -43,7 +44,7 @@ void	Obstacle::collide(GameController& gc, Player& player, Point old_position, d
 	player.set_y(old_position.y);
 	if (m_is_slippery || (player.is_dead() || player.is_frozen()) && !player.is_invisible()) {
 		// Bounce off the wall
-		player.bounce(angle_of_incidence, 0.9);
+		player.bounce(angle_of_incidence, m_bounce_factor);
 	} else {
 		// Stop moving
 		player.stop();
@@ -64,6 +65,8 @@ void	Obstacle::init (MapReader& reader, ClientMap& map) {
 			m_is_slippery = true;
 		} else if (param_string == "sticky") {
 			m_is_slippery = false;
+		} else if (strncmp(param_string.c_str(), "bounce=", 7) == 0) {
+			m_bounce_factor = atof(param_string.c_str() + 7);
 		} else {
 			m_params.parse(param_string.c_str());
 		}

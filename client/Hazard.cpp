@@ -39,6 +39,7 @@ using namespace std;
 Hazard::Hazard (Point position) : BaseMapObject(position) {
 	m_graphic = NULL;
 	m_params.priority = 256; // TODO: use enum
+	m_is_slippery = false;
 	m_team = 0;
 	m_damage = 0;
 	m_damage_rate = 100;
@@ -46,6 +47,7 @@ Hazard::Hazard (Point position) : BaseMapObject(position) {
 	m_collision_damage = 0;
 	m_freeze_time = 0;
 	m_repel_velocity = 1.0;
+	m_bounce_factor = 0.9;
 
 	m_last_damage_time = 0;
 	m_angle_of_incidence = 0.0;
@@ -60,7 +62,7 @@ void	Hazard::collide(GameController& gc, Player& player, Point old_position, dou
 	player.set_y(old_position.y);
 	if ((player.is_dead() || player.is_frozen()) && !player.is_invisible()) {
 		// Bounce off the wall
-		player.bounce(angle_of_incidence, 0.9);
+		player.bounce(angle_of_incidence, m_bounce_factor);
 	} else if (!player.is_dead()) {
 		m_angle_of_incidence = angle_of_incidence;
 		if (!is_valid_team(m_team) || player.get_team() == m_team) {
@@ -69,7 +71,7 @@ void	Hazard::collide(GameController& gc, Player& player, Point old_position, dou
 				// Player not killed by collision damage
 				if (m_freeze_time) {
 					// Freeze player based on this hazard's effects
-					player.bounce(angle_of_incidence, 0.9); // Bounce off since we're frozen now
+					player.bounce(angle_of_incidence, m_bounce_factor); // Bounce off since we're frozen now
 					gc.freeze(m_freeze_time);
 					return; // Return now, so we don't land on the obstacle
 				} else if (m_collision_damage) {
@@ -85,9 +87,13 @@ void	Hazard::collide(GameController& gc, Player& player, Point old_position, dou
 			}
 		}
 
-		// Land on obstacle
-		player.stop();
-		player.set_is_grabbing_obstacle(true);
+		if (m_is_slippery) {
+			player.bounce(angle_of_incidence, m_bounce_factor);
+		} else {
+			// Land on obstacle
+			player.stop();
+			player.set_is_grabbing_obstacle(true);
+		}
 	}
 }
 
@@ -100,7 +106,11 @@ void	Hazard::init (MapReader& reader, ClientMap& map) {
 		string		param_string;
 		reader >> param_string;
 
-		if (strncmp(param_string.c_str(), "team=", 5) == 0) {
+		if (param_string == "slippery") {
+			m_is_slippery = true;
+		} else if (param_string == "sticky") {
+			m_is_slippery = false;
+		} else if (strncmp(param_string.c_str(), "team=", 5) == 0) {
 			m_team = parse_team_string(param_string.c_str() + 5);
 		} else if (param_string == "collidable") {
 			m_is_collidable = true;
@@ -114,6 +124,8 @@ void	Hazard::init (MapReader& reader, ClientMap& map) {
 			m_freeze_time = atol(param_string.c_str() + 7);
 		} else if (strncmp(param_string.c_str(), "repel=", 6) == 0) {
 			m_repel_velocity = atof(param_string.c_str() + 6);
+		} else if (strncmp(param_string.c_str(), "bounce=", 7) == 0) {
+			m_bounce_factor = atof(param_string.c_str() + 7);
 		} else {
 			m_params.parse(param_string.c_str());
 		}

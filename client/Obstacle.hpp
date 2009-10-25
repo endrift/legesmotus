@@ -39,6 +39,7 @@ namespace LM {
 		Graphic*		m_graphic;
 		std::auto_ptr<Shape>	m_bounding_shape;
 		bool			m_is_slippery;
+		double			m_bounce_factor;
 
 	public:
 		explicit Obstacle (Point pos);
