@@ -11,32 +11,10 @@ then
 	exit 2
 fi
 
-if [[ ! -d data ]]
-then
-	print -u2 "Run from top level directory."
-	#exit 1
-fi
-
 mapname=$1
 integer width=$2
 integer height=$3
 style=${4:-metal}
-
-if [[ "$mapname" = @(*).map ]]
-then
-	print -u2 "Please leave off .map extension."
-	exit
-fi
-
-mapfile=data/maps/${mapname}.map
-
-if [[ -f $mapfile ]]
-then
-	print -u2 "$mapname: map already exists"
-	exit 1
-fi
-
-exec >$mapfile || exit $?
 
 # The Y coordinate of the top of the gate (center it along the vertical extent of the map)
 (( gate_start_y = height / 2 - GATEHEIGHT / 2 ))
@@ -44,63 +22,68 @@ exec >$mapfile || exit $?
 (( gate_end_y = gate_start_y + GATEHEIGHT ))
 
 # Map header
-print "$mapname"
-print "$width $height"
+print "name $mapname"
+print "# Remember to increment revision every time you make a change!"
+print "revision 1"
+print "width $width"
+print "height $height"
+print "# You can customize game parameters here.  See the lmserver man page for a list of game parameters."
+print "# Examples:"
+print "# max_players 16"
+print "# freeze_time 7500"
+print "# friendly_fire off"
+print "# The next blank line is important - it signifies that the header section has ended."
+print
 
 # Background
 cat <<-EOF
 # Background
-SPRITE	0,0	TB	${style}_bgtile	${width}	${height}
-SPRITE	-64,${gate_start_y}	TB	${style}_bgtile	64	${GATEHEIGHT}
-SPRITE	${width},${gate_start_y}	TB	${style}_bgtile	64	${GATEHEIGHT}
+BACKGROUND	0,0	${style}_bgtile	tile=${width},${height}
+BACKGROUND	-64,${gate_start_y}	${style}_bgtile	tile=64,${GATEHEIGHT}
+BACKGROUND	${width},${gate_start_y}	${style}_bgtile	tile=64,${GATEHEIGHT}
 
 EOF
 
 # Walls
 cat <<-EOF
 # Walls
-SPRITE	0,${height}	TB	${style}_wall_s32	${width}	32
-SPRITE	0,-32	TB	${style}_wall_n32	${width}	32
-SPRITE	${width},0	TB	${style}_wall_e32	32	${gate_start_y}
-SPRITE	${width},${gate_start_y}	B	${style}_gate_e
-SPRITE	${width},${gate_end_y}	TB	${style}_wall_e32	32	${gate_start_y}
-SPRITE	-32,0	TB	${style}_wall_w32	32	${gate_start_y}
-SPRITE	-64,${gate_start_y}	B	${style}_gate_w
-SPRITE	-32,${gate_end_y}	TB	${style}_wall_w32	32	${gate_start_y}
+BACKGROUND	0,${height}	${style}_wall_s32	tile=${width},32
+BACKGROUND	0,-32	${style}_wall_n32	tile=${width},32
+BACKGROUND	${width},0	${style}_wall_e32	tile=32,${gate_start_y}
+BACKGROUND	${width},${gate_start_y}	${style}_gate_e
+BACKGROUND	${width},${gate_end_y}	${style}_wall_e32	tile=32,${gate_start_y}
+BACKGROUND	-32,0	${style}_wall_w32	tile=32,${gate_start_y}
+BACKGROUND	-64,${gate_start_y}	${style}_gate_w
+BACKGROUND	-32,${gate_end_y}	${style}_wall_w32	tile=32,${gate_start_y}
 
 # Wall Corners
-SPRITE	${width},-32	B	${style}_wall_ne32
-SPRITE	-32,-32	B	${style}_wall_nw32
-SPRITE	-32,${height}	B	${style}_wall_sw32
-SPRITE	${width},${height}	B	${style}_wall_se32
+BACKGROUND	${width},-32	${style}_wall_ne32
+BACKGROUND	-32,-32	${style}_wall_nw32
+BACKGROUND	-32,${height}	${style}_wall_sw32
+BACKGROUND	${width},${height}	${style}_wall_se32
 EOF
 
 # Gates
 cat <<-EOF
 # Gates
-GATE	-15,$((gate_start_y + 8))	A
-GATE	$((width + 7)),$((gate_start_y + 8))	B
+GATE	-15,$((gate_start_y + 8))	blue_gate	team=blue
+GATE	$((width + 7)),$((gate_start_y + 8))	red_gate	team=red
+FORCE	0,$((height / 2))	-	circle:512	frozen	sucks-off-obstacles	gravity=-200
+FORCE	${width},$((height / 2))	-	circle:512	frozen	sucks-off-obstacles	gravity=-200
 
 EOF
 
 # Sample Objects
 cat <<-EOF
-# SAMPLE Spawnpoints (make your own, each team should have 8)
-#SPAWN	0,50	A
-#SPAWN	${width},50	B
+# Spawnpoints at Gates
+SPAWN	0,$((height / 2))	BLUE
+SPAWN	${width},$((height / 2))	RED
 
 # SAMPLE obstacles (make your own)
 # Look in data/sprites to see what sprites are available
 # This is a 64x64 obstacle:
-#SPRITE	64,256	O	${style}_obstacle64
+#OBSTACLE	64,256	${style}_obstacle64	rect:64,64
 # This is a 128x128 obstacle:
-#SPRITE	128,256	O	${style}_obstacle128
+#OBSTACLE	128,256	${style}_obstacle128	rect:128,128
 EOF
 
-exec >&-
-
-#svn add $mapfile >/dev/null
-
-print -u2 "Done writing map file to ${mapfile}"
-print -u2 "The background, wall, and gate sprites have been laid out."
-print -u2 "You need to add spawnpoints and obstacles where appropriate."

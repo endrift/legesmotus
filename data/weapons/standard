@@ -41,8 +41,8 @@
 	normal=10,-1:-15:-1:cannon_back.png;10,-1:-15:1:cannon_front.png
 	firing=10,-1:-15:-1:cannon_back.png;10,-1:-15:1:cannon_front_shot.png
 
-4-thaw:THAW
-	name=Thaw Gun
-	hud=large_gun.png
-	normal=3,19:-15:1:gun_noshot.png
-	firing=3,19:-15:1:gun_shot.png
+#4-thaw:THAW
+#	name=Thaw Gun
+#	hud=large_gun.png
+#	normal=3,19:-15:1:gun_noshot.png
+#	firing=3,19:-15:1:gun_shot.png

@@ -1,0 +1,40 @@
+#!/bin/ksh
+
+USAGE="$0 mapname width height [style]"
+
+if (( $# != 3 )) && (( $# != 4 ))
+then
+	print -u2 "Usage: $USAGE"
+	print -u2 "style is for example 'metal' (this is the default)"
+	exit 2
+fi
+
+if [[ ! -x tools/make_map_file ]]
+then
+	print -u2 "Run from top level directory."
+	exit 1
+fi
+
+mapname=$1
+
+if [[ "$mapname" = @(*).map ]]
+then
+	print -u2 "Please leave off .map extension."
+	exit 1
+fi
+
+mapfile=data/maps/${mapname}.map
+
+if [[ -f $mapfile ]]
+then
+	print -u2 "$mapname: map already exists"
+	exit 1
+fi
+
+(./tools/make_map_file "$@" > "$mapfile") || exit $?
+
+svn add "$mapfile" >/dev/null
+
+print -u2 "Done writing map file to ${mapfile}"
+print -u2 "The background, wall, and gate sprites have been laid out."
+print -u2 "You need to add obstacles where appropriate."
