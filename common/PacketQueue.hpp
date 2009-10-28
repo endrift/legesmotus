@@ -36,9 +36,10 @@ namespace LM {
 		std::list<PacketReader>	m_queued_packets;
 
 	public:
-		explicit PacketQueue(uint64_t next_expected_sequence_no =1, size_t max_size =16);
+		explicit PacketQueue(uint64_t next_expected_sequence_no =1, size_t max_size =256);
 
-		void			init(uint64_t next_expected_sequence_no =1, size_t max_size =16);
+		void			init(uint64_t next_expected_sequence_no =1, size_t max_size =256);
+		void			set_max_size(size_t max_size) { m_max_size = max_size; }
 
 		// Returns true if the given packet is ready to be processed NOW:
 		bool			push(const PacketReader& packet);
@@ -53,6 +54,7 @@ namespace LM {
 		void			pop();
 
 		class EmptyQueueException { };
+		class FullQueueException { };
 	};
 }
 

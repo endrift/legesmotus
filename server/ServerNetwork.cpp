@@ -113,30 +113,34 @@ bool	ServerNetwork::receive_packets(uint32_t timeout) {
 		PacketReader	packet(raw_packet);
 
 		if (packet.sequence_no()) {
-			// High reliability packet
-			// Immediately send an ACK
-			send_ack(raw_packet.get_address(), packet);
+			try {
+				// High reliability packet
+				// Immediately send an ACK
+				send_ack(raw_packet.get_address(), packet);
 
-			if (Peer* peer = get_peer(raw_packet.get_address())) {
-				if (packet.connection_id() == peer->connection_id && peer->packet_queue.push(packet)) {
-					// Ready to be processed now.
-					process_packet(raw_packet.get_address(), packet);
+				if (Peer* peer = get_peer(raw_packet.get_address())) {
+					if (packet.connection_id() == peer->connection_id && peer->packet_queue.push(packet)) {
+						// Ready to be processed now.
+						process_packet(raw_packet.get_address(), packet);
 
-					// Process any other packets that might be waiting in the queue from this peer.
-					while (peer->packet_queue.has_packet()) {
-						process_packet(raw_packet.get_address(), peer->packet_queue.peek());
-						peer->packet_queue.pop();
+						// Process any other packets that might be waiting in the queue from this peer.
+						while (peer->packet_queue.has_packet()) {
+							process_packet(raw_packet.get_address(), peer->packet_queue.peek());
+							peer->packet_queue.pop();
+						}
+					} else if (packet.connection_id() > peer->connection_id) {
+						// From a newer connection than is currently registered
+						// Process the packet, but we can't attempt any re-ordering.
+						// What should happen (on a JOIN) is the Server class detects the duplicate connection,
+						// un-registers the current peer, and re-registers it with the new connection ID
+						process_packet(raw_packet.get_address(), packet);
 					}
-				} else if (packet.connection_id() > peer->connection_id) {
-					// From a newer connection than is currently registered
-					// Process the packet, but we can't attempt any re-ordering.
-					// What should happen (on a JOIN) is the Server class detects the duplicate connection,
-					// un-registers the current peer, and re-registers it with the new connection ID
+				} else {
+					// From an unbound peer, so we can't attempt to re-order it, but we can process it anyways
 					process_packet(raw_packet.get_address(), packet);
 				}
-			} else {
-				// From an unbound peer, so we can't attempt to re-order it, but we can process it anyways
-				process_packet(raw_packet.get_address(), packet);
+			} catch (PacketQueue::FullQueueException) {
+				m_server.excessive_packet_drop(raw_packet.get_address());
 			}
 		} else {
 			// Low reliability packet - we don't care if, when, or how often it arrives

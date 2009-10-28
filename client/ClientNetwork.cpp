@@ -70,6 +70,7 @@ bool	ClientNetwork::connect(const IPAddress& address) {
 void	ClientNetwork::disconnect() {
 	m_is_connected = false;
 	m_server_peer.init(next_connection_id++);
+	m_server_peer.packet_queue.set_max_size(1024);
 }
 
 
@@ -104,18 +105,22 @@ void	ClientNetwork::receive_packets() {
 			PacketReader		packet(raw_packet);
 
 			if (packet.sequence_no()) {
-				// High reliability packet
-				// Immediately send an ACK
-				send_ack(raw_packet.get_address(), packet);
-				if (packet.connection_id() == m_server_peer.connection_id && m_server_peer.packet_queue.push(packet)) {
-					// Ready to be processed now.
-					process_server_packet(packet);
+				try {
+					// High reliability packet
+					// Immediately send an ACK
+					send_ack(raw_packet.get_address(), packet);
+					if (packet.connection_id() == m_server_peer.connection_id && m_server_peer.packet_queue.push(packet)) {
+						// Ready to be processed now.
+						process_server_packet(packet);
 
-					// Process any other packets that might be waiting in the queue.
-					while (m_server_peer.packet_queue.has_packet()) {
-						process_server_packet(m_server_peer.packet_queue.peek());
-						m_server_peer.packet_queue.pop();
+						// Process any other packets that might be waiting in the queue.
+						while (m_server_peer.packet_queue.has_packet()) {
+							process_server_packet(m_server_peer.packet_queue.peek());
+							m_server_peer.packet_queue.pop();
+						}
 					}
+				} catch (PacketQueue::FullQueueException) {
+					m_controller.excessive_packet_drop();
 				}
 			} else {
 				// Low reliability packet - we don't care if, when, or how often it arrives

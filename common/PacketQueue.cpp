@@ -57,7 +57,7 @@ bool	PacketQueue::push(const PacketReader& packet) {
 
 	// Make sure there's room in the queue for another packet
 	if (m_queued_packets.size() >= m_max_size) {
-		return false;
+		throw FullQueueException();
 	}
 
 	m_queued_packets.insert(it.base(), packet);
