@@ -50,6 +50,7 @@ namespace LM {
 		static SoundController* 	m_instance;
 
 		const static int		BUFFER_SIZE;
+		const static int		BUFFER_FREQ;
 	
 		explicit SoundController(GameController&, PathManager&);
 		~SoundController();
