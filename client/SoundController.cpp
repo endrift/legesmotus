@@ -26,7 +26,6 @@
 #include "GameController.hpp"
 #include "SDL_mixer.h"
 #include "common/PathManager.hpp"
-#include <stdio.h>
 #include <iostream>
 
 using namespace LM;
@@ -38,59 +37,59 @@ SoundController::SoundController(GameController& parent, PathManager& path_manag
 	m_sound_on = true;
 	
 	if(Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 1024) == -1) {
-		cerr << "Error calling Mix_OpenAudio" << endl;
+		cerr << "Error calling Mix_OpenAudio: " << Mix_GetError() << endl;
 	}
 	
 	Mix_ChannelFinished(&channel_finished);
 
 	m_gunshot_sound = Mix_LoadWAV(m_path_manager.data_path("LMGunshot.ogg", "sounds"));
 	if(!m_gunshot_sound) {
-		fprintf(stderr, "Mix_LoadWAV: %s\n", Mix_GetError());
+		cerr << "Mix_LoadWAV: " << Mix_GetError() << endl;
 	}
 
 	m_unfreeze_sound = Mix_LoadWAV(m_path_manager.data_path("enchant.ogg", "sounds"));
 	if(!m_unfreeze_sound) {
-		fprintf(stderr, "Mix_LoadWAV: %s\n", Mix_GetError());
+		cerr << "Mix_LoadWAV: " << Mix_GetError() << endl;
 	}
 
 	m_freeze_sound = Mix_LoadWAV(m_path_manager.data_path("disenchant.ogg", "sounds"));
 	if(!m_freeze_sound) {
-		fprintf(stderr, "Mix_LoadWAV: %s\n", Mix_GetError());
+		cerr << "Mix_LoadWAV: " << Mix_GetError() << endl;
 	}
 
 	m_gate_siren_sound = Mix_LoadWAV(m_path_manager.data_path("LMGateSiren.ogg", "sounds"));
 	if(!m_gate_siren_sound) {
-		fprintf(stderr, "Mix_LoadWAV: %s\n", Mix_GetError());
+		cerr << "Mix_LoadWAV: " << Mix_GetError() << endl;
 	}
 	
 	m_positive_gate_siren_sound = Mix_LoadWAV(m_path_manager.data_path("positive_gate_siren.ogg", "sounds"));
 	if(!m_positive_gate_siren_sound) {
-		fprintf(stderr, "Mix_LoadWAV: %s\n", Mix_GetError());
+		cerr << "Mix_LoadWAV: " << Mix_GetError() << endl;
 	}
 	
 	m_victory_sound = Mix_LoadWAV(m_path_manager.data_path("victory_fanfare.ogg", "sounds"));
 	if(!m_victory_sound) {
-		fprintf(stderr, "Mix_LoadWAV: %s\n", Mix_GetError());
+		cerr << "Mix_LoadWAV: " << Mix_GetError() << endl;
 	}
 
 	m_defeat_sound = Mix_LoadWAV(m_path_manager.data_path("defeatsound.ogg", "sounds"));
 	if(!m_victory_sound) {
-		fprintf(stderr, "Mix_LoadWAV: %s\n", Mix_GetError());
+		cerr << "Mix_LoadWAV: " << Mix_GetError() << endl;
 	}
 
 	m_begin_sound = Mix_LoadWAV(m_path_manager.data_path("clockchime1.ogg", "sounds"));
 	if(!m_begin_sound) {
-		fprintf(stderr, "Mix_LoadWAV: %s\n", Mix_GetError());
+		cerr << "Mix_LoadWAV: " << Mix_GetError() << endl;
 	}
 	
 	m_click_sound = Mix_LoadWAV(m_path_manager.data_path("button_click.ogg", "sounds"));
 	if(!m_click_sound) {
-		fprintf(stderr, "Mix_LoadWAV: %s\n", Mix_GetError());
+		cerr << "Mix_LoadWAV: " << Mix_GetError() << endl;
 	}
 	
 	m_hit_sound = Mix_LoadWAV(m_path_manager.data_path("laserhit.ogg", "sounds"));
 	if(!m_hit_sound) {
-		fprintf(stderr, "Mix_LoadWAV: %s\n", Mix_GetError());
+		cerr << "Mix_LoadWAV: " << Mix_GetError() << endl;
 	}
 }
 
@@ -133,52 +132,52 @@ int SoundController::play_sound (string sound) {
 	if(sound == "fire") {
 		result = Mix_PlayChannel(-1, m_gunshot_sound, 0);
 		if(result == -1) {
-			fprintf(stderr, "Mix_PlayChannel: %s\n", Mix_GetError());
+			cerr << "Mix_PlayChannel: " << Mix_GetError() << endl;
 		}
 	} else if(sound == "freeze") {
 		result = Mix_PlayChannel(-1, m_freeze_sound, 0);
 		if(result == -1) {
-			fprintf(stderr, "Mix_PlayChannel: %s\n", Mix_GetError());
+			cerr << "Mix_PlayChannel: " << Mix_GetError() << endl;
 		}
 	} else if(sound == "unfreeze") {
 		result = Mix_PlayChannel(-1, m_unfreeze_sound, 0);
 		if(result == -1) {
-			fprintf(stderr, "Mix_PlayChannel: %s\n", Mix_GetError());
+			cerr << "Mix_PlayChannel: " << Mix_GetError() << endl;
 		}
 	} else if(sound == "gatelower") {
 		result = Mix_PlayChannel(-1, m_gate_siren_sound, 0);
 		if(result == -1) {
-			fprintf(stderr, "Mix_PlayChannel: %s\n", Mix_GetError());
+			cerr << "Mix_PlayChannel: " << Mix_GetError() << endl;
 		}
 	} else if(sound == "positivegatelower") {
 		result = Mix_PlayChannel(-1, m_positive_gate_siren_sound, 0);
 		if(result == -1) {
-			fprintf(stderr, "Mix_PlayChannel: %s\n", Mix_GetError());
+			cerr << "Mix_PlayChannel: " << Mix_GetError() << endl;
 		}
 	} else if(sound == "victory") {
 		result = Mix_PlayChannel(-1, m_victory_sound, 0);
 		if(result == -1) {
-			fprintf(stderr, "Mix_PlayChannel: %s\n", Mix_GetError());
+			cerr << "Mix_PlayChannel: " << Mix_GetError() << endl;
 		}
 	} else if(sound == "begin") {
 		result = Mix_PlayChannel(-1, m_begin_sound, 0);
 		if(result == -1) {
-			fprintf(stderr, "Mix_PlayChannel: %s\n", Mix_GetError());
+			cerr << "Mix_PlayChannel: " << Mix_GetError() << endl;
 		}
 	} else if(sound == "defeat") {
 		result = Mix_PlayChannel(-1, m_defeat_sound, 0);
 		if(result == -1) {
-			fprintf(stderr, "Mix_PlayChannel: %s\n", Mix_GetError());
+			cerr << "Mix_PlayChannel: " << Mix_GetError() << endl;
 		}
 	} else if(sound == "click") {
 		result = Mix_PlayChannel(-1, m_click_sound, 0);
 		if(result == -1) {
-			fprintf(stderr, "Mix_PlayChannel: %s\n", Mix_GetError());
+			cerr << "Mix_PlayChannel: " << Mix_GetError() << endl;
 		}
 	} else if(sound == "hit") {
 		result = Mix_PlayChannel(-1, m_hit_sound, 0);
 		if(result == -1) {
-			fprintf(stderr, "Mix_PlayChannel: %s\n", Mix_GetError());
+			cerr << "Mix_PlayChannel: " << Mix_GetError() << endl;
 		}
 	}
 	
@@ -194,7 +193,7 @@ void SoundController::set_sound_on(bool on) {
 		if (on) {
 			SDL_InitSubSystem(SDL_INIT_AUDIO);
 			if(Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 1024) == -1) {
-				cerr << "Error calling Mix_OpenAudio" << endl;
+				cerr << "Error calling Mix_OpenAudio: " << Mix_GetError() << endl;
 			}
 		} else {
 			int numtimesopened, frequency, channels;
