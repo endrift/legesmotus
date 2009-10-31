@@ -48,6 +48,8 @@ namespace LM {
 		Mix_Chunk*	m_hit_sound;
 		bool		m_sound_on;
 		static SoundController* 	m_instance;
+
+		const static int		BUFFER_SIZE;
 	
 		explicit SoundController(GameController&, PathManager&);
 		~SoundController();

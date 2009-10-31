@@ -32,11 +32,16 @@ using namespace LM;
 using namespace std;
 
 SoundController* SoundController::m_instance = NULL;
+#ifdef __WIN32
+const int SoundController::BUFFER_SIZE = 128;
+#else
+const int SoundController::BUFFER_SIZE = 1024;
+#endif
 
 SoundController::SoundController(GameController& parent, PathManager& path_manager) : m_path_manager(path_manager), m_parent(parent) {
 	m_sound_on = true;
 	
-	if(Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 1024) == -1) {
+	if(Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, BUFFER_SIZE) == -1) {
 		cerr << "Error calling Mix_OpenAudio: " << Mix_GetError() << endl;
 	}
 	
@@ -192,7 +197,7 @@ void SoundController::set_sound_on(bool on) {
 	if (on != m_sound_on) {
 		if (on) {
 			SDL_InitSubSystem(SDL_INIT_AUDIO);
-			if(Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 1024) == -1) {
+			if(Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, BUFFER_SIZE) == -1) {
 				cerr << "Error calling Mix_OpenAudio: " << Mix_GetError() << endl;
 			}
 		} else {
