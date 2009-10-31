@@ -33,8 +33,10 @@ using namespace std;
 
 SoundController* SoundController::m_instance = NULL;
 #ifdef __WIN32
-const int SoundController::BUFFER_SIZE = 128;
+const int SoundController::BUFFER_FREQ = 22050;
+const int SoundController::BUFFER_SIZE = 512;
 #else
+const int SoundController::BUFFER_FREQ = MIX_DEFAULT_FREQUENCY;
 const int SoundController::BUFFER_SIZE = 1024;
 #endif
 
