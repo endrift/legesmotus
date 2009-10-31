@@ -32,8 +32,8 @@ using namespace std;
 ClientConfiguration::ClientConfiguration() {
 	m_string_defaults["name"] = "Unnamed";
 	m_int_defaults["multisample"] = 0;
-	m_int_defaults["screen_width"] = 1024;
-	m_int_defaults["screen_height"] = 768;
+	m_int_defaults["screen_width"] = 800;
+	m_int_defaults["screen_height"] = 600;
 	m_bool_defaults["fullscreen"] = false;
 	m_bool_defaults["text_shadow"] = false;
 	m_bool_defaults["text_background"] = true;

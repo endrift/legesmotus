@@ -161,10 +161,10 @@ extern "C" int main(int argc, char* argv[]) try {
 			height = config.get_int_value("screen_height");
 			fullscreen = config.get_bool_value("fullscreen");
 			if (width == -1) {
-				width = 1024;
+				width = 800;
 			}
 			if (height == -1) {
-				height = 768;
+				height = 600;
 			}
 			// Use the default from the config
 			game_controller = new GameController(pathman, &config, width, height, fullscreen);
