@@ -34,14 +34,42 @@ using namespace std;
 GameWindow* GameWindow::m_instance = NULL;
 SDL_Surface* GameWindow::m_icon = NULL;
 const int GameWindow::MAX_MSAA = 5;
+static const pair<int, int> DEFAULT_RESOLUTIONS[] = {
+	/* 4:3 */
+	pair<int, int>(800, 600),
+	pair<int, int>(1024, 768),
+	pair<int, int>(1280, 960),
+	pair<int, int>(1400, 1050),
+	pair<int, int>(1600, 1200),
+	/* 16:10 */
+	pair<int, int>(1280, 800),
+	pair<int, int>(1400, 900),
+	pair<int, int>(1680, 1050),
+	pair<int, int>(1920, 1200),
+
+	/* Sentinel */
+	pair<int, int>(0, 0)
+};
 
 GameWindow::GameWindow(int width, int height, int depth, bool fullscreen, int msaa) {
 	m_width = width;
 	m_height = height;
-	m_depth = depth;
 	m_fullscreen = fullscreen;
 	m_offset_x = 0;
 	m_offset_y = 0;
+
+	int flags = SDL_HWSURFACE|SDL_OPENGL;
+	if (fullscreen) {
+		flags |= SDL_FULLSCREEN;
+	}
+	depth = SDL_VideoModeOK(width, height, depth, flags);
+	if (depth == 0) {
+		throw Exception("Video mode not supported");
+	}
+
+	m_depth = depth;
+
+	
 	switch (depth) {
 	case 16:
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
@@ -77,10 +105,6 @@ GameWindow::GameWindow(int width, int height, int depth, bool fullscreen, int ms
 #endif
 	SDL_WM_SetCaption("Leges Motus","Leges Motus");
 	SDL_ShowCursor(SDL_DISABLE);
-	int flags = SDL_HWSURFACE|SDL_OPENGL;
-	if (fullscreen) {
-		flags |= SDL_FULLSCREEN;
-	}
 	m_context = SDL_SetVideoMode(width, height, depth, flags);
 	if (m_context == NULL) {
 		throw Exception(SDL_GetError());
@@ -188,30 +212,42 @@ void GameWindow::supported_resolutions(int* widths, int* heights, int* depth, si
 		throw Exception(SDL_GetError());
 	}
 	const SDL_VideoInfo *vidInfo = SDL_GetVideoInfo();
+	SDL_Rect **res = NULL;
 	if (vidInfo == NULL) {
 		*depth = 24; // Hopefully they have a modern display
+		res = SDL_ListModes(NULL, SDL_HWSURFACE|SDL_FULLSCREEN);
 	} else {
 		*depth = vidInfo->vfmt->BitsPerPixel;
+		res = SDL_ListModes(vidInfo->vfmt, SDL_HWSURFACE|SDL_FULLSCREEN);
 	}
 
-	SDL_Rect **res = SDL_ListModes(NULL, SDL_HWSURFACE|SDL_FULLSCREEN);
-	if (res == NULL) {
+	if (res == NULL || ((long)res) == -1L) {
 		cerr << "Could not detect resolutions: " << SDL_GetError() << endl;
-		*num_modes = 0;
-		return;
-	}
-
-	size_t real_num;
-	if(widths == NULL || heights == NULL) {
-		for(real_num = 0; res[real_num]; ++real_num);
+		size_t real_num = 0;
+		for(int i = 0; DEFAULT_RESOLUTIONS[i].first > 0; ++i) {
+			int d = SDL_VideoModeOK(DEFAULT_RESOLUTIONS[i].first, DEFAULT_RESOLUTIONS[i].second,
+				*depth, SDL_HWSURFACE|SDL_FULLSCREEN);
+			if (d != 0) {
+				if (widths != NULL && heights != NULL) {
+					widths[real_num] = DEFAULT_RESOLUTIONS[i].first;
+					heights[real_num] = DEFAULT_RESOLUTIONS[i].second;
+				}
+				++real_num;
+			}
+		}
 		*num_modes = real_num;
 	} else {
-		for(real_num = 0; res[real_num] && real_num < *num_modes; ++real_num) {
-			widths[real_num] = res[real_num]->w;
-			heights[real_num] = res[real_num]->h;
+		size_t real_num;
+		if(widths == NULL || heights == NULL) {
+			for(real_num = 0; res[real_num]; ++real_num);
+		} else {
+			for(real_num = 0; res[real_num] && real_num < *num_modes; ++real_num) {
+				widths[real_num] = res[real_num]->w;
+				heights[real_num] = res[real_num]->h;
+			}
 		}
+		*num_modes = real_num;
 	}
-	*num_modes = real_num;
 }
 
 int GameWindow::get_width() const {
