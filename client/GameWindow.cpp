@@ -22,7 +22,6 @@
  * 
  */
 
-#include "common/Exception.hpp"
 #include "GameWindow.hpp"
 #include "compat_gl.h"
 #include <cmath>
@@ -36,6 +35,7 @@ SDL_Surface* GameWindow::m_icon = NULL;
 const int GameWindow::MAX_MSAA = 5;
 static const pair<int, int> DEFAULT_RESOLUTIONS[] = {
 	/* 4:3 */
+	pair<int, int>(640, 480),
 	pair<int, int>(800, 600),
 	pair<int, int>(1024, 768),
 	pair<int, int>(1280, 960),
@@ -64,7 +64,9 @@ GameWindow::GameWindow(int width, int height, int depth, bool fullscreen, int ms
 	}
 	depth = SDL_VideoModeOK(width, height, depth, flags);
 	if (depth == 0) {
-		throw Exception("Video mode not supported");
+		throw VmodeNotSupportedException("Video mode not supported.\n"
+			"If this problem persists, try deleting the settings file for Leges Motus.",
+			width, height, depth, fullscreen);
 	}
 
 	m_depth = depth;
@@ -167,7 +169,15 @@ GameWindow* GameWindow::get_instance(int width, int height, int depth, bool full
 		if (!init_video()) {
 			throw Exception(SDL_GetError());
 		}
-		m_instance = new GameWindow(width, height, depth, fullscreen, msaa);
+		try {
+			m_instance = new GameWindow(width, height, depth, fullscreen, msaa);
+		} catch (const VmodeNotSupportedException& e) {
+			if (e.get_fullscreen()) {
+				return get_optimal_instance(msaa);
+			} else {
+				throw e;
+			}
+		}
 	} else {
 		m_instance->set_dimensions(width, height);
 		m_instance->set_fullscreen(fullscreen);
@@ -215,10 +225,10 @@ void GameWindow::supported_resolutions(int* widths, int* heights, int* depth, si
 	SDL_Rect **res = NULL;
 	if (vidInfo == NULL) {
 		*depth = 24; // Hopefully they have a modern display
-		res = SDL_ListModes(NULL, SDL_HWSURFACE|SDL_FULLSCREEN);
+		res = SDL_ListModes(NULL, SDL_OPENGL|SDL_HWSURFACE|SDL_FULLSCREEN);
 	} else {
 		*depth = vidInfo->vfmt->BitsPerPixel;
-		res = SDL_ListModes(vidInfo->vfmt, SDL_HWSURFACE|SDL_FULLSCREEN);
+		res = SDL_ListModes(vidInfo->vfmt, SDL_OPENGL|SDL_HWSURFACE|SDL_FULLSCREEN);
 	}
 
 	if (res == NULL || ((long)res) == -1L) {
@@ -363,4 +373,18 @@ void GameWindow::redraw() const {
 		}
 	}
 	SDL_GL_SwapBuffers();
+}
+
+VmodeNotSupportedException::VmodeNotSupportedException(const char* message, int width, int height, int depth, bool fullscreen) : Exception(message) {
+	m_width = width;
+	m_height = height;
+	m_depth = depth;
+	m_fullscreen = fullscreen;
+}
+
+VmodeNotSupportedException::VmodeNotSupportedException(const string& message, int width, int height, int depth, bool fullscreen) : Exception(message) {
+	m_width = width;
+	m_height = height;
+	m_depth = depth;
+	m_fullscreen = fullscreen;
 }

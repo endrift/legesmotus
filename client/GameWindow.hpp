@@ -27,6 +27,7 @@
 
 #include "SDL.h"
 #include "GraphicGroup.hpp"
+#include "common/Exception.hpp"
 
 namespace LM {
 	class GameWindow {
@@ -99,6 +100,22 @@ namespace LM {
 		void			reprioritize_hud_graphic(Graphic* graphic, int priority);
 	
 		void			redraw() const;
+	};
+
+	class VmodeNotSupportedException : public Exception {
+	private:
+		int	m_width;
+		int	m_height;
+		int	m_depth;
+		bool	m_fullscreen;
+	public:
+		explicit VmodeNotSupportedException(const char* message, int width, int height, int depth, bool fullscreen);
+		explicit VmodeNotSupportedException(const std::string& message, int width, int height, int depth, bool fullscreen);
+
+		int	get_width() const throw() { return m_width; }
+		int	get_height() const throw() { return m_height; }
+		int	get_depth() const throw() { return m_depth; }
+		bool	get_fullscreen() const throw() { return m_fullscreen; }
 	};
 }
 

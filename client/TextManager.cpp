@@ -57,7 +57,7 @@ Text* TextManager::render_string(const string& text, double x, double y, Align a
 	Text *rendered;
 	try {
 		rendered = new Text(text, m_font, m_shadow?m_shadow_kernel:NULL);
-	} catch(Exception e) {
+	} catch(const Exception& e) {
 		cerr << "Error rendering string: " << e.what() << endl;
 		return NULL;
 	}
