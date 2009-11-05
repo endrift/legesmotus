@@ -1555,7 +1555,6 @@ void GameController::process_mouse_click(SDL_Event event) {
 						wstring >> width;
 						hstring >> height;
 						mstring >> multisample;
-						cout << multisample << endl;
 						m_sound_controller->set_sound_on(m_options_form.get_item("sound")->get_value() == "on");
 						bool fullscreen = m_options_form.get_item("fullscreen")->get_value() == "on";
 						bool text_shadow = m_options_form.get_item("text_shadow")->get_value() == "on";
