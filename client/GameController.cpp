@@ -115,6 +115,8 @@ GameController::GameController(PathManager& path_manager, ClientConfiguration* c
  * Delete all of the sprites and subsystems.
  */
 GameController::~GameController() {
+	clear_players();
+	
 	// TEMPORARY SPRITE CODE
 	delete blue_sprite;
 	delete blue_back_arm;
@@ -2099,25 +2101,16 @@ void GameController::update_individual_score_line(int count, const GraphicalPlay
 	m_text_manager->set_active_color(currplayer.get_team() == 'A' ? BLUE_COLOR : RED_COLOR);
 	m_text_manager->set_shadow_color(currplayer.get_team() == 'A' ? BLUE_SHADOW : RED_SHADOW);
 
-	if (m_overlay_items.count(playerscore) != 0) {
-		m_text_manager->remove_string(m_overlay_items[playerscore]);
-	}
-	if (m_overlay_items.count(playerid) != 0) {
-		m_text_manager->remove_string(m_overlay_items[playerid]);
-	}
-
 	stringstream scoreprinter;
 	scoreprinter << currplayer.get_score();
-	m_overlay_items[playerid] = m_text_manager->place_string(playername, 10, count*25, TextManager::LEFT, TextManager::LAYER_HUD);
-	m_overlay_items[playerscore] = m_text_manager->place_string(scoreprinter.str(), m_overlay_background->get_image_width()/2, count*25, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_overlay_items[playerid] = m_text_manager->render_string(playername, 10, count*25, TextManager::LEFT);
+	m_overlay_items[playerscore] = m_text_manager->render_string(scoreprinter.str(), m_overlay_background->get_image_width()/2, count*25, TextManager::LEFT);
 
 	m_overlay_items[playerid]->set_priority(TEXT_LAYER);
-	m_window->unregister_hud_graphic(m_overlay_items[playerid]);
 	m_overlay_scrollarea->get_group()->remove_graphic(playerid);
 	m_overlay_scrollarea->get_group()->add_graphic(m_overlay_items[playerid], playerid);
 
 	m_overlay_items[playerscore]->set_priority(TEXT_LAYER);
-	m_window->unregister_hud_graphic(m_overlay_items[playerscore]);
 	m_overlay_scrollarea->get_group()->remove_graphic(playerscore);
 	m_overlay_scrollarea->get_group()->add_graphic(m_overlay_items[playerscore], playerscore);
 	
@@ -2134,13 +2127,6 @@ void GameController::delete_individual_score(const GraphicalPlayer& currplayer) 
 	string playerid = idprinter.str();
 	string playernameforscore = currplayer.get_name();
 	string playerscore = playernameforscore.append("score");
-
-	if (m_overlay_items.count(playerscore) != 0) {
-		m_text_manager->remove_string(m_overlay_items[playerscore]);
-	}
-	if (m_overlay_items.count(playerid) != 0) {
-		m_text_manager->remove_string(m_overlay_items[playerid]);
-	}
 	
 	m_overlay_scrollarea->get_group()->remove_graphic(playerid);
 	m_overlay_scrollarea->get_group()->remove_graphic(playerscore);
