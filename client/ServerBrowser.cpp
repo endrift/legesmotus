@@ -116,9 +116,15 @@ ServerBrowser::ServerBrowser(GameController& parent, GameWindow* window, TextMan
 }
 
 ServerBrowser::~ServerBrowser() {
+	this->clear();
+
+	m_window->unregister_hud_graphic(m_background);
 	delete m_background;
+	m_window->unregister_hud_graphic(m_selection);
 	delete m_selection;
+	m_window->unregister_hud_graphic(m_scrollbar);
 	delete m_scrollbar;
+	m_window->unregister_hud_graphic(m_scrollarea);
 	delete m_scrollarea;
 	
 	m_buttons.clear();
@@ -157,9 +163,8 @@ void ServerBrowser::clear() {
 		printer << "name";
 		printer << num;
 		if (m_items.find(printer.str()) == m_items.end()) {
-			return;
+			continue;
 		}
-		m_text_manager->remove_string(m_items[printer.str()]);
 		m_scrollarea->get_group()->remove_graphic(printer.str());
 		m_items.erase(printer.str());
 	
@@ -167,9 +172,8 @@ void ServerBrowser::clear() {
 		printer << "map";
 		printer << num;
 		if (m_items.find(printer.str()) == m_items.end()) {
-			return;
+			continue;
 		}
-		m_text_manager->remove_string(m_items[printer.str()]);
 		m_scrollarea->get_group()->remove_graphic(printer.str());
 		m_items.erase(printer.str());
 	
@@ -177,9 +181,8 @@ void ServerBrowser::clear() {
 		printer << "uptime";
 		printer << num;
 		if (m_items.find(printer.str()) == m_items.end()) {
-			return;
+			continue;
 		}
-		m_text_manager->remove_string(m_items[printer.str()]);
 		m_scrollarea->get_group()->remove_graphic(printer.str());
 		m_items.erase(printer.str());
 	
@@ -187,9 +190,8 @@ void ServerBrowser::clear() {
 		printer << "players";
 		printer << num;
 		if (m_items.find(printer.str()) == m_items.end()) {
-			return;
+			continue;
 		}
-		m_text_manager->remove_string(m_items[printer.str()]);
 		m_scrollarea->get_group()->remove_graphic(printer.str());
 		m_items.erase(printer.str());
 	
@@ -197,9 +199,8 @@ void ServerBrowser::clear() {
 		printer << "ping";
 		printer << num;
 		if (m_items.find(printer.str()) == m_items.end()) {
-			return;
+			continue;
 		}
-		m_text_manager->remove_string(m_items[printer.str()]);
 		m_scrollarea->get_group()->remove_graphic(printer.str());
 		m_items.erase(printer.str());
 	}
@@ -224,22 +225,22 @@ void ServerBrowser::add_entry(IPAddress server_address, const string& current_ma
 		resolve_ip_address(hostname, &portno, server_address);
 		ostringstream ipprinter;
 		ipprinter << "localhost:" << portno;
-		m_items[printer.str()] = m_text_manager->place_string(ipprinter.str(), m_items["namelabel"]->get_x() - m_scrollarea->get_x() + m_scrollarea->get_width()/2, 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
+		m_items[printer.str()] = m_text_manager->render_string(ipprinter.str(), m_items["namelabel"]->get_x() - m_scrollarea->get_x() + m_scrollarea->get_width()/2, 25 * m_server_list_count, TextManager::LEFT);
 	} else if (server_name != "") {
-		m_items[printer.str()] = m_text_manager->place_string(server_name, m_items["namelabel"]->get_x() - m_scrollarea->get_x() + m_scrollarea->get_width()/2, 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
+		m_items[printer.str()] = m_text_manager->render_string(server_name, m_items["namelabel"]->get_x() - m_scrollarea->get_x() + m_scrollarea->get_width()/2, 25 * m_server_list_count, TextManager::LEFT);
 	} else {
-		m_items[printer.str()] = m_text_manager->place_string(format_ip_address(server_address, true), m_items["namelabel"]->get_x() - m_scrollarea->get_x() + m_scrollarea->get_width()/2, 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
+		m_items[printer.str()] = m_text_manager->render_string(format_ip_address(server_address, true), m_items["namelabel"]->get_x() - m_scrollarea->get_x() + m_scrollarea->get_width()/2, 25 * m_server_list_count, TextManager::LEFT);
 	}
 	m_items[printer.str()]->set_priority(TEXT_LAYER);
-	m_window->unregister_hud_graphic(m_items[printer.str()]);
+	m_scrollarea->get_group()->remove_graphic(printer.str());
 	m_scrollarea->get_group()->add_graphic(m_items[printer.str()], printer.str());
 	
 	printer.clear();
 	printer << "map";
 	printer << m_server_list_count;
-	m_items[printer.str()] = m_text_manager->place_string(current_map_name, m_items["maplabel"]->get_x() - m_scrollarea->get_x() + m_scrollarea->get_width()/2, 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_items[printer.str()] = m_text_manager->render_string(current_map_name, m_items["maplabel"]->get_x() - m_scrollarea->get_x() + m_scrollarea->get_width()/2, 25 * m_server_list_count, TextManager::LEFT);
 	m_items[printer.str()]->set_priority(TEXT_LAYER);
-	m_window->unregister_hud_graphic(m_items[printer.str()]);
+	m_scrollarea->get_group()->remove_graphic(printer.str());
 	m_scrollarea->get_group()->add_graphic(m_items[printer.str()], printer.str());
 	
 	printer.clear();
@@ -248,9 +249,9 @@ void ServerBrowser::add_entry(IPAddress server_address, const string& current_ma
 	
 	string uptimestr = m_parent.format_time_from_millis(uptime);
 	
-	m_items[printer.str()] = m_text_manager->place_string(uptimestr, m_items["uptimelabel"]->get_x() - m_scrollarea->get_x() + m_scrollarea->get_width()/2, 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_items[printer.str()] = m_text_manager->render_string(uptimestr, m_items["uptimelabel"]->get_x() - m_scrollarea->get_x() + m_scrollarea->get_width()/2, 25 * m_server_list_count, TextManager::LEFT);
 	m_items[printer.str()]->set_priority(TEXT_LAYER);
-	m_window->unregister_hud_graphic(m_items[printer.str()]);
+	m_scrollarea->get_group()->remove_graphic(printer.str());
 	m_scrollarea->get_group()->add_graphic(m_items[printer.str()], printer.str());
 	
 	printer.clear();
@@ -261,9 +262,9 @@ void ServerBrowser::add_entry(IPAddress server_address, const string& current_ma
 	playertotal << (team_count[0] + team_count[1]);
 	playertotal << "/";
 	playertotal << max_players;
-	m_items[printer.str()] = m_text_manager->place_string(playertotal.str(), m_items["playerslabel"]->get_x() - m_scrollarea->get_x() + m_scrollarea->get_width()/2, 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_items[printer.str()] = m_text_manager->render_string(playertotal.str(), m_items["playerslabel"]->get_x() - m_scrollarea->get_x() + m_scrollarea->get_width()/2, 25 * m_server_list_count, TextManager::LEFT);
 	m_items[printer.str()]->set_priority(TEXT_LAYER);
-	m_window->unregister_hud_graphic(m_items[printer.str()]);
+	m_scrollarea->get_group()->remove_graphic(printer.str());
 	m_scrollarea->get_group()->add_graphic(m_items[printer.str()], printer.str());
 	
 	printer.clear();
@@ -273,9 +274,9 @@ void ServerBrowser::add_entry(IPAddress server_address, const string& current_ma
 	ostringstream pingstr;
 	
 	pingstr << ping;
-	m_items[printer.str()] = m_text_manager->place_string(pingstr.str(), m_items["pinglabel"]->get_x() - m_scrollarea->get_x() + m_scrollarea->get_width()/2, 25 * m_server_list_count, TextManager::LEFT, TextManager::LAYER_HUD);
+	m_items[printer.str()] = m_text_manager->render_string(pingstr.str(), m_items["pinglabel"]->get_x() - m_scrollarea->get_x() + m_scrollarea->get_width()/2, 25 * m_server_list_count, TextManager::LEFT);
 	m_items[printer.str()]->set_priority(TEXT_LAYER);
-	m_window->unregister_hud_graphic(m_items[printer.str()]);
+	m_scrollarea->get_group()->remove_graphic(printer.str());
 	m_scrollarea->get_group()->add_graphic(m_items[printer.str()], printer.str());
 
 	m_scrollarea->set_content_height(25 * (m_server_list_count + 1));
