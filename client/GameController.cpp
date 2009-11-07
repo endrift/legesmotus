@@ -265,7 +265,6 @@ void GameController::init(GameWindow* window) {
 	blue_player.add_graphic(blue_sprite, "torso");
 	blue_player.add_graphic(blue_back_arm, "backarm");
 	make_front_arm_graphic(blue_player, "blue_frontarm.png", NULL, NULL);
-	blue_player.set_invisible(true);
 	
 	red_sprite = new Sprite(m_path_manager.data_path("red_armless.png","sprites"));
 	red_back_arm = new Sprite(m_path_manager.data_path("red_backarm.png","sprites"));
@@ -278,7 +277,6 @@ void GameController::init(GameWindow* window) {
 	red_player.add_graphic(red_sprite, "torso");
 	red_player.add_graphic(red_back_arm, "backarm");
 	make_front_arm_graphic(red_player, "red_frontarm.png", NULL, NULL);
-	red_player.set_invisible(true);
 	
 	m_crosshairs = new Sprite(m_path_manager.data_path("crosshairs.png", "sprites"));
 	m_crosshairs->set_priority(-10);
@@ -2232,12 +2230,10 @@ void GameController::welcome(PacketReader& reader) {
 		m_players.insert(pair<int, GraphicalPlayer>(m_player_id,GraphicalPlayer(m_name.c_str(), m_player_id, team, new GraphicGroup(blue_player), blue_sprite->get_width()/2, blue_sprite->get_height()/2)));
 		m_text_manager->set_active_color(BLUE_COLOR);
 		m_text_manager->set_shadow_color(BLUE_SHADOW);
-		m_window->register_graphic(&blue_player);
 	} else {
 		m_players.insert(pair<int, GraphicalPlayer>(m_player_id,GraphicalPlayer(m_name.c_str(), m_player_id, team, new GraphicGroup(red_player), red_sprite->get_width()/2, red_sprite->get_height()/2)));
 		m_text_manager->set_active_color(RED_COLOR);
 		m_text_manager->set_shadow_color(RED_SHADOW);
-		m_window->register_graphic(&red_player);
 	}
 	m_window->register_graphic(m_players[m_player_id].get_sprite());
 	m_radar->add_blip(m_player_id, team, 0, 0);
