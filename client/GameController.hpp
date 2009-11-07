@@ -306,7 +306,7 @@ namespace LM {
 
 		bool		load_map(const char* map_name, int map_revision);
 		void		request_map();
-		void		init_map();
+		void		init_map(int map_width, int map_height);
 
 		// Display legalese in the chat window
 		void		display_legalese();

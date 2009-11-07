@@ -65,7 +65,7 @@ EOF
 
 # Gates
 cat <<-EOF
-# Gates
+# Gates and Gate Repulsion Fields
 GATE	-15,$((gate_start_y + 8))	blue_gate	team=blue
 GATE	$((width + 7)),$((gate_start_y + 8))	red_gate	team=red
 FORCE	0,$((height / 2))	-	circle:512	frozen	sucks-off-obstacles	gravity=-200

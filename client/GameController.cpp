@@ -214,7 +214,7 @@ void GameController::init(GameWindow* window) {
 	m_last_ping_sent = 0;
 	
 	m_client_version = LM_VERSION;
-	m_protocol_number = 4;
+	m_protocol_number = 5;
 	
 	m_pixel_depth = window->get_depth();
 	m_fullscreen = window->is_fullscreen();
@@ -2705,9 +2705,11 @@ void GameController::new_round(PacketReader& reader) {
 	 */
 	string 		map_name;
 	int 		map_revision;
+	int		map_width;
+	int		map_height;
 	bool		game_started;
 	uint64_t	time_until_start;
-	reader >> map_name >> map_revision >> game_started >> time_until_start;
+	reader >> map_name >> map_revision >> map_width >> map_height >> game_started >> time_until_start;
 
 	/*
 	 * Tell the player what's going on
@@ -2739,6 +2741,7 @@ void GameController::new_round(PacketReader& reader) {
 	} else {
 		// This map/revision is not already loaded - let's try to load it
 		if (!load_map(map_name.c_str(), map_revision)) {
+			init_map(map_width, map_height);
 			// Couldn't load - request it from the server
 			request_map();
 		}
@@ -3351,7 +3354,7 @@ string	GameController::format_time_from_millis(uint64_t milliseconds) {
 
 void GameController::map_info_packet(PacketReader& reader) {
 	if (m_map_receiver.get() && m_map_receiver->map_info(reader)) {
-		init_map();
+		init_map(m_map->get_width(), m_map->get_height());
 		if (m_map_receiver->is_done()) {
 			m_map_receiver.reset();
 		}
@@ -3391,13 +3394,13 @@ bool	GameController::load_map(const char* map_name, int map_revision) {
 		return false;
 	}
 
-	init_map();
+	init_map(m_map->get_width(), m_map->get_height());
 	return true;
 }
 
-void	GameController::init_map() {
-	m_map_width = m_map->get_width();
-	m_map_height = m_map->get_height();
+void	GameController::init_map(int map_width, int map_height) {
+	m_map_width = map_width;
+	m_map_height = map_height;
 	m_map_polygon.make_rectangle(m_map_width, m_map_height);
 }
 

@@ -50,7 +50,7 @@ using namespace LM;
 using namespace std;
 
 // This can't be an enum because we want overloading of operator<< to work OK.
-const int	Server::SERVER_PROTOCOL_VERSION = 4;
+const int	Server::SERVER_PROTOCOL_VERSION = 5;
 
 const char	Server::SERVER_VERSION[] = LM_VERSION;
 
@@ -1282,7 +1282,7 @@ uint64_t	Server::gametime_left() const {
 
 void	Server::send_new_round_packets(const ServerPlayer* player) {
 	PacketWriter	packet(NEW_ROUND_PACKET);
-	packet << m_current_map.get_name() << m_current_map.get_revision();
+	packet << m_current_map.get_name() << m_current_map.get_revision() << m_current_map.get_width() << m_current_map.get_height();
 	if (m_players_have_spawned) {
 		// Round already in progress
 		packet << 1 << m_params.late_join_delay;
