@@ -535,14 +535,14 @@ void GameController::init(GameWindow* window) {
 	// Initialize the frozen status bar.
 	m_frozen_status_rect = new TableBackground(1, FROZEN_STATUS_RECT_WIDTH);
 	m_frozen_status_rect->set_row_height(0, 20);
-	m_frozen_status_rect->set_priority(-1);
+	m_frozen_status_rect->set_priority(0);
 	m_frozen_status_rect->set_cell_color(0, Color(0.0, 0.5, 1.0, 0.5));
 	m_frozen_status_rect->set_x(m_screen_width/2);
 	m_frozen_status_rect->set_y(m_screen_height/2 + 50);
 	m_window->register_hud_graphic(m_frozen_status_rect);
 	m_frozen_status_rect_back = new TableBackground(1, FROZEN_STATUS_RECT_WIDTH);
 	m_frozen_status_rect_back->set_row_height(0, 20);
-	m_frozen_status_rect_back->set_priority(0);
+	m_frozen_status_rect_back->set_priority(1);
 	m_frozen_status_rect_back->set_cell_color(0, Color(0.1, 0.1, 0.1, 0.5));
 	m_frozen_status_rect_back->set_x(m_frozen_status_rect->get_x());
 	m_frozen_status_rect_back->set_y(m_frozen_status_rect->get_y());
@@ -551,7 +551,7 @@ void GameController::init(GameWindow* window) {
 	// Initialize the frozen status bar label.
 	m_text_manager->set_active_color(1.0, 1.0, 1.0);
 	m_text_manager->set_active_font(m_font);
-	m_frozen_status_text = m_text_manager->place_string("Frozen", m_frozen_status_rect->get_x() + 1, m_frozen_status_rect->get_y() + 2, TextManager::CENTER, TextManager::LAYER_HUD, TEXT_LAYER);
+	m_frozen_status_text = m_text_manager->place_string("Frozen", m_frozen_status_rect->get_x() + 1, m_frozen_status_rect->get_y() + 2, TextManager::CENTER, TextManager::LAYER_HUD, TextManager::LAYER_MAIN-1);
 
 	// Initialize the energy bar.
 	m_energy_text = NULL;
