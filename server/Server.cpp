@@ -958,7 +958,7 @@ uint32_t	Server::server_sleep_time() const {
 void	Server::report_gate_status(char team, int change_in_players, uint32_t acting_player_id) {
 	const GateStatus&	gate(get_gate(team));
 	PacketWriter		packet(GATE_UPDATE_PACKET);
-	packet << acting_player_id << team << gate.get_progress() << change_in_players << gate.get_nbr_players();
+	packet << acting_player_id << team << gate.get_progress() << change_in_players << gate.get_nbr_players() << get_ticks();
 	if (change_in_players) {
 		// This is a specific event - it should be reliable
 		m_network.broadcast_reliable_packet(packet);

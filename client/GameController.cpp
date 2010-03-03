@@ -1511,6 +1511,7 @@ void GameController::process_mouse_click(SDL_Event event) {
 					}
 				} else if (item->get_name() == "connect") {
 					m_game_state = SHOW_SERVER_BROWSER;
+					scan_all();
 				}
 			}
 		}
@@ -2223,6 +2224,10 @@ void GameController::welcome(PacketReader& reader) {
 	m_item_resume->set_state(MenuItem::NORMAL);
 	m_item_disconnect->set_state(MenuItem::NORMAL);
 	
+	// Reset gate packet sequence numbers.
+	m_last_gate_packet_seq_no[0] = 0;
+	m_last_gate_packet_seq_no[1] = 0;
+	
 	clear_players();
 	
 	// Insert different name colors and sprites depending on team.
@@ -2618,12 +2623,18 @@ void GameController::gate_update(PacketReader& reader) {
 	double		progress;		// How much has the gate opened? 0 == fully closed .. 1 == fully open
 	int		change_in_players;	// {-1,0,1} = the change in the # of players engaging the gate
 	size_t		new_nbr_players;	// How many players are now engaging the gate
-
-	reader >> acting_player_id >> team >> progress >> change_in_players >> new_nbr_players;
+	uint64_t	sequence_no;		// This should be greater than the last received gate update.
+	
+	reader >> acting_player_id >> team >> progress >> change_in_players >> new_nbr_players >> sequence_no;
 	
 	GraphicalPlayer* myplayer = get_player_by_id(m_player_id);
 	GraphicalPlayer* actingplayer = get_player_by_id(acting_player_id);
 	if (myplayer == NULL) {
+		return;
+	}
+	
+	// If the sequence is earlier than something we've already received, ignore it.
+	if (m_last_gate_packet_seq_no[team - 'A'] > sequence_no) {
 		return;
 	}
 	

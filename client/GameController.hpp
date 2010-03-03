@@ -238,6 +238,7 @@ namespace LM {
 		TableBackground* m_blue_gate_status_rect_back;
 		Graphic*	m_red_gate_status_text;
 		Graphic*	m_blue_gate_status_text;
+		uint64_t	m_last_gate_packet_seq_no[2]; 
 		
 		Graphic*	m_gate_warning;
 		uint64_t	m_gate_warning_time;
