@@ -1,0 +1,131 @@
+name vastmelee
+game_start_delay 0
+late_join_delay 0
+late_spawn_frozen no
+revision 1
+width 3072
+height 3072
+
+# Background
+BACKGROUND	0,0	metal_bgtile64		tile=3072,3072
+BACKGROUND	1472,0	metal_bgtile_blue	tile=64,3072
+BACKGROUND	1536,0	metal_bgtile_red	tile=64,3072
+BACKGROUND	1344,1344	metal_bgtile_friction	tile=384,384
+BACKGROUND	-64,1472	metal_bgtile	tile=64,128
+BACKGROUND	3072,1472	metal_bgtile	tile=64,128
+
+# Walls
+BACKGROUND	0,3072	metal_wall_s32	tile=3072,32
+BACKGROUND	0,-32	metal_wall_n32	tile=3072,32
+BACKGROUND	3072,0	metal_wall_e32	tile=32,1472
+BACKGROUND	3072,1472	metal_gate_e
+BACKGROUND	3072,1600	metal_wall_e32	tile=32,1472
+BACKGROUND	-32,0	metal_wall_w32	tile=32,1472
+BACKGROUND	-64,1472	metal_gate_w
+BACKGROUND	-32,1600	metal_wall_w32	tile=32,1472
+
+# Wall Corners
+BACKGROUND	3072,-32	metal_wall_ne32
+BACKGROUND	-32,-32	metal_wall_nw32
+BACKGROUND	-32,3072	metal_wall_sw32
+BACKGROUND	3072,3072	metal_wall_se32
+
+# Gates
+GATE	-15,1479	blue_gate	team=blue
+GATE	3079,1479	red_gate	team=red
+FORCE	0,1536	-	circle:512	frozen	sucks-off-obstacles	gravity=-200
+FORCE	3072,1536	-	circle:512	frozen	sucks-off-obstacles	gravity=-200
+
+# Spawnpoints
+SPAWN	0,1536		BLUE
+SPAWN	3072,1536	RED
+
+# Obstacle island - mid left
+OBSTACLE	512,1216	metal_obstacle128	rect:128,128	tile=384,256
+OBSTACLE	448,1216	metal_obstacle64	rect:64,64
+OBSTACLE	768,1152	metal_obstacle64	rect:64,64	tile=128,64
+OBSTACLE	832,1088	metal_obstacle64	rect:64,64
+OBSTACLE	512,1472	metal_obstacle64	rect:64,64
+OBSTACLE	576,1472	metal_obstacle128	rect:128,128
+OBSTACLE	896,1408	metal_obstacle128	rect:128,128
+OBSTACLE	832,1472	metal_obstacle64	rect:64,64
+
+# Obstacle island - lower left
+OBSTACLE	248,2048	metal_obstacle64	rect:64,64	tile=256,256
+OBSTACLE	248,1920	metal_obstacle128	rect:128,128
+OBSTACLE	504,1920	metal_obstacle128	rect:128,128	tile=128,256
+OBSTACLE	248,2304	metal_obstacle128	rect:128,128	tile=384,128
+HAZARD		248,2432	metal_hazard64_blue	rect:64,64	collidable	freeze=0	collision_damage=20	damage=1	team=RED	rate=100
+HAZARD		568,2432	metal_hazard64_blue	rect:64,64	collidable	freeze=0	collision_damage=20	damage=1	team=RED	rate=100
+
+
+# Mini-Arena - upper mid
+OBSTACLE	1024,256	metal_obstacle128	rect:128,128	tile=384,128
+OBSTACLE	1664,256	metal_obstacle128	rect:128,128	tile=384,128
+OBSTACLE	1024,384	metal_obstacle128	rect:128,128	tile=128,256
+OBSTACLE	1024,904	metal_obstacle128	rect:128,128	tile=128,256
+OBSTACLE	1024,1152	metal_obstacle128	rect:128,128	tile=384,128
+OBSTACLE	1664,1152	metal_obstacle128	rect:128,128	tile=384,128
+OBSTACLE	1920,384	metal_obstacle128	rect:128,128	tile=128,256
+OBSTACLE	1920,904	metal_obstacle128	rect:128,128	tile=128,256
+HAZARD		1280,576	metal_hazard64_blue	rect:64,64	tile=128,128	collidable	freeze=0	collision_damage=20	damage=1	team=RED	rate=100
+HAZARD		1664,832	metal_hazard64_red	rect:64,64	tile=128,128	collidable	freeze=0	collision_damage=20	damage=1	team=BLUE	rate=100
+OBSTACLE	1344,894	metal_obstacle128	rect:128,128
+OBSTACLE	1600,512	metal_obstacle128	rect:128,128
+
+# Obstacle island - upper left
+OBSTACLE	384,512		metal_obstacle128	rect:128,128	tile=256,256
+OBSTACLE	128,512		metal_obstacle128	rect:128,128	tile=128,256
+OBSTACLE	512,128		metal_obstacle128	rect:128,128	tile=128,256
+OBSTACLE	384,768		metal_obstacle128	rect:128,128
+OBSTACLE	128,128		metal_obstacle128	rect:128,128
+OBSTACLE	640,192		metal_obstacle128	rect:128,128
+OBSTACLE	640,512		metal_obstacle64	rect:64,64	tile=64,128
+OBSTACLE	704,512		metal_obstacle64	rect:64,64
+
+# Obstacle island - mid right
+OBSTACLE	2560,1216	metal_obstacle64	rect:64,64	tile=256,256
+OBSTACLE	2304,1088	metal_obstacle128	rect:128,128	tile=128,512
+OBSTACLE	2432,1216	metal_obstacle128	rect:128,128
+OBSTACLE	2624,1152	metal_obstacle64	rect:64,64	tile=128,64
+OBSTACLE	2624,1024	metal_hazard64_red	rect:64,64	tile=64,128	collidable	freeze=0	collision_damage=20	damage=1	team=BLUE	rate=100
+
+# Obstacle island - top right
+OBSTACLE	2688,256	metal_obstacle128	rect:128,128	tile=384,256
+OBSTACLE	2240,0		metal_obstacle128	rect:128,128	tile=256,128
+OBSTACLE	2304,128	metal_obstacle128	rect:128,128
+OBSTACLE	2432,640	metal_obstacle64	rect:64,64	tile=128,128
+OBSTACLE	2368,640	metal_obstacle64	rect:64,64
+OBSTACLE	2432,576	metal_obstacle64	rect:64,64
+OBSTACLE	2496,768	metal_obstacle64	rect:64,64
+OBSTACLE	2560,704	metal_obstacle64	rect:64,64
+
+# Obstacle island - bottom mid
+OBSTACLE	1600,2048	metal_obstacle128	rect:128,128	tile=512,512
+OBSTACLE	1472,2304	metal_obstacle128	rect:128,128	tile=128,256
+OBSTACLE	1728,1920	metal_obstacle128	rect:128,128	tile=256,128
+OBSTACLE	1792,1856	metal_obstacle64	rect:64,64	tile=128,64
+OBSTACLE	2112,2304	metal_obstacle128	rect:128,128	tile=256,128
+OBSTACLE	2112,2176	metal_obstacle64	rect:64,64	tile=64,128
+OBSTACLE	2176,2240	metal_obstacle64	rect:64,64
+OBSTACLE	2112,2304	metal_obstacle128	rect:128,128	tile=256,128
+OBSTACLE	1728,2560	metal_obstacle128	rect:128,128	tile=256,128
+OBSTACLE	1728,2688	metal_obstacle64	rect:64,64	tile=128,64
+OBSTACLE	1728,2752	metal_obstacle64	rect:64,64
+
+HAZARD		2688,1856	metal_hazard64_red	rect:64,64	tile=64,192	collidable	freeze=0	collision_damage=20	damage=1	team=BLUE	rate=100
+HAZARD		2496,1792	metal_hazard64_red	rect:64,64	tile=192,64	collidable	freeze=0	collision_damage=20	damage=1	team=BLUE	rate=100
+HAZARD		2624,1856	metal_hazard64_red	rect:64,64	collidable	freeze=0	collision_damage=20	damage=1	team=BLUE	rate=100
+
+# Obstacles - bottom right
+OBSTACLE	2816,2816	metal_obstacle128	rect:128,128	tile=256,256
+OBSTACLE	2688,2944	metal_obstacle128	rect:128,128
+OBSTACLE	2944,2688	metal_obstacle128	rect:128,128
+OBSTACLE	2432,2624	metal_obstacle64	rect:64,64	tile=64,256
+
+# Obstacles - mid-left bottom
+OBSTACLE	832,2688	metal_obstacle128	rect:128,128	tile=256,256
+
+# Obstacles - mid-left
+OBSTACLE	1024,1728	metal_obstacle128	rect:128,128	tile=256,256
+HAZARD		1792,1536	metal_hazard64		rect:128,128	tile=64,128	collidable	freeze=0	collision_damage=20	damage=1	rate=100
