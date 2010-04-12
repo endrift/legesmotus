@@ -369,6 +369,13 @@ void GameController::init(GameWindow* window) {
 	current_lmi->set_current_index(m_configuration->get_bool_value("text_sliding") ? 0 : 1);
 	m_options_form.add_item("text_sliding", current_lmi);
 	m_options_menu.add_item(current_lmi);
+	current_lmi = new ListMenuItem("text_sliding", TextMenuItem::with_manager(m_text_manager, "Vertical Sync:", "vsync", 50, 360));
+	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "On", "on", 240, 360));
+	current_lmi->add_option(TextMenuItem::with_manager(m_text_manager, "Off", "off", 240, 360));
+	current_lmi->set_default_index(m_configuration->get_bool_value("vsync") ? 0 : 1);
+	current_lmi->set_current_index(m_configuration->get_bool_value("vsync") ? 0 : 1);
+	m_options_form.add_item("vsync", current_lmi);
+	m_options_menu.add_item(current_lmi);
 	current_lmi = new ListMenuItem("multisample", TextMenuItem::with_manager(m_text_manager, "Multisample:", "multisample", 460, 320));
 	for (int i = 0; i <= GameWindow::MAX_MSAA; ++i) {
 		stringstream s;
@@ -1568,9 +1575,11 @@ void GameController::process_mouse_click(SDL_Event event) {
 						bool text_shadow = m_options_form.get_item("text_shadow")->get_value() == "on";
 						bool text_sliding = m_options_form.get_item("text_sliding")->get_value() == "on";
 						bool text_background = m_options_form.get_item("text_background")->get_value() == "on";
+						bool vsync = m_options_form.get_item("vsync")->get_value() == "on";
 						if (width != m_configuration->get_int_value("screen_width") || 
 								height != m_configuration->get_int_value("screen_height") ||
 								fullscreen != m_configuration->get_bool_value("fullscreen") ||
+								vsync != m_configuration->get_bool_value("vsync") ||
 								multisample != m_configuration->get_int_value("multisample") ||
 								text_shadow != m_configuration->get_bool_value("text_shadow") ||
 								text_sliding != m_configuration->get_bool_value("text_sliding") ||
@@ -1578,6 +1587,7 @@ void GameController::process_mouse_click(SDL_Event event) {
 							m_configuration->set_int_value("screen_width", width);
 							m_configuration->set_int_value("screen_height", height);
 							m_configuration->set_bool_value("fullscreen", fullscreen);
+							m_configuration->set_bool_value("vsync", vsync);
 							m_configuration->set_int_value("multisample", multisample);
 							m_configuration->set_bool_value("text_shadow", text_shadow);
 							m_configuration->set_bool_value("text_sliding", text_sliding);
