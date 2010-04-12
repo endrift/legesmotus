@@ -103,12 +103,19 @@ static bool	sort_resolution(pair<int, int> pairone, pair<int, int> pairtwo) {
 
 GameController::GameController(PathManager& path_manager, ClientConfiguration* config) : m_path_manager(path_manager), m_network(*this) {
 	preinit(config);
-	init(GameWindow::get_optimal_instance(config->get_int_value("multisample")));
+	init(GameWindow::get_optimal_instance(config->get_bool_value("vsync")?(GameWindow::VSYNC):0, config->get_int_value("multisample")));
 }
 
 GameController::GameController(PathManager& path_manager, ClientConfiguration* config, int width, int height, bool fullscreen, int depth) : m_path_manager(path_manager), m_network(*this) {
 	preinit(config);
-	init(GameWindow::get_instance(width, height, depth, fullscreen, config->get_int_value("multisample")));
+	int flags = 0;
+	if (fullscreen) {
+		flags |= GameWindow::FULLSCREEN;
+	}
+	if (config->get_bool_value("vsync")) {
+		flags |= GameWindow::VSYNC;
+	}
+	init(GameWindow::get_instance(width, height, depth, flags, config->get_int_value("multisample")));
 }
 
 /*

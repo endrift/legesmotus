@@ -33,6 +33,8 @@ using namespace std;
 GameWindow* GameWindow::m_instance = NULL;
 SDL_Surface* GameWindow::m_icon = NULL;
 const int GameWindow::MAX_MSAA = 5;
+const int GameWindow::FULLSCREEN	= 0x1;
+const int GameWindow::VSYNC			= 0x2;
 static const pair<int, int> DEFAULT_RESOLUTIONS[] = {
 	/* 4:3 */
 	pair<int, int>(640, 480),
@@ -51,22 +53,22 @@ static const pair<int, int> DEFAULT_RESOLUTIONS[] = {
 	pair<int, int>(0, 0)
 };
 
-GameWindow::GameWindow(int width, int height, int depth, bool fullscreen, int msaa) {
+GameWindow::GameWindow(int width, int height, int depth, int flags, int msaa) {
 	m_width = width;
 	m_height = height;
-	m_fullscreen = fullscreen;
+	m_fullscreen = flags & FULLSCREEN;
 	m_offset_x = 0;
 	m_offset_y = 0;
 
-	int flags = SDL_HWSURFACE|SDL_OPENGL;
-	if (fullscreen) {
-		flags |= SDL_FULLSCREEN;
+	int rflags = SDL_HWSURFACE|SDL_OPENGL;
+	if (m_fullscreen) {
+		rflags |= SDL_FULLSCREEN;
 	}
-	depth = SDL_VideoModeOK(width, height, depth, flags);
+	depth = SDL_VideoModeOK(width, height, depth, rflags);
 	if (depth == 0) {
 		throw VmodeNotSupportedException("Video mode not supported.\n"
 			"If this problem persists, try deleting the settings file for Leges Motus.",
-			width, height, depth, fullscreen);
+			width, height, depth, m_fullscreen);
 	}
 
 	m_depth = depth;
@@ -103,11 +105,13 @@ GameWindow::GameWindow(int width, int height, int depth, bool fullscreen, int ms
 	}
 #if SDL_VERSION_ATLEAST(1, 2, 10)
 	// Enable VSYNC
-	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1); // Deprecated in SDL 1.3
+	if (flags & VSYNC) {
+		SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1); // Deprecated in SDL 1.3
+	}
 #endif
 	SDL_WM_SetCaption("Leges Motus","Leges Motus");
 	SDL_ShowCursor(SDL_DISABLE);
-	m_context = SDL_SetVideoMode(width, height, depth, flags);
+	m_context = SDL_SetVideoMode(width, height, depth, rflags);
 	if (m_context == NULL) {
 		throw Exception(SDL_GetError());
 	}
@@ -164,13 +168,13 @@ void GameWindow::set_icon(SDL_Surface* icon) {
 	SDL_WM_SetIcon(icon, NULL);
 }
 
-GameWindow* GameWindow::get_instance(int width, int height, int depth, bool fullscreen, int msaa) {
+GameWindow* GameWindow::get_instance(int width, int height, int depth, int flags, int msaa) {
 	if (m_instance == NULL) {
 		if (!init_video()) {
 			throw Exception(SDL_GetError());
 		}
 		try {
-			m_instance = new GameWindow(width, height, depth, fullscreen, msaa);
+			m_instance = new GameWindow(width, height, depth, flags, msaa);
 		} catch (const VmodeNotSupportedException& e) {
 			if (e.get_fullscreen()) {
 				return get_optimal_instance(msaa);
@@ -180,7 +184,7 @@ GameWindow* GameWindow::get_instance(int width, int height, int depth, bool full
 		}
 	} else {
 		m_instance->set_dimensions(width, height);
-		m_instance->set_fullscreen(fullscreen);
+		m_instance->set_fullscreen(flags & FULLSCREEN);
 	}
 	return m_instance;
 }
@@ -189,7 +193,7 @@ GameWindow* GameWindow::get_instance() {
 	return m_instance;
 }
 
-GameWindow* GameWindow::get_optimal_instance(int msaa) {
+GameWindow* GameWindow::get_optimal_instance(int flags, int msaa) {
 	int depth;
 	size_t num_modes;
 	if (!init_video()) {
@@ -209,7 +213,7 @@ GameWindow* GameWindow::get_optimal_instance(int msaa) {
 	}
 	delete[] w;
 	delete[] h;
-	return get_instance(max_w, max_h, depth, true, msaa);
+	return get_instance(max_w, max_h, depth, flags | FULLSCREEN, msaa);
 }
 
 void GameWindow::destroy_instance() {

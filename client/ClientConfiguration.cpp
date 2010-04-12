@@ -35,6 +35,7 @@ ClientConfiguration::ClientConfiguration() {
 	m_int_defaults["screen_width"] = 800;
 	m_int_defaults["screen_height"] = 600;
 	m_bool_defaults["fullscreen"] = false;
+	m_bool_defaults["vsync"] = true;
 	m_bool_defaults["text_shadow"] = false;
 	m_bool_defaults["text_background"] = true;
 	m_bool_defaults["text_sliding"] = true;
