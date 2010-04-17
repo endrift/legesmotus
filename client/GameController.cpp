@@ -2564,7 +2564,7 @@ void GameController::player_died(PacketReader& reader) {
 		if (killer && killer->get_team() == dead_player->get_team()) { // TODO (when we finish game modes): only say "betrayed" if team-play is in effect.
 			message << " betrayed ";
 		} else {
-			message << " killed ";
+			message << " stunned ";
 		}
 		
 		if (dead_player_id == m_player_id) {
