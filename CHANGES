@@ -35,6 +35,9 @@ v. 0.3.0 - 04/23/10:
   - Can remove the update nag at compile time.
   - New application icon.
   - Exceptions now show an error box on Windows.
+  - Added fallback resolutions if cannot detect options automatically.
+  - Try to adjust if a video mode isn't valid.
+
 
  Bug Fixes:
   - Large amounts of code cleaning in movement and firing code.
@@ -47,19 +50,14 @@ v. 0.3.0 - 04/23/10:
   - Click sound now only plays in server browser when something useful was clicked.
   - Fixed crashes in maps without any spawn points.
   - Fixed rendering of empty strings.
-  - Fixed bug causing "ONE SECOND REMAINING" to display at wrong time.
   - Improved font code, with resizing.
   - Fixed jumping into obstacle you're already intersecting with.
-  - Fixed health bar dropping to negative width.
   - Fixed handling games with no timeout.
   - Fixes and enhancements to the makefile and configure script.
-  - Fixed crash if the text shadow was enabled, but the text was 0-width.
   - Removed all references to SDL_net.
   - Fixed bug where switching teams caused player to spawn without a gun sprite.
   - Added check to make sure player exists to unfreeze.
   - Cleaned up sound code.
-  - Added fallback resolutions if cannot detect options automatically.
-  - Try to adjust if a video mode isn't valid.
   - Fixed bug where one could jump while in the menu.
   - Fixed sprite adding and removing for server browser.
   - Improved method of creating/deleting scores for the score overlay.
@@ -67,7 +65,6 @@ v. 0.3.0 - 04/23/10:
   - Fixed unnecessary registering of the template player sprite with the window.
   - Fixed layering of frozen status bar + text under the score overlay.
   - Fixed potential strange behaviour if gate update packets arrive out of order.
-  - Changed "killed" message on chat log to say "froze," which is more accurate.
 --------------------------
 v. 0.2.2 - 07/19/09:
  Bug Fixes:
