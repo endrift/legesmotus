@@ -15,6 +15,15 @@ ABOUT
 Leges Motus is a 2D networked, team-based shooter set in zero gravity.
 
 
+GAMEPLAY
+
+The objective of the game is to reach the opposing team's gate and stay next to it until it opens fully.
+
+Shoot enemy players to freeze them. They will un-freeze a number of seconds after they are frozen.
+
+You can move by jumping off of any obstacle, and you will jump in the direction of the mouse pointer. You will also move due to the recoil from firing your gun. When frozen, you will bounce off of obstacles. If you unfreeze away from obstacles, shoot your weapon to move back towards the nearest obstacle.
+
+
 BUILDING AND INSTALLING
 
 Please note that only GNU Make is supported. If the default 'make' command is not GNU Make, please install and use it where appropriate. Generally it is called gmake when it is not make.
@@ -92,6 +101,8 @@ CONTROLS
 
 	space		Jump in direction of mouse pointer
 	left click	Fire in direction of mouse pointer
+	right click	Switch weapons
+	1 through 8	Switch weapons (if available)
 	t		Open chat
 	y		Open team chat
 	~		Open chat log
@@ -132,32 +143,6 @@ These commands are entered in the client's chat bar.  Some commands (marked as [
 If no operator password is set, then any player connecting from the localhost (127.0.0.1) will be given operator status.  If this is undesirable behavior, then be sure to set an operator password.
 
 
-GAMEPLAY
-
-The objective of the game is to reach the opposing team's gate and stay next to it until it opens fully.
-
-Shoot enemy players to freeze them. They will un-freeze a number of seconds after they are frozen.
-
-You can move by jumping off of any obstacle, and you will jump in the direction of the mouse pointer. You will also move due to the recoil from firing your gun. When frozen, you will bounce off of obstacles. If you unfreeze away from obstacles, shoot your weapon to move back towards the nearest obstacle.
-
-
-ORGANIZATION
-
-The code is divided into three components, located in the following directories:
-
-	common		Common code for both client and server
-	client		The client
-	server		The server
-	metaserver	The meta server (you should not run a meta server)
-
-The data for the program are located in the data directory, and are divided into four parts:
-
-	data/fonts	Fonts
-	data/maps	Maps
-	data/sounds	Sounds
-	data/sprites	Sprites
-
-
 ON THE INTERNET
 
 Home Page (News, Screenshots):	http://legesmotus.cs.brown.edu/
@@ -167,6 +152,24 @@ IRC Channel:			irc.freenode.net #legesmotus
 Subversion Repository:		http://legesmotus.svn.sourceforge.net/svnroot/legesmotus
 
 For documentation and to report bugs and feature requests, visit Trac.  For immediate help or to try to find a game, stop by our IRC channel.
+
+
+ORGANIZATION
+
+The code is divided into four components, located in the following directories:
+
+	common		Common code for both client and server
+	client		The client
+	server		The server
+	metaserver	The meta server (you should not run a meta server)
+
+The data for the program are located in the data directory, and are divided into five parts:
+
+	data/fonts	Fonts
+	data/maps	Maps
+	data/sounds	Sounds
+	data/sprites	Sprites
+	data/weapons	Weapon configurations
 
 
 ADVANCED BUILDING
@@ -198,7 +201,7 @@ Note that, by default, the version of Leges Motus that is built on an OS X compu
 
 	CXX=g++-4.0 ./configure
 
-When build with a configuration like this, it should work on 10.5, and, assuming you have the SDK for 10.4 installed, 10.4 as well.
+When built with a configuration like this, it should work on 10.5, and, assuming you have the SDK for 10.4 installed, 10.4 as well.
 
 CREDITS
 
@@ -229,7 +232,7 @@ Creative Commons Sampling 1.0 License Sounds:
 
 COPYRIGHT AND WARRANTY
 
-Copyright 2009 Andrew Ayer, Nathan Partlan, Jeffrey Pfau
+Copyright 2009-2010 Andrew Ayer, Nathan Partlan, Jeffrey Pfau
 
 Leges Motus is free and open source software.  You may redistribute it and/or
 modify it under the terms of version 2, or (at your option) version 3, of the

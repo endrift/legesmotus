@@ -3,7 +3,7 @@
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
- * Copyright 2009 Andrew Ayer, Nathan Partlan, Jeffrey Pfau
+ * Copyright 2009-2010 Andrew Ayer, Nathan Partlan, Jeffrey Pfau
  * 
  * Leges Motus is free and open source software.  You may redistribute it and/or
  * modify it under the terms of version 2, or (at your option) version 3, of the
@@ -64,7 +64,7 @@ namespace {
 		cout << "Leges Motus Meta Server" << endl;
 		cout << "A networked, 2D shooter set in zero gravity" << endl;
 		cout << endl;
-		cout << "Copyright 2009 Andrew Ayer, Nathan Partlan, Jeffrey Pfau" << endl;
+		cout << "Copyright 2009-2010 Andrew Ayer, Nathan Partlan, Jeffrey Pfau" << endl;
 		cout << "Leges Motus is free and open source software; see the source for copying conditions." << endl;
 		cout << "There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE." << endl;
 	}

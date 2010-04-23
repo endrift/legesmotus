@@ -3,7 +3,7 @@
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
- * Copyright 2009 Andrew Ayer, Nathan Partlan, Jeffrey Pfau
+ * Copyright 2009-2010 Andrew Ayer, Nathan Partlan, Jeffrey Pfau
  * 
  * Leges Motus is free and open source software.  You may redistribute it and/or
  * modify it under the terms of version 2, or (at your option) version 3, of the
@@ -2564,7 +2564,7 @@ void GameController::player_died(PacketReader& reader) {
 		if (killer && killer->get_team() == dead_player->get_team()) { // TODO (when we finish game modes): only say "betrayed" if team-play is in effect.
 			message << " betrayed ";
 		} else {
-			message << " stunned ";
+			message << " froze ";
 		}
 		
 		if (dead_player_id == m_player_id) {
@@ -3432,7 +3432,7 @@ void	GameController::display_legalese() {
 	const char*	legalese[] = {
 		"This is Leges Motus, a networked, 2D shooter set in zero gravity.",
 		" ",
-		"Copyright 2009 Andrew Ayer, Nathan Partlan, Jeffrey Pfau",
+		"Copyright 2009-2010 Andrew Ayer, Nathan Partlan, Jeffrey Pfau",
 		" ",
 		"Leges Motus is free and open source software.  You may redistribute it and/or",
 		"modify it under the terms of version 2, or (at your option) version 3, of the",
