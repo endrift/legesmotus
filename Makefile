@@ -32,7 +32,7 @@ clean:
 	$(MAKE) -C metaserver clean
 	$(MAKE) -C tests clean
 	$(RM) -r "Leges Motus.app"
-	$(RM) -r legesmotus*.pkg
+	$(RM) -r legesmotus*.{pkg,dmg}
 	$(RM) README.rtf
 
 deps:
@@ -97,6 +97,7 @@ $(DMG): bundle $(CLI_INSTALLER)
 	cp client/legesmotus.icns tmp/.VolumeIcon.icns
 	SetFile -c icnC tmp/.VolumeIcon.icns
 	cp README tmp/README.TXT
+	cp CHANGES COPYING NEW_MAP_FORMAT tmp
 	cp -R Leges\ Motus.app tmp
 	cp -R $(CLI_INSTALLER) tmp
 	hdiutil create -srcfolder tmp -volname "Leges Motus $(VERSION)" -format UDRW -ov raw-$(DMG)
