@@ -20,6 +20,7 @@ v. 0.3.0 - 04/23/10:
   - New spawn point features: specify initial velocity and grabbing an obstacle.
   - Completely new menu and text entry framework, allowing much more flexibility and power.
   - Added options for text background, shadow, sliding, and multisampling.
+  - Added option to enable vertical sync for rendering.
   - Completely new networking system, which decreases problems with packet loss.
   - Support for ack packets from client to server. Improves networking.
   - Players who join when teams are equal are assigned to the losing team.
@@ -34,7 +35,6 @@ v. 0.3.0 - 04/23/10:
   - Can remove the update nag at compile time.
   - New application icon.
   - Exceptions now show an error box on Windows.
-
 
  Bug Fixes:
   - Large amounts of code cleaning in movement and firing code.
@@ -67,6 +67,7 @@ v. 0.3.0 - 04/23/10:
   - Fixed unnecessary registering of the template player sprite with the window.
   - Fixed layering of frozen status bar + text under the score overlay.
   - Fixed potential strange behaviour if gate update packets arrive out of order.
+  - Changed "killed" message on chat log to say "froze," which is more accurate.
 --------------------------
 v. 0.2.2 - 07/19/09:
  Bug Fixes:
