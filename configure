@@ -22,6 +22,9 @@ universal=1
 force=0
 debug=0
 upgrade_nag=1
+server=1
+client=1
+metaserver=0
 
 if [ `uname -s` = Darwin ]
 then
@@ -38,6 +41,9 @@ display_help () {
 	echo "  --sharedir=DIR           Install shared files at DIR [default: PREFIX/share]"
 	echo "  --disable-sound          Disable sound support in this build"
 	echo "  --disable-upgrade-check  Disable upgrade checking in this build"
+	echo "  --disable-client         Disable building the client"
+	echo "  --disable-server         Disable building the server"
+	echo "  --enable-metaserver      Enable building the metaserver"
 	echo "  --debug                  Enable a debug build"
 	echo "  --unix-style             (Mac OS X only) Build without frameworks or .app bundle"
 	echo "  --disable-universal      (Mac OS X only) Do not build universal binary"
@@ -122,6 +128,15 @@ do
 	--disable-universal)
 		universal=0
 		;;
+	--disable-client)
+		client=0
+		;;
+	--disable-server)
+		server=0
+		;;
+	--enable-metaserver)
+		metaserver=1
+		;;
 	--force)
 		force=1
 		;;
@@ -132,6 +147,26 @@ do
 		;;
 	esac
 done
+
+
+# Set targets
+
+targets=""
+if [ $client -eq 1 ]
+then
+	targets="$targets client"
+fi
+
+if [ $server -eq 1 ]
+then
+	targets="$targets server"
+fi
+
+if [ $metaserver -eq 1 ]
+then
+	targets="$targets metaserver"
+fi
+
 
 # Set defaults
 
@@ -174,6 +209,13 @@ else
 fi
 
 
+if [ ! "$targets" ]
+then
+	echo "You must build at least one of the client, server, or metaserver"
+	die
+fi
+
+
 printf '%s' "Checking for g++... "
 if which $CXX >/dev/null 2>/dev/null && $CXX --version | grep g++ >/dev/null 2>/dev/null
 then
@@ -187,7 +229,7 @@ else
 	die
 fi
 
-if [ $unix_style -eq 1 ]
+if [ $client -eq 1 ] && [ $unix_style -eq 1 ]
 then
 	printf '%s' "Checking for SDL... "
 	if $SDL_CONFIG --version >/dev/null 2>/dev/null
@@ -247,6 +289,8 @@ then
 		fi
 	fi
 fi
+
+
 echo
 echo
 echo "Prefix:             $prefix"
@@ -254,8 +298,16 @@ echo "Binaries directory: $bindir"
 echo "Manuals directory:  $mandir"
 echo "Data directory:     $datadir"
 echo "Share directory:    $sharedir"
-echo "Sound:              `format_boolean $sound`"
-echo "Upgrade check:      `format_boolean $upgrade_nag`"
+echo "Client:             `format_boolean $client`"
+echo "Server:             `format_boolean $server`"
+echo "Metaserver:         `format_boolean $metaserver`"
+
+if [ $client -eq 1 ]
+then
+	echo "Sound:              `format_boolean $sound`"
+	echo "Upgrade check:      `format_boolean $upgrade_nag`"
+fi
+
 echo "Debug:              `format_boolean $debug`"
 
 if [ `uname -s` = Darwin ]
@@ -283,6 +335,7 @@ echo "BINDIR = \"${bindir}\"" >> config.mak
 echo "MANDIR = \"${mandir}\"" >> config.mak
 echo "DATADIR = \"${datadir}\"" >> config.mak
 echo "SHAREDIR = \"${sharedir}\"" >> config.mak
+echo "TARGETS =${targets}" >> config.mak
 
 if [ $sound -ne 0 ]
 then

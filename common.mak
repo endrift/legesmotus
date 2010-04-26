@@ -5,7 +5,7 @@ SERVER = $(BASEDIR)/server
 FRAMEWORKS = /Library/Frameworks
 
 # Version strings
-VERSION = 0.3.0
+VERSION = 0.3.1-svn
 
 # These may be overridden by config.mak
 DATADIR = data
@@ -69,6 +69,7 @@ else
 endif
 
 ifeq ($(MACHINE),Darwin)
+ # is Mac
  ifeq ($(UNIXSTYLE),)
   CFLAGS += -DLM_FWBASED
  endif
@@ -76,7 +77,7 @@ ifeq ($(MACHINE),Darwin)
   CFLAGS += -arch ppc -arch i386
  else
   ifeq ($(UNIXSTYLE),)
-   # Test for Snow Leopard
+   # Test for Snow Leopard (SDL TTF's stock release is 32-bit)
    ifeq ($(shell test `uname -r | cut -f 1 -d .` -ge 10 && echo 1),1) 
     CFLAGS += -arch i386
    endif
@@ -85,24 +86,28 @@ ifeq ($(MACHINE),Darwin)
  FLAGS_GL = -FOpenGL
  LIBS_GL = -framework OpenGL
 else
- ifeq ($(MACHINE),Windows)
-  LIBS_GL = -lopengl32
- else
-  ifneq ($(shell ls /usr/lib/libGL.so 2>/dev/null),)
-   LIBS_GL = -lGL
+ ifneq ($(findstring client,$(TARGETS)),)
+  # We need graphics libraries
+  ifeq ($(MACHINE),Windows)
+   LIBS_GL = -lopengl32
   else
-   ifeq ($(XDIR),)
-    ifneq ($(shell ls -d /usr/X11),)
-     XDIR = /usr/X11
-    else
-     ifneq ($(shell ls -d /usr/X11R? 2>/dev/null),)
-      XDIR = $(shell ls -1d /usr/X11R? 2>/dev/null | head -n1)
+   # Generic Unix
+   ifneq ($(shell ls /usr/lib/libGL.so 2>/dev/null),)
+    LIBS_GL = -lGL
+   else
+    ifeq ($(XDIR),)
+     ifneq ($(shell ls -d /usr/X11),)
+      XDIR = /usr/X11
      else
-      $(error Cannot detect X11 directory, please specify manually)
+      ifneq ($(shell ls -d /usr/X11R? 2>/dev/null),)
+       XDIR = $(shell ls -1d /usr/X11R? 2>/dev/null | head -n1)
+      else
+       $(error Cannot detect X11 directory, please specify manually)
+      endif
      endif
     endif
+    LIBS_GL = -L$(XDIR)/lib/ -lGL
    endif
-   LIBS_GL = -L$(XDIR)/lib/ -lGL
   endif
  endif
 endif

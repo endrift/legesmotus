@@ -1,14 +1,23 @@
-legesmotus:
+default:
+
 BASEDIR = .
 include common.mak
+
+ifeq ($(TARGETS),)
+TARGETS = client server
+endif
 
 ifeq ($(MACHINE)$(UNIXSTYLE),Darwin)
 MACBUNDLE = bundle
 endif
 
-all: deps legesmotus $(MACBUNDLE)
+all: deps default $(MACBUNDLE)
 
-legesmotus: common server client
+default: $(TARGETS)
+
+legesmotus: client
+
+lmserver: server
 
 common:
 	$(MAKE) -C common
