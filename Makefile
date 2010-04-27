@@ -3,10 +3,6 @@ default:
 BASEDIR = .
 include common.mak
 
-ifeq ($(TARGETS),)
-TARGETS = client server
-endif
-
 ifeq ($(MACHINE)$(UNIXSTYLE),Darwin)
 MACBUNDLE = bundle
 endif

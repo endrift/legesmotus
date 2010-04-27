@@ -16,6 +16,11 @@ ifneq ($(shell test -r $(BASEDIR)/config.mak && echo 1),)
  include $(BASEDIR)/config.mak
 endif
 
+# Default targets if no targets are explicitly listed
+ifeq ($(TARGETS),)
+TARGETS = client server
+endif
+
 ifeq ($(SDL_CONFIG),)
  SDL_CONFIG = sdl-config
 endif
