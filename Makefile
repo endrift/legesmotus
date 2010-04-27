@@ -22,6 +22,9 @@ server: common
 client: common
 	$(MAKE) -C client
 
+serverscanner: common client
+	$(MAKE) -C serverscanner
+
 metaserver: common
 	$(MAKE) -C metaserver
 
@@ -32,6 +35,7 @@ clean:
 	$(MAKE) -C common clean
 	$(MAKE) -C server clean
 	$(MAKE) -C client clean
+	$(MAKE) -C serverscanner clean
 	$(MAKE) -C metaserver clean
 	$(MAKE) -C tests clean
 	$(RM) -r "Leges Motus.app"
@@ -42,6 +46,7 @@ deps:
 	$(MAKE) -C common deps
 	$(MAKE) -C server deps
 	$(MAKE) -C client deps
+	$(MAKE) -C serverscanner deps
 	$(MAKE) -C metaserver deps
 
 README.rtf: README
