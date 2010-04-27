@@ -3,11 +3,9 @@ default:
 BASEDIR = .
 include common.mak
 
-ifeq ($(MACHINE)$(UNIXSTYLE),Darwin)
-MACBUNDLE = bundle
-endif
+INSTALL_TARGETS = $(addprefix install-,$(TARGETS))
 
-all: deps default $(MACBUNDLE)
+all: deps default
 
 default: $(TARGETS)
 
@@ -58,6 +56,7 @@ ifeq ($(MACHINE)$(UNIXSTYLE),Darwin)
 
 CLI_INSTALLER = Install\ Command\ Line\ Tools.app
 DMG = legesmotus-$(VERSION)-mac.dmg
+EXTRA_PHONY = bundle package cli-installer
 
 Leges\ Motus.app: client server
 	mkdir -p "Leges Motus.app/Contents/MacOS"
@@ -144,21 +143,20 @@ else
 
 ifneq ($(MACHINE),Windows)
 ifneq ($(PREFIX),)
-install:
+
+EXTRA_PHONY = install-client install-server install-common
+
+install: default $(INSTALL_TARGETS)
+
+install-client: client install-common
 	install -d $(DESTDIR)$(DATADIR)/fonts
 	install -m 0644 $(BASEDIR)/data/fonts/* $(DESTDIR)$(DATADIR)/fonts
-	install -d $(DESTDIR)$(DATADIR)/maps
-	install -m 0644 $(BASEDIR)/data/maps/* $(DESTDIR)$(DATADIR)/maps
 	install -d $(DESTDIR)$(DATADIR)/sounds
 	install -m 0644 $(BASEDIR)/data/sounds/* $(DESTDIR)$(DATADIR)/sounds
 	install -d $(DESTDIR)$(DATADIR)/sprites
 	install -m 0644 $(BASEDIR)/data/sprites/* $(DESTDIR)$(DATADIR)/sprites
-	install -d $(DESTDIR)$(DATADIR)/weapons
-	install -m 0644 $(BASEDIR)/data/weapons/* $(DESTDIR)$(DATADIR)/weapons
 	install -d $(DESTDIR)$(MANDIR)/man6
-	install -m 0644 $(BASEDIR)/man/man6/* $(DESTDIR)$(MANDIR)/man6
-	install -d $(DESTDIR)$(MANDIR)/man6
-	install -m 0644 $(BASEDIR)/man/man6/* $(DESTDIR)$(MANDIR)/man6
+	install -m 0644 $(BASEDIR)/man/man6/legesmotus.6 $(DESTDIR)$(MANDIR)/man6
 	install -d $(DESTDIR)$(SHAREDIR)/applications
 	install -m 0644 $(BASEDIR)/client/legesmotus.desktop $(DESTDIR)$(SHAREDIR)/applications/legesmotus.desktop
 	sed -e 's/\$$VERSION/$(subst /,\/,$(VERSION))/' $(INPLACE) $(DESTDIR)$(SHAREDIR)/applications/legesmotus.desktop
@@ -166,11 +164,23 @@ install:
 	sed -e 's/\$$BINDIR/$(subst /,\/,$(BINDIR))/' $(INPLACE) $(DESTDIR)$(SHAREDIR)/applications/legesmotus.desktop
 	install -d $(DESTDIR)$(SHAREDIR)/icons/hicolor/256x256
 	install -m 0644 $(BASEDIR)/data/sprites/blue_head256.png $(DESTDIR)$(SHAREDIR)/icons/hicolor/256x256/legesmotus.png
-	install -d $(DESTDIR)$(BINDIR)
 	which update-desktop-database && update-desktop-database $(DESTDIR)$(SHAREDIR)/applications || true
-	install $(BASEDIR)/server/lmserver $(BASEDIR)/client/legesmotus $(DESTDIR)$(BINDIR)
+	install -d $(DESTDIR)$(BINDIR)
+	install $(BASEDIR)/client/legesmotus $(DESTDIR)$(BINDIR)
 	strip $(DESTDIR)$(BINDIR)/legesmotus
+	
+install-server: server install-common
+	install -d $(DESTDIR)$(MANDIR)/man6
+	install -m 0644 $(BASEDIR)/man/man6/lmserver.6 $(DESTDIR)$(MANDIR)/man6
+	install -d $(DESTDIR)$(BINDIR)
+	install $(BASEDIR)/server/lmserver $(DESTDIR)$(BINDIR)
 	strip $(DESTDIR)$(BINDIR)/lmserver
+
+install-common:
+	install -d $(DESTDIR)$(DATADIR)/maps
+	install -m 0644 $(BASEDIR)/data/maps/* $(DESTDIR)$(DATADIR)/maps
+	install -d $(DESTDIR)$(DATADIR)/weapons
+	install -m 0644 $(BASEDIR)/data/weapons/* $(DESTDIR)$(DATADIR)/weapons
 
 uninstall:
 	$(RM) -r $(DESTDIR)$(DATADIR)
@@ -188,4 +198,4 @@ cscope:
 	find . -follow -name SCCS -prune -o -name '*.[ch]pp' -print | grep -v svn > cscope.files
 	cscope -v -q
 
-.PHONY: clean common server client bundle package metaserver install uninstall
+.PHONY: deps clean common server client metaserver default install uninstall $(EXTRA_PHONY)
