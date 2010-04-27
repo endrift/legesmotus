@@ -365,6 +365,8 @@ namespace LM {
 		void		clear_players();
 		bool		wants_restart();
 		void		reset_options();
+		void		next_weapon();
+		void		previous_weapon();
 		void		change_weapon(const char* name);
 		void		change_weapon(unsigned int n); // change to the nth weapon (0-indexed)
 		void		change_weapon(Weapon* weapon);
