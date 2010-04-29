@@ -99,7 +99,7 @@ Graphic*	GraphicalMap::load_graphic(const std::string& graphic_name, bool is_cen
 
 	update_graphic(graphic, position, graphic_params);
 
-	m_window->register_graphic(graphic);
+	m_window->register_graphic(graphic, GameWindow::LAYER_GAME);
 
 	return graphic;
 }

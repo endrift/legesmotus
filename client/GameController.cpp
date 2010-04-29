@@ -133,7 +133,7 @@ GameController::~GameController() {
 	delete m_chat_input;
 
 	for (unsigned int i = 0; i < m_shots.size(); i++) {
-		m_window->unregister_graphic(m_shots[i].first);
+		m_window->unregister_graphic(m_shots[i].first, GameWindow::LAYER_GAME);
 		delete m_shots[i].first;
 		m_shots.erase(m_shots.begin() + i);
 	}
@@ -147,6 +147,7 @@ GameController::~GameController() {
 	m_text_manager->remove_all_strings();
 	
 	delete m_overlay_background;
+	delete m_menu_back;
 	
 	delete m_server_browser;
 	delete m_chat_log;
@@ -217,6 +218,8 @@ void GameController::init(GameWindow* window) {
 	m_screen_width = window->get_width();
 	m_screen_height = window->get_height();
 
+	window->set_layer_visible(true, GameWindow::LAYER_SUPER);
+
 	m_join_sent_time = 0;
 	m_last_ping_sent = 0;
 	
@@ -238,6 +241,14 @@ void GameController::init(GameWindow* window) {
 	m_curr_weapon_image = NULL;
 	m_weapon_selector = NULL;
 	m_current_weapon = NULL;
+
+	m_menu_back = new TableBackground(1, m_screen_width);
+	m_menu_back->set_row_height(0, m_screen_height);
+	m_menu_back->set_cell_color(0, Color(0, 0, 0, 0.6));
+	m_menu_back->set_border_width(0);
+	m_menu_back->set_priority(10);
+	m_menu_back->set_center_x(0);
+	m_window->register_graphic(m_menu_back, GameWindow::LAYER_MENU);
 
 	m_font = new Font(m_path_manager.data_path("JuraMedium.ttf", "fonts"), 14);
 	m_bold_font = new Font(m_path_manager.data_path("JuraDemiBold.ttf", "fonts"), 14);
@@ -287,13 +298,13 @@ void GameController::init(GameWindow* window) {
 	
 	m_crosshairs = new Sprite(m_path_manager.data_path("crosshairs.png", "sprites"));
 	m_crosshairs->set_priority(-10);
-	m_window->register_hud_graphic(m_crosshairs);
+	m_window->register_graphic(m_crosshairs, GameWindow::LAYER_SUPER);
 	
 	m_logo = new Sprite(m_path_manager.data_path("legesmotuslogo.png", "sprites"));
 	m_logo->set_x(m_screen_width/2);
 	m_logo->set_y(100);
 	m_logo->set_priority(0);
-	m_window->register_hud_graphic(m_logo);
+	m_window->register_graphic(m_logo, GameWindow::LAYER_MENU);
 	
 	// Set the text manager to draw a shadow behind everything.
 	ConstantCurve curve(0, 1);
@@ -328,7 +339,7 @@ void GameController::init(GameWindow* window) {
 	m_main_menu.add_item(TextMenuItem::with_manager(m_text_manager, string("v. ").append(m_client_version), "", m_screen_width - 90, m_screen_height - 40, MenuItem::STATIC));
 	m_text_manager->set_active_font(m_menu_font);
 
-	m_window->register_hud_graphic(m_main_menu.get_graphic_group());
+	m_window->register_graphic(m_main_menu.get_graphic_group(), GameWindow::LAYER_MENU);
 
 	// Options menu
 	ListMenuItem* current_lmi;
@@ -393,7 +404,7 @@ void GameController::init(GameWindow* window) {
 
 	// Initialize the name input box
 	m_name_bar_back = new TableBackground(1, 0);
-	m_name_bar_back->set_cell_color(0, TEXT_BG_COLOR);
+	m_name_bar_back->set_cell_color(0, Color(0, 0, 0, 0));
 	m_name_bar_back->set_border_color(Color(0, 0, 0, 0));
 	m_name_input = new TextInput(m_text_manager, 210, 200);
 	m_name_input->set_window(m_window);
@@ -440,7 +451,7 @@ void GameController::init(GameWindow* window) {
 			current_lmi->set_default_index(i);
 		}
 	}
-	m_window->register_hud_graphic(m_options_menu.get_graphic_group());
+	m_window->register_graphic(m_options_menu.get_graphic_group(), GameWindow::LAYER_MENU);
 	toggle_options_menu(false);
 	
 	// Initialize the weapon selector menu.
@@ -469,7 +480,7 @@ void GameController::init(GameWindow* window) {
 	m_overlay_background->set_x(m_screen_width/2);
 	m_overlay_background->set_border_collapse(true);
 	m_overlay_background->set_corner_radius(20);
-	m_window->register_hud_graphic(m_overlay_background);
+	m_window->register_graphic(m_overlay_background, GameWindow::LAYER_HUD);
 	
 	m_overlay_scrollbar = new ScrollBar();
 	m_overlay_scrollbar->set_priority(-3);
@@ -489,15 +500,15 @@ void GameController::init(GameWindow* window) {
 	m_overlay_scrollarea->set_center_x(m_overlay_scrollarea->get_width()/2);
 	m_overlay_scrollarea->set_center_y(0);
 
-	m_window->register_hud_graphic(m_overlay_scrollbar);
-	m_window->register_hud_graphic(m_overlay_scrollarea);
+	m_window->register_graphic(m_overlay_scrollbar, GameWindow::LAYER_HUD);
+	m_window->register_graphic(m_overlay_scrollarea, GameWindow::LAYER_HUD);
 	
-	m_overlay_items["red label"] = m_text_manager->place_string("Red Team:", m_overlay_background->get_x() - m_overlay_background->get_image_width()/2 + 10, 115, TextManager::LEFT, TextManager::LAYER_HUD, TEXT_LAYER);
-	m_overlay_items["blue label"] = m_text_manager->place_string("Blue Team:", m_overlay_background->get_x(), 115, TextManager::LEFT, TextManager::LAYER_HUD, TEXT_LAYER);
+	m_overlay_items["red label"] = m_text_manager->place_string("Red Team:", m_overlay_background->get_x() - m_overlay_background->get_image_width()/2 + 10, 115, TextManager::LEFT, GameWindow::LAYER_HUD, TEXT_LAYER);
+	m_overlay_items["blue label"] = m_text_manager->place_string("Blue Team:", m_overlay_background->get_x(), 115, TextManager::LEFT, GameWindow::LAYER_HUD, TEXT_LAYER);
 	
 	m_text_manager->set_active_font(m_medium_font);
-	m_overlay_items["name label"] = m_text_manager->place_string("Name", m_overlay_background->get_x() - m_overlay_background->get_image_width()/2 + 10, 190, TextManager::LEFT, TextManager::LAYER_HUD, TEXT_LAYER);
-	m_overlay_items["score label"] = m_text_manager->place_string("Score", m_overlay_background->get_x(), 190, TextManager::LEFT, TextManager::LAYER_HUD, TEXT_LAYER);
+	m_overlay_items["name label"] = m_text_manager->place_string("Name", m_overlay_background->get_x() - m_overlay_background->get_image_width()/2 + 10, 190, TextManager::LEFT, GameWindow::LAYER_HUD, TEXT_LAYER);
+	m_overlay_items["score label"] = m_text_manager->place_string("Score", m_overlay_background->get_x(), 190, TextManager::LEFT, GameWindow::LAYER_HUD, TEXT_LAYER);
 	
 	change_team_scores(0, 0);
 	update_individual_scores();
@@ -505,7 +516,7 @@ void GameController::init(GameWindow* window) {
 	// Initialize the gate warning.
 	m_text_manager->set_active_font(m_large_menu_font);
 	m_text_manager->set_active_color(1.0, 0.4, 0.4);
-	m_gate_warning = m_text_manager->place_string("Your gate is going down!", m_screen_width/2, m_screen_height - 200, TextManager::CENTER, TextManager::LAYER_HUD);
+	m_gate_warning = m_text_manager->place_string("Your gate is going down!", m_screen_width/2, m_screen_height - 200, TextManager::CENTER, GameWindow::LAYER_HUD);
 	m_gate_warning->set_invisible(true);
 	m_gate_warning_time = 0;
 	
@@ -516,14 +527,14 @@ void GameController::init(GameWindow* window) {
 	m_blue_gate_status_rect->set_cell_color(0, Color(0.0, 0.0, 1.0, 0.5));
 	m_blue_gate_status_rect->set_x(m_screen_width - 2 * m_blue_gate_status_rect->get_image_width() - 20);
 	m_blue_gate_status_rect->set_y(m_screen_height - m_blue_gate_status_rect->get_image_height() - 20);
-	m_window->register_hud_graphic(m_blue_gate_status_rect);
+	m_window->register_graphic(m_blue_gate_status_rect, GameWindow::LAYER_HUD);
 	m_blue_gate_status_rect_back = new TableBackground(1, GATE_STATUS_RECT_WIDTH);
 	m_blue_gate_status_rect_back->set_row_height(0, STATUS_BAR_HEIGHT);
 	m_blue_gate_status_rect_back->set_priority(0);
 	m_blue_gate_status_rect_back->set_cell_color(0, Color(0.1, 0.1, 0.1, 0.5));
 	m_blue_gate_status_rect_back->set_x(m_screen_width - 2 * m_blue_gate_status_rect->get_image_width() - 20);
 	m_blue_gate_status_rect_back->set_y(m_screen_height - m_blue_gate_status_rect->get_image_height() - 20);
-	m_window->register_hud_graphic(m_blue_gate_status_rect_back);
+	m_window->register_graphic(m_blue_gate_status_rect_back, GameWindow::LAYER_HUD);
 	
 	m_red_gate_status_rect = new TableBackground(1, GATE_STATUS_RECT_WIDTH);
 	m_red_gate_status_rect->set_row_height(0, STATUS_BAR_HEIGHT);
@@ -531,20 +542,20 @@ void GameController::init(GameWindow* window) {
 	m_red_gate_status_rect->set_cell_color(0, Color(1.0, 0.0, 0.0, 0.5));
 	m_red_gate_status_rect->set_x(m_screen_width - m_red_gate_status_rect->get_image_width() - 10);
 	m_red_gate_status_rect->set_y(m_screen_height - m_red_gate_status_rect->get_image_height() - 20);
-	m_window->register_hud_graphic(m_red_gate_status_rect);
+	m_window->register_graphic(m_red_gate_status_rect, GameWindow::LAYER_HUD);
 	m_red_gate_status_rect_back = new TableBackground(1, GATE_STATUS_RECT_WIDTH);
 	m_red_gate_status_rect_back->set_row_height(0, STATUS_BAR_HEIGHT);
 	m_red_gate_status_rect_back->set_priority(0);
 	m_red_gate_status_rect_back->set_cell_color(0, Color(0.1, 0.1, 0.1, 0.5));
 	m_red_gate_status_rect_back->set_x(m_screen_width - m_red_gate_status_rect->get_image_width() - 10);
 	m_red_gate_status_rect_back->set_y(m_screen_height - m_red_gate_status_rect->get_image_height() - 20);
-	m_window->register_hud_graphic(m_red_gate_status_rect_back);
+	m_window->register_graphic(m_red_gate_status_rect_back, GameWindow::LAYER_HUD);
 	
 	// Initialize the gate status bar labels.
 	m_text_manager->set_active_color(TEXT_COLOR);
 	m_text_manager->set_active_font(m_font);
-	m_blue_gate_status_text = m_text_manager->place_string("Blue Gate", m_blue_gate_status_rect->get_x() + 1, m_blue_gate_status_rect->get_y() + m_blue_gate_status_rect->get_image_height()/4, TextManager::CENTER, TextManager::LAYER_HUD, TEXT_LAYER);
-	m_red_gate_status_text = m_text_manager->place_string("Red Gate", m_red_gate_status_rect->get_x() + 2, m_red_gate_status_rect->get_y() + m_red_gate_status_rect->get_image_height()/4, TextManager::CENTER, TextManager::LAYER_HUD, TEXT_LAYER);
+	m_blue_gate_status_text = m_text_manager->place_string("Blue Gate", m_blue_gate_status_rect->get_x() + 1, m_blue_gate_status_rect->get_y() + m_blue_gate_status_rect->get_image_height()/4, TextManager::CENTER, GameWindow::LAYER_HUD, TEXT_LAYER);
+	m_red_gate_status_text = m_text_manager->place_string("Red Gate", m_red_gate_status_rect->get_x() + 2, m_red_gate_status_rect->get_y() + m_red_gate_status_rect->get_image_height()/4, TextManager::CENTER, GameWindow::LAYER_HUD, TEXT_LAYER);
 	
 	// Initialize the frozen status bar.
 	m_frozen_status_rect = new TableBackground(1, FROZEN_STATUS_RECT_WIDTH);
@@ -553,19 +564,19 @@ void GameController::init(GameWindow* window) {
 	m_frozen_status_rect->set_cell_color(0, Color(0.0, 0.5, 1.0, 0.5));
 	m_frozen_status_rect->set_x(m_screen_width/2);
 	m_frozen_status_rect->set_y(m_screen_height/2 + 50);
-	m_window->register_hud_graphic(m_frozen_status_rect);
+	m_window->register_graphic(m_frozen_status_rect, GameWindow::LAYER_HUD);
 	m_frozen_status_rect_back = new TableBackground(1, FROZEN_STATUS_RECT_WIDTH);
 	m_frozen_status_rect_back->set_row_height(0, 20);
 	m_frozen_status_rect_back->set_priority(1);
 	m_frozen_status_rect_back->set_cell_color(0, Color(0.1, 0.1, 0.1, 0.5));
 	m_frozen_status_rect_back->set_x(m_frozen_status_rect->get_x());
 	m_frozen_status_rect_back->set_y(m_frozen_status_rect->get_y());
-	m_window->register_hud_graphic(m_frozen_status_rect_back);
+	m_window->register_graphic(m_frozen_status_rect_back, GameWindow::LAYER_HUD);
 	
 	// Initialize the frozen status bar label.
 	m_text_manager->set_active_color(1.0, 1.0, 1.0);
 	m_text_manager->set_active_font(m_font);
-	m_frozen_status_text = m_text_manager->place_string("Frozen", m_frozen_status_rect->get_x() + 1, m_frozen_status_rect->get_y() + 2, TextManager::CENTER, TextManager::LAYER_HUD, TextManager::LAYER_MAIN-1);
+	m_frozen_status_text = m_text_manager->place_string("Frozen", m_frozen_status_rect->get_x() + 1, m_frozen_status_rect->get_y() + 2, TextManager::CENTER, GameWindow::LAYER_HUD, TEXT_LAYER);
 
 	// Initialize the energy bar.
 	m_energy_text = NULL;
@@ -575,14 +586,14 @@ void GameController::init(GameWindow* window) {
 	m_energy_bar->set_cell_color(0, BRIGHT_GREEN);
 	m_energy_bar->set_x(ENERGY_BAR_WIDTH);
 	m_energy_bar->set_y(m_screen_height - m_energy_bar->get_image_height() - 20);
-	m_window->register_hud_graphic(m_energy_bar);
+	m_window->register_graphic(m_energy_bar, GameWindow::LAYER_HUD);
 	m_energy_bar_back = new TableBackground(1, ENERGY_BAR_WIDTH);
 	m_energy_bar_back->set_row_height(0, STATUS_BAR_HEIGHT);
 	m_energy_bar_back->set_priority(0);
 	m_energy_bar_back->set_cell_color(0, Color(0.1, 0.1, 0.1, 0.5));
 	m_energy_bar_back->set_x(m_energy_bar->get_x());
 	m_energy_bar_back->set_y(m_energy_bar->get_y());
-	m_window->register_hud_graphic(m_energy_bar_back);
+	m_window->register_graphic(m_energy_bar_back, GameWindow::LAYER_HUD);
 	
 	update_energy_bar(0);
 	
@@ -593,14 +604,14 @@ void GameController::init(GameWindow* window) {
 	m_cooldown_bar->set_cell_color(0, BRIGHT_ORANGE);
 	m_cooldown_bar->set_x(m_energy_bar->get_x() + ENERGY_BAR_WIDTH/2 + m_cooldown_bar->get_image_width()/2 + 20);
 	m_cooldown_bar->set_y(m_energy_bar->get_y() + m_energy_bar->get_image_height() - m_cooldown_bar->get_image_height());
-	m_window->register_hud_graphic(m_cooldown_bar);
+	m_window->register_graphic(m_cooldown_bar, GameWindow::LAYER_HUD);
 	m_cooldown_bar_back = new TableBackground(1, COOLDOWN_BAR_WIDTH);
 	m_cooldown_bar_back->set_row_height(0, STATUS_BAR_HEIGHT/2);
 	m_cooldown_bar_back->set_priority(0);
 	m_cooldown_bar_back->set_cell_color(0, Color(0.1, 0.1, 0.1, 0.5));
 	m_cooldown_bar_back->set_x(m_cooldown_bar->get_x());
 	m_cooldown_bar_back->set_y(m_cooldown_bar->get_y());
-	m_window->register_hud_graphic(m_cooldown_bar_back);
+	m_window->register_graphic(m_cooldown_bar_back, GameWindow::LAYER_HUD);
 	
 	update_cooldown_bar(0);
 
@@ -625,7 +636,7 @@ void GameController::init(GameWindow* window) {
 	m_chat_window_back->set_x(17);
 	m_chat_window_back->set_y(17);
 	m_chat_window_back->set_invisible(true);
-	m_window->register_hud_graphic(m_chat_window_back);
+	m_window->register_graphic(m_chat_window_back, GameWindow::LAYER_SUPER);
 
 	// TODO: add dynamically, not at allocation
 	if (m_configuration->get_bool_value("text_sliding")) {
@@ -841,7 +852,7 @@ void GameController::run(int lockfps) {
 				m_shots[i].first->set_scale_y(shot_curve);
 				m_shots[i].first->set_rotation(shot_time*90.0);
 				if (m_shots[i].second < currframe) {
-					m_window->unregister_graphic(m_shots[i].first);
+					m_window->unregister_graphic(m_shots[i].first, GameWindow::LAYER_GAME);
 					delete m_shots[i].first;
 					m_shots.erase(m_shots.begin() + i);
 				}
@@ -917,7 +928,7 @@ void GameController::run(int lockfps) {
 			
 			// Show and hide elements depending on game state (started, menus, etc.)
 			if (m_game_state == SHOW_MENUS) {
-				if (m_map != NULL) {
+				/*if (m_map != NULL) {
 					m_map->set_visible(false);
 				}
 				
@@ -925,18 +936,19 @@ void GameController::run(int lockfps) {
 				
 				for ( unsigned int i = 0; i < m_shots.size(); i++ ) {
 					m_shots[i].first->set_invisible(true);
-				}
+				}*/
 				
 				set_hud_visible(false);
 				
 				m_logo->set_invisible(false);
+				m_window->set_layer_visible(true, GameWindow::LAYER_MENU);
 				
 				toggle_main_menu(true);
 				toggle_options_menu(false);
 				m_server_browser->set_visible(false);
 				m_weapon_selector->get_graphic_group()->set_invisible(true);
 			} else if (m_game_state == SHOW_OPTIONS_MENU) {
-				if (m_map != NULL) {
+				/*if (m_map != NULL) {
 					m_map->set_visible(false);
 				}
 				
@@ -944,18 +956,19 @@ void GameController::run(int lockfps) {
 				
 				for ( unsigned int i = 0; i < m_shots.size(); i++ ) {
 					m_shots[i].first->set_invisible(true);
-				}
+				}*/
 				
 				set_hud_visible(false);
 				
 				m_logo->set_invisible(false);
+				m_window->set_layer_visible(true, GameWindow::LAYER_MENU);
 				
 				toggle_main_menu(false);
 				toggle_options_menu(true);
 				m_server_browser->set_visible(false);
 				m_weapon_selector->get_graphic_group()->set_invisible(true);
 			} else if (m_game_state == SHOW_SERVER_BROWSER) {
-				if (m_map != NULL) {
+				/*if (m_map != NULL) {
 					m_map->set_visible(false);
 				}
 				
@@ -963,18 +976,19 @@ void GameController::run(int lockfps) {
 				
 				for ( unsigned int i = 0; i < m_shots.size(); i++ ) {
 					m_shots[i].first->set_invisible(true);
-				}
+				}*/
 				
 				set_hud_visible(false);
 				
 				m_logo->set_invisible(false);
+				m_window->set_layer_visible(true, GameWindow::LAYER_MENU);
 				
 				toggle_main_menu(false);
 				toggle_options_menu(false);
 				m_server_browser->set_visible(true);
 				m_weapon_selector->get_graphic_group()->set_invisible(true);
 			} else {
-				if (m_map != NULL) {
+				/*if (m_map != NULL) {
 					m_map->set_visible(true);
 				}
 				
@@ -982,15 +996,16 @@ void GameController::run(int lockfps) {
 				
 				for ( unsigned int i = 0; i < m_shots.size(); i++ ) {
 					m_shots[i].first->set_invisible(false);
-				}
+				}*/
 				
 				set_hud_visible(true);
 				
-				m_logo->set_invisible(true);
+				//m_logo->set_invisible(true);
+				m_window->set_layer_visible(false, GameWindow::LAYER_MENU);
 				
-				toggle_main_menu(false);
-				toggle_options_menu(false);
-				m_server_browser->set_visible(false);
+				//toggle_main_menu(false);
+				//toggle_options_menu(false);
+				//m_server_browser->set_visible(false);
 			}
 			
 			m_window->redraw();
@@ -1006,7 +1021,7 @@ void GameController::run(int lockfps) {
 void GameController::init_weapon_selector() {
 	// Initialize the weapon selector menu.
 	if (m_weapon_selector != NULL) {
-		m_window->unregister_hud_graphic(m_weapon_selector->get_graphic_group());
+		m_window->unregister_graphic(m_weapon_selector->get_graphic_group(), GameWindow::LAYER_HUD);
 		delete m_weapon_selector;
 	}
 	
@@ -1031,7 +1046,7 @@ void GameController::init_weapon_selector() {
 	}
 	
 	m_weapon_selector->get_graphic_group()->set_invisible(true);
-	m_window->register_hud_graphic(m_weapon_selector->get_graphic_group());
+	m_window->register_graphic(m_weapon_selector->get_graphic_group(), GameWindow::LAYER_HUD);
 }
 
 /*
@@ -1118,7 +1133,7 @@ void GameController::update_energy_bar(int new_energy) {
 	
 	ostringstream energystring;
 	energystring << "E: " << new_energy;
-	m_energy_text = m_text_manager->place_string(energystring.str(), m_energy_bar->get_x(), m_energy_bar->get_y() + STATUS_BAR_HEIGHT/2, TextManager::CENTER, TextManager::LAYER_HUD, TEXT_LAYER);
+	m_energy_text = m_text_manager->place_string(energystring.str(), m_energy_bar->get_x(), m_energy_bar->get_y() + STATUS_BAR_HEIGHT/2, TextManager::CENTER, GameWindow::LAYER_HUD, TEXT_LAYER);
 	m_energy_text->set_y(m_energy_bar->get_y() + STATUS_BAR_HEIGHT/2 - m_energy_text->get_image_height()/2);
 }
 
@@ -1978,7 +1993,7 @@ void GameController::show_bullet_impact(Point position, const char* sprite_name)
 	this_shot->set_invisible(false);
 	pair<Graphic*, unsigned int> new_shot(this_shot, get_ticks() + SHOT_DISPLAY_TIME);
 	m_shots.push_back(new_shot);
-	m_window->register_graphic(this_shot);
+	m_window->register_graphic(this_shot, GameWindow::LAYER_GAME);
 }
 
 /*
@@ -2051,7 +2066,7 @@ void GameController::change_team_scores(int bluescore, int redscore) {
 		
 		stringstream redscoreprinter;
 		redscoreprinter << redscore;
-	 	m_overlay_items["red score"] = m_text_manager->place_string(redscoreprinter.str(), m_overlay_items["red label"]->get_x() + m_overlay_items["red label"]->get_image_width() + 10, 115, TextManager::LEFT, TextManager::LAYER_HUD, TEXT_LAYER);
+	 	m_overlay_items["red score"] = m_text_manager->place_string(redscoreprinter.str(), m_overlay_items["red label"]->get_x() + m_overlay_items["red label"]->get_image_width() + 10, 115, TextManager::LEFT, GameWindow::LAYER_HUD, TEXT_LAYER);
 	}
 	
 	if (bluescore != -1) {
@@ -2061,7 +2076,7 @@ void GameController::change_team_scores(int bluescore, int redscore) {
 		
 		stringstream bluescoreprinter;
 		bluescoreprinter << bluescore;
-		m_overlay_items["blue score"] = m_text_manager->place_string(bluescoreprinter.str(), m_overlay_items["blue label"]->get_x() + m_overlay_items["blue label"]->get_image_width() + 10, 115, TextManager::LEFT, TextManager::LAYER_HUD, TEXT_LAYER);
+		m_overlay_items["blue score"] = m_text_manager->place_string(bluescoreprinter.str(), m_overlay_items["blue label"]->get_x() + m_overlay_items["blue label"]->get_image_width() + 10, 115, TextManager::LEFT, GameWindow::LAYER_HUD, TEXT_LAYER);
 	}
 
 	m_text_manager->set_active_font(m_font);
@@ -2261,13 +2276,13 @@ void GameController::welcome(PacketReader& reader) {
 		m_text_manager->set_active_color(RED_COLOR);
 		m_text_manager->set_shadow_color(RED_SHADOW);
 	}
-	m_window->register_graphic(m_players[m_player_id].get_sprite());
+	m_window->register_graphic(m_players[m_player_id].get_sprite(), GameWindow::LAYER_GAME);
 	m_radar->add_blip(m_player_id, team, 0, 0);
 	// Because our blip never gets "activated", and if the mode is aural, we won't get any alpha, so add some
 	m_radar->set_blip_alpha(m_player_id, 1.0);
 	
 	m_players[m_player_id].set_radius(30);
-	m_players[m_player_id].set_name_sprite(m_text_manager->place_string(m_players[m_player_id].get_name(), m_screen_width/2, (m_screen_height/2)-(m_players[m_player_id].get_radius()+30), TextManager::CENTER, TextManager::LAYER_MAIN));
+	m_players[m_player_id].set_name_sprite(m_text_manager->place_string(m_players[m_player_id].get_name(), m_screen_width/2, (m_screen_height/2)-(m_players[m_player_id].get_radius()+30), TextManager::CENTER, GameWindow::LAYER_GAME));
 	
 	send_my_player_update();
 	
@@ -2319,8 +2334,8 @@ void GameController::announce(PacketReader& reader) {
 	m_radar->add_blip(playerid,team,0,0);
 	
 	// Register the player sprite with the window
-	m_window->register_graphic(m_players[playerid].get_sprite());
-	m_players[playerid].set_name_sprite(m_text_manager->place_string(m_players[playerid].get_name(), m_players[playerid].get_x(), m_players[playerid].get_y()-(m_players[playerid].get_radius()+30), TextManager::CENTER, TextManager::LAYER_MAIN));
+	m_window->register_graphic(m_players[playerid].get_sprite(), GameWindow::LAYER_GAME);
+	m_players[playerid].set_name_sprite(m_text_manager->place_string(m_players[playerid].get_name(), m_players[playerid].get_x(), m_players[playerid].get_y()-(m_players[playerid].get_radius()+30), TextManager::CENTER, GameWindow::LAYER_GAME));
 	m_players[playerid].set_radius(40);
 	m_text_manager->set_shadow_color(TEXT_SHADOW);
 }
@@ -2482,7 +2497,7 @@ void GameController::leave(PacketReader& reader) {
 		}
 	
 		m_text_manager->remove_string(player->get_name_sprite());
-		m_window->unregister_graphic(player->get_sprite());
+		m_window->unregister_graphic(player->get_sprite(), GameWindow::LAYER_GAME);
 		m_radar->remove_blip(playerid);
 		delete_individual_score(*player);
 		delete player->get_sprite();
@@ -3005,7 +3020,7 @@ void GameController::team_change(PacketReader& reader) {
 		
 		// Remove the name and sprite.
 		m_text_manager->remove_string(player->get_name_sprite());
-		m_window->unregister_graphic(player->get_sprite());
+		m_window->unregister_graphic(player->get_sprite(), GameWindow::LAYER_GAME);
 		m_radar->remove_blip(playerid);
 		delete player->get_sprite();
 
@@ -3025,8 +3040,9 @@ void GameController::team_change(PacketReader& reader) {
 			new_weapon->select(*player, *this);
 		}
 		
-		m_window->register_graphic(player->get_sprite());
-		player->set_name_sprite(m_text_manager->place_string(player->get_name(), player->get_x(), player->get_y()-(player->get_radius()+30), TextManager::CENTER, TextManager::LAYER_MAIN));
+		player->get_sprite()->set_invisible(false);
+		m_window->register_graphic(player->get_sprite(), GameWindow::LAYER_GAME);
+		player->set_name_sprite(m_text_manager->place_string(player->get_name(), player->get_x(), player->get_y()-(player->get_radius()+30), TextManager::CENTER, GameWindow::LAYER_GAME));
 		update_individual_scores();
 	}
 }
@@ -3090,7 +3106,7 @@ void GameController::recreate_name(GraphicalPlayer* player) {
 		m_font->set_font_style(false, true);
 		name_string = "[" + name_string + "]";
 	}
-	player->set_name_sprite(m_text_manager->place_string(name_string, player->get_x(), player->get_y()-(player->get_radius()+30), TextManager::CENTER, TextManager::LAYER_MAIN));
+	player->set_name_sprite(m_text_manager->place_string(name_string, player->get_x(), player->get_y()-(player->get_radius()+30), TextManager::CENTER, GameWindow::LAYER_GAME));
 	m_font->set_font_style(false, false);		
 	m_text_manager->set_shadow_color(TEXT_SHADOW);
 }
@@ -3116,7 +3132,7 @@ void GameController::display_message(string message, Color color, Color shadow, 
 		m_text_manager->set_active_font(m_font);
 	}
 	int y = 20 + (m_font->ascent() + m_font->descent() + 5) * m_messages.size();
-	Text* message_sprite = m_text_manager->place_string(message, 20, y, TextManager::LEFT, TextManager::LAYER_HUD);
+	Text* message_sprite = m_text_manager->place_string(message, 20, y, TextManager::LEFT, GameWindow::LAYER_SUPER);
 	if (!message_sprite) {
 		return;
 	}
@@ -3327,7 +3343,7 @@ void	GameController::clear_players() {
 		for ( it=m_players.begin() ; it != m_players.end(); it++ ) {
 			const GraphicalPlayer& currplayer = (*it).second;
 			m_text_manager->remove_string(m_players[currplayer.get_id()].get_name_sprite());
-			m_window->unregister_graphic(m_players[currplayer.get_id()].get_sprite());
+			m_window->unregister_graphic(m_players[currplayer.get_id()].get_sprite(), GameWindow::LAYER_GAME);
 			m_radar->remove_blip(currplayer.get_id());
 			delete_individual_score(m_players[currplayer.get_id()]);
 			delete m_players[currplayer.get_id()].get_sprite();
@@ -3625,13 +3641,13 @@ void	GameController::update_curr_weapon_image() {
 		}
 		return;
 	}
-	m_window->unregister_hud_graphic(m_curr_weapon_image);
+	m_window->unregister_graphic(m_curr_weapon_image, GameWindow::LAYER_HUD);
 	delete m_curr_weapon_image;
 	m_curr_weapon_image = m_graphics_cache.new_graphic<Sprite>(m_path_manager.data_path(m_current_weapon->hud_graphic(), "sprites"));
 	m_curr_weapon_image->set_x(m_cooldown_bar->get_x());
 	m_curr_weapon_image->set_y(m_cooldown_bar->get_y() - m_curr_weapon_image->get_image_height()/2 - 5);
 	m_curr_weapon_image->set_invisible(false);
-	m_window->register_hud_graphic(m_curr_weapon_image);
+	m_window->register_graphic(m_curr_weapon_image, GameWindow::LAYER_HUD);
 
 	if (Player* curr_player = get_player_by_id(m_player_id)) {
 		curr_player->set_current_weapon_id(m_current_weapon->get_id());

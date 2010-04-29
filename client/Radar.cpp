@@ -172,9 +172,9 @@ void Radar::update(uint64_t tick) {
 }
 
 void Radar::register_with_window(GameWindow* window) {
-	window->register_hud_graphic(m_whole);
+	window->register_graphic(m_whole, GameWindow::LAYER_HUD);
 }
 
 void Radar::unregister_with_window(GameWindow* window) {
-	window->unregister_hud_graphic(m_whole);
+	window->unregister_graphic(m_whole, GameWindow::LAYER_HUD);
 }

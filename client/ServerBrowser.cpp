@@ -58,7 +58,7 @@ ServerBrowser::ServerBrowser(GameController& parent, GameWindow* window, TextMan
 	m_background->set_x(m_screen_width/2);
 	m_background->set_border_collapse(true);
 	m_background->set_corner_radius(20);
-	m_window->register_hud_graphic(m_background);
+	m_window->register_graphic(m_background, GameWindow::LAYER_MENU);
 	
 	m_scrollbar = new ScrollBar();
 	m_scrollbar->set_priority(-3);
@@ -78,8 +78,8 @@ ServerBrowser::ServerBrowser(GameController& parent, GameWindow* window, TextMan
 	m_scrollarea->set_center_x(m_scrollarea->get_width()/2);
 	m_scrollarea->set_center_y(0);
 	
-	m_window->register_hud_graphic(m_scrollbar);
-	m_window->register_hud_graphic(m_scrollarea);
+	m_window->register_graphic(m_scrollbar, GameWindow::LAYER_MENU);
+	m_window->register_graphic(m_scrollarea, GameWindow::LAYER_MENU);
 	
 	m_selection = new TableBackground(1, m_scrollbar->get_x() - (m_background->get_x() - m_background->get_image_width()/2) - 21);
 	m_selection->set_row_height(0, 25);
@@ -87,7 +87,7 @@ ServerBrowser::ServerBrowser(GameController& parent, GameWindow* window, TextMan
 	m_selection->set_cell_color(0, Color(0.0, 0.0, 0.0, 0.8));
 	m_selection->set_x(m_background->get_x() - 15);
 	m_selection->set_y(145);
-	m_window->register_hud_graphic(m_selection);
+	m_window->register_graphic(m_selection, GameWindow::LAYER_MENU);
 	
 	for (int i = 0; i < 3; i++) {
 		m_buttons.push_back(new TableBackground(1, 100));
@@ -98,19 +98,19 @@ ServerBrowser::ServerBrowser(GameController& parent, GameWindow* window, TextMan
 		m_buttons[i]->set_cell_color(0, Color(0.1,0.1,0.15,0.8));
 		m_buttons[i]->set_x(100 + 100 * i);
 		m_buttons[i]->set_y(m_screen_height - m_buttons[i]->get_image_height() - 22);
-		m_window->register_hud_graphic(m_buttons[i]);
+		m_window->register_graphic(m_buttons[i], GameWindow::LAYER_MENU);
 	}
 	
 	m_text_manager->set_active_font(m_medium_font);
 	
-	m_items["namelabel"] = m_text_manager->place_string("Name", m_background->get_x() - m_background->get_image_width()/2 + 10, 110, TextManager::LEFT, TextManager::LAYER_HUD, TEXT_LAYER);
-	m_items["maplabel"] = m_text_manager->place_string("Map", m_background->get_x(), 110, TextManager::LEFT, TextManager::LAYER_HUD, TEXT_LAYER);
-	m_items["uptimelabel"] = m_text_manager->place_string("Uptime", m_background->get_x() + m_background->get_image_width()/7, 110, TextManager::LEFT, TextManager::LAYER_HUD, TEXT_LAYER);
-	m_items["playerslabel"] = m_text_manager->place_string("Players", m_background->get_x() + m_background->get_image_width()/4, 110, TextManager::LEFT, TextManager::LAYER_HUD, TEXT_LAYER);
-	m_items["pinglabel"] = m_text_manager->place_string("Ping", m_background->get_x() + m_background->get_image_width()/2 - 80, 110, TextManager::LEFT, TextManager::LAYER_HUD, TEXT_LAYER);
-	m_items["backbutton"] = m_text_manager->place_string("Back", m_buttons[0]->get_x() - m_buttons[0]->get_image_width()/2 + 25, m_buttons[0]->get_y() + 8, TextManager::LEFT, TextManager::LAYER_HUD, TEXT_LAYER);
-	m_items["refreshbutton"] = m_text_manager->place_string("Refresh", m_buttons[1]->get_x() - m_buttons[1]->get_image_width()/2 + 10, m_buttons[1]->get_y() + 8, TextManager::LEFT, TextManager::LAYER_HUD, TEXT_LAYER);
-	m_items["connectbutton"] = m_text_manager->place_string("Connect", m_buttons[2]->get_x() - m_buttons[2]->get_image_width()/2 + 6, m_buttons[2]->get_y() + 8, TextManager::LEFT, TextManager::LAYER_HUD, TEXT_LAYER);
+	m_items["namelabel"] = m_text_manager->place_string("Name", m_background->get_x() - m_background->get_image_width()/2 + 10, 110, TextManager::LEFT, GameWindow::LAYER_MENU, TEXT_LAYER);
+	m_items["maplabel"] = m_text_manager->place_string("Map", m_background->get_x(), 110, TextManager::LEFT, GameWindow::LAYER_MENU, TEXT_LAYER);
+	m_items["uptimelabel"] = m_text_manager->place_string("Uptime", m_background->get_x() + m_background->get_image_width()/7, 110, TextManager::LEFT, GameWindow::LAYER_MENU, TEXT_LAYER);
+	m_items["playerslabel"] = m_text_manager->place_string("Players", m_background->get_x() + m_background->get_image_width()/4, 110, TextManager::LEFT, GameWindow::LAYER_MENU, TEXT_LAYER);
+	m_items["pinglabel"] = m_text_manager->place_string("Ping", m_background->get_x() + m_background->get_image_width()/2 - 80, 110, TextManager::LEFT, GameWindow::LAYER_MENU, TEXT_LAYER);
+	m_items["backbutton"] = m_text_manager->place_string("Back", m_buttons[0]->get_x() - m_buttons[0]->get_image_width()/2 + 25, m_buttons[0]->get_y() + 8, TextManager::LEFT, GameWindow::LAYER_MENU, TEXT_LAYER);
+	m_items["refreshbutton"] = m_text_manager->place_string("Refresh", m_buttons[1]->get_x() - m_buttons[1]->get_image_width()/2 + 10, m_buttons[1]->get_y() + 8, TextManager::LEFT, GameWindow::LAYER_MENU, TEXT_LAYER);
+	m_items["connectbutton"] = m_text_manager->place_string("Connect", m_buttons[2]->get_x() - m_buttons[2]->get_image_width()/2 + 6, m_buttons[2]->get_y() + 8, TextManager::LEFT, GameWindow::LAYER_MENU, TEXT_LAYER);
 	
 	m_server_list_count = 0;
 }
@@ -118,13 +118,13 @@ ServerBrowser::ServerBrowser(GameController& parent, GameWindow* window, TextMan
 ServerBrowser::~ServerBrowser() {
 	this->clear();
 
-	m_window->unregister_hud_graphic(m_background);
+	m_window->unregister_graphic(m_background, GameWindow::LAYER_MENU);
 	delete m_background;
-	m_window->unregister_hud_graphic(m_selection);
+	m_window->unregister_graphic(m_selection, GameWindow::LAYER_MENU);
 	delete m_selection;
-	m_window->unregister_hud_graphic(m_scrollbar);
+	m_window->unregister_graphic(m_scrollbar, GameWindow::LAYER_MENU);
 	delete m_scrollbar;
-	m_window->unregister_hud_graphic(m_scrollarea);
+	m_window->unregister_graphic(m_scrollarea, GameWindow::LAYER_MENU);
 	delete m_scrollarea;
 	
 	m_buttons.clear();

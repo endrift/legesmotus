@@ -32,26 +32,36 @@
 namespace LM {
 	class GameWindow {
 	public:
+		enum Layer {
+			LAYER_ALL	= -1,
+			LAYER_GAME	=  0,
+			LAYER_HUD	=  1,
+			LAYER_MENU	=  2,
+			LAYER_SUPER	=  3,
+		};
 		static const int MAX_MSAA;
 
 		static const int FULLSCREEN;
 		static const int VSYNC;
 
 	private:
+		struct LayerStore {
+			double			offset_x;
+			double			offset_y;
+			std::list<Graphic*>	graphics;
+			bool			visible;
+		};
+
 		static GameWindow*	m_instance;
 		SDL_Surface*		m_context;
 		int			m_width;
 		int			m_height;
 		int			m_depth;
 		bool			m_fullscreen;
-		
-		std::list<Graphic*>		m_graphics;
-		std::list<Graphic*>		m_hud_graphics;
+
+		LayerStore		m_layers[4];
 	
 		static SDL_Surface*	m_icon;
-	
-		double			m_offset_x;
-		double			m_offset_y;
 	
 		GameWindow(int width, int height, int depth, int flags, int msaa = 0);
 		~GameWindow();
@@ -85,23 +95,21 @@ namespace LM {
 		int			get_depth() const;
 		bool			is_fullscreen() const;
 	
-		double			get_offset_x() const;
-		double			get_offset_y() const;
+		double			get_offset_x(Layer layer = LAYER_GAME) const;
+		double			get_offset_y(Layer layer = LAYER_GAME) const;
 	
 		void			set_dimensions(int width, int height);
 		void			set_fullscreen(bool fullscreen);
 	
-		void			set_offset_x(double offset);
-		void			set_offset_y(double offset);
+		void			set_offset_x(double offset, Layer layer = LAYER_GAME);
+		void			set_offset_y(double offset, Layer layer = LAYER_GAME);
 	
-		void			register_graphic(Graphic* graphic);
-		void			unregister_graphic(Graphic* graphic);
-		void			reprioritize_graphic(Graphic* graphic, int priority);
-		
-		void			register_hud_graphic(Graphic* graphic);
-		void			unregister_hud_graphic(Graphic* graphic);
-		void			reprioritize_hud_graphic(Graphic* graphic, int priority);
-	
+		void			register_graphic(Graphic* graphic, Layer layer);
+		void			unregister_graphic(Graphic* graphic, Layer layer = LAYER_ALL);
+		void			reprioritize_graphic(Graphic* graphic, int priority, Layer layer);
+
+		void			set_layer_visible(bool visible, Layer layer);
+
 		void			redraw() const;
 	};
 

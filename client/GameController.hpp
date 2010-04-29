@@ -212,6 +212,7 @@ namespace LM {
 		TextMenuItem*	m_version_nag2;
 
 		Sprite*		m_logo;
+		TableBackground* m_menu_back;
 
 		TextMenuItem*	m_item_resume;
 		TextMenuItem*	m_item_disconnect;

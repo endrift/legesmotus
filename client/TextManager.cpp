@@ -74,7 +74,7 @@ Text* TextManager::render_string(const string& text, double x, double y, Align a
 	return rendered;
 }
 
-Text* TextManager::place_string(const string& text, double x, double y, Align align, Layer layer, int priority) {
+Text* TextManager::place_string(const string& text, double x, double y, Align align, GameWindow::Layer layer, int priority) {
 	Text* rendered = render_string(text, x, y, align);
 	if (rendered == NULL) {
 		return NULL;
@@ -82,14 +82,7 @@ Text* TextManager::place_string(const string& text, double x, double y, Align al
 	rendered->set_priority(priority);
 	m_texts.push_back(rendered);
 	if (m_window != NULL) {
-		switch(layer) {
-		case LAYER_HUD:
-			m_window->register_hud_graphic(rendered);
-			break;
-		case LAYER_MAIN:
-			m_window->register_graphic(rendered);
-			break;
-		}
+		m_window->register_graphic(rendered, layer);
 	}
 	return rendered;
 }
@@ -120,7 +113,6 @@ void TextManager::remove_string(Graphic *text) {
 	}
 	if (m_window != NULL) {
 		m_window->unregister_graphic(text);
-		m_window->unregister_hud_graphic(text);
 	}
 	delete text;
 }
@@ -129,7 +121,6 @@ void TextManager::remove_all_strings() {
 	for (vector<Text*>::iterator iter = m_texts.begin(); iter != m_texts.end(); ++iter) {
 		if(m_window != NULL) {
 			m_window->unregister_graphic(*iter);
-			m_window->unregister_hud_graphic(*iter);
 		}
 		delete *iter;
 	}

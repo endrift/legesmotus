@@ -23,7 +23,6 @@
  */
 
 #include "TextInput.hpp"
-#include "GameWindow.hpp"
 #include "TextManager.hpp"
 
 using namespace LM;
@@ -53,14 +52,14 @@ TextInput::~TextInput() {
 	if (m_crop_area != NULL) {
 		m_crop_area->get_group()->take_graphic(m_group);
 		if (m_window != NULL) {
-			m_window->unregister_hud_graphic(m_crop_area);
+			m_window->unregister_graphic(m_crop_area);
 		}
 	} else if (m_window != NULL) {
-		m_window->unregister_hud_graphic(m_group);
+		m_window->unregister_graphic(m_group);
 	}
 
 	if (m_window != NULL) {
-		m_window->unregister_hud_graphic(m_background);
+		m_window->unregister_graphic(m_background);
 	}
 	delete m_group;
 	delete m_background;
@@ -200,35 +199,35 @@ void TextInput::set_crop_width(double width) {
 void TextInput::set_window(GameWindow* window) {
 	if (m_window != NULL) {
 		if (m_crop_area != NULL) {
-			m_window->unregister_hud_graphic(m_crop_area);
+			m_window->unregister_graphic(m_crop_area, GameWindow::LAYER_SUPER);
 		} else {
-			m_window->unregister_hud_graphic(m_group);
+			m_window->unregister_graphic(m_group, GameWindow::LAYER_SUPER);
 		}
 		if (m_background != NULL) {
-			m_window->unregister_hud_graphic(m_background);
+			m_window->unregister_graphic(m_background, GameWindow::LAYER_SUPER);
 		}
 	}
 	m_window = window;
 	if (m_window != NULL) {
 		if (m_crop_area != NULL) {
-			m_window->register_hud_graphic(m_crop_area);
+			m_window->register_graphic(m_crop_area, GameWindow::LAYER_SUPER);
 		} else {
-			m_window->register_hud_graphic(m_group);
+			m_window->register_graphic(m_group, GameWindow::LAYER_SUPER);
 		}
 		if (m_background != NULL) {
-			m_window->register_hud_graphic(m_background);
+			m_window->register_graphic(m_background, GameWindow::LAYER_SUPER);
 		}
 	}
 }
 
 void TextInput::set_background(Graphic* background) {
 	if (m_background != NULL && m_window != NULL) {
-		m_window->unregister_hud_graphic(m_background);
+		m_window->unregister_graphic(m_background, GameWindow::LAYER_SUPER);
 	}
 	delete m_background;
 	m_background = background;
 	if (m_background != NULL && m_window != NULL) {
-		m_window->register_hud_graphic(m_background);
+		m_window->register_graphic(m_background, GameWindow::LAYER_SUPER);
 	}
 	recalc();
 }
@@ -261,9 +260,9 @@ void TextInput::set_priority(int priority) {
 		m_group->set_priority(priority);
 	} else {
 		if (m_crop_area != NULL) {
-			m_window->reprioritize_hud_graphic(m_crop_area, priority);
+			m_window->reprioritize_graphic(m_crop_area, priority, GameWindow::LAYER_SUPER);
 		}
-		m_window->reprioritize_hud_graphic(m_group, priority);
+		m_window->reprioritize_graphic(m_group, priority, GameWindow::LAYER_SUPER);
 	}
 }
 

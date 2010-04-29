@@ -27,6 +27,7 @@
 
 #include "Font.hpp"
 #include "Text.hpp"
+#include "GameWindow.hpp"
 #include "ConvolveKernel.hpp"
 #include <vector>
 
@@ -57,14 +58,10 @@ namespace LM {
 			CENTER = 1,
 			RIGHT = 2
 		};
-		enum Layer {
-			LAYER_HUD,
-			LAYER_MAIN
-		};
 		TextManager(Font* font, GameWindow* window = NULL);
 		~TextManager();
 	
-		Text*	place_string(const std::string& text, double x, double y, Align = LEFT, Layer layer = LAYER_HUD, int priority = 0);
+		Text*	place_string(const std::string& text, double x, double y, Align = LEFT, GameWindow::Layer layer = GameWindow::LAYER_HUD, int priority = 0);
 		Text*	render_string(const std::string& text, double x, double y, Align = LEFT);
 		void	reposition_string(Graphic* text, double x, double y, Align = LEFT);
 		void	remove_string(Graphic* text);

@@ -60,7 +60,7 @@ ChatLog::ChatLog(GameController& parent, GameWindow* window, TextManager* textma
 	m_background->set_x(m_screen_width/2);
 	m_background->set_border_collapse(true);
 	m_background->set_corner_radius(20);
-	m_window->register_hud_graphic(m_background);
+	m_window->register_graphic(m_background, GameWindow::LAYER_HUD);
 	
 	m_scrollbar = new ScrollBar();
 	m_scrollbar->set_priority(-6);
@@ -81,10 +81,10 @@ ChatLog::ChatLog(GameController& parent, GameWindow* window, TextManager* textma
 	m_scrollarea->set_center_x(m_scrollarea->get_width()/2);
 	m_scrollarea->set_center_y(0);
 	
-	m_window->register_hud_graphic(m_scrollbar);
-	m_window->register_hud_graphic(m_scrollarea);
+	m_window->register_graphic(m_scrollbar, GameWindow::LAYER_HUD);
+	m_window->register_graphic(m_scrollarea, GameWindow::LAYER_HUD);
 	
-	m_title = m_text_manager->place_string("Chat Log", m_background->get_x(), m_background->get_y() + 10, TextManager::LEFT, TextManager::LAYER_HUD, TEXT_LAYER);
+	m_title = m_text_manager->place_string("Chat Log", m_background->get_x(), m_background->get_y() + 10, TextManager::LEFT, GameWindow::LAYER_HUD, TEXT_LAYER);
 	m_title->set_x(m_background->get_x() - m_title->get_image_width()/2);
 
 	m_scrollbar->scroll(1);
@@ -110,7 +110,7 @@ void ChatLog::add_message(string message, Color color, Color shadow) {
 	m_text_manager->set_active_color(color);
 	m_text_manager->set_shadow_color(shadow);
 	Text* new_message = m_text_manager->place_string(message, m_background->get_x() - m_background->get_image_width()/2 -
-		m_scrollarea->get_x() + m_scrollarea->get_width()/2 + 10, LINE_SPACING * m_items.size(), TextManager::LEFT, TextManager::LAYER_HUD);
+		m_scrollarea->get_x() + m_scrollarea->get_width()/2 + 10, LINE_SPACING * m_items.size(), TextManager::LEFT, GameWindow::LAYER_HUD);
 	new_message->set_priority(TEXT_LAYER);
 	m_text_manager->set_shadow_color(GameController::TEXT_SHADOW);
 	m_items.push_back(m_scrollarea->get_group()->add_graphic(new_message, message));

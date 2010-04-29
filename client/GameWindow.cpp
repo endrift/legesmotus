@@ -57,8 +57,12 @@ GameWindow::GameWindow(int width, int height, int depth, int flags, int msaa) {
 	m_width = width;
 	m_height = height;
 	m_fullscreen = flags & FULLSCREEN;
-	m_offset_x = 0;
-	m_offset_y = 0;
+
+	for (int i = 0; i <= LAYER_SUPER; ++i) {
+		m_layers[i].offset_x = 0;
+		m_layers[i].offset_y = 0;
+		m_layers[i].visible = true;
+	}
 
 	int rflags = SDL_HWSURFACE|SDL_OPENGL;
 	if (m_fullscreen) {
@@ -276,12 +280,18 @@ int GameWindow::get_depth() const {
 	return m_depth;
 }
 
-double GameWindow::get_offset_x() const {
-	return m_offset_x;
+double GameWindow::get_offset_x(Layer layer) const {
+	if (layer < 0 || layer > LAYER_SUPER) {
+		throw Exception("Bad window layer");
+	}
+	return m_layers[layer].offset_x;
 }
 
-double GameWindow::get_offset_y() const {
-	return m_offset_y;
+double GameWindow::get_offset_y(Layer layer) const {
+	if (layer < 0 || layer > LAYER_SUPER) {
+		throw Exception("Bad window layer");
+	}
+	return m_layers[layer].offset_y;
 }
 
 void GameWindow::set_dimensions(int width, int height) {
@@ -313,68 +323,75 @@ bool GameWindow::is_fullscreen() const {
 	return m_fullscreen;
 }
 
-void GameWindow::set_offset_x(double offset) {
-	m_offset_x = offset;
+void GameWindow::set_offset_x(double offset, Layer layer) {
+	if (layer < 0 || layer > LAYER_SUPER) {
+		throw Exception("Bad window layer");
+	}
+	m_layers[layer].offset_x = offset;
 }
 
-void GameWindow::set_offset_y(double offset) {
-	m_offset_y = offset;
+void GameWindow::set_offset_y(double offset, Layer layer) {
+	if (layer < 0 || layer > LAYER_SUPER) {
+		throw Exception("Bad window layer");
+	}
+	m_layers[layer].offset_y = offset;
 }
 
-void GameWindow::register_graphic(Graphic* graphic) {
-	for (list<Graphic*>::iterator iter = m_graphics.begin(); iter != m_graphics.end(); ++iter) {
+void GameWindow::register_graphic(Graphic* graphic, Layer layer) {
+	if (layer < 0 || layer > LAYER_SUPER) {
+		throw Exception("Bad window layer");
+	}
+
+	for (list<Graphic*>::iterator iter = m_layers[layer].graphics.begin(); iter != m_layers[layer].graphics.end(); ++iter) {
 		if ((*iter)->get_priority() < graphic->get_priority()) {
-			m_graphics.insert(iter,graphic);
+			m_layers[layer].graphics.insert(iter,graphic);
 			return;
 		}
 	}
-	m_graphics.push_back(graphic);
+	m_layers[layer].graphics.push_back(graphic);
 }
 
-void GameWindow::unregister_graphic(Graphic* graphic) {
-	m_graphics.remove(graphic);
-}
-
-void GameWindow::reprioritize_graphic(Graphic* graphic, int priority) {
-	unregister_graphic(graphic);
-	graphic->set_priority(priority);
-	register_graphic(graphic);
-}
-
-void GameWindow::register_hud_graphic(Graphic* graphic) {
-	for (list<Graphic*>::iterator iter = m_hud_graphics.begin(); iter != m_hud_graphics.end(); ++iter) {
-		if ((*iter)->get_priority() < graphic->get_priority()) {
-			m_hud_graphics.insert(iter,graphic);
-			return;
+void GameWindow::unregister_graphic(Graphic* graphic, Layer layer) {
+	if (layer < 0) {
+		for (int i = 0; i <= LAYER_SUPER; ++i) {
+			m_layers[i].graphics.remove(graphic);
 		}
+	} else {
+		if (layer > LAYER_SUPER) {
+			throw Exception("Bad window layer");
+		}
+		m_layers[layer].graphics.remove(graphic);
 	}
-	m_hud_graphics.push_back(graphic);
 }
 
-void GameWindow::unregister_hud_graphic(Graphic* graphic) {
-	m_hud_graphics.remove(graphic);
-}
-
-void GameWindow::reprioritize_hud_graphic(Graphic* graphic, int priority) {
-	unregister_hud_graphic(graphic);
+void GameWindow::reprioritize_graphic(Graphic* graphic, int priority, Layer layer) {
+	unregister_graphic(graphic, layer);
 	graphic->set_priority(priority);
-	register_hud_graphic(graphic);
+	register_graphic(graphic, layer);
+}
+
+void GameWindow::set_layer_visible(bool visible, Layer layer) {
+	if (layer < 0 || layer > LAYER_SUPER) {
+		throw Exception("Bad window layer");
+	}
+
+	m_layers[layer].visible = visible;
 }
 
 void GameWindow::redraw() const {
 	glClear(GL_COLOR_BUFFER_BIT);
 	glPushMatrix();
-	glTranslated(-round(m_offset_x),-round(m_offset_y),0.0);
-	for (list<Graphic*>::const_iterator iter = m_graphics.begin(); iter != m_graphics.end(); ++iter) {
-		if (!(*iter)->is_invisible()) {
-			(*iter)->draw(this);
+	for (int i = 0; i <= LAYER_SUPER; ++i) {
+		if (!m_layers[i].visible) {
+			continue;
 		}
-	}
-	glPopMatrix();
-	for (list<Graphic*>::const_iterator iter = m_hud_graphics.begin(); iter != m_hud_graphics.end(); ++iter) {
-		if (!(*iter)->is_invisible()) {
-			(*iter)->draw(this);
+		glTranslated(-round(m_layers[i].offset_x), -round(m_layers[i].offset_y),0.0);
+		for (list<Graphic*>::const_iterator iter = m_layers[i].graphics.begin(); iter != m_layers[i].graphics.end(); ++iter) {
+			if (!(*iter)->is_invisible()) {
+				(*iter)->draw(this);
+			}
 		}
+		glPopMatrix();
 	}
 	SDL_GL_SwapBuffers();
 }
