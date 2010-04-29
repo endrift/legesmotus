@@ -166,6 +166,7 @@ namespace LM {
 		bool 		m_fullscreen;
 		bool		m_quit_game;
 		bool		m_restart;
+		bool		m_offline_mode;
 		double		m_offset_x;
 		double		m_offset_y;
 		double		m_mouse_x;
@@ -255,6 +256,8 @@ namespace LM {
 		TableBackground* m_cooldown_bar;
 		TableBackground* m_cooldown_bar_back;
 		Graphic*	m_curr_weapon_image;
+		
+		void		update_visible_elements();
 		
 		// RADAR CODE BY JEFFREY
 		Radar*		m_radar;

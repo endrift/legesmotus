@@ -317,6 +317,11 @@ void GameController::init(GameWindow* window) {
 	m_text_manager->set_shadow_color(TEXT_SHADOW);
 	m_text_manager->set_shadow(true);
 	
+	// Initialize and display the message that we are contacting the metaserver.
+	/*Text* metaservermessage = m_text_manager->place_string("Attempting to contact metaserver, please wait...", m_screen_width/2, m_screen_height/2, TextManager::CENTER, GameWindow::LAYER_SUPER, TEXT_LAYER);
+	metaservermessage->set_invisible(false);
+	m_window->redraw();*/
+	
 	// Initialize all of the menu items.
 	m_version_nag1 = NULL;
 	m_version_nag2 = NULL;
@@ -659,20 +664,30 @@ void GameController::init(GameWindow* window) {
 	m_radar->register_with_window(m_window);
 
 	m_current_scan_id = 0;
+	m_offline_mode = false;
 	// TODO: better error messages if meta server address can't be resolved
 	if (const char* metaserver_address = getenv("LM_METASERVER")) {
 		// Address specified by $LM_METASERVER environment avariable
 		if (!resolve_hostname(m_metaserver_address, metaserver_address)) {
+			display_message("Unable to contact specified metaserver. Internet-wide server browsing will be disabled.");
+			m_offline_mode = true;
 			cerr << "Unable to resolve metaserver hostname, `" << metaserver_address << "' as specified in the $LM_METASERVER environment variable.  Internet-wide server browsing will not be enabled." << endl;
 		}
 	} else if (!resolve_hostname(m_metaserver_address, METASERVER_HOSTNAME, METASERVER_PORTNO)) {
+		display_message("Unable to contact metaserver. Internet-wide server browsing will be disabled.");
+		m_offline_mode = true;
 		cerr << "Unable to resolve metaserver hostname.  Internet-wide server browsing will not be enabled." << endl;
 	}
 
+	// We're done contacting the metaserver, remove the message.
+	//m_text_manager->remove_string(metaservermessage);
+	
 	m_focus = NULL;
 
 	#ifndef LM_NO_UPGRADE_NAG
-	check_for_upgrade();
+	if (!m_offline_mode) {
+		check_for_upgrade();
+	}
 	#endif
 }
 
@@ -926,87 +941,7 @@ void GameController::run(int lockfps) {
 				m_window->set_offset_y(m_offset_y);
 			}
 			
-			// Show and hide elements depending on game state (started, menus, etc.)
-			if (m_game_state == SHOW_MENUS) {
-				/*if (m_map != NULL) {
-					m_map->set_visible(false);
-				}
-				
-				set_players_visible(false);
-				
-				for ( unsigned int i = 0; i < m_shots.size(); i++ ) {
-					m_shots[i].first->set_invisible(true);
-				}*/
-				
-				set_hud_visible(false);
-				
-				m_logo->set_invisible(false);
-				m_window->set_layer_visible(true, GameWindow::LAYER_MENU);
-				
-				toggle_main_menu(true);
-				toggle_options_menu(false);
-				m_server_browser->set_visible(false);
-				m_weapon_selector->get_graphic_group()->set_invisible(true);
-			} else if (m_game_state == SHOW_OPTIONS_MENU) {
-				/*if (m_map != NULL) {
-					m_map->set_visible(false);
-				}
-				
-				set_players_visible(false);
-				
-				for ( unsigned int i = 0; i < m_shots.size(); i++ ) {
-					m_shots[i].first->set_invisible(true);
-				}*/
-				
-				set_hud_visible(false);
-				
-				m_logo->set_invisible(false);
-				m_window->set_layer_visible(true, GameWindow::LAYER_MENU);
-				
-				toggle_main_menu(false);
-				toggle_options_menu(true);
-				m_server_browser->set_visible(false);
-				m_weapon_selector->get_graphic_group()->set_invisible(true);
-			} else if (m_game_state == SHOW_SERVER_BROWSER) {
-				/*if (m_map != NULL) {
-					m_map->set_visible(false);
-				}
-				
-				set_players_visible(false);
-				
-				for ( unsigned int i = 0; i < m_shots.size(); i++ ) {
-					m_shots[i].first->set_invisible(true);
-				}*/
-				
-				set_hud_visible(false);
-				
-				m_logo->set_invisible(false);
-				m_window->set_layer_visible(true, GameWindow::LAYER_MENU);
-				
-				toggle_main_menu(false);
-				toggle_options_menu(false);
-				m_server_browser->set_visible(true);
-				m_weapon_selector->get_graphic_group()->set_invisible(true);
-			} else {
-				/*if (m_map != NULL) {
-					m_map->set_visible(true);
-				}
-				
-				set_players_visible(true);
-				
-				for ( unsigned int i = 0; i < m_shots.size(); i++ ) {
-					m_shots[i].first->set_invisible(false);
-				}*/
-				
-				set_hud_visible(true);
-				
-				//m_logo->set_invisible(true);
-				m_window->set_layer_visible(false, GameWindow::LAYER_MENU);
-				
-				//toggle_main_menu(false);
-				//toggle_options_menu(false);
-				//m_server_browser->set_visible(false);
-			}
+			update_visible_elements();
 			
 			m_window->redraw();
 			startframe = get_ticks();
@@ -1015,6 +950,45 @@ void GameController::run(int lockfps) {
 	
 	if (!m_restart) {
 		disconnect();
+	}
+}
+
+void GameController::update_visible_elements() {
+	// Show and hide elements depending on game state (started, menus, etc.)
+	if (m_game_state == SHOW_MENUS) {
+		set_hud_visible(false);
+		
+		m_logo->set_invisible(false);
+		m_window->set_layer_visible(true, GameWindow::LAYER_MENU);
+		
+		toggle_main_menu(true);
+		toggle_options_menu(false);
+		m_server_browser->set_visible(false);
+		m_weapon_selector->get_graphic_group()->set_invisible(true);
+	} else if (m_game_state == SHOW_OPTIONS_MENU) {
+		set_hud_visible(false);
+		
+		m_logo->set_invisible(false);
+		m_window->set_layer_visible(true, GameWindow::LAYER_MENU);
+		
+		toggle_main_menu(false);
+		toggle_options_menu(true);
+		m_server_browser->set_visible(false);
+		m_weapon_selector->get_graphic_group()->set_invisible(true);
+	} else if (m_game_state == SHOW_SERVER_BROWSER) {
+		set_hud_visible(false);
+		
+		m_logo->set_invisible(false);
+		m_window->set_layer_visible(true, GameWindow::LAYER_MENU);
+		
+		toggle_main_menu(false);
+		toggle_options_menu(false);
+		m_server_browser->set_visible(true);
+		m_weapon_selector->get_graphic_group()->set_invisible(true);
+	} else {
+
+		set_hud_visible(true);
+		m_window->set_layer_visible(false, GameWindow::LAYER_MENU);
 	}
 }
 
@@ -2221,6 +2195,7 @@ void GameController::disconnect() {
 		display_message("Disconnected.");
 	}
 	m_network.disconnect();
+	m_map->clear();
 }
 
 /*
@@ -2283,6 +2258,7 @@ void GameController::welcome(PacketReader& reader) {
 	
 	m_players[m_player_id].set_radius(30);
 	m_players[m_player_id].set_name_sprite(m_text_manager->place_string(m_players[m_player_id].get_name(), m_screen_width/2, (m_screen_height/2)-(m_players[m_player_id].get_radius()+30), TextManager::CENTER, GameWindow::LAYER_GAME));
+	m_players[m_player_id].set_is_invisible(true);
 	
 	send_my_player_update();
 	
@@ -3290,7 +3266,9 @@ void	GameController::scan_all() {
 	if (resolve_hostname(localhostip, "localhost", DEFAULT_PORTNO)) {
 		m_network.send_packet_to(localhostip, info_request_packet);
 	}
-	m_network.send_packet_to(m_metaserver_address, info_request_packet);
+	if (!m_offline_mode) {
+		m_network.send_packet_to(m_metaserver_address, info_request_packet);
+	}
 }
 
 void    GameController::check_for_upgrade() {
