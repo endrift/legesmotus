@@ -5,7 +5,7 @@ include common.mak
 
 INSTALL_TARGETS = $(addprefix install-,$(TARGETS))
 
-all: deps default
+all: default
 
 default: $(TARGETS)
 

@@ -1,13 +1,14 @@
 BASEDIR = ..
 UNIXSTYLE = 1
 include ../common.mak
-OBJS = client_network config_test simple_sprite simple_text simple_scroll simple_transition \
-	simple_menu radial_menu text_input
+OBJS = test_primitives
+CXXFLAGS += $(CLIENTLIBS) $(CLIENTFLAGS) -L.. -llmclient -llmserver -llmcommon -llmgui
 
-all: $(OBJS)
+all: ../liblmclient.a ../liblmcommon.a ../liblmserver.a ../liblmgui.a $(OBJS)
 
-%: %.cpp ../liblmclient.a ../liblmcommon.a ../liblmserver.a
-	$(CXX) $(CXXFLAGS) $(CLIENTFLAGS) $(CLIENTLIBS) -o $@ $< -L.. -llmclient -llmserver -llmcommon
+%: %.cpp 
+	$(CXX) $(CXXFLAGS) -o $@ $<
 
 clean:
 	rm -f $(OBJS) *~
+	rm -rf *.dSYM
