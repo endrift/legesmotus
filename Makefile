@@ -22,13 +22,16 @@ server: common
 client: common
 	$(MAKE) -C client
 
+gui: common client
+	$(MAKE) -C gui
+
 serverscanner: common client
 	$(MAKE) -C serverscanner
 
 metaserver: common
 	$(MAKE) -C metaserver
 
-tests: common server client
+tests: common server client gui
 	$(MAKE) -C tests
 
 clean:

@@ -2,13 +2,13 @@
 
 USAGE="$0 dirname/classname"
 
-if [[ ! -d common ]] || [[ ! -d client ]] || [[ ! -d server ]]
+if [[ ! -d common ]] || [[ ! -d client ]] || [[ ! -d server ]] || [[ ! -d gui ]] || [[ ! -d metaserver ]]
 then
 	print -u2 "Run from top level directory."
 	exit 1
 fi
 
-if (( $# != 1 )) || [[ $1 != @(common|client|server|metaserver)"/"+([A-Za-z0-9_]) ]]
+if (( $# != 1 )) || [[ $1 != @(common|client|server|gui|metaserver)"/"+([A-Za-z0-9_]) ]]
 then
 	print -u2 "Usage: $USAGE"
 	print -u2 "(Leave off file name extension)"
