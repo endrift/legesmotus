@@ -99,6 +99,10 @@ void LM::draw_line(float x1, float y1, float x2, float y2) {
 	glDrawArrays(GL_LINE_STRIP, 0, 2);
 }
 
+void LM::draw_roundrect(float w, float h, float r, int fine) {
+	draw_roundrect_fill(w, h, r, fine);
+}
+
 void LM::draw_roundrect_fill(float w, float h, float r, int fine) {
 	if (w - 2.0f*r < 0) {
 		r = w/2.0f;
@@ -141,6 +145,43 @@ void LM::draw_roundrect_fill(float w, float h, float r, int fine) {
 	glTranslatef(r_t2 - w, 0, 0);
 	glRotatef(90, 0, 0, 1.0f);
 	draw_arc_fill(0.25f, r, r, fine);
+
+	// Recenter
+	glTranslatef(r - h/2.0f, r - w/2.0f, 0);
+	glRotatef(90, 0, 0, 1.0f);
+}
+
+void LM::draw_roundrect_line(float w, float h, float r, int fine) {
+	if (w - 2.0f*r < 0) {
+		r = w/2.0f;
+	}
+	if (h - 2.0f*r < 0) {
+		r = h/2.0f;
+	}
+
+	float r_t2 = 2.0f*r;
+
+	// Draw edges
+	draw_line(w/2.0f, h/2.0f - r, w/2.0f, r - h/2.0f);
+	draw_line(-w/2.0f, h/2.0f - r, -w/2.0f, r - h/2.0f);
+	draw_line(w/2.0f - r, h/2.0f, r - w/2.0f, h/2.0f);
+	draw_line(w/2.0f - r, -h/2.0f, r - w/2.0f, -h/2.0f);
+
+	// Draw corners
+	glTranslatef(w/2.0f - r, h/2.0f - r, 0);
+	draw_arc_line(0.25f, r, r, fine);
+
+	glTranslatef(r_t2 - w, 0, 0);
+	glRotatef(90, 0, 0, 1.0f);
+	draw_arc_line(0.25f, r, r, fine);
+
+	glTranslatef(r_t2 - h, 0, 0);
+	glRotatef(90, 0, 0, 1.0f);
+	draw_arc_line(0.25f, r, r, fine);
+
+	glTranslatef(r_t2 - w, 0, 0);
+	glRotatef(90, 0, 0, 1.0f);
+	draw_arc_line(0.25f, r, r, fine);
 
 	// Recenter
 	glTranslatef(r - h/2.0f, r - w/2.0f, 0);

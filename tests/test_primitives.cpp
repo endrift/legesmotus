@@ -26,6 +26,7 @@ int main(int argc, char *argv[]) {
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		draw_roundrect_fill(256.0f, 192.0f, 16.0f, 16);
+		draw_roundrect_line(240.0f, 176.0f, 8.0f, 16);
 
 		glPopMatrix();
 		SDL_GL_SwapBuffers();
