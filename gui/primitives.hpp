@@ -36,6 +36,10 @@ namespace LM {
 	void draw_rect_fill(float w, float h);
 	void draw_rect_line(float w, float h);
 
+	void draw_roundrect(float w, float h, float r, int fine);
+	void draw_roundrect_fill(float w, float h, float r, int fine);
+	void draw_roundrect_line(float w, float h, float r, int fine);
+
 	void draw_line(float x1, float y1, float x2, float y2);
 }
 

@@ -98,3 +98,51 @@ void LM::draw_line(float x1, float y1, float x2, float y2) {
 	glVertexPointer(2, GL_FLOAT, 0, vertices);
 	glDrawArrays(GL_LINE_STRIP, 0, 2);
 }
+
+void LM::draw_roundrect_fill(float w, float h, float r, int fine) {
+	if (w - 2.0f*r < 0) {
+		r = w/2.0f;
+	}
+	if (h - 2.0f*r < 0) {
+		r = h/2.0f;
+	}
+
+	float r_t2 = 2.0f*r;
+	float r_o2 = 0.5f*r;
+
+	// Draw center
+	draw_rect_fill(w - r_t2, h - r_t2);
+
+	// Draw sides
+	glTranslatef(w/2.0f - r_o2, 0, 0);
+	draw_rect_fill(r, h - r_t2);
+	glTranslatef(r - w, 0, 0);
+	draw_rect_fill(r, h - r_t2);
+	glTranslatef(w/2.0f - r_o2, h/2.0f - r_o2, 0);
+	draw_rect_fill(w - r_t2, r);
+	glTranslatef(0, r - h, 0);
+	draw_rect_fill(w - r_t2, r);
+
+	// Recenter
+	glTranslatef(0, h/2.0f - r_o2, 0);
+
+	// Draw corners
+	glTranslatef(w/2.0f - r, h/2.0f - r, 0);
+	draw_arc_fill(0.25f, r, r, fine);
+
+	glTranslatef(r_t2 - w, 0, 0);
+	glRotatef(90, 0, 0, 1.0f);
+	draw_arc_fill(0.25f, r, r, fine);
+
+	glTranslatef(r_t2 - h, 0, 0);
+	glRotatef(90, 0, 0, 1.0f);
+	draw_arc_fill(0.25f, r, r, fine);
+
+	glTranslatef(r_t2 - w, 0, 0);
+	glRotatef(90, 0, 0, 1.0f);
+	draw_arc_fill(0.25f, r, r, fine);
+
+	// Recenter
+	glTranslatef(r - h/2.0f, r - w/2.0f, 0);
+	glRotatef(90, 0, 0, 1.0f);
+}

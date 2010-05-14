@@ -1,13 +1,14 @@
 BASEDIR = ..
 UNIXSTYLE = 1
-include ../common.mak
+include $(BASEDIR)/common.mak
 OBJS = test_primitives
-CXXFLAGS += $(CLIENTLIBS) $(CLIENTFLAGS) -L.. -llmclient -llmserver -llmcommon -llmgui
+CXXFLAGS += $(CLIENTFLAGS)
+LIBS := $(CLIENTLIBS) -L$(BASEDIR) -llmclient -llmserver -llmcommon -llmgui
 
-all: ../liblmclient.a ../liblmcommon.a ../liblmserver.a ../liblmgui.a $(OBJS)
+all: $(BASEDIR)/liblmclient.a $(BASEDIR)/liblmcommon.a $(BASEDIR)/liblmserver.a $(BASEDIR)/liblmgui.a $(OBJS)
 
 %: %.cpp 
-	$(CXX) $(CXXFLAGS) -o $@ $<
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LIBS)
 
 clean:
 	rm -f $(OBJS) *~
