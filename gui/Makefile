@@ -2,14 +2,14 @@ BASEDIR = ..
 OBJS = primitives.o
 include ../common.mak
 # Stopgap measure until client separated out
-CXXFLAGS += -I../client
+CXXFLAGS += -I$(BASEDIR)/client
 
-all: ../liblmgui.a
+all: $(BASEDIR)/liblmgui.a
 
-../liblmgui.a: $(OBJS)
-	$(AR) crus ../liblmgui.a $(OBJS)
+$(BASEDIR)/liblmgui.a: $(OBJS)
+	$(AR) crus $(BASEDIR)/liblmgui.a $(OBJS)
 
 clean: common-clean
-	$(RM) $(OBJS) ../liblmgui.a
+	$(RM) $(OBJS) $(BASEDIR)/liblmgui.a
 
 deps: common-deps

@@ -8,7 +8,7 @@ OBJS = ClientNetwork.o ClientSDL.o GameController.o GameWindow.o Sprite.o Graphi
 	Weapon.o StandardGun.o SpreadGun.o ImpactCannon.o Hazard.o Form.o FormItem.o ListMenuItem.o \
 	RadialMenu.o GraphicMenuItem.o TextInput.o GraphicsCache.o ThawGun.o
 	#put .o filenames here (DO NOT PUT .cpp!)
-include ../common.mak
+include $(BASEDIR)/common.mak
 CXXFLAGS += $(CLIENTFLAGS)
 
 ifeq ($(NOSOUND),)
@@ -27,13 +27,13 @@ endif
 
 all: legesmotus
 
-legesmotus: ../liblmclient.a ../liblmcommon.a main.o $(PLATFORM_DEP)
-	$(CXX) $(LDFLAGS) -o legesmotus -L.. main.o -llmclient -llmcommon $(CLIENTLIBS) $(PLATFORM_DEP)
+legesmotus: $(BASEDIR)/liblmclient.a $(BASEDIR)/liblmcommon.a main.o $(PLATFORM_DEP)
+	$(CXX) $(LDFLAGS) -o legesmotus -L$(BASEDIR) main.o -llmclient -llmcommon $(CLIENTLIBS) $(PLATFORM_DEP)
 
-../liblmclient.a: $(OBJS)
-	$(AR) crus ../liblmclient.a $(OBJS)
+$(BASEDIR)/liblmclient.a: $(OBJS)
+	$(AR) crus $(BASEDIR)/liblmclient.a $(OBJS)
 
 clean: common-clean
-	$(RM) $(OBJS) *~ main.o ../liblmclient.a legesmotus $(PLATFORM_DEP)
+	$(RM) $(OBJS) *~ main.o $(BASEDIR)/liblmclient.a legesmotus $(PLATFORM_DEP)
 
 deps: common-deps
