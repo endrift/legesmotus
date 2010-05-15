@@ -54,9 +54,11 @@ namespace LM {
 		virtual void	push_transform();
 		virtual void	pop_transform();
 
-		/*virtual void	translate(float x, float y);
-		virtual void	scale(float scale);
-		virtual void	rotation(float degrees);*/
+		virtual void	translate(float x, float y);
+		virtual void	scale(float x, float y);
+		virtual void	rotate(float degrees);
+
+		virtual void	set_draw_color(Color c);
 
 		virtual void	draw_arc(float circumf, float xr, float yr, int fine);
 		virtual void	draw_arc_fill(float circumf, float xr, float yr, int fine);

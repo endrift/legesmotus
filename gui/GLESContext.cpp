@@ -72,6 +72,7 @@ int GLESContext::get_height() const {
 
 void GLESContext::load_identity() {
 	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
 	glOrtho(0, m_width, m_height, 0, -1, 0xFFFF);
 
 	glMatrixMode(GL_MODELVIEW);
@@ -84,6 +85,22 @@ void GLESContext::push_transform() {
 
 void GLESContext::pop_transform() {
 	glPopMatrix();
+}
+
+void GLESContext::translate(float x, float y) {
+	glTranslatef(x, y, 0);
+}
+
+void GLESContext::scale(float x, float y) {
+	glScalef(x, y, 0);
+}
+
+void GLESContext::rotate(float degrees) {
+	glRotatef(degrees, 0, 0, 1);
+}
+
+void GLESContext::set_draw_color(Color c) {
+	glColor4f(c.r, c.g, c.b, c.a);
 }
 
 void GLESContext::draw_arc(float len, float xr, float yr, int fine) {
@@ -223,8 +240,7 @@ void GLESContext::draw_lines(float vertices[], int n, bool loop) {
 }
 
 void GLESContext::redraw() {
-	//glClear(GL_COLOR_BUFFER_BIT);
-	//load_identity();
+	glClear(GL_COLOR_BUFFER_BIT);
+	load_identity();
 	// TODO
-	SDL_GL_SwapBuffers();
 }

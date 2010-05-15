@@ -19,17 +19,15 @@ int main(int argc, char *argv[]) {
 	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
 	int rotate = 0;
 	while(running) {
-		glPushMatrix();
-		glTranslatef(150.0f, 150.0f, 0);
-		//glScalef(10.0f, 10.0f, 1);
-		glRotatef(rotate*0.1f, 0, 0, 1.0f);
-		glColor4f(1.0f, 1.0f, 1.0f, 0.5f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		ctx.set_draw_color(Color(1.0f, 1.0f, 1.0f, 0.5f));
+		ctx.load_identity();
+		ctx.translate(150.0f, 150.0f);
+		ctx.rotate(rotate);
 		ctx.draw_roundrect_fill(256.0f, 192.0f, 16.0f, 16);
 		ctx.draw_roundrect_line(240.0f, 176.0f, 8.0f, 16);
 
-		glPopMatrix();
 		SDL_GL_SwapBuffers();
 		SDL_Delay(6);
 		++rotate;

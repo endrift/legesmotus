@@ -26,6 +26,7 @@
 #define LM_GUI_DRAWCONTEXT_HPP
 
 #include "Widget.hpp"
+#include "common/misc.hpp"
 #include <vector>
 
 namespace LM {
@@ -59,11 +60,13 @@ namespace LM {
 		virtual void	push_transform() = 0;
 		virtual void	pop_transform() = 0;
 
-		// TODO offsets (translate -> rotate -> scale?, adustable order?)
+		// TODO offsets (translate -> scale -> rotate?, adustable order?)
 
-		/*virtual void	translate(float x, float y) = 0;
-		virtual void	scale(float scale) = 0;
-		virtual void	rotation(float degrees) = 0;*/
+		virtual void	translate(float x, float y) = 0;
+		virtual void	scale(float x, float y) = 0;
+		virtual void	rotate(float degrees) = 0;
+
+		virtual void	set_draw_color(Color c) = 0;
 
 		virtual void	draw_arc(float circumf, float xr, float yr, int fine) = 0;
 		virtual void	draw_arc_fill(float circumf, float xr, float yr, int fine) = 0;
