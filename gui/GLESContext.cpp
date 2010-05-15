@@ -1,5 +1,5 @@
 /*
- * gui/primitives.cpp
+ * gui/GLESContext.cpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,88 +22,107 @@
  * 
  */
 
-#include "primitives.hpp"
-#include "compat_gl.h"
+#include "GLESContext.hpp"
+#include "SDL.h"
 #include "common/math.hpp"
 
 using namespace LM;
 
-static GLfloat arc_vertices[2*(MAX_ARC_FINE + 2)];
-static GLfloat rect_vertices[8];
+GLESContext::GLESContext(int width, int height) {
+	m_width = width;
+	m_height = height;
+}
 
-static void prepare_arc(float len, float xr, float yr, int fine) {
-	arc_vertices[0] = 0.0;
-	arc_vertices[1] = 0.0;
+GLESContext::~GLESContext() {
+}
+
+void GLESContext::prepare_arc(float len, float xr, float yr, int fine) {
+	m_arc_vertices[0] = 0.0;
+	m_arc_vertices[1] = 0.0;
 
 	if (fine > MAX_ARC_FINE) {
 		fine = MAX_ARC_FINE;
 	}
 	for (int i = 0; i <= fine; ++i) {
-		arc_vertices[(i + 1)*2 + 0] = xr*cos(len*i*2.0*M_PI/fine);
-		arc_vertices[(i + 1)*2 + 1] = yr*sin(len*i*2.0*M_PI/fine);
+		m_arc_vertices[(i + 1)*2 + 0] = xr*cos(len*i*2.0*M_PI/fine);
+		m_arc_vertices[(i + 1)*2 + 1] = yr*sin(len*i*2.0*M_PI/fine);
 	}
-	glVertexPointer(2, GL_FLOAT, 0, arc_vertices);
+	glVertexPointer(2, GL_FLOAT, 0, m_arc_vertices);
 }
 
-static void prepare_rect(float w, float h) {
-	rect_vertices[0] = -w/2.0f;
-	rect_vertices[1] = -h/2.0f;
-	rect_vertices[2] = w/2.0f;
-	rect_vertices[3] = -h/2.0f;
-	rect_vertices[4] = w/2.0f;
-	rect_vertices[5] = h/2.0f;
-	rect_vertices[6] = -w/2.0f;
-	rect_vertices[7] = h/2.0f;
-	glVertexPointer(2, GL_FLOAT, 0, rect_vertices);
+void GLESContext::prepare_rect(float w, float h) {
+	m_rect_vertices[0] = -w/2.0f;
+	m_rect_vertices[1] = -h/2.0f;
+	m_rect_vertices[2] = w/2.0f;
+	m_rect_vertices[3] = -h/2.0f;
+	m_rect_vertices[4] = w/2.0f;
+	m_rect_vertices[5] = h/2.0f;
+	m_rect_vertices[6] = -w/2.0f;
+	m_rect_vertices[7] = h/2.0f;
+	glVertexPointer(2, GL_FLOAT, 0, m_rect_vertices);
 }
 
-void LM::draw_arc(float len, float xr, float yr, int fine) {
+int GLESContext::get_width() const {
+	return m_width;
+}
+
+int GLESContext::get_height() const {
+	return m_height;
+}
+
+void GLESContext::load_identity() {
+	glMatrixMode(GL_PROJECTION);
+	glOrtho(0, m_width, m_height, 0, -1, 0xFFFF);
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+}
+
+void GLESContext::push_transform() {
+	glPushMatrix();
+}
+
+void GLESContext::pop_transform() {
+	glPopMatrix();
+}
+
+void GLESContext::draw_arc(float len, float xr, float yr, int fine) {
 	prepare_arc(len, xr, yr, fine);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, fine + 2);
 	glDrawArrays(GL_LINE_STRIP, 1, fine + 1);
 }
 
-void LM::draw_arc_fill(float len, float xr, float yr, int fine) {
+void GLESContext::draw_arc_fill(float len, float xr, float yr, int fine) {
 	prepare_arc(len, xr, yr, fine);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, fine + 2);
 }
 
-void LM::draw_arc_line(float len, float xr, float yr, int fine) {
+void GLESContext::draw_arc_line(float len, float xr, float yr, int fine) {
 	prepare_arc(len, xr, yr, fine);
 	glDrawArrays(GL_LINE_STRIP, 1, fine + 1);
 }
 
-void LM::draw_rect(float w, float h) {
+void GLESContext::draw_rect(float w, float h) {
 	prepare_rect(w, h);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	glDrawArrays(GL_LINE_LOOP, 0, 4);
 }
 
-void LM::draw_rect_fill(float w, float h) {
+void GLESContext::draw_rect_fill(float w, float h) {
 	prepare_rect(w, h);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
-void LM::draw_rect_line(float w, float h) {
+void GLESContext::draw_rect_line(float w, float h) {
 	prepare_rect(w, h);
 	glDrawArrays(GL_LINE_LOOP, 0, 4);
 }
 
-void LM::draw_line(float x1, float y1, float x2, float y2) {
-	static GLfloat vertices[4];
-	vertices[0] = x1;
-	vertices[1] = y1;
-	vertices[2] = x2;
-	vertices[3] = y2;
-	glVertexPointer(2, GL_FLOAT, 0, vertices);
-	glDrawArrays(GL_LINE_STRIP, 0, 2);
-}
-
-void LM::draw_roundrect(float w, float h, float r, int fine) {
+void GLESContext::draw_roundrect(float w, float h, float r, int fine) {
 	draw_roundrect_fill(w, h, r, fine);
 }
 
-void LM::draw_roundrect_fill(float w, float h, float r, int fine) {
+void GLESContext::draw_roundrect_fill(float w, float h, float r, int fine) {
 	if (w - 2.0f*r < 0) {
 		r = w/2.0f;
 	}
@@ -151,7 +170,7 @@ void LM::draw_roundrect_fill(float w, float h, float r, int fine) {
 	glRotatef(90, 0, 0, 1.0f);
 }
 
-void LM::draw_roundrect_line(float w, float h, float r, int fine) {
+void GLESContext::draw_roundrect_line(float w, float h, float r, int fine) {
 	if (w - 2.0f*r < 0) {
 		r = w/2.0f;
 	}
@@ -186,4 +205,26 @@ void LM::draw_roundrect_line(float w, float h, float r, int fine) {
 	// Recenter
 	glTranslatef(r - h/2.0f, r - w/2.0f, 0);
 	glRotatef(90, 0, 0, 1.0f);
+}
+
+void GLESContext::draw_line(float x1, float y1, float x2, float y2) {
+	static GLfloat vertices[4];
+	vertices[0] = x1;
+	vertices[1] = y1;
+	vertices[2] = x2;
+	vertices[3] = y2;
+	glVertexPointer(2, GL_FLOAT, 0, vertices);
+	glDrawArrays(GL_LINE_STRIP, 0, 2);
+}
+
+void GLESContext::draw_lines(float vertices[], int n, bool loop) {
+	glVertexPointer(2, GL_FLOAT, 0, vertices);
+	glDrawArrays(loop?GL_LINE_LOOP:GL_LINE_STRIP, 0, n);
+}
+
+void GLESContext::redraw() {
+	//glClear(GL_COLOR_BUFFER_BIT);
+	//load_identity();
+	// TODO
+	SDL_GL_SwapBuffers();
 }

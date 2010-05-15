@@ -1,5 +1,5 @@
 #include "client/GameWindow.hpp"
-#include "gui/primitives.hpp"
+#include "gui/GLESContext.hpp"
 #include <iostream>
 
 using namespace LM;
@@ -7,6 +7,7 @@ using namespace std;
 
 int main(int argc, char *argv[]) {
 	GameWindow *window = GameWindow::get_instance(300, 300, 24, false);
+	GLESContext ctx(300, 300);
 	SDL_ShowCursor(SDL_TRUE);
 
 	bool running = true;
@@ -25,13 +26,13 @@ int main(int argc, char *argv[]) {
 		glColor4f(1.0f, 1.0f, 1.0f, 0.5f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		draw_roundrect_fill(256.0f, 192.0f, 16.0f, 16);
-		draw_roundrect_line(240.0f, 176.0f, 8.0f, 16);
+		ctx.draw_roundrect_fill(256.0f, 192.0f, 16.0f, 16);
+		ctx.draw_roundrect_line(240.0f, 176.0f, 8.0f, 16);
 
 		glPopMatrix();
 		SDL_GL_SwapBuffers();
-		SDL_Delay(10);
-		//++rotate;
+		SDL_Delay(6);
+		++rotate;
 		SDL_Event e;
 		while(SDL_PollEvent(&e) != 0) {
 			switch(e.type) {

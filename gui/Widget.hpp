@@ -1,5 +1,5 @@
 /*
- * gui/primitives.hpp
+ * gui/Widget.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,25 +22,16 @@
  * 
  */
 
-#ifndef LM_GUI_PRIMITIVES_HPP
-#define LM_GUI_PRIMITIVES_HPP
-
-const int MAX_ARC_FINE = 64;
+#ifndef LM_GUI_WIDGET_HPP
+#define LM_GUI_WIDGET_HPP
 
 namespace LM {
-	void draw_arc(float circumf, float xr, float yr, int fine);
-	void draw_arc_fill(float circumf, float xr, float yr, int fine);
-	void draw_arc_line(float circumf, float xr, float yr, int fine);
+	class Widget {
+	private:
 
-	void draw_rect(float w, float h);
-	void draw_rect_fill(float w, float h);
-	void draw_rect_line(float w, float h);
+	public:
 
-	void draw_roundrect(float w, float h, float r, int fine);
-	void draw_roundrect_fill(float w, float h, float r, int fine);
-	void draw_roundrect_line(float w, float h, float r, int fine);
-
-	void draw_line(float x1, float y1, float x2, float y2);
+	};
 }
 
 #endif

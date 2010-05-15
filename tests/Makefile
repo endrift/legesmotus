@@ -2,7 +2,7 @@ BASEDIR = ..
 UNIXSTYLE = 1
 include $(BASEDIR)/common.mak
 OBJS = test_primitives
-CXXFLAGS += $(CLIENTFLAGS)
+CXXFLAGS += $(CLIENTFLAGS) -I$(BASEDIR)/client
 LIBS := $(CLIENTLIBS) -L$(BASEDIR) -llmclient -llmserver -llmcommon -llmgui
 
 all: $(BASEDIR)/liblmclient.a $(BASEDIR)/liblmcommon.a $(BASEDIR)/liblmserver.a $(BASEDIR)/liblmgui.a $(OBJS)

@@ -1,7 +1,8 @@
 BASEDIR = ..
-OBJS = primitives.o
+OBJS = Widget.o DrawContext.o GLESContext.o
 include ../common.mak
 # Stopgap measure until client separated out
+CXXFLAGS += $(CLIENTFLAGS)
 CXXFLAGS += -I$(BASEDIR)/client
 
 all: $(BASEDIR)/liblmgui.a
