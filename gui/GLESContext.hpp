@@ -68,10 +68,6 @@ namespace LM {
 		virtual void	draw_rect_fill(float w, float h);
 		virtual void	draw_rect_line(float w, float h);
 
-		virtual void	draw_roundrect(float w, float h, float r, int fine);
-		virtual void	draw_roundrect_fill(float w, float h, float r, int fine);
-		virtual void	draw_roundrect_line(float w, float h, float r, int fine);
-
 		virtual void	draw_line(float x1, float y1, float x2, float y2);
 		virtual void	draw_lines(float vertices[], int n, bool loop);
 

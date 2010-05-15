@@ -29,3 +29,94 @@ using namespace std;
 
 DrawContext::~DrawContext() {
 }
+
+
+void DrawContext::draw_roundrect(float w, float h, float r, int fine) {
+	draw_roundrect_fill(w, h, r, fine);
+	draw_roundrect_line(w, h, r, fine);
+}
+
+void DrawContext::draw_roundrect_fill(float w, float h, float r, int fine) {
+	if (w - 2.0f*r < 0) {
+		r = w/2.0f;
+	}
+	if (h - 2.0f*r < 0) {
+		r = h/2.0f;
+	}
+
+	float r_t2 = 2.0f*r;
+	float r_o2 = 0.5f*r;
+
+	// Draw center
+	draw_rect_fill(w - r_t2, h - r_t2);
+
+	// Draw sides
+	translate(w/2.0f - r_o2, 0);
+	draw_rect_fill(r, h - r_t2);
+	translate(r - w, 0);
+	draw_rect_fill(r, h - r_t2);
+	translate(w/2.0f - r_o2, h/2.0f - r_o2);
+	draw_rect_fill(w - r_t2, r);
+	translate(0, r - h);
+	draw_rect_fill(w - r_t2, r);
+
+	// Recenter
+	translate(0, h/2.0f - r_o2);
+
+	// Draw corners
+	translate(w/2.0f - r, h/2.0f - r);
+	draw_arc_fill(0.25f, r, r, fine);
+
+	translate(r_t2 - w, 0);
+	rotate(90);
+	draw_arc_fill(0.25f, r, r, fine);
+
+	translate(r_t2 - h, 0);
+	rotate(90);
+	draw_arc_fill(0.25f, r, r, fine);
+
+	translate(r_t2 - w, 0);
+	rotate(90);
+	draw_arc_fill(0.25f, r, r, fine);
+
+	// Recenter
+	translate(r - h/2.0f, r - w/2.0f);
+	rotate(90);
+}
+
+void DrawContext::draw_roundrect_line(float w, float h, float r, int fine) {
+	if (w - 2.0f*r < 0) {
+		r = w/2.0f;
+	}
+	if (h - 2.0f*r < 0) {
+		r = h/2.0f;
+	}
+
+	float r_t2 = 2.0f*r;
+
+	// Draw edges
+	draw_line(w/2.0f, h/2.0f - r, w/2.0f, r - h/2.0f);
+	draw_line(-w/2.0f, h/2.0f - r, -w/2.0f, r - h/2.0f);
+	draw_line(w/2.0f - r, h/2.0f, r - w/2.0f, h/2.0f);
+	draw_line(w/2.0f - r, -h/2.0f, r - w/2.0f, -h/2.0f);
+
+	// Draw corners
+	translate(w/2.0f - r, h/2.0f - r);
+	draw_arc_line(0.25f, r, r, fine);
+
+	translate(r_t2 - w, 0);
+	rotate(90);
+	draw_arc_line(0.25f, r, r, fine);
+
+	translate(r_t2 - h, 0);
+	rotate(90);
+	draw_arc_line(0.25f, r, r, fine);
+
+	translate(r_t2 - w, 0);
+	rotate(90);
+	draw_arc_line(0.25f, r, r, fine);
+
+	// Recenter
+	translate(r - h/2.0f, r - w/2.0f);
+	rotate(90);
+}
