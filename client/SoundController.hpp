@@ -26,7 +26,12 @@
 #define LM_CLIENT_SOUNDCONTROLLER_HPP
 
 #include <string>
+
+#ifdef LM_NOSOUND
+typedef void Mix_Chunk;
+#else
 #include "SDL_mixer.h"
+#endif
 
 namespace LM {
 	class PathManager;

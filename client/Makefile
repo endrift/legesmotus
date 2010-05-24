@@ -14,6 +14,7 @@ CXXFLAGS += $(CLIENTFLAGS)
 ifeq ($(NOSOUND),)
 OBJS += SoundController.o
 else
+CXXFLAGS += -DLM_NOSOUND
 OBJS += SoundController_dummy.o
 endif
 
