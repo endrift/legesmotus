@@ -1,6 +1,6 @@
 BASEDIR = ..
 UNIXSTYLE = 1
-include $(BASEDIR)/common.mak
+include $(BASEDIR)/common.mk
 OBJS = test_primitives
 CXXFLAGS += $(CLIENTFLAGS) -I$(BASEDIR)/client
 LIBS := $(CLIENTLIBS) -L$(BASEDIR) -llmclient -llmserver -llmcommon -llmgui

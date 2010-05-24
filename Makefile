@@ -1,7 +1,7 @@
 default:
 
 BASEDIR = .
-include common.mak
+include common.mk
 
 INSTALL_TARGETS = $(addprefix install-,$(TARGETS))
 SRC_PKG = common server client gui
@@ -45,7 +45,7 @@ clean:
 	$(RM) -r legesmotus*.{pkg,dmg}
 
 distclean: clean
-	$(RM) config.mak
+	$(RM) config.mk
 
 deps:
 	$(MAKE) -C common deps

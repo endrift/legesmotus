@@ -8,12 +8,13 @@ OBJS = ClientNetwork.o ClientSDL.o GameController.o GameWindow.o Sprite.o Graphi
 	Weapon.o StandardGun.o SpreadGun.o ImpactCannon.o Hazard.o Form.o FormItem.o ListMenuItem.o \
 	RadialMenu.o GraphicMenuItem.o TextInput.o GraphicsCache.o ThawGun.o
 	#put .o filenames here (DO NOT PUT .cpp!)
-include $(BASEDIR)/common.mak
+include $(BASEDIR)/common.mk
 CXXFLAGS += $(CLIENTFLAGS)
 
 ifeq ($(NOSOUND),)
 OBJS += SoundController.o
 else
+CXXFLAGS += -DLM_NOSOUND
 OBJS += SoundController_dummy.o
 endif
 

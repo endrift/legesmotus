@@ -5,15 +5,15 @@ SERVER = $(BASEDIR)/server
 FRAMEWORKS = /Library/Frameworks
 
 # Version strings
-VERSION = 0.3.1-svn
+VERSION = 0.4.0-svn
 
-# These may be overridden by config.mak
+# These may be overridden by config.mk
 DATADIR = data
 #UNIVERSAL = 1
 #UNIXSTYLE = 1
 
-ifneq ($(shell test -r $(BASEDIR)/config.mak && echo 1),)
- include $(BASEDIR)/config.mak
+ifneq ($(shell test -r $(BASEDIR)/config.mk && echo 1),)
+ include $(BASEDIR)/config.mk
 endif
 
 # Default targets if no targets are explicitly listed
@@ -144,7 +144,7 @@ CXXFLAGS += $(CFLAGS) -fno-rtti
 .deps/%.d: %.cpp .deps
 	$(CXX) -M $(CXXFLAGS) $< | sed -e 's,^\([^:]*\)\.o:,\1.o $@:,' > $@
 
-common-deps: $(PHONY) .deps .deps/deps.mak
+common-deps: $(PHONY) .deps .deps/deps.mk
 
 common-clean: $(PHONY)
 	$(RM) -r .deps
@@ -152,13 +152,13 @@ common-clean: $(PHONY)
 .deps:
 	mkdir -p .deps
 
-.deps/deps.mak: $(OBJS:%.o=.deps/%.d)
-	cat .deps/*.d > .deps/deps.mak
+.deps/deps.mk: $(OBJS:%.o=.deps/%.d)
+	cat .deps/*.d > .deps/deps.mk
 
 ifneq ($(MAKECMDGOALS),clean)
  ifneq ($(OBJS),)
-  ifneq ($(shell test -r .deps/deps.mak && echo 1),)
-   include .deps/deps.mak
+  ifneq ($(shell test -r .deps/deps.mk && echo 1),)
+   include .deps/deps.mk
   endif
  endif
 endif

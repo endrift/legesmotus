@@ -1,6 +1,6 @@
 BASEDIR = ..
 OBJS = MetaServer.o #put .o filenames here (DO NOT PUT .cpp!)
-include ../common.mak
+include ../common.mk
 
 all: lmmetaserver
 
