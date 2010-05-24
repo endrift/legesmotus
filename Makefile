@@ -4,6 +4,9 @@ BASEDIR = .
 include common.mak
 
 INSTALL_TARGETS = $(addprefix install-,$(TARGETS))
+SRC_PKG = common server client gui
+AUX_PKG = $(SRC_PKG) tests serverscanner metaserver
+BUILD_PKGS = $(foreach BUILD,$(BUILD_DIRS),$(foreach PKG,$(SRC_PKGS),$(BUILD)/lm$(PKG).a))
 
 all: default
 
@@ -13,17 +16,14 @@ legesmotus: client
 
 lmserver: server
 
-common:
-	$(MAKE) -C common
+$(SRC_PKG):
+	$(MAKE) -C $@
 
 server: common
-	$(MAKE) -C server
 
 client: common
-	$(MAKE) -C client
 
 gui: common client
-	$(MAKE) -C gui
 
 serverscanner: common client
 	$(MAKE) -C serverscanner
@@ -43,22 +43,14 @@ clean:
 	$(MAKE) -C tests clean
 	$(RM) -r "Leges Motus.app"
 	$(RM) -r legesmotus*.{pkg,dmg}
-	$(RM) README.rtf
+
+distclean: clean
+	$(RM) config.mak
 
 deps:
 	$(MAKE) -C common deps
 	$(MAKE) -C server deps
 	$(MAKE) -C client deps
-	$(MAKE) -C serverscanner deps
-	$(MAKE) -C metaserver deps
-
-README.rtf: README
-	echo '{\\rtf1\\ansi' > README.rtf # Header
-	echo '{\\fonttbl\\f0 Courier;}' >> README.rtf # Set font to Courier
-	echo '\\f0\\fs20' >> README.rtf # Set font size to 10pt
-	echo '\\tx960\\tx1920\\tx2880\\tx3840\\tx4800\\tx5760\\tx6720\\tx7680\\tx8640\\tx9600' >> README.rtf # Set tabstop to 8
-	cat README | sed -e 's/\\/\\\\/g' -e 's/$$/\\/g' >> README.rtf # Parse file
-	echo '}' >> README.rtf # Footer
 
 ifeq ($(MACHINE)$(UNIXSTYLE),Darwin)
 
@@ -115,7 +107,7 @@ $(DMG): bundle $(CLI_INSTALLER)
 	hdiutil create -srcfolder tmp -volname "Leges Motus $(VERSION)" -format UDRW -ov raw-$(DMG)
 	$(RM) -r tmp
 	mkdir -p tmp
-	# This is to set the volume icon. No really
+	# This is to set the volume icon. No, really
 	hdiutil attach raw-$(DMG) -mountpoint tmp
 	SetFile -a C tmp
 	hdiutil detach tmp

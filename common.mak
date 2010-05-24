@@ -155,9 +155,9 @@ common-clean: $(PHONY)
 .deps/deps.mak: $(OBJS:%.o=.deps/%.d)
 	cat .deps/*.d > .deps/deps.mak
 
-ifneq ($(OBJS),)
- ifneq ($(shell test -r .deps/deps.mak && echo 1),)
-  ifeq ($(NODEPS),)
+ifneq ($(MAKECMDGOALS),clean)
+ ifneq ($(OBJS),)
+  ifneq ($(shell test -r .deps/deps.mak && echo 1),)
    include .deps/deps.mak
   endif
  endif
