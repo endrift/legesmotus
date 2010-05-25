@@ -4,7 +4,7 @@ include $(BASEDIR)/common.mk
 
 all: lmserver
 
-lmserver: ../liblmserver.a ../liblmcommon.a main.o
+lmserver: main.o ../liblmserver.a ../liblmcommon.a
 	$(CXX) $(LDFLAGS) -o lmserver $^ $(LIBS)
 
 ../liblmserver.a: $(OBJS)

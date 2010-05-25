@@ -21,12 +21,7 @@ default: build $(MACHINE_TARGETS)
 
 $(MACHINE_TARGETS):
 	mkdir -p $@
-	$(MAKE) BUILDDIR=$@ ARCH=$(call isolate-arch,$@) $(TARGET)
-
-common: TARGET = common
-client: TARGET = client
-server: TARGET = server
-common client server: $(MACHINE_TARGETS)
+	$(MAKE) BUILDDIR=$@ ARCH=$(call isolate-arch,$@) $(MAKECMDGOALS)
 
 UNIVERSAL_TARGET=build/$(MACHINE)-universal
 ifeq ($(MACHINE)$(UNIXSTYLE),Darwin)
@@ -47,6 +42,8 @@ build:
 
 clean:
 	$(RM) -r build
+
+%:: $(MACHINE_TARGETS);
 
 .PHONY: default clean $(MACHINE_TARGETS)
 

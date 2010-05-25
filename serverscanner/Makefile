@@ -6,7 +6,7 @@ CXXFLAGS += $(CLIENTFLAGS)
 
 all: serverscanner
 
-serverscanner: ../liblmserverscanner.a ../liblmcommon.a main.o $(PLATFORM_DEP)
+serverscanner: main.o ../liblmserverscanner.a ../liblmcommon.a $(PLATFORM_DEP)
 	$(CXX) $(LDFLAGS) -o serverscanner $^
 
 ../liblmserverscanner.a: $(OBJS)

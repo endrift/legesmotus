@@ -28,7 +28,7 @@ endif
 
 all: legesmotus
 
-legesmotus: ../liblmclient.a ../liblmcommon.a main.o $(PLATFORM_DEP)
+legesmotus: main.o ../liblmclient.a ../liblmcommon.a $(PLATFORM_DEP)
 	$(CXX) $(LDFLAGS) -o legesmotus $^ $(CLIENTLIBS)
 
 ../liblmclient.a: $(OBJS)
