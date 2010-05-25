@@ -18,8 +18,8 @@ fi
 name="$1"
 classname="$(print -- "$name" | cut -f2 -d/)"
 
-hfile="${name}.hpp"
-cfile="${name}.cpp"
+hfile="src/${name}.hpp"
+cfile="src/${name}.cpp"
 guard="LM_$(print -- "$name" | tr / _ | tr a-z A-Z)_HPP"
 
 if [[ -a $hfile ]] || [[ -a $cfile ]]

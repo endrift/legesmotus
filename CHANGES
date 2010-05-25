@@ -1,5 +1,11 @@
 Leges Motus Version History:
 --------------------------
+v. 0.3.1 - ??/??/??:
+ New Features:
+  - Client and server can now be installed separately
+ Bug Fixes:
+  - Fix building of the non-sound version on machines that don't have SDL_mixer
+--------------------------
 v. 0.3.0 - 04/24/10:
  New Features:
   - Extensible and configurable set of multiple weapons.
