@@ -17,6 +17,9 @@ MACHINE_TARGETS = $(foreach ARCH,$(ARCHS),build/$(MACHINE)-$(ARCH))
 endif
 isolate-arch = $(patsubst build/$(MACHINE)-%,%,$(1))
 
+%:: $(MACHINE_TARGETS)
+
+default:
 default: build $(MACHINE_TARGETS)
 
 $(MACHINE_TARGETS):
@@ -38,12 +41,12 @@ endif
 endif
 
 build:
+build:
 	mkdir -p build
 
 clean:
+clean:
 	$(RM) -r build
-
-%:: $(MACHINE_TARGETS);
 
 .PHONY: default clean $(MACHINE_TARGETS)
 
