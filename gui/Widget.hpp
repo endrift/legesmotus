@@ -25,12 +25,50 @@
 #ifndef LM_GUI_WIDGET_HPP
 #define LM_GUI_WIDGET_HPP
 
+#include <list>
+
 namespace LM {
 	class Widget {
 	private:
+		Widget* m_parent;
+		std::list<Widget*> m_children;
+
+		float m_x;
+		float m_y;
+		float m_w;
+		float m_h;
+
+	protected:
+		void add_child(Widget* child);
 
 	public:
+		Widget(Widget* parent = NULL);
+		virtual ~Widget();
 
+		void	set_parent(Widget* new_parent);
+		void	get_parent();
+		std::list<Widget*> get_children();
+
+		void	child_at(float x, float y);
+
+		virtual void set_x();
+		virtual void set_y();
+		virtual void set_width();
+		virtual void set_height();
+
+		float	get_x() const;
+		float	get_y() const;
+		float	get_width() const;
+		float	get_height() const;
+
+		virtual void focus();
+		virtual void blur();
+
+		virtual void mouse_clicked(float x, float y, bool down, int button = 0);
+		virtual void mouse_moved(float x, float y, float delta_x, float delta_y);
+		virtual void keypress(int key, bool down);
+
+		virtual void redraw();
 	};
 }
 
