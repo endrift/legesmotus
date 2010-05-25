@@ -27,7 +27,7 @@ $(MACHINE_TARGETS):
 	$(MAKE) BUILDDIR=$@ ARCH=$(call isolate-arch,$@) $(MAKECMDGOALS)
 
 UNIVERSAL_TARGET=build/$(MACHINE)-universal
-ifeq ($(MACHINE)$(UNIXSTYLE),Darwin)
+ifeq ($(MACHINE)$(NOBUNDLE),Darwin)
 bundle: TARGET = bundle
 bundle: $(MACHINE_TARGETS)
 
@@ -87,7 +87,7 @@ deps:
 	$(MAKE) -C server deps
 	$(MAKE) -C client deps
 
-ifeq ($(MACHINE)$(UNIXSTYLE),Darwin)
+ifeq ($(MACHINE)$(NOBUNDLE),Darwin)
 
 CLI_INSTALLER = Install\ Command\ Line\ Tools.app
 DMG = legesmotus-$(VERSION)-mac.dmg

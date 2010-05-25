@@ -1,5 +1,5 @@
 BASEDIR = ..
-UNIXSTYLE = 1
+NOBUNDLE = 1
 include $(BASEDIR)/common.mk
 OBJS = test_primitives
 CXXFLAGS += $(CLIENTFLAGS) -I../client

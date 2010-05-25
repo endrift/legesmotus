@@ -178,9 +178,9 @@ By default, Leges Motus will install to /usr/local.  You may change this by spec
 
 	./configure --prefix=$HOME/legesmotus
 
-By default, on Mac OS X, Leges Motus will build a .app bundle, and use frameworks to find the SDL libraries.  Leges Motus will install the bundle to the system-wide /Applications directory.  To enable a traditional, Unix-style build, use:
+By default, on Mac OS X, Leges Motus will build a .app bundle, and use frameworks to find the SDL libraries.  Leges Motus will install the bundle to the system-wide /Applications directory.  To enable a traditional, flat build, use:
 
-	./configure --unix-style
+	./configure --disable-bundle
 
 Note that this requires sdl-config to be installed on your system, which it generally is not unless SDL is installed through a system such as MacPorts.
 

@@ -11,7 +11,7 @@ VERSION = 0.4.0-svn
 # These may be overridden by config.mk
 DATADIR = data
 #UNIVERSAL = 1
-#UNIXSTYLE = 1
+#NOBUNDLE = 1
 
 -include $(BASEDIR)/config.mk
 
@@ -49,7 +49,7 @@ ifeq ($(ARCHS),)
   ARCHS += i386
  else
   ifeq ($(MACHINE),Darwin)
-   ifeq ($(UNIXSTYLE),)
+   ifeq ($(NOBUNDLE),)
     ifeq ($(UNIVERSAL),)
      ARCHS += $(shell arch)
     else
@@ -92,7 +92,7 @@ else
  INPLACE = -i ''
 endif
 
-ifeq ($(MACHINE)$(UNIXSTYLE),Darwin)
+ifeq ($(MACHINE)$(NOBUNDLE),Darwin)
  export MACOSX_DEPLOYMENT_TARGET=10.4
  FLAGS_SDL  = -I$(FRAMEWORKS)/SDL.framework/Headers
  FLAGS_SDL += -I$(FRAMEWORKS)/SDL_image.framework/Headers
@@ -116,7 +116,7 @@ endif
 
 ifeq ($(MACHINE),Darwin)
  # is Mac
- ifeq ($(UNIXSTYLE),)
+ ifeq ($(NOBUNDLE),)
   CFLAGS += -DLM_FWBASED
  endif
  ifneq ($(UNIVERSAL),)
@@ -126,7 +126,7 @@ ifeq ($(MACHINE),Darwin)
    CFLAGS += -arch $(ARCH)
   endif
  else
-  ifeq ($(UNIXSTYLE),)
+  ifeq ($(NOBUNDLE),)
    # Test for Snow Leopard (SDL TTF's stock release is 32-bit)
    ifeq ($(shell test `uname -r | cut -f 1 -d .` -ge 10 && echo 1),1) 
     CFLAGS += -arch i386

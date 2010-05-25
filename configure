@@ -17,7 +17,7 @@ fi
 
 prefix=/usr/local
 sound=1
-unix_style=1
+nobundle=1
 universal=1
 force=0
 debug=0
@@ -28,7 +28,7 @@ metaserver=0
 
 if [ `uname -s` = Darwin ]
 then
-	unix_style=0
+	nobundle=0
 fi
 
 display_help () {
@@ -45,7 +45,7 @@ display_help () {
 	echo "  --disable-server         Disable building the server"
 	echo "  --enable-metaserver      Enable building the metaserver"
 	echo "  --debug                  Enable a debug build"
-	echo "  --unix-style             (Mac OS X only) Build without frameworks or .app bundle"
+	echo "  --disable-bundle         (Mac OS X only) Build without frameworks or .app bundle"
 	echo "  --disable-universal      (Mac OS X only) Do not build universal binary"
 	echo "  --force                  Force configure to continue even if required libraries aren't found"
 	echo "  --help                   Display this help"
@@ -116,8 +116,8 @@ do
 	--debug)
 		debug=1
 		;;
-	--unix-style)
-		unix_style=1
+	--disable-bundle)
+		nobundle=1
 		;;
 	--disable-sound)
 		sound=0
@@ -175,7 +175,7 @@ then
 	bindir="$prefix/bin"
 fi
 
-if [ $unix_style -eq 1 ]
+if [ $nobundle -eq 1 ]
 then
 	if [ -z $mandir ]
 	then
@@ -229,7 +229,7 @@ else
 	die
 fi
 
-if [ $client -eq 1 ] && [ $unix_style -eq 1 ]
+if [ $client -eq 1 ] && [ $nobundle -eq 1 ]
 then
 	printf '%s' "Checking for SDL... "
 	if $SDL_CONFIG --version >/dev/null 2>/dev/null
@@ -312,13 +312,13 @@ echo "Debug:              `format_boolean $debug`"
 
 if [ `uname -s` = Darwin ]
 then
-	echo "Unix-style build:   `format_boolean $unix_style`"
+	echo "Bundle build:       `format_boolean $(( ! $nobundle )`"
 	echo "Universal build:    `format_boolean $universal`"
 fi
 
 echo
 
-if [ $unix_style -eq 0 ]
+if [ $nobundle -eq 0 ]
 then
 	echo "Type 'make' to build and then 'make install' to install into the Applications directory."
 else
@@ -361,11 +361,11 @@ then
 else
 	echo "DEBUG =" >> config.mk
 fi
-if [ $unix_style -ne 0 ]
+if [ $nobundle -ne 0 ]
 then
-	echo "UNIXSTYLE = 1" >> config.mk
+	echo "NOBUNDLE = 1" >> config.mk
 else
-	echo "UNIXSTYLE =" >> config.mk
+	echo "NOBUNDLE =" >> config.mk
 fi
 
 echo "CC = $CC" >> config.mk
