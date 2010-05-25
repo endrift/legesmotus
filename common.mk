@@ -184,9 +184,8 @@ CLIENTLIBS = $(LIBS_GL) $(LIBS) $(LIBS_SDL)
 CXXFLAGS += $(CFLAGS) -fno-rtti
 
 ifneq ($(SUBDIR),)
- SRCDIR = $(subst \ ,?,$(BASEDIR)/$(SUBDIR))
- #SRCDIR = $(BASEDIR)/$(SUBDIR)
- $(foreach DIR,$(SRCDIR),$(info $(DIR)))
+ #SRCDIR = $(subst \ ,?,$(BASEDIR)/$(SUBDIR))
+ SRCDIR = $(BASEDIR)/$(SUBDIR)
  vpath %.c $(SRCDIR)
  vpath %.cpp $(SRCDIR)
  vpath %.m $(SRCDIR)
