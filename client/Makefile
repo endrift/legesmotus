@@ -28,13 +28,12 @@ endif
 
 all: legesmotus
 
-legesmotus: $(BASEDIR)/liblmclient.a $(BASEDIR)/liblmcommon.a main.o $(PLATFORM_DEP)
-	$(CXX) $(LDFLAGS) -o legesmotus -L$(BASEDIR) main.o -llmclient -llmcommon $(CLIENTLIBS) $(PLATFORM_DEP)
+legesmotus: ../liblmclient.a ../liblmcommon.a main.o $(PLATFORM_DEP)
+	$(CXX) $(LDFLAGS) -o legesmotus $^ $(CLIENTLIBS)
 
-$(BASEDIR)/liblmclient.a: $(OBJS)
-	$(AR) crus $(BASEDIR)/liblmclient.a $(OBJS)
+../liblmclient.a: $(OBJS)
 
 clean: common-clean
-	$(RM) $(OBJS) *~ main.o $(BASEDIR)/liblmclient.a legesmotus $(PLATFORM_DEP)
+	$(RM) $(OBJS) *~ main.o ../liblmclient.a legesmotus $(PLATFORM_DEP)
 
 deps: common-deps

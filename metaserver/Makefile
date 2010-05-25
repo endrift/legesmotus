@@ -5,7 +5,7 @@ include ../common.mk
 all: lmmetaserver
 
 lmmetaserver: $(OBJS) ../liblmcommon.a main.o
-	$(CXX) $(LDFLAGS) -o lmmetaserver -L.. main.o $(OBJS) -llmcommon $(LIBS)
+	$(CXX) $(LDFLAGS) -o lmmetaserver $^ $(LIBS)
 
 clean: common-clean
 	$(RM) $(OBJS) main.o *~

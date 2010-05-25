@@ -4,12 +4,11 @@ OBJS = Map.o Exception.o Player.o Polygon.o Point.o Shape.o Circle.o PacketReade
 	PathManager.o ConfigManager.o Version.o #put .o filenames here (DO NOT PUT .cpp!)
 include $(BASEDIR)/common.mk
 
-all: $(BASEDIR)/liblmcommon.a
+all: ../liblmcommon.a
 
-$(BASEDIR)/liblmcommon.a: $(OBJS)
-	$(AR) crus $(BASEDIR)/liblmcommon.a $(OBJS)
+../liblmcommon.a: $(OBJS)
 
 clean: common-clean
-	$(RM) $(OBJS) $(BASEDIR)/liblmcommon.a *~
+	$(RM) $(OBJS) ../liblmcommon.a *~
 
 deps: common-deps

@@ -1,14 +1,61 @@
 default:
 
-BASEDIR = .
-include common.mk
+all: default
+
+BASEDIR = $(shell echo $(realpath .) | sed -e 's/ /\\ /')
+include $(BASEDIR)/common.mk
+
+distclean: clean
+	$(RM) config.mk
+
+ifeq ($(BUILDDIR),)
+
+ifneq ($(ARCH),)
+MACHINE_TARGETS = build/$(MACHINE)-$(ARCH)
+else
+MACHINE_TARGETS = $(foreach ARCH,$(ARCHS),build/$(MACHINE)-$(ARCH))
+endif
+isolate-arch = $(patsubst build/$(MACHINE)-%,%,$(1))
+
+default: build $(MACHINE_TARGETS)
+
+$(MACHINE_TARGETS):
+	mkdir -p $@
+	$(MAKE) BUILDDIR=$@ ARCH=$(call isolate-arch,$@) $(TARGET)
+
+common: TARGET = common
+client: TARGET = client
+server: TARGET = server
+common client server: $(MACHINE_TARGETS)
+
+UNIVERSAL_TARGET=build/$(MACHINE)-universal
+ifeq ($(MACHINE)$(UNIXSTYLE),Darwin)
+bundle: TARGET = bundle
+bundle: $(MACHINE_TARGETS)
+
+ifneq ($(UNIVERSAL),)
+bundle:
+	mkdir -p $(UNIVERSAL_TARGET)
+	cp -r $(firstword $(MACHINE_TARGETS))/Leges\ Motus.app $(UNIVERSAL_TARGET)/
+	lipo -create $(foreach TARGET,$(MACHINE_TARGETS),-arch $(call isolate-arch,$(TARGET)) $(TARGET)/Leges\ Motus.app/Contents/MacOS/legesmotus) -output $(UNIVERSAL_TARGET)/Leges\ Motus.app/Contents/MacOS/legesmotus
+	lipo -create $(foreach TARGET,$(MACHINE_TARGETS),-arch $(call isolate-arch,$(TARGET)) $(TARGET)/Leges\ Motus.app/Contents/MacOS/lmserver) -output $(UNIVERSAL_TARGET)/Leges\ Motus.app/Contents/MacOS/lmserver
+endif
+endif
+
+build:
+	mkdir -p build
+
+clean:
+	$(RM) -r build
+
+.PHONY: default clean $(MACHINE_TARGETS)
+
+else
 
 INSTALL_TARGETS = $(addprefix install-,$(TARGETS))
 SRC_PKG = common server client gui
-AUX_PKG = $(SRC_PKG) tests serverscanner metaserver
-BUILD_PKGS = $(foreach BUILD,$(BUILD_DIRS),$(foreach PKG,$(SRC_PKGS),$(BUILD)/lm$(PKG).a))
-
-all: default
+AUX_PKG = tests serverscanner metaserver
+ALL_PKG = $(SRC_PKG) $(AUX_PKG)
 
 default: $(TARGETS)
 
@@ -16,8 +63,9 @@ legesmotus: client
 
 lmserver: server
 
-$(SRC_PKG):
-	$(MAKE) -C $@
+$(ALL_PKG):
+	@mkdir -p $(BUILDDIR)/$@
+	$(MAKE) -C $(BUILDDIR)/$@ -f $(BASEDIR)/$@/Makefile BASEDIR="../../.." SUBDIR="$@"
 
 server: common
 
@@ -26,26 +74,13 @@ client: common
 gui: common client
 
 serverscanner: common client
-	$(MAKE) -C serverscanner
 
 metaserver: common
-	$(MAKE) -C metaserver
 
 tests: common server client gui
-	$(MAKE) -C tests
 
 clean:
-	$(MAKE) -C common clean
-	$(MAKE) -C server clean
-	$(MAKE) -C client clean
-	$(MAKE) -C serverscanner clean
-	$(MAKE) -C metaserver clean
-	$(MAKE) -C tests clean
-	$(RM) -r "Leges Motus.app"
-	$(RM) -r legesmotus*.{pkg,dmg}
-
-distclean: clean
-	$(RM) config.mk
+	$(RM) -r $(BUILDDIR)
 
 deps:
 	$(MAKE) -C common deps
@@ -58,42 +93,22 @@ CLI_INSTALLER = Install\ Command\ Line\ Tools.app
 DMG = legesmotus-$(VERSION)-mac.dmg
 EXTRA_PHONY = bundle package cli-installer
 
-Leges\ Motus.app: client server
-	mkdir -p "Leges Motus.app/Contents/MacOS"
-	mkdir -p "Leges Motus.app/Contents/Resources"
-	mkdir -p "Leges Motus.app/Contents/Frameworks"
-	cp -f client/legesmotus "Leges Motus.app/Contents/MacOS/"
-	cp -f server/lmserver "Leges Motus.app/Contents/MacOS"
-	cp -f client/Info.plist "Leges Motus.app/Contents/"
-	cp -f client/legesmotus.icns "Leges Motus.app/Contents/Resources/"
-	cp -Rf client/legesmotus.nib "Leges Motus.app/Contents/Resources/"
-	cp -Rf data "Leges Motus.app/Contents/Resources/"
-	sed -e 's/\$$VERSION/$(VERSION)/' -i '' "Leges Motus.app/Contents/Info.plist"
-	find "Leges Motus.app" -name .svn -print0 | xargs -0 rm -rf
-	test -d "Leges Motus.app/Contents/Frameworks/SDL.framework" || cp -Rf /Library/Frameworks/SDL.framework "Leges Motus.app/Contents/Frameworks"
-	test -d "Leges Motus.app/Contents/Frameworks/SDL_image.framework" || cp -Rf /Library/Frameworks/SDL_image.framework "Leges Motus.app/Contents/Frameworks"
-	test -d "Leges Motus.app/Contents/Frameworks/SDL_ttf.framework" || cp -Rf /Library/Frameworks/SDL_ttf.framework "Leges Motus.app/Contents/Frameworks"
-	test -d "Leges Motus.app/Contents/Frameworks/SDL_mixer.framework" || cp -Rf /Library/Frameworks/SDL_mixer.framework "Leges Motus.app/Contents/Frameworks"
-
-legesmotus-$(VERSION).pkg: bundle README.rtf
-	$(RM) -r tmp
-	mkdir -p tmp/Leges\ Motus/Applications
-	mkdir -p tmp/Leges\ Motus/usr/bin
-	mkdir -p tmp/Leges\ Motus/usr/share/man/man6
-	mkdir -p tmp/Resources/en.lproj
-	cp -Rf Leges\ Motus.app tmp/Leges\ Motus/Applications/
-	cp -Rf man/man6/* tmp/Leges\ Motus/usr/share/man/man6/
-	cd tmp/Leges\ Motus/usr/bin && \
-		ln -sf ../../Applications/Leges\ Motus.app/Contents/MacOS/lmserver
-	cp -f README.rtf tmp/Resources/en.lproj/ReadMe.rtf
-	cp -f COPYING tmp/Resources/en.lproj/License.txt
-	/Developer/usr/bin/packagemaker --root tmp/Leges\ Motus --id org.legesmotus.legesmotus \
-		--title "Leges Motus $(VERSION)" --version "$(VERSION)" --resources tmp/Resources \
-		--target 10.4 --root-volume-only --out legesmotus-$(VERSION).pkg
-	# The following two lines are a hack to prevent the installer from thinking the packages are relocatable
-	$(RM) legesmotus-$(VERSION).pkg/Contents/Resources/TokenDefinitions.plist
-	defaults delete "`pwd`/legesmotus-$(VERSION).pkg/Contents/Info" IFPkgPathMappings
-	$(RM) -r tmp
+$(BUILDDIR)/Leges\ Motus.app: client server
+	mkdir -p "$@"/Contents/MacOS
+	mkdir -p "$@"/Contents/Resources
+	mkdir -p "$@"/Contents/Frameworks
+	cp -f $(BUILDDIR)/client/legesmotus "$@"/Contents/MacOS/
+	cp -f $(BUILDDIR)/server/lmserver "$@"/Contents/MacOS
+	cp -f client/Info.plist "$@"/Contents/
+	cp -f client/legesmotus.icns "$@"/Contents/Resources/
+	cp -Rf client/legesmotus.nib "$@"/Contents/Resources/
+	cp -Rf data "$@"/Contents/Resources/
+	sed -e 's/\$$VERSION/$(VERSION)/' -i '' "$@"/Contents/Info.plist
+	find "$@" -name .svn -print0 | xargs -0 rm -rf
+	test -d "$@"/Contents/Frameworks/SDL.framework || cp -Rf /Library/Frameworks/SDL.framework "$@"/Contents/Frameworks
+	test -d "$@"/Contents/Frameworks/SDL_image.framework || cp -Rf /Library/Frameworks/SDL_image.framework "$@"/Contents/Frameworks
+	test -d "$@"/Contents/Frameworks/SDL_ttf.framework || cp -Rf /Library/Frameworks/SDL_ttf.framework "$@"/Contents/Frameworks
+	test -d "$@"/Contents/Frameworks/SDL_mixer.framework || cp -Rf /Library/Frameworks/SDL_mixer.framework "$@"/Contents/Frameworks
 
 $(DMG): bundle $(CLI_INSTALLER)
 	$(RM) -r tmp
@@ -122,13 +137,13 @@ $(CLI_INSTALLER): mac/install.applescript mac/install.sh
 	cp -f man/man6/* $(CLI_INSTALLER)/Contents/Resources
 	cp -f mac/install.sh $(CLI_INSTALLER)/Contents/Resources
 
-bundle: Leges\ Motus.app
+bundle: $(BUILDDIR)/Leges\ Motus.app
 
 package: $(DMG)
 
 cli-installer: $(CLI_INSTALLER)
 
-install:
+install: bundle
 	cp -Rf Leges\ Motus.app /Applications/
 	ln -sf /Applications/Leges\ Motus.app/Contents/MacOS/lmserver $(BINDIR)
 	install -d $(MANDIR)/man6
@@ -150,37 +165,37 @@ install: default $(INSTALL_TARGETS)
 
 install-client: client install-common
 	install -d $(DESTDIR)$(DATADIR)/fonts
-	install -m 0644 $(BASEDIR)/data/fonts/* $(DESTDIR)$(DATADIR)/fonts
+	install -m 0644 data/fonts/* $(DESTDIR)$(DATADIR)/fonts
 	install -d $(DESTDIR)$(DATADIR)/sounds
-	install -m 0644 $(BASEDIR)/data/sounds/* $(DESTDIR)$(DATADIR)/sounds
+	install -m 0644 data/sounds/* $(DESTDIR)$(DATADIR)/sounds
 	install -d $(DESTDIR)$(DATADIR)/sprites
-	install -m 0644 $(BASEDIR)/data/sprites/* $(DESTDIR)$(DATADIR)/sprites
+	install -m 0644 data/sprites/* $(DESTDIR)$(DATADIR)/sprites
 	install -d $(DESTDIR)$(MANDIR)/man6
-	install -m 0644 $(BASEDIR)/man/man6/legesmotus.6 $(DESTDIR)$(MANDIR)/man6
+	install -m 0644 man/man6/legesmotus.6 $(DESTDIR)$(MANDIR)/man6
 	install -d $(DESTDIR)$(SHAREDIR)/applications
-	install -m 0644 $(BASEDIR)/client/legesmotus.desktop $(DESTDIR)$(SHAREDIR)/applications/legesmotus.desktop
+	install -m 0644 client/legesmotus.desktop $(DESTDIR)$(SHAREDIR)/applications/legesmotus.desktop
 	sed -e 's/\$$VERSION/$(subst /,\/,$(VERSION))/' $(INPLACE) $(DESTDIR)$(SHAREDIR)/applications/legesmotus.desktop
 	sed -e 's/\$$SHAREDIR/$(subst /,\/,$(SHAREDIR))/' $(INPLACE) $(DESTDIR)$(SHAREDIR)/applications/legesmotus.desktop
 	sed -e 's/\$$BINDIR/$(subst /,\/,$(BINDIR))/' $(INPLACE) $(DESTDIR)$(SHAREDIR)/applications/legesmotus.desktop
 	install -d $(DESTDIR)$(SHAREDIR)/icons/hicolor/256x256
-	install -m 0644 $(BASEDIR)/data/sprites/blue_head256.png $(DESTDIR)$(SHAREDIR)/icons/hicolor/256x256/legesmotus.png
+	install -m 0644 data/sprites/blue_head256.png $(DESTDIR)$(SHAREDIR)/icons/hicolor/256x256/legesmotus.png
 	which update-desktop-database && update-desktop-database $(DESTDIR)$(SHAREDIR)/applications || true
 	install -d $(DESTDIR)$(BINDIR)
-	install $(BASEDIR)/client/legesmotus $(DESTDIR)$(BINDIR)
+	install $(BUILD)/client/legesmotus $(DESTDIR)$(BINDIR)
 	strip $(DESTDIR)$(BINDIR)/legesmotus
 	
 install-server: server install-common
 	install -d $(DESTDIR)$(MANDIR)/man6
-	install -m 0644 $(BASEDIR)/man/man6/lmserver.6 $(DESTDIR)$(MANDIR)/man6
+	install -m 0644 man/man6/lmserver.6 $(DESTDIR)$(MANDIR)/man6
 	install -d $(DESTDIR)$(BINDIR)
-	install $(BASEDIR)/server/lmserver $(DESTDIR)$(BINDIR)
+	install $(BUILD)/server/lmserver $(DESTDIR)$(BINDIR)
 	strip $(DESTDIR)$(BINDIR)/lmserver
 
 install-common:
 	install -d $(DESTDIR)$(DATADIR)/maps
-	install -m 0644 $(BASEDIR)/data/maps/* $(DESTDIR)$(DATADIR)/maps
+	install -m 0644 data/maps/* $(DESTDIR)$(DATADIR)/maps
 	install -d $(DESTDIR)$(DATADIR)/weapons
-	install -m 0644 $(BASEDIR)/data/weapons/* $(DESTDIR)$(DATADIR)/weapons
+	install -m 0644 data/weapons/* $(DESTDIR)$(DATADIR)/weapons
 
 uninstall:
 	$(RM) -r $(DESTDIR)$(DATADIR)
@@ -198,4 +213,6 @@ cscope:
 	find . -follow -name SCCS -prune -o -name '*.[ch]pp' -print | grep -v svn > cscope.files
 	cscope -v -q
 
-.PHONY: deps clean common server client metaserver default install uninstall $(EXTRA_PHONY)
+.PHONY: deps clean common server client metaserver default install uninstall $(EXTRA_PHONY) $(ALL_PKGS) $(PKG_DIRS)
+
+endif

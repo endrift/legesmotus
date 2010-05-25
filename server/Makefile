@@ -4,13 +4,12 @@ include $(BASEDIR)/common.mk
 
 all: lmserver
 
-lmserver: $(BASEDIR)/liblmserver.a $(BASEDIR)/liblmcommon.a main.o
-	$(CXX) $(LDFLAGS) -o lmserver -L.. main.o -llmserver -llmcommon $(LIBS)
+lmserver: ../liblmserver.a ../liblmcommon.a main.o
+	$(CXX) $(LDFLAGS) -o lmserver $^ $(LIBS)
 
-$(BASEDIR)/liblmserver.a: $(OBJS)
-	$(AR) crus $(BASEDIR)/liblmserver.a $(OBJS)
+../liblmserver.a: $(OBJS)
 
 clean: common-clean
-	$(RM) $(OBJS) main.o $(BASEDIR)/liblmserver.a lmserver *~
+	$(RM) $(OBJS) main.o ../liblmserver.a lmserver *~
 
 deps: common-deps

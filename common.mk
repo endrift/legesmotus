@@ -1,4 +1,5 @@
 all:
+.SUFFIXES:
 COMMON = $(BASEDIR)/common
 CLIENT = $(BASEDIR)/client
 SERVER = $(BASEDIR)/server
@@ -12,9 +13,7 @@ DATADIR = data
 #UNIVERSAL = 1
 #UNIXSTYLE = 1
 
-ifneq ($(shell test -r $(BASEDIR)/config.mk && echo 1),)
- include $(BASEDIR)/config.mk
-endif
+-include $(BASEDIR)/config.mk
 
 # Default targets if no targets are explicitly listed
 ifeq ($(TARGETS),)
@@ -35,13 +34,55 @@ endif
 
 CFLAGS += -DLM_DATA_DIR=\"$(DATADIR)\" -DLM_VERSION="\"$(VERSION)\""
 
-MACHINE = $(shell uname -s)
+MACHINE ?= $(shell uname -s)
 ifeq ($(MACHINE),)
  MACHINE = Windows
 else
  ifeq ($(shell echo $(MACHINE) | cut -c 1-5),MINGW)
  MACHINE = Windows
  endif
+endif
+
+# Determine platforms we should build for
+ifeq ($(ARCHS),)
+ ifeq ($(MACHINE),Windows)
+  ARCHS += i386
+ else
+  ifeq ($(MACHINE),Darwin)
+   ifeq ($(UNIXSTYLE),)
+    ifeq ($(UNIVERSAL),)
+     ARCHS += $(shell arch)
+    else
+     ARCHS += ppc
+     ARCHS += i386
+    endif
+   else
+    IS_X64 = $(shell lipo `sdl-config --prefix`/lib/libSDL.a -verify_arch x86_64 && echo x86_64)
+    IS_X86 = $(shell lipo `sdl-config --prefix`/lib/libSDL.a -verify_arch i386 && echo i386)
+    IS_PPC = $(shell lipo `sdl-config --prefix`/lib/libSDL.a -verify_arch ppc && echo ppc)
+    ifeq ($(UNIVERSAL),)
+     ARCHS += $(IS_PPC) $(IS_X64) $(IS_X86)
+    else
+     ifneq ($(IS_X64),)
+      OUR_ARCH ?= x86_64
+     endif
+     ifneq ($(IS_X86),)
+      OUR_ARCH ?= i386
+     endif
+     ifneq ($(IS_PPC),)
+      OUR_ARCH ?= ppc
+     endif
+     ARCHS += $(OUR_ARCH)
+    endif
+   endif
+  else
+   ARCHS += $(shell arch)
+  endif
+ endif
+endif
+
+ifneq ($(filter $(ARCH),$(ARCHS)),$(ARCH))
+ $(error Disallowed architecture for this platform: $(ARCH))
 endif
 
 # BSD sed does not like -i'' for in-place, but Linux does not like -i ''
@@ -79,7 +120,11 @@ ifeq ($(MACHINE),Darwin)
   CFLAGS += -DLM_FWBASED
  endif
  ifneq ($(UNIVERSAL),)
-  CFLAGS += -arch ppc -arch i386
+  ifeq ($(ARCH),)
+   CFLAGS += -arch ppc -arch i386
+  else
+   CFLAGS += -arch $(ARCH)
+  endif
  else
   ifeq ($(UNIXSTYLE),)
    # Test for Snow Leopard (SDL TTF's stock release is 32-bit)
@@ -138,6 +183,26 @@ CLIENTLIBS = $(LIBS_GL) $(LIBS) $(LIBS_SDL)
 
 CXXFLAGS += $(CFLAGS) -fno-rtti
 
+ifneq ($(SUBDIR),)
+ SRCDIR = $(subst \ ,?,$(BASEDIR)/$(SUBDIR))
+ #SRCDIR = $(BASEDIR)/$(SUBDIR)
+ $(foreach DIR,$(SRCDIR),$(info $(DIR)))
+ vpath %.c $(SRCDIR)
+ vpath %.cpp $(SRCDIR)
+ vpath %.m $(SRCDIR)
+ vpath %.o $(SRCDIR)
+ #VPATH = $(SRCDIR)
+endif
+
+%.a:
+	$(AR) crus $@ $^
+
+%.o: %.cpp
+	$(CXX) -c $(CXXFLAGS) $< -o $@
+
+%.o: %.m
+	$(CC) -c $(CFLAGS) $< -o $@
+
 %.o: %.rc
 	windres $< -o $@
 
@@ -155,10 +220,8 @@ common-clean: $(PHONY)
 .deps/deps.mk: $(OBJS:%.o=.deps/%.d)
 	cat .deps/*.d > .deps/deps.mk
 
-ifneq ($(MAKECMDGOALS),clean)
+ifneq ($(filter clean,$(MAKECMDGOALS)),clean)
  ifneq ($(OBJS),)
-  ifneq ($(shell test -r .deps/deps.mk && echo 1),)
-   include .deps/deps.mk
-  endif
+  #-include .deps/deps.mk
  endif
 endif
