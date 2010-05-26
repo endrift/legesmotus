@@ -5,54 +5,70 @@ all: default
 BASEDIR = $(shell echo $(realpath .) | sed -e 's/ /\\ /')
 include $(BASEDIR)/common.mk
 
-distclean: clean
+distclean:
+	$(RM) -r build
 	$(RM) config.mk
 
-ifeq ($(BUILDDIR),)
+.PHONY: distclean default all
 
-ifneq ($(ARCH),)
-MACHINE_TARGETS = build/$(MACHINE)-$(ARCH)
-else
-MACHINE_TARGETS = $(foreach ARCH,$(ARCHS),build/$(MACHINE)-$(ARCH))
-endif
-isolate-arch = $(patsubst build/$(MACHINE)-%,%,$(1))
+ifeq ($(ARCH),)
 
+# Figure out chdir
+
+MACHINE_TARGETS = $(foreach ARCH,$(ARCHS),$(MACHINE)-$(ARCH)-$(RELEASE))
+isolate-arch = $(patsubst $(MACHINE)-%-$(RELEASE),%,$(1))
+UNIVERSAL_TARGET = $(MACHINE)-universal-$(RELEASE)
+BUILDROOT = build
+NOCHAIN = dist
+
+CHAINED_GOALS= $(filter $(MAKECMDGOALS),$(NOCHAIN))
+ifeq ($(CHAINED_GOALS),)
+# This magic target lets us chain targets we can't find to the other targets
 %:: $(MACHINE_TARGETS)
+	@true # Dummy command prevents "nothing to be done"
+else
+ ifneq ($(CHAINED_GOALS),$(MAKECMDGOALS))
+ $(error Cannot build these goals at the same time as the rest: $(CHAINGED_GOALS))
+ endif
+endif
 
-default:
-default: build $(MACHINE_TARGETS)
+default: $(MACHINE_TARGETS)
 
-$(MACHINE_TARGETS):
-	mkdir -p $@
-	$(MAKE) BUILDDIR=$@ ARCH=$(call isolate-arch,$@) $(MAKECMDGOALS)
+$(MACHINE_TARGETS): TARGET=$(MAKECMDGOALS)
+$(MACHINE_TARGETS) $(UNIVERSAL_TARGET):
+	+@mkdir -p $(BUILDROOT)/$@
+	+@$(MAKE) -C $(BUILDROOT)/$@ -f $(BASEDIR)/Makefile BASEDIR="$(BASEDIR)" ARCH=$(call isolate-arch,$@) $(TARGET)
 
-UNIVERSAL_TARGET=build/$(MACHINE)-universal
 ifeq ($(MACHINE)$(NOBUNDLE),Darwin)
 bundle: TARGET = bundle
 bundle: $(MACHINE_TARGETS)
 
 ifneq ($(UNIVERSAL),)
 bundle:
-	mkdir -p $(UNIVERSAL_TARGET)
-	cp -r $(firstword $(MACHINE_TARGETS))/Leges\ Motus.app $(UNIVERSAL_TARGET)/
-	lipo -create $(foreach TARGET,$(MACHINE_TARGETS),-arch $(call isolate-arch,$(TARGET)) $(TARGET)/Leges\ Motus.app/Contents/MacOS/legesmotus) -output $(UNIVERSAL_TARGET)/Leges\ Motus.app/Contents/MacOS/legesmotus
-	lipo -create $(foreach TARGET,$(MACHINE_TARGETS),-arch $(call isolate-arch,$(TARGET)) $(TARGET)/Leges\ Motus.app/Contents/MacOS/lmserver) -output $(UNIVERSAL_TARGET)/Leges\ Motus.app/Contents/MacOS/lmserver
+	mkdir -p $(BUILDROOT)/$(UNIVERSAL_TARGET)
+	cp -r $(BUILDROOT)/$(firstword $(MACHINE_TARGETS))/Leges\ Motus.app $(BUILDROOT)/$(UNIVERSAL_TARGET)/
+	lipo -create $(foreach TARGET,$(MACHINE_TARGETS),-arch $(call isolate-arch,$(TARGET)) $(BUILDROOT)/$(TARGET)/Leges\ Motus.app/Contents/MacOS/legesmotus ) -output $(BUILDROOT)/$(UNIVERSAL_TARGET)/Leges\ Motus.app/Contents/MacOS/legesmotus
+	lipo -create $(foreach TARGET,$(MACHINE_TARGETS),-arch $(call isolate-arch,$(TARGET)) $(BUILDROOT)/$(TARGET)/Leges\ Motus.app/Contents/MacOS/lmserver ) -output $(BUILDROOT)/$(UNIVERSAL_TARGET)/Leges\ Motus.app/Contents/MacOS/lmserver
+
+dist: TARGET=cli-installer dist
+dist: bundle $(UNIVERSAL_TARGET)
+
+else
+dist: bundle $(MACHINE_TARGETS)
 endif
+
 endif
 
-build:
-build:
-	mkdir -p build
-
-clean:
-clean:
-	$(RM) -r build
-
-.PHONY: default clean $(MACHINE_TARGETS)
+.PHONY: default $(MACHINE_TARGETS)
 
 else
 
+# We are in our chdir
+
 INSTALL_TARGETS = $(addprefix install-,$(TARGETS))
+
+ifneq ($(ARCH),universal)
+
 SRC_PKG = common server client gui
 AUX_PKG = tests serverscanner metaserver
 ALL_PKG = $(SRC_PKG) $(AUX_PKG)
@@ -64,8 +80,8 @@ legesmotus: client
 lmserver: server
 
 $(ALL_PKG):
-	@mkdir -p $(BUILDDIR)/$@
-	$(MAKE) -C $(BUILDDIR)/$@ -f $(BASEDIR)/$@/Makefile BASEDIR="../../.." SUBDIR="$@"
+	+@mkdir -p $@
+	+@$(MAKE) -C $@ -f $(BASEDIR)/$@/Makefile BASEDIR="../../.." SUBDIR="$@" $(TARGET)
 
 server: common
 
@@ -79,8 +95,16 @@ metaserver: common
 
 tests: common server client gui
 
-clean:
-	$(RM) -r $(BUILDDIR)
+else
+default:
+	$(error Must specify a target when doing a universal sub-build)
+endif
+
+clean: TARGET=clean
+clean: common-clean $(ALL_PKG)
+
+tidy: TARGET=tidy
+tidy: common-tidy $(ALL_PKG)
 
 deps:
 	$(MAKE) -C common deps
@@ -90,19 +114,20 @@ deps:
 ifeq ($(MACHINE)$(NOBUNDLE),Darwin)
 
 CLI_INSTALLER = Install\ Command\ Line\ Tools.app
-DMG = legesmotus-$(VERSION)-mac.dmg
-EXTRA_PHONY = bundle package cli-installer
+DMG = legesmotus-$(VERSION)-mac-$(ARCH).dmg
+.PHONY: bundle dist cli-installer
 
-$(BUILDDIR)/Leges\ Motus.app: client server
+ifneq ($(ARCH),universal)
+Leges\ Motus.app: client server
 	mkdir -p "$@"/Contents/MacOS
 	mkdir -p "$@"/Contents/Resources
 	mkdir -p "$@"/Contents/Frameworks
-	cp -f $(BUILDDIR)/client/legesmotus "$@"/Contents/MacOS/
-	cp -f $(BUILDDIR)/server/lmserver "$@"/Contents/MacOS
-	cp -f client/Info.plist "$@"/Contents/
-	cp -f client/legesmotus.icns "$@"/Contents/Resources/
-	cp -Rf client/legesmotus.nib "$@"/Contents/Resources/
-	cp -Rf data "$@"/Contents/Resources/
+	cp -f client/legesmotus "$@"/Contents/MacOS/
+	cp -f server/lmserver "$@"/Contents/MacOS
+	cp -f $(BASEDIR)/client/Info.plist "$@"/Contents/
+	cp -f $(BASEDIR)/client/legesmotus.icns "$@"/Contents/Resources/
+	cp -Rf $(BASEDIR)/client/legesmotus.nib "$@"/Contents/Resources/
+	cp -Rf $(BASEDIR)/data "$@"/Contents/Resources/
 	sed -e 's/\$$VERSION/$(VERSION)/' -i '' "$@"/Contents/Info.plist
 	find "$@" -name .svn -print0 | xargs -0 rm -rf
 	test -d "$@"/Contents/Frameworks/SDL.framework || cp -Rf /Library/Frameworks/SDL.framework "$@"/Contents/Frameworks
@@ -110,19 +135,24 @@ $(BUILDDIR)/Leges\ Motus.app: client server
 	test -d "$@"/Contents/Frameworks/SDL_ttf.framework || cp -Rf /Library/Frameworks/SDL_ttf.framework "$@"/Contents/Frameworks
 	test -d "$@"/Contents/Frameworks/SDL_mixer.framework || cp -Rf /Library/Frameworks/SDL_mixer.framework "$@"/Contents/Frameworks
 
-$(DMG): bundle $(CLI_INSTALLER)
+bundle: Leges\ Motus.app
+
+$(DMG): bundle
+endif
+
+$(DMG): $(CLI_INSTALLER)
 	$(RM) -r tmp
 	mkdir -p tmp
-	cp client/legesmotus.icns tmp/.VolumeIcon.icns
+	cp $(BASEDIR)/client/legesmotus.icns tmp/.VolumeIcon.icns
 	SetFile -c icnC tmp/.VolumeIcon.icns
-	cp README tmp/README.TXT
-	cp CHANGES COPYING NEW_MAP_FORMAT tmp
+	cp $(BASEDIR)/README tmp/README.TXT
+	cp $(BASEDIR)/{CHANGES,COPYING,NEW_MAP_FORMAT} tmp
 	cp -R Leges\ Motus.app tmp
 	cp -R $(CLI_INSTALLER) tmp
 	hdiutil create -srcfolder tmp -volname "Leges Motus $(VERSION)" -format UDRW -ov raw-$(DMG)
 	$(RM) -r tmp
 	mkdir -p tmp
-	# This is to set the volume icon. No, really
+	@# This is to set the volume icon. No, really
 	hdiutil attach raw-$(DMG) -mountpoint tmp
 	SetFile -a C tmp
 	hdiutil detach tmp
@@ -132,14 +162,12 @@ $(DMG): bundle $(CLI_INSTALLER)
 	$(RM) -r tmp
 	
 
-$(CLI_INSTALLER): mac/install.applescript mac/install.sh
-	osacompile -o $(CLI_INSTALLER) mac/install.applescript
-	cp -f man/man6/* $(CLI_INSTALLER)/Contents/Resources
-	cp -f mac/install.sh $(CLI_INSTALLER)/Contents/Resources
+$(CLI_INSTALLER):
+	osacompile -o $(CLI_INSTALLER) $(BASEDIR)/mac/install.applescript
+	cp -f $(BASEDIR)/man/man6/* $(CLI_INSTALLER)/Contents/Resources
+	cp -f $(BASEDIR)/mac/install.sh $(CLI_INSTALLER)/Contents/Resources
 
-bundle: $(BUILDDIR)/Leges\ Motus.app
-
-package: $(DMG)
+dist: $(DMG)
 
 cli-installer: $(CLI_INSTALLER)
 
@@ -159,7 +187,7 @@ else
 ifneq ($(MACHINE),Windows)
 ifneq ($(PREFIX),)
 
-EXTRA_PHONY = install-client install-server install-common
+.PHONY: install-client install-server install-common
 
 install: default $(INSTALL_TARGETS)
 
@@ -213,6 +241,6 @@ cscope:
 	find . -follow -name SCCS -prune -o -name '*.[ch]pp' -print | grep -v svn > cscope.files
 	cscope -v -q
 
-.PHONY: deps clean common server client metaserver default install uninstall $(EXTRA_PHONY) $(ALL_PKGS) $(PKG_DIRS)
+.PHONY: deps clean common server client metaserver install uninstall $(ALL_PKGS) $(PKG_DIRS)
 
 endif

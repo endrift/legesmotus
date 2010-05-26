@@ -11,6 +11,6 @@ all: ../liblmgui.a
 	$(AR) crus ../liblmgui.a $^
 
 clean: common-clean
-	$(RM) $(OBJS) ../liblmgui.a
+	@$(RM) ../liblmgui.a
 
 deps: common-deps

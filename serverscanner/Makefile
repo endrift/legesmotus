@@ -13,6 +13,6 @@ serverscanner: main.o ../liblmserverscanner.a ../liblmcommon.a $(PLATFORM_DEP)
 	$(AR) crus ../liblmserverscanner.a $^
 
 clean: common-clean
-	$(RM) $(OBJS) *~ main.o ../liblmserverscanner.a serverscanner $(PLATFORM_DEP)
+	@$(RM) ../liblmserverscanner.a serverscanner
 
 deps: common-deps

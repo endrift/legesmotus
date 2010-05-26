@@ -312,7 +312,7 @@ echo "Debug:              `format_boolean $debug`"
 
 if [ `uname -s` = Darwin ]
 then
-	echo "Bundle build:       `format_boolean $(( ! $nobundle )`"
+	echo "Bundle build:       `format_boolean $(( ! $nobundle ))`"
 	echo "Universal build:    `format_boolean $universal`"
 fi
 

@@ -9,6 +9,6 @@ all: ../liblmcommon.a
 ../liblmcommon.a: $(OBJS)
 
 clean: common-clean
-	$(RM) $(OBJS) ../liblmcommon.a *~
+	@$(RM) ../liblmcommon.a
 
 deps: common-deps

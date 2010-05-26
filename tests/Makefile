@@ -11,5 +11,4 @@ all: ../liblmclient.a ../liblmcommon.a ../liblmserver.a ../liblmgui.a $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LIBS)
 
 clean:
-	rm -f $(OBJS) *~
-	rm -rf *.dSYM
+	@rm -f $(OBJS)

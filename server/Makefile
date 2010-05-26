@@ -10,6 +10,6 @@ lmserver: main.o ../liblmserver.a ../liblmcommon.a
 ../liblmserver.a: $(OBJS)
 
 clean: common-clean
-	$(RM) $(OBJS) main.o ../liblmserver.a lmserver *~
+	@$(RM) ../liblmserver.a lmserver
 
 deps: common-deps

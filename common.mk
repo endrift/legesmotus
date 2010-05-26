@@ -82,7 +82,9 @@ ifeq ($(ARCHS),)
 endif
 
 ifneq ($(filter $(ARCH),$(ARCHS)),$(ARCH))
- $(error Disallowed architecture for this platform: $(ARCH))
+ ifneq ($(MACHINE)-$(ARCH),Darwin-universal)
+  $(error Disallowed architecture for this platform: $(ARCH))
+ endif
 endif
 
 # BSD sed does not like -i'' for in-place, but Linux does not like -i ''
@@ -168,8 +170,10 @@ CFLAGS += -Wall
 CXXFLAGS += -Wnon-virtual-dtor
 
 ifeq ($(DEBUG),1)
+ RELEASE=debug
  CFLAGS += -g -O0
 else
+ RELEASE=release
  CFLAGS += -O2
 endif
 
@@ -208,10 +212,18 @@ endif
 .deps/%.d: %.cpp .deps
 	$(CXX) -M $(CXXFLAGS) $< | sed -e 's,^\([^:]*\)\.o:,\1.o $@:,' > $@
 
-common-deps: $(PHONY) .deps .deps/deps.mk
+common-deps: .deps .deps/deps.mk
 
-common-clean: $(PHONY)
-	$(RM) -r .deps
+common-tidy:
+	@$(RM) -r *.{o,dSYM}
+	@$(RM) *~
+
+common-clean: common-tidy
+	@$(RM) -r *.{a,dmg,app}
+	@$(RM) -r .deps
+
+tidy: common-tidy
+clean: common-clean
 
 .deps:
 	mkdir -p .deps

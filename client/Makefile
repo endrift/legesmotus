@@ -34,6 +34,6 @@ legesmotus: main.o ../liblmclient.a ../liblmcommon.a $(PLATFORM_DEP)
 ../liblmclient.a: $(OBJS)
 
 clean: common-clean
-	$(RM) $(OBJS) *~ main.o ../liblmclient.a legesmotus $(PLATFORM_DEP)
+	@$(RM) ../liblmclient.a legesmotus
 
 deps: common-deps
