@@ -26,6 +26,7 @@
 #define LM_GUI_WIDGET_HPP
 
 #include <list>
+#include "DrawContext.hpp"
 
 namespace LM {
 	class Widget {
@@ -33,28 +34,52 @@ namespace LM {
 		Widget* m_parent;
 		std::list<Widget*> m_children;
 
-		float m_x;
-		float m_y;
-		float m_w;
-		float m_h;
+		float	m_x;
+		float	m_y;
+		float	m_w;
+		float	m_h;
+
+		bool	m_draggable;
+		bool	m_dragging;
+		float	m_drag_initial_x;
+		float	m_drag_initial_y;
+		float	m_drag_x;
+		float	m_drag_y;
+
+		bool	is_dragging();
+		void	begin_dragging(float initial_x, float initial_y);
+		void	move_drag(float new_x, float new_y);
+		void	end_dragging();
 
 	protected:
-		void add_child(Widget* child);
+		void	add_child(Widget* child);
+		void	remove_child(Widget* child);
+
+		void	set_draggable(bool draggable);
+		bool	get_draggable() const;
+		float	get_drag_initial_x() const;
+		float	get_drag_initial_y() const;
+		float	get_drag_x() const;
+		float	get_drag_y() const;
+
+		virtual void	started_dragging(float initial_x, float initial_y);
+		virtual void	dragged(float current_x, float current_y, float delta_x, float delta_y);
+		virtual void	finished_dragging(float initial_x, float initial_y, float final_x, float final_y);
 
 	public:
 		Widget(Widget* parent = NULL);
 		virtual ~Widget();
 
 		void	set_parent(Widget* new_parent);
-		void	get_parent();
-		std::list<Widget*> get_children();
+		Widget*	get_parent();
+		const std::list<Widget*>& get_children();
 
-		void	child_at(float x, float y);
+		Widget*	child_at(float x, float y);
 
-		virtual void set_x();
-		virtual void set_y();
-		virtual void set_width();
-		virtual void set_height();
+		virtual void set_x(float x);
+		virtual void set_y(float y);
+		virtual void set_width(float w);
+		virtual void set_height(float h);
 
 		float	get_x() const;
 		float	get_y() const;
@@ -68,7 +93,7 @@ namespace LM {
 		virtual void mouse_moved(float x, float y, float delta_x, float delta_y);
 		virtual void keypress(int key, bool down);
 
-		virtual void redraw();
+		virtual void redraw(DrawContext* ctx);
 	};
 }
 

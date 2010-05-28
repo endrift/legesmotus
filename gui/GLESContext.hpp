@@ -26,7 +26,7 @@
 #define LM_GUI_GLESCONTEXT_HPP
 
 #include "DrawContext.hpp"
-#include "compat_gl.h"
+#include "client/compat_gl.h"
 
 namespace LM {
 	class GLESContext : public DrawContext {

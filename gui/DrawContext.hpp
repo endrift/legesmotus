@@ -25,11 +25,12 @@
 #ifndef LM_GUI_DRAWCONTEXT_HPP
 #define LM_GUI_DRAWCONTEXT_HPP
 
-#include "Widget.hpp"
 #include "common/misc.hpp"
 #include <vector>
 
 namespace LM {
+	class Widget;
+
 	class DrawContext {
 	private:
 		std::vector<Widget*> m_widgets;
