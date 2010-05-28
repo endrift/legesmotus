@@ -7,7 +7,7 @@ using namespace LM;
 using namespace std;
 
 int main(int argc, char *argv[]) {
-	GameWindow *window = GameWindow::get_instance(300, 300, 24, false);
+	GameWindow *window = GameWindow::get_instance(300, 300, 24, GameWindow::VSYNC);
 	GLESContext ctx(300, 300);
 	Widget w(NULL);
 	w.set_x(150);
@@ -39,7 +39,6 @@ int main(int argc, char *argv[]) {
 		w.redraw(&ctx);
 
 		SDL_GL_SwapBuffers();
-		SDL_Delay(6);
 	}
 
 	return 0;

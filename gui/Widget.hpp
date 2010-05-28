@@ -26,6 +26,7 @@
 #define LM_GUI_WIDGET_HPP
 
 #include <list>
+#include <boost/signals2/signal.hpp>
 #include "DrawContext.hpp"
 
 namespace LM {
@@ -43,13 +44,18 @@ namespace LM {
 		bool	m_dragging;
 		float	m_drag_initial_x;
 		float	m_drag_initial_y;
+		float	m_drag_local_x;
+		float	m_drag_local_y;
 		float	m_drag_x;
 		float	m_drag_y;
 
 		bool	is_dragging();
-		void	begin_dragging(float initial_x, float initial_y);
-		void	move_drag(float new_x, float new_y);
-		void	end_dragging();
+		void	drag_begin(float initial_x, float initial_y);
+		void	drag_move(float new_x, float new_y);
+		void	drag_end();
+
+		void	drag_reloc_begin(float initial_x, float initial_y);
+		void	drag_reloc(float current_x, float current_y);
 
 	protected:
 		void	add_child(Widget* child);
@@ -61,10 +67,6 @@ namespace LM {
 		float	get_drag_initial_y() const;
 		float	get_drag_x() const;
 		float	get_drag_y() const;
-
-		virtual void	started_dragging(float initial_x, float initial_y);
-		virtual void	dragged(float current_x, float current_y, float delta_x, float delta_y);
-		virtual void	finished_dragging(float initial_x, float initial_y, float final_x, float final_y);
 
 	public:
 		Widget(Widget* parent = NULL);
@@ -94,6 +96,17 @@ namespace LM {
 		virtual void keypress(int key, bool down);
 
 		virtual void redraw(DrawContext* ctx);
+
+		boost::signals2::signal<void ()> s_focus;
+		boost::signals2::signal<void ()> s_blur;
+
+		boost::signals2::signal<void (float, float, bool, int)> s_mouse_clicked;
+		boost::signals2::signal<void (float, float, float, float)> s_mouse_moved;
+		boost::signals2::signal<void (int, bool)> s_keypress;
+
+		boost::signals2::signal<void (float, float)> s_drag_begin;
+		boost::signals2::signal<void (float, float)> s_drag_move;
+		boost::signals2::signal<void (float, float)> s_drag_end;
 	};
 }
 

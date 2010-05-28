@@ -185,7 +185,7 @@ endif
 CLIENTFLAGS = $(FLAGS_SDL)
 CLIENTLIBS = $(LIBS_GL) $(LIBS) $(LIBS_SDL)
 
-CXXFLAGS += $(CFLAGS) -fno-rtti
+CXXFLAGS += $(CFLAGS)
 
 ifneq ($(SUBDIR),)
  #SRCDIR = $(subst \ ,?,$(BASEDIR)/$(SUBDIR))

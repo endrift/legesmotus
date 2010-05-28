@@ -23,9 +23,11 @@
  */
 
 #include "Widget.hpp"
+#include <boost/bind.hpp>
 
 using namespace LM;
 using namespace std;
+using namespace boost;
 
 Widget::Widget(Widget* parent) {
 	m_parent = parent;
@@ -38,8 +40,8 @@ Widget::Widget(Widget* parent) {
 	m_w = 0;
 	m_h = 0;
 
-	m_draggable = true;
 	m_dragging = false;
+	set_draggable(true);
 }
 
 Widget::~Widget() {
@@ -52,26 +54,34 @@ bool Widget::is_dragging() {
 	return m_dragging;
 }
 
-void Widget::begin_dragging(float initial_x, float initial_y) {
+void Widget::drag_begin(float initial_x, float initial_y) {
 	m_drag_initial_x = initial_x;
 	m_drag_initial_y = initial_y;
 	m_drag_x = initial_x;
 	m_drag_y = initial_y;
 	m_dragging = true;
-	started_dragging(initial_x, initial_y);
+	s_drag_begin(initial_x, initial_y);
 }
 
-void Widget::move_drag(float new_x, float new_y) {
-	float delta_x = new_x - m_drag_x;
-	float delta_y = new_y - m_drag_y;
+void Widget::drag_move(float new_x, float new_y) {
 	m_drag_x = new_x;
 	m_drag_y = new_y;
-	dragged(new_x, new_y, delta_x, delta_y);
+	s_drag_move(new_x, new_y);
 }
 
-void Widget::end_dragging() {
+void Widget::drag_end() {
 	m_dragging = false;
-	finished_dragging(m_drag_initial_x, m_drag_initial_y, m_drag_x, m_drag_y);
+	s_drag_end(m_drag_x, m_drag_y);
+}
+
+void Widget::drag_reloc_begin(float initial_x, float initial_y) {
+	m_drag_local_x = initial_x - get_x();
+	m_drag_local_y = initial_y - get_y();
+}
+
+void Widget::drag_reloc(float current_x, float current_y) {
+	set_x(current_x - m_drag_local_x);
+	set_y(current_y - m_drag_local_y);
 }
 
 void Widget::add_child(Widget* child) {
@@ -88,8 +98,16 @@ void Widget::remove_child(Widget* child) {
 
 void Widget::set_draggable(bool draggable) {
 	m_draggable = draggable;
-	if (!draggable && m_dragging) {
-		end_dragging();
+	if (draggable) {
+		s_drag_begin.connect(bind(&Widget::drag_reloc_begin, this, _1, _2));
+		s_drag_move.connect(bind(&Widget::drag_reloc, this, _1, _2));
+	} else {
+		if (m_dragging) {
+			drag_end();
+		}
+
+		s_drag_begin.disconnect(bind(&Widget::drag_reloc_begin, this));
+		s_drag_move.disconnect(bind(&Widget::drag_reloc, this));
 	}
 }
 
@@ -111,19 +129,6 @@ float Widget::get_drag_x() const {
 
 float Widget::get_drag_y() const {
 	return m_drag_y;
-}
-
-void Widget::started_dragging(float initial_x, float initial_y) {
-	// Nothing to do
-}
-
-void Widget::dragged(float current_x, float current_y, float delta_x, float delta_y) {
-	set_x(get_x() + delta_x);
-	set_y(get_y() + delta_y);
-}
-
-void Widget::finished_dragging(float initial_x, float initial_y, float final_x, float final_y) {
-	// Nothing to do
 }
 
 void Widget::set_parent(Widget* new_parent) {
@@ -183,33 +188,37 @@ float Widget::get_height() const {
 }
 
 void Widget::focus() {
-	// Nothing to do
+	s_focus();
 }
 
 void Widget::blur() {
-	// Nothing to do
+	s_blur();
 }
 
-// TODO bubble events
+// TODO propagate events downward
 
 void Widget::mouse_clicked(float x, float y, bool down, int button) {
 	if (get_draggable()) {
 		if (down && !is_dragging()) {
-			begin_dragging(x, y);
+			drag_begin(x, y);
 		} else if (!down && is_dragging()) {
-			end_dragging();
+			drag_end();
 		}
 	}
+
+	s_mouse_moved(x, y, down, button);
 }
 
 void Widget::mouse_moved(float x, float y, float delta_x, float delta_y) {
 	if (is_dragging()) {
-		move_drag(x, y);
+		drag_move(x, y);
 	}
+
+	s_mouse_moved(x, y, delta_x, delta_y);
 }
 
 void Widget::keypress(int key, bool down) {
-	// Nothing to do
+	s_keypress(key, down);
 }
 
 void Widget::redraw(DrawContext* ctx) {
