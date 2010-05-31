@@ -27,6 +27,7 @@
 
 #include <list>
 #include <boost/signals2/signal.hpp>
+// TODO #include "common/Point.hpp"
 #include "DrawContext.hpp"
 
 namespace LM {
@@ -77,6 +78,7 @@ namespace LM {
 		const std::list<Widget*>& get_children();
 
 		Widget*	child_at(float x, float y);
+		virtual bool contains_point(float x, float y);
 
 		virtual void set_x(float x);
 		virtual void set_y(float y);

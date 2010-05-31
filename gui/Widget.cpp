@@ -155,6 +155,26 @@ const list<Widget*>& Widget::get_children() {
 	return m_children;
 }
 
+Widget* Widget::child_at(float x, float y) {
+	for (list<Widget*>::iterator iter = m_children.begin(); iter != m_children.end(); ++iter) {
+		if ((*iter)->contains_point(x, y)) {
+			return *iter;
+		}
+	}
+	return NULL;
+}
+
+bool Widget::contains_point(float x, float y) {
+	if (x < get_x() - get_width()/2 || x > get_x() + get_width()/2) {
+		return false;
+	}
+	if (y < get_y() - get_height()/2 || y > get_y() + get_height()/2) {
+		return false;
+	}
+
+	return true;
+}
+
 void Widget::set_x(float x) {
 	m_x = x;
 }
@@ -199,7 +219,7 @@ void Widget::blur() {
 
 void Widget::mouse_clicked(float x, float y, bool down, int button) {
 	if (get_draggable()) {
-		if (down && !is_dragging()) {
+		if (down && !is_dragging() && contains_point(x, y)) {
 			drag_begin(x, y);
 		} else if (!down && is_dragging()) {
 			drag_end();
@@ -224,6 +244,6 @@ void Widget::keypress(int key, bool down) {
 void Widget::redraw(DrawContext* ctx) {
 	ctx->translate(get_x(), get_y());
 	ctx->set_draw_color(Color(0.5, 0.5, 0.5));
-	ctx->draw_rect(get_width(), get_height());
+	ctx->draw_rect_fill(get_width(), get_height());
 	ctx->translate(-get_x(), -get_y());
 }
