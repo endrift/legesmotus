@@ -36,6 +36,7 @@ namespace LM {
 	private:
 		GLint	m_width;
 		GLint	m_height;
+		int		m_depth;
 
 		GLfloat	m_arc_vertices[2*(MAX_ARC_FINE + 2)];
 		GLfloat	m_rect_vertices[8];
@@ -53,6 +54,10 @@ namespace LM {
 		virtual void	load_identity();
 		virtual void	push_transform();
 		virtual void	pop_transform();
+		virtual void	clip();
+		virtual void	unclip();
+		virtual void	finish_clip();
+		virtual int		clip_depth();
 
 		virtual void	translate(float x, float y);
 		virtual void	scale(float x, float y);

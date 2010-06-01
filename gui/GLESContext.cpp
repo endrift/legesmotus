@@ -31,6 +31,10 @@ using namespace LM;
 GLESContext::GLESContext(int width, int height) {
 	m_width = width;
 	m_height = height;
+	m_depth = 0;
+
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	glEnable(GL_STENCIL_TEST);
 }
 
 GLESContext::~GLESContext() {
@@ -73,7 +77,7 @@ int GLESContext::get_height() const {
 void GLESContext::load_identity() {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, m_width, m_height, 0, -1, 0xFFFF);
+	glOrtho(0, m_width, m_height, 0, -0x7FFF, 1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -85,6 +89,27 @@ void GLESContext::push_transform() {
 
 void GLESContext::pop_transform() {
 	glPopMatrix();
+}
+
+void GLESContext::clip() {
+	glStencilOp(GL_KEEP, GL_INCR, GL_INCR);
+	glStencilFunc(GL_EQUAL, m_depth, 0x7F);
+	++m_depth;
+}
+
+void GLESContext::unclip() {
+	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+	glStencilOp(GL_KEEP, GL_DECR, GL_DECR);
+	glStencilFunc(GL_EQUAL, m_depth, 0x7F);
+	--m_depth;
+}
+
+void GLESContext::finish_clip() {
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+}
+
+int GLESContext::clip_depth() {
+	return m_depth;
 }
 
 void GLESContext::translate(float x, float y) {
@@ -151,7 +176,7 @@ void GLESContext::draw_lines(float vertices[], int n, bool loop) {
 }
 
 void GLESContext::redraw() {
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	load_identity();
 	// TODO
 }

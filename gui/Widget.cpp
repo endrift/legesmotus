@@ -39,96 +39,19 @@ Widget::Widget(Widget* parent) {
 	m_y = 0;
 	m_w = 0;
 	m_h = 0;
-
-	m_dragging = false;
-	set_draggable(true);
 }
 
 Widget::~Widget() {
+	set_parent(NULL);
 	for (std::list<Widget*>::iterator iter = m_children.begin(); iter != m_children.end(); ++iter) {
+		(*iter)->m_parent = NULL;
 		delete *iter;
 	}
 }
 
-bool Widget::is_dragging() {
-	return m_dragging;
-}
-
-void Widget::drag_begin(float initial_x, float initial_y) {
-	m_drag_initial_x = initial_x;
-	m_drag_initial_y = initial_y;
-	m_drag_x = initial_x;
-	m_drag_y = initial_y;
-	m_dragging = true;
-	s_drag_begin(initial_x, initial_y);
-}
-
-void Widget::drag_move(float new_x, float new_y) {
-	m_drag_x = new_x;
-	m_drag_y = new_y;
-	s_drag_move(new_x, new_y);
-}
-
-void Widget::drag_end() {
-	m_dragging = false;
-	s_drag_end(m_drag_x, m_drag_y);
-}
-
-void Widget::drag_reloc_begin(float initial_x, float initial_y) {
-	m_drag_local_x = initial_x - get_x();
-	m_drag_local_y = initial_y - get_y();
-}
-
-void Widget::drag_reloc(float current_x, float current_y) {
-	set_x(current_x - m_drag_local_x);
-	set_y(current_y - m_drag_local_y);
-}
-
-void Widget::add_child(Widget* child) {
-	if (child != NULL) {
-		m_children.push_front(child);
-	}
-}
-
-void Widget::remove_child(Widget* child) {
-	if (child != NULL) {
-		m_children.remove(child);
-	}
-}
-
-void Widget::set_draggable(bool draggable) {
-	m_draggable = draggable;
-	if (draggable) {
-		s_drag_begin.connect(bind(&Widget::drag_reloc_begin, this, _1, _2));
-		s_drag_move.connect(bind(&Widget::drag_reloc, this, _1, _2));
-	} else {
-		if (m_dragging) {
-			drag_end();
-		}
-
-		s_drag_begin.disconnect(bind(&Widget::drag_reloc_begin, this));
-		s_drag_move.disconnect(bind(&Widget::drag_reloc, this));
-	}
-}
-
-bool Widget::get_draggable() const {
-	return m_draggable;
-}
-
-float Widget::get_drag_initial_x() const {
-	return m_drag_initial_x;
-}
-
-float Widget::get_drag_initial_y() const {
-	return m_drag_initial_y;
-}
-
-float Widget::get_drag_x() const {
-	return m_drag_x;
-}
-
-float Widget::get_drag_y() const {
-	return m_drag_y;
+void Widget::draw(DrawContext* ctx) const {
+	ctx->set_draw_color(Color(1, 1, 1, 0.1));
+	ctx->draw_rect_fill(get_width(), get_height());
 }
 
 void Widget::set_parent(Widget* new_parent) {
@@ -151,17 +74,44 @@ Widget* Widget::get_parent() {
 	return m_parent;
 }
 
+void Widget::add_child(Widget* child) {
+	if (child != NULL) {
+		if (child->m_parent != NULL) {
+			child->m_parent->remove_child(child);
+		}
+		child->m_parent = this;
+		m_children.push_front(child);
+	}
+}
+
+void Widget::remove_child(Widget* child) {
+	if (child != NULL) {
+		child->m_parent = NULL;
+		m_children.remove(child);
+	}
+}
+
 const list<Widget*>& Widget::get_children() {
 	return m_children;
 }
 
-Widget* Widget::child_at(float x, float y) {
+Widget* Widget::top_child_at(float x, float y) {
 	for (list<Widget*>::iterator iter = m_children.begin(); iter != m_children.end(); ++iter) {
-		if ((*iter)->contains_point(x, y)) {
+		if ((*iter)->contains_point(x - get_x(), y - get_y())) {
 			return *iter;
 		}
 	}
 	return NULL;
+}
+
+list<Widget*> Widget::children_at(float x, float y) {
+	list<Widget*> children;
+	for (list<Widget*>::iterator iter = m_children.begin(); iter != m_children.end(); ++iter) {
+		if ((*iter)->contains_point(x - get_x(), y - get_y())) {
+			children.push_back(*iter);
+		}
+	}
+	return children;
 }
 
 bool Widget::contains_point(float x, float y) {
@@ -218,20 +168,18 @@ void Widget::blur() {
 // TODO propagate events downward
 
 void Widget::mouse_clicked(float x, float y, bool down, int button) {
-	if (get_draggable()) {
-		if (down && !is_dragging() && contains_point(x, y)) {
-			drag_begin(x, y);
-		} else if (!down && is_dragging()) {
-			drag_end();
-		}
+	Widget* child = top_child_at(x, y);
+	if (child != NULL) {
+		child->mouse_clicked(x - get_x(), y - get_y(), down, button);
 	}
 
-	s_mouse_moved(x, y, down, button);
+	s_mouse_clicked(x, y, down, button);
 }
 
 void Widget::mouse_moved(float x, float y, float delta_x, float delta_y) {
-	if (is_dragging()) {
-		drag_move(x, y);
+	list<Widget*> children = children_at(x, y);
+	for (list<Widget*>::iterator iter = children.begin(); iter != children.end(); ++iter) {
+		(*iter)->mouse_moved(x - get_x(), y - get_y(), delta_x, delta_y);
 	}
 
 	s_mouse_moved(x, y, delta_x, delta_y);
@@ -241,9 +189,15 @@ void Widget::keypress(int key, bool down) {
 	s_keypress(key, down);
 }
 
-void Widget::redraw(DrawContext* ctx) {
+void Widget::redraw(DrawContext* ctx) const {
 	ctx->translate(get_x(), get_y());
-	ctx->set_draw_color(Color(0.5, 0.5, 0.5));
-	ctx->draw_rect_fill(get_width(), get_height());
+	ctx->clip();
+	draw(ctx);
+	for (list<Widget*>::const_iterator iter = m_children.begin(); iter != m_children.end(); ++iter) {
+		(*iter)->redraw(ctx);
+	}
+	ctx->unclip();
+	draw(ctx);
+	ctx->finish_clip();
 	ctx->translate(-get_x(), -get_y());
 }

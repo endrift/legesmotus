@@ -60,6 +60,10 @@ namespace LM {
 		virtual void	load_identity() = 0;
 		virtual void	push_transform() = 0;
 		virtual void	pop_transform() = 0;
+		virtual void	clip() = 0;
+		virtual void	unclip() = 0;
+		virtual void	finish_clip() = 0;
+		virtual int		clip_depth() = 0;
 
 		// TODO offsets (translate -> scale -> rotate?, adustable order?)
 

@@ -41,33 +41,8 @@ namespace LM {
 		float	m_w;
 		float	m_h;
 
-		bool	m_draggable;
-		bool	m_dragging;
-		float	m_drag_initial_x;
-		float	m_drag_initial_y;
-		float	m_drag_local_x;
-		float	m_drag_local_y;
-		float	m_drag_x;
-		float	m_drag_y;
-
-		bool	is_dragging();
-		void	drag_begin(float initial_x, float initial_y);
-		void	drag_move(float new_x, float new_y);
-		void	drag_end();
-
-		void	drag_reloc_begin(float initial_x, float initial_y);
-		void	drag_reloc(float current_x, float current_y);
-
 	protected:
-		void	add_child(Widget* child);
-		void	remove_child(Widget* child);
-
-		void	set_draggable(bool draggable);
-		bool	get_draggable() const;
-		float	get_drag_initial_x() const;
-		float	get_drag_initial_y() const;
-		float	get_drag_x() const;
-		float	get_drag_y() const;
+		virtual void draw(DrawContext* ctx) const;
 
 	public:
 		Widget(Widget* parent = NULL);
@@ -75,9 +50,12 @@ namespace LM {
 
 		void	set_parent(Widget* new_parent);
 		Widget*	get_parent();
+		void	add_child(Widget* child);
+		void	remove_child(Widget* child);
 		const std::list<Widget*>& get_children();
 
-		Widget*	child_at(float x, float y);
+		Widget*	top_child_at(float x, float y);
+		std::list<Widget*> children_at(float x, float y);
 		virtual bool contains_point(float x, float y);
 
 		virtual void set_x(float x);
@@ -97,7 +75,7 @@ namespace LM {
 		virtual void mouse_moved(float x, float y, float delta_x, float delta_y);
 		virtual void keypress(int key, bool down);
 
-		virtual void redraw(DrawContext* ctx);
+		void redraw(DrawContext* ctx) const;
 
 		boost::signals2::signal<void ()> s_focus;
 		boost::signals2::signal<void ()> s_blur;
