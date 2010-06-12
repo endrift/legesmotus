@@ -24,8 +24,12 @@ NOCHAIN = dist
 CHAINED_GOALS= $(filter $(MAKECMDGOALS),$(NOCHAIN))
 ifeq ($(CHAINED_GOALS),)
 # This magic target lets us chain targets we can't find to the other targets
-%:: $(MACHINE_TARGETS)
+%: $(MACHINE_TARGETS)
 	@true # Dummy command prevents "nothing to be done"
+
+%.mk:
+Makefile:
+
 else
  ifneq ($(CHAINED_GOALS),$(MAKECMDGOALS))
  $(error Cannot build these goals at the same time as the rest: $(CHAINGED_GOALS))
@@ -33,6 +37,7 @@ else
 endif
 
 default: $(MACHINE_TARGETS)
+	@true # Dummy command prevents "nothing to be done"
 
 $(MACHINE_TARGETS): TARGET=$(MAKECMDGOALS)
 $(MACHINE_TARGETS) $(UNIVERSAL_TARGET):

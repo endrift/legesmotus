@@ -182,8 +182,8 @@ CFLAGS += $(FLAGS_GL) $(INCLUDES)
 ifeq ($(MACHINE),Windows)
  LIBS += -lwsock32
 endif
-CLIENTFLAGS = $(FLAGS_SDL) $(shell freetype-config --cflags)
-CLIENTLIBS = $(LIBS_GL) $(LIBS) $(LIBS_SDL) $(shell freetype-config --libs)
+CLIENTFLAGS = $(FLAGS_SDL)
+CLIENTLIBS = $(LIBS_GL) $(LIBS) $(LIBS_SDL)
 
 CXXFLAGS += $(CFLAGS)
 

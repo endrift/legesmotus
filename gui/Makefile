@@ -2,7 +2,7 @@ BASEDIR = ..
 OBJS = Widget.o DrawContext.o GLESContext.o GuiWindow.o Font.o Label.o
 include $(BASEDIR)/common.mk
 # Stopgap measure until client separated out
-CXXFLAGS += $(CLIENTFLAGS)
+CXXFLAGS += $(CLIENTFLAGS) $(shell freetype-config --cflags)
 CXXFLAGS += -I../client
 
 all: ../liblmgui.a
