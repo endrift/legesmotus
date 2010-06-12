@@ -75,7 +75,7 @@ namespace LM {
 		virtual void mouse_moved(float x, float y, float delta_x, float delta_y);
 		virtual void keypress(int key, bool down);
 
-		void redraw(DrawContext* ctx) const;
+		virtual void redraw(DrawContext* ctx) const;
 
 		boost::signals2::signal<void ()> s_focus;
 		boost::signals2::signal<void ()> s_blur;
@@ -83,10 +83,6 @@ namespace LM {
 		boost::signals2::signal<void (float, float, bool, int)> s_mouse_clicked;
 		boost::signals2::signal<void (float, float, float, float)> s_mouse_moved;
 		boost::signals2::signal<void (int, bool)> s_keypress;
-
-		boost::signals2::signal<void (float, float)> s_drag_begin;
-		boost::signals2::signal<void (float, float)> s_drag_move;
-		boost::signals2::signal<void (float, float)> s_drag_end;
 	};
 }
 

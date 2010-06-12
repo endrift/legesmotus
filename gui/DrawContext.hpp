@@ -32,6 +32,13 @@ namespace LM {
 	class Widget;
 
 	class DrawContext {
+	public:
+		typedef unsigned int Image;
+		enum PixelFormat {
+			RGBA,
+			ALPHA
+		};
+
 	private:
 		std::vector<Widget*> m_widgets;
 		int		m_focusIndex;
@@ -87,6 +94,13 @@ namespace LM {
 
 		virtual void	draw_line(float x1, float y1, float x2, float y2) = 0;
 		virtual void	draw_lines(float vertices[], int n, bool loop) = 0;
+
+		virtual Image	gen_image(int* width, int* height, PixelFormat format, unsigned char* data) = 0;
+		virtual void	del_image(Image img) = 0;
+
+		virtual void	draw_image(int width, int height, Image img) = 0;
+		virtual void	bind_image(Image img) = 0;
+		virtual void	draw_bound_image(int width, int height) = 0;
 
 		virtual void	redraw() = 0;
 	};

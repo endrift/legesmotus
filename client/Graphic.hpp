@@ -116,7 +116,7 @@ namespace LM {
 	
 		virtual Graphic*	get_graphic(const std::string&) { return NULL; }
 
-		virtual void	draw(const GameWindow* window) const = 0;
+		virtual void	draw() const = 0;
 	};
 }
 

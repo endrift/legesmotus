@@ -63,7 +63,7 @@ namespace LM {
 	
 		void	set_antialiasing(bool enable);
 	
-		void	draw(const GameWindow* window) const;
+		void	draw() const;
 	};
 }
 

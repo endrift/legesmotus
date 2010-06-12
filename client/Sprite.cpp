@@ -117,8 +117,7 @@ void Sprite::set_antialiasing(bool enable) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, enable?GL_LINEAR:GL_NEAREST);
 }
 
-void Sprite::draw(const GameWindow* window) const {
-	(void)(window); // Unused
+void Sprite::draw() const {
 	glColor4d(m_red, m_green, m_blue, m_alpha);
 	glBindTexture(GL_TEXTURE_2D, get_texture_id());
 	glPushMatrix();

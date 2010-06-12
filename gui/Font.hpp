@@ -1,5 +1,5 @@
 /*
- * client/RadialBackground.hpp
+ * gui/Font.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,44 +22,56 @@
  * 
  */
 
-#ifndef LM_CLIENT_RADIALBACKGROUND_HPP
-#define LM_CLIENT_RADIALBACKGROUND_HPP
+#ifndef LM_GUI_FONT_HPP
+#define LM_GUI_FONT_HPP
 
-#include "Graphic.hpp"
+#include <map>
+#include <string>
 #include <vector>
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include "DrawContext.hpp"
+
+// A temporary measure
+#define Font NewFont
 
 namespace LM {
-	class RadialBackground : public Graphic {
+	class Font {
+	public:
+		struct Glyph {
+		private:
+			DrawContext* m_ctx;
+
+		public:
+			DrawContext::Image image;
+			float advance;
+			float bearing;
+			float baseline;
+			float width;
+			float height;
+			int bitmap_width;
+			int bitmap_height;
+
+			Glyph();
+			Glyph(const FT_GlyphSlot& glyph, DrawContext* ctx);
+		};
+
 	private:
-		static const int RESOLUTION;
+		static FT_Library m_library;
+		static bool m_init;
 
-		int	m_num_segments;
-		std::vector<Color>	m_segment_colors;
-
-		Color	m_border_color;
-		double	m_border_radius;
-		double	m_border_angle;
-		double	m_outer_radius;
-		double	m_inner_radius;
+		FT_Face m_face;
+		std::map<int, Glyph*> m_glyphs;
+		std::vector<DrawContext::Image> m_tex;
+		DrawContext* m_ctx;
 
 	public:
-		RadialBackground(int num_segments);
-		virtual RadialBackground* clone() const;
+		Font(const std::string& filename, float size, DrawContext* ctx);
+		~Font();
 
-		int	get_num_segments() const;
-
-		void	set_num_segments(int num_rows);
-		void	set_border_radius(double radius);
-		void	set_border_angle(double degrees);
-		void	set_border_color(Color color);
-		void	set_segment_color(int segment, Color color);
-		void	set_outer_radius(double radius);
-		void	set_inner_radius(double radius);
-
-		double	get_outer_radius() const;
-		double	get_inner_radius() const;
-
-		virtual void	draw() const;
+		const Glyph* get_glyph(int character);
+		float get_height() const;
+		int kern(int lchar, int rchar);
 	};
 }
 

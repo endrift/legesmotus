@@ -126,7 +126,7 @@ GameWindow::GameWindow(int width, int height, int depth, int flags, int msaa) {
 	}
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	// Set up texture environment for GL_INTERPOLATE, if needed
 	glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_TEXTURE);
 	glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_TEXTURE);
@@ -388,7 +388,7 @@ void GameWindow::redraw() const {
 		glTranslated(-round(m_layers[i].offset_x), -round(m_layers[i].offset_y),0.0);
 		for (list<Graphic*>::const_iterator iter = m_layers[i].graphics.begin(); iter != m_layers[i].graphics.end(); ++iter) {
 			if (!(*iter)->is_invisible()) {
-				(*iter)->draw(this);
+				(*iter)->draw();
 			}
 		}
 		glPopMatrix();

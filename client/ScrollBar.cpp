@@ -341,11 +341,11 @@ ScrollArea* ScrollBar::get_linked() {
 	return m_linked;
 }
 
-void ScrollBar::draw(const GameWindow* window) const {
+void ScrollBar::draw() const {
 	if (!m_bg.is_invisible()) {
 		glPushMatrix();
 		transform_gl();
-		m_bg.draw(window);
+		m_bg.draw();
 		glPopMatrix();
 	}
 }

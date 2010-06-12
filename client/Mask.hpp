@@ -44,7 +44,7 @@ namespace LM {
 		void		set_mask(Graphic* mask);
 		void		set_masked(Graphic* masked);
 	
-		virtual void	draw(const GameWindow* window) const;
+		virtual void	draw() const;
 	};
 }
 

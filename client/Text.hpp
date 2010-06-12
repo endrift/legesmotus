@@ -60,7 +60,7 @@ namespace LM {
 
 		virtual bool	is_over(int x, int y) const;
 	
-		virtual void	draw(const GameWindow* window) const;
+		virtual void	draw() const;
 	};
 }
 

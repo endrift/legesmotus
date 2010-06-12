@@ -25,15 +25,25 @@
 #include "GLESContext.hpp"
 #include "SDL.h"
 #include "common/math.hpp"
+#include "common/Exception.hpp"
 
 using namespace LM;
+
+GLint GLESContext::m_rect_tex_vertices[] = {
+	0, 0,
+	1, 0,
+	1, 1,
+	0, 1
+};
 
 GLESContext::GLESContext(int width, int height) {
 	m_width = width;
 	m_height = height;
 	m_depth = 0;
 
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	m_bound_img = 0;
+
+	//glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glEnable(GL_STENCIL_TEST);
 }
 
@@ -63,6 +73,7 @@ void GLESContext::prepare_rect(float w, float h) {
 	m_rect_vertices[5] = h/2.0f;
 	m_rect_vertices[6] = -w/2.0f;
 	m_rect_vertices[7] = h/2.0f;
+	glTexCoordPointer(2, GL_FLOAT, 0, m_rect_tex_vertices);
 	glVertexPointer(2, GL_FLOAT, 0, m_rect_vertices);
 }
 
@@ -173,6 +184,94 @@ void GLESContext::draw_line(float x1, float y1, float x2, float y2) {
 void GLESContext::draw_lines(float vertices[], int n, bool loop) {
 	glVertexPointer(2, GL_FLOAT, 0, vertices);
 	glDrawArrays(loop?GL_LINE_LOOP:GL_LINE_STRIP, 0, n);
+}
+
+DrawContext::Image GLESContext::gen_image(int* width, int* height, PixelFormat format, unsigned char* data) {
+	int w = *width;
+	int h = *height;
+	int nwidth = to_pow_2(w);
+	int nheight = to_pow_2(h);
+	// 2px textures seem to break things
+	if (nwidth < 4) {
+		nwidth = 4;
+	}
+	if (nheight < 4) {
+		nheight = 4;
+	}
+	GLint	bpc;
+	GLint	ifmt;
+	GLenum	glfmt;
+	GLenum	type;
+	unsigned char* ndata = data;
+
+	switch (format) {
+	case RGBA:
+		bpc = 4;
+		ifmt = 4;
+		glfmt = GL_BGRA;
+		type = GL_UNSIGNED_INT_8_8_8_8_REV;
+		break;
+	case ALPHA:
+		bpc = 1;
+		ifmt = GL_ALPHA8;
+		glfmt = GL_ALPHA;
+		type = GL_UNSIGNED_BYTE;
+		break;
+	default:
+		throw new Exception("Invalid image format");
+	}
+
+	if (nwidth != w || nheight != h) {
+		ndata = new unsigned char[nwidth*nheight*bpc];
+		for (int y = 0; y < h; ++y) {
+			memcpy(&ndata[nwidth*y*bpc], &data[w*y*bpc], w*bpc);
+			memset(&ndata[(nwidth*y + w)*bpc], 0, (nwidth - w)*bpc);
+		}
+		for (int y = h; y < nheight; ++y) {
+			memset(&ndata[nwidth*y*bpc], 0, nwidth*bpc);
+		}
+	}
+	GLuint img;
+	glGenTextures(1, &img);
+	bind_image(img);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);	
+	glTexImage2D(GL_TEXTURE_2D, 0, ifmt, nwidth, nheight, 0, glfmt, type, ndata);
+	if (ndata != data) {
+		delete[] ndata;
+	}
+	*width = nwidth;
+	*height = nheight;
+	return img;
+}
+
+void GLESContext::del_image(Image img) {
+	glDeleteTextures(1, &img);
+}
+
+void GLESContext::draw_image(int width, int height, Image img) {
+	bind_image(img);
+	draw_bound_image(width, height);
+}
+
+void GLESContext::bind_image(Image img) {
+	//if (m_bound_img != img) {
+		glBindTexture(GL_TEXTURE_2D, img);
+		m_bound_img = img;
+	//}
+}
+
+void GLESContext::draw_bound_image(int width, int height) {
+	GLint vertices[8] = {
+		0, 0,
+		width, 0,
+		width, height,
+		0, height
+	};
+
+	glVertexPointer(2, GL_INT, 0, vertices);
+	glTexCoordPointer(2, GL_INT, 0, m_rect_tex_vertices);
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
 void GLESContext::redraw() {

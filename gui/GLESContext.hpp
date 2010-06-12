@@ -30,16 +30,22 @@
 
 namespace LM {
 	class GLESContext : public DrawContext {
+		using DrawContext::Image;
+
 	public:
 		static const int MAX_ARC_FINE = 64;
 
 	private:
+		static GLint	m_rect_tex_vertices[8];
+
 		GLint	m_width;
 		GLint	m_height;
 		int		m_depth;
 
 		GLfloat	m_arc_vertices[2*(MAX_ARC_FINE + 2)];
 		GLfloat	m_rect_vertices[8];
+
+		GLuint	m_bound_img;
 
 		void	prepare_arc(float len, float xr, float yr, int fine);
 		void	prepare_rect(float w, float h);
@@ -75,6 +81,13 @@ namespace LM {
 
 		virtual void	draw_line(float x1, float y1, float x2, float y2);
 		virtual void	draw_lines(float vertices[], int n, bool loop);
+
+		virtual Image	gen_image(int* width, int* height, PixelFormat format, unsigned char* data);
+		virtual void	del_image(Image img);
+
+		virtual void	draw_image(int width, int height, Image img);
+		virtual void	bind_image(Image img);
+		virtual void	draw_bound_image(int width, int height);
 
 		// TODO more GL properties (framebuffers?)
 

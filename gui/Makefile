@@ -1,5 +1,5 @@
 BASEDIR = ..
-OBJS = Widget.o DrawContext.o GLESContext.o GuiWindow.o
+OBJS = Widget.o DrawContext.o GLESContext.o GuiWindow.o Font.o Label.o
 include $(BASEDIR)/common.mk
 # Stopgap measure until client separated out
 CXXFLAGS += $(CLIENTFLAGS)

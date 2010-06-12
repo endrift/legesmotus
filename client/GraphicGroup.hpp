@@ -62,7 +62,7 @@ namespace LM {
 		virtual void	set_green_intensity(double g);
 		virtual void	set_blue_intensity(double b);
 	
-		void		draw(const GameWindow* window) const;
+		void		draw() const;
 	};
 
 	template<class T> T* GraphicGroup::add_graphic(T* graphic, const std::string& name) {

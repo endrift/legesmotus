@@ -102,7 +102,7 @@ namespace LM {
 		void	relink(ScrollArea* linked);
 		ScrollArea* get_linked();
 	
-		virtual void draw(const GameWindow* window) const;
+		virtual void draw() const;
 	};
 }
 

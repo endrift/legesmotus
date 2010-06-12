@@ -150,8 +150,7 @@ void TiledGraphic::set_blue_intensity(double blue) {
 	m_blue = blue;
 }
 
-void TiledGraphic::draw(const GameWindow* window) const {
-	(void)(window); // Unused
+void TiledGraphic::draw() const {
 	glColor4d(m_red, m_green, m_blue, m_alpha);
 	glBindTexture(GL_TEXTURE_2D,get_texture_id());
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);

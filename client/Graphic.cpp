@@ -65,7 +65,7 @@ Graphic::Graphic(const Graphic& other) {
 Graphic::~Graphic() {
 	if (m_tex_count != NULL) {
 		if(*m_tex_count <= 1) {
-			glDeleteTextures(1,&m_tex_id);
+			glDeleteTextures(1, &m_tex_id);
 			delete m_tex_count;
 		} else {
 			--*m_tex_count;

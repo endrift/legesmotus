@@ -85,7 +85,7 @@ namespace LM {
 		void	vert_relink(ScrollBar* linked);
 		ScrollBar* get_vert_linked();
 	
-		virtual void draw(const GameWindow* window) const;
+		virtual void draw() const;
 	};
 }
 

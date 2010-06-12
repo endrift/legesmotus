@@ -114,12 +114,12 @@ void GraphicGroup::set_blue_intensity(double b) {
 	}
 }
 
-void GraphicGroup::draw(const GameWindow* window) const {
+void GraphicGroup::draw() const {
 	glPushMatrix();
 	transform_gl();
 	for (list<Graphic*>::const_iterator iter = m_graphics.begin(); iter != m_graphics.end(); ++iter) {
 		if (!(*iter)->is_invisible()) {
-			(*iter)->draw(window);
+			(*iter)->draw();
 		}
 	}
 	glPopMatrix();

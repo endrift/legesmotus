@@ -71,7 +71,7 @@ void Mask::set_masked(Graphic* masked) {
 	m_masked = masked->clone();
 }
 
-void Mask::draw(const GameWindow* window) const {
+void Mask::draw() const {
 	glPushMatrix();
 	transform_gl();
 	if (!m_mask->is_invisible()) {
@@ -86,20 +86,20 @@ void Mask::draw(const GameWindow* window) const {
 		glStencilFunc(GL_ALWAYS, 1, 1);
 		glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
 		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-		m_mask->draw(window);
+		m_mask->draw();
 		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 		glDisable(GL_ALPHA_TEST);
 		if (!m_masked->is_invisible()) {
 			glStencilFunc(GL_EQUAL, 1, 1);
-			m_masked->draw(window);
+			m_masked->draw();
 		}
 		if (!is_substencil) {
 			glDisable(GL_STENCIL_TEST);
 		}
 	} else {
 		if (!m_masked->is_invisible()) {
-			m_masked->draw(window);
+			m_masked->draw();
 		}
 	}
 	glPopMatrix();

@@ -64,7 +64,7 @@ namespace LM {
 		virtual void	set_width(double width) { set_image_width(width); }
 		virtual void	set_height(double height);
 	
-		virtual void	draw(const GameWindow* window) const;
+		virtual void	draw() const;
 	};
 }
 

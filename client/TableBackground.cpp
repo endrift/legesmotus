@@ -220,8 +220,7 @@ void TableBackground::set_height(double height) {
 	}
 }
 
-void TableBackground::draw(const GameWindow* window) const {
-	(void)(window); // Unused
+void TableBackground::draw() const {
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisable(GL_TEXTURE_2D);
 	glEnable(GL_DEPTH_TEST); // Enable depth test so parts aren't redrawn

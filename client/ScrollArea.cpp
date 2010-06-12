@@ -241,7 +241,7 @@ ScrollBar* ScrollArea::get_vert_linked() {
 	return m_vert_linked;
 }
 
-void ScrollArea::draw(const GameWindow* window) const {
+void ScrollArea::draw() const {
 	if (!m_group.is_invisible()) {
 		glPushMatrix();
 		transform_gl();
@@ -261,7 +261,7 @@ void ScrollArea::draw(const GameWindow* window) const {
 		glTranslated(-round(m_horiz_progress*(m_content_width-m_width)), -round(m_vert_progress*(m_content_height-m_height)), 0);
 		glEnable(GL_TEXTURE_2D);
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		m_group.draw(window);
+		m_group.draw();
 		glDisable(GL_STENCIL_TEST);
 		glPopMatrix();
 	}

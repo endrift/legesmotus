@@ -1,13 +1,13 @@
 BASEDIR = ..
 NOBUNDLE = 1
 include $(BASEDIR)/common.mk
-OBJS = test_primitives test_widgets
+OBJS = test_primitives test_widgets test_label
 CXXFLAGS += $(CLIENTFLAGS) -I../client
 LIBS := $(CLIENTLIBS)
 
 all: $(OBJS)
 
-%: %.cpp ../liblmclient.a ../liblmcommon.a ../liblmserver.a ../liblmgui.a
+%: %.cpp ../liblmgui.a ../liblmclient.a ../liblmcommon.a ../liblmserver.a
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
 
 clean:

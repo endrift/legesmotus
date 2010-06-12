@@ -166,14 +166,14 @@ bool Text::is_over(int x, int y) const {
 	return m_fg->is_over(x - get_x() + get_center_x(), y - get_y() + get_center_y());
 }
 
-void Text::draw(const GameWindow* window) const {
+void Text::draw() const {
 	glPushMatrix();
 	transform_gl();
 	if (m_shadow_enabled && m_shadow != NULL) {
-		m_shadow->draw(window);
+		m_shadow->draw();
 	}
 	if (m_fg != NULL) {
-		m_fg->draw(window);
+		m_fg->draw();
 	}
 	glPopMatrix();
 }

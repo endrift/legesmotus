@@ -1,5 +1,5 @@
 /*
- * client/RadialBackground.hpp
+ * gui/Label.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,44 +22,38 @@
  * 
  */
 
-#ifndef LM_CLIENT_RADIALBACKGROUND_HPP
-#define LM_CLIENT_RADIALBACKGROUND_HPP
+#ifndef LM_GUI_LABEL_HPP
+#define LM_GUI_LABEL_HPP
 
-#include "Graphic.hpp"
-#include <vector>
+#include "Widget.hpp"
+#include "Font.hpp"
+#include <string>
 
 namespace LM {
-	class RadialBackground : public Graphic {
+	class Label : public Widget {
+	public:
+		enum Align {
+			ALIGN_LEFT,
+			ALIGN_RIGHT,
+			ALIGN_CENTER
+		};
+
 	private:
-		static const int RESOLUTION;
+		Font* m_font;
+		std::wstring m_text;
+		Align m_align;
 
-		int	m_num_segments;
-		std::vector<Color>	m_segment_colors;
-
-		Color	m_border_color;
-		double	m_border_radius;
-		double	m_border_angle;
-		double	m_outer_radius;
-		double	m_inner_radius;
+		void recalculate_width();
 
 	public:
-		RadialBackground(int num_segments);
-		virtual RadialBackground* clone() const;
+		Label(Font* font);
+		explicit Label(const std::wstring& str, Font* font);
+		explicit Label(const std::string& str, Font* font);
 
-		int	get_num_segments() const;
+		void set_align(Align align);
+		Align get_align() const;
 
-		void	set_num_segments(int num_rows);
-		void	set_border_radius(double radius);
-		void	set_border_angle(double degrees);
-		void	set_border_color(Color color);
-		void	set_segment_color(int segment, Color color);
-		void	set_outer_radius(double radius);
-		void	set_inner_radius(double radius);
-
-		double	get_outer_radius() const;
-		double	get_inner_radius() const;
-
-		virtual void	draw() const;
+		virtual void redraw(DrawContext* ctx) const;
 	};
 }
 
