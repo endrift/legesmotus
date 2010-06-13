@@ -11,13 +11,11 @@ using namespace LM;
 using namespace std;
 
 int main(int argc, char *argv[]) {
-	GameWindow *window = GameWindow::get_instance(300, 300, 24, GameWindow::VSYNC);
-	GLESContext ctx(300, 300);
+	GameWindow *window = GameWindow::get_instance(500, 100, 24, GameWindow::VSYNC);
+	GLESContext ctx(500, 100);
 	
-	Font font(string("data/fonts/JuraMedium.ttf"), 18, &ctx);
+	Font font(string("data/fonts/JuraMedium.ttf"), 30, &ctx);
 	Label l(string("This is text! Oh god..."), &font);
-	l.set_x(150);
-	l.set_y(150);
 	l.set_align(Label::ALIGN_CENTER);
 	
 	SDL_ShowCursor(SDL_TRUE);
@@ -25,6 +23,8 @@ int main(int argc, char *argv[]) {
 	glClearColor(0.5, 0.5, 0.5, 1.0);
 
 	bool running = true;
+	int phase = 0;
+	ctx.translate(250, 60);
 	while(running) {
 		SDL_Event e;
 		while(SDL_PollEvent(&e) != 0) {
@@ -37,11 +37,17 @@ int main(int argc, char *argv[]) {
 
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glColor4d(1, 1, 1, 1);
+		float f = sin(phase*M_PI/50.0f);
+		float c = (1-f)*0.5f;
+		ctx.scale(1, 1/(c+0.8));
+		l.set_color(Color(c, c, c, 1));
+		l.set_tracking(4.0f*c);
 		l.redraw(&ctx);
+		ctx.scale(1, (c+0.8));
 
 		SDL_GL_SwapBuffers();
-		SDL_Delay(200);
+		SDL_Delay(10);
+		phase = (phase+1)%100;
 	}
 
 	return 0;

@@ -54,6 +54,7 @@ namespace LM {
 
 			Glyph();
 			Glyph(const FT_GlyphSlot& glyph, DrawContext* ctx);
+			~Glyph();
 		};
 
 	private:
@@ -62,7 +63,6 @@ namespace LM {
 
 		FT_Face m_face;
 		std::map<int, Glyph*> m_glyphs;
-		std::vector<DrawContext::Image> m_tex;
 		DrawContext* m_ctx;
 
 	public:
@@ -71,7 +71,7 @@ namespace LM {
 
 		const Glyph* get_glyph(int character);
 		float get_height() const;
-		int kern(int lchar, int rchar);
+		float kern(int lchar, int rchar) const;
 	};
 }
 

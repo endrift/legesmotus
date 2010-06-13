@@ -27,6 +27,7 @@
 
 #include "Widget.hpp"
 #include "Font.hpp"
+#include "common/misc.hpp"
 #include <string>
 
 namespace LM {
@@ -42,6 +43,8 @@ namespace LM {
 		Font* m_font;
 		std::wstring m_text;
 		Align m_align;
+		Color m_color;
+		float m_tracking;
 
 		void recalculate_width();
 
@@ -50,8 +53,12 @@ namespace LM {
 		explicit Label(const std::wstring& str, Font* font);
 		explicit Label(const std::string& str, Font* font);
 
+		void set_color(Color color);
+
 		void set_align(Align align);
 		Align get_align() const;
+
+		void set_tracking(float tracking);
 
 		virtual void redraw(DrawContext* ctx) const;
 	};

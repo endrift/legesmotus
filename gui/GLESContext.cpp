@@ -262,6 +262,8 @@ void GLESContext::bind_image(Image img) {
 }
 
 void GLESContext::draw_bound_image(int width, int height) {
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 	GLint vertices[8] = {
 		0, 0,
 		width, 0,

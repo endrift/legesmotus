@@ -23,6 +23,7 @@
  */
 
 #include "Font.hpp"
+#include "common/Exception.hpp"
 #include <cmath>
 
 using namespace LM;
@@ -33,22 +34,32 @@ bool Font::m_init = false;
 
 Font::Font(const std::string& filename, float size, DrawContext* ctx) {
 	// TODO error checking
+	FT_Error err;
 	if (!m_init) {
-		FT_Init_FreeType(&m_library);
+		err = FT_Init_FreeType(&m_library);
+		if (err) {
+			throw new Exception("Could not initialize FreeType");
+		}
 		m_init = true;
 	}
 
 	m_ctx = ctx;
-	FT_New_Face(m_library, filename.c_str(), 0, &m_face);
-	FT_Set_Char_Size(m_face, int(size*(1<<6)), 0, 0, 0);
+	err = FT_New_Face(m_library, filename.c_str(), 0, &m_face);
+	if (err) {
+		throw new Exception("Could not initialize font");
+	}
+
+	err = FT_Set_Char_Size(m_face, int(size*(1<<6)), 0, 0, 0);
+	if (err) {
+		throw new Exception("Could not initialize font size");
+	}
 }
 
 Font::~Font() {
-	for (vector<DrawContext::Image>::iterator iter = m_tex.begin(); iter != m_tex.end(); ++iter) {
-		m_ctx->del_image(*iter);
+	for (map<int, Glyph*>::iterator iter = m_glyphs.begin(); iter != m_glyphs.end(); ++iter) {
+		delete iter->second;
 	}
 	FT_Done_Face(m_face);
-	// TODO delete glyphs
 }
 
 Font::Glyph::Glyph() {
@@ -76,11 +87,18 @@ Font::Glyph::Glyph(const FT_GlyphSlot& glyph, DrawContext* ctx) {
 	}
 }
 
+Font::Glyph::~Glyph() {
+	m_ctx->del_image(image);
+}
+
 const Font::Glyph* Font::get_glyph(int character) {
 	if (m_glyphs.find(character) == m_glyphs.end()) {
-		FT_Load_Char(m_face, character, FT_LOAD_RENDER);
+		FT_Error err = FT_Load_Char(m_face, character, FT_LOAD_RENDER);
+		if (err) {
+			return NULL;
+		}
+
 		Glyph* g = new Glyph(m_face->glyph, m_ctx);
-		m_tex.push_back(g->image);
 		m_glyphs[character] = g;
 	}
 	return m_glyphs[character];
@@ -88,4 +106,17 @@ const Font::Glyph* Font::get_glyph(int character) {
 
 float Font::get_height() const {
 	return ldexp(m_face->size->metrics.height, -6);
+}
+
+float Font::kern(int lchar, int rchar) const {
+	if (lchar < 0 || rchar < 0) {
+		return 0;
+	}
+
+	FT_Vector kern;
+	kern.x = 0;
+	FT_UInt lglyph = FT_Get_Char_Index(m_face, lchar);
+	FT_UInt rglyph = FT_Get_Char_Index(m_face, rchar);
+	FT_Get_Kerning(m_face, lglyph, rglyph, FT_KERNING_DEFAULT, &kern);
+	return ldexp(kern.x, -6);
 }
