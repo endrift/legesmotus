@@ -66,6 +66,18 @@ void Label::recalculate_width() {
 	set_width(total_advance);
 }
 
+void Label::set_string(const wstring& str) {
+	m_text = str;
+	recalculate_width();
+}
+
+void Label::set_string(const string& str) {
+	m_text.clear();
+	m_text.reserve(str.size());
+	copy(str.begin(), str.end(), m_text.begin());
+	recalculate_width();
+}
+
 void Label::set_color(Color color) {
 	m_color = color;
 }

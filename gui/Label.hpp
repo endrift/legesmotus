@@ -50,8 +50,11 @@ namespace LM {
 
 	public:
 		Label(Font* font);
-		explicit Label(const std::wstring& str, Font* font);
-		explicit Label(const std::string& str, Font* font);
+		Label(const std::wstring& str, Font* font);
+		Label(const std::string& str, Font* font);
+
+		void set_string(const std::wstring& str);
+		void set_string(const std::string& str);
 
 		void set_color(Color color);
 

@@ -4,6 +4,7 @@
 #include "gui/GLESContext.hpp"
 #include "client/Sprite.hpp"
 #include <iostream>
+#include <sstream>
 #include "SDL_image.h"
 #include "common/math.hpp"
 
@@ -16,7 +17,9 @@ int main(int argc, char *argv[]) {
 	
 	Font font(string("data/fonts/JuraMedium.ttf"), 30, &ctx);
 	Label l(string("This is text! Oh god..."), &font);
+	Label p(&font);
 	l.set_align(Label::ALIGN_CENTER);
+	p.set_align(Label::ALIGN_RIGHT);
 	
 	SDL_ShowCursor(SDL_TRUE);
 
@@ -24,7 +27,9 @@ int main(int argc, char *argv[]) {
 
 	bool running = true;
 	int phase = 0;
+
 	ctx.translate(250, 60);
+
 	while(running) {
 		SDL_Event e;
 		while(SDL_PollEvent(&e) != 0) {
@@ -45,8 +50,18 @@ int main(int argc, char *argv[]) {
 		l.redraw(&ctx);
 		ctx.scale(1, (c+0.8));
 
+		ctx.translate(245, 35);
+		ctx.scale(0.5f, 0.5f);
+		wstringstream s;
+		s << phase;
+		p.set_string(s.str());
+		p.redraw(&ctx);
+		ctx.scale(2, 2);
+		ctx.translate(-245, -35);
+
 		SDL_GL_SwapBuffers();
 		SDL_Delay(10);
+
 		phase = (phase+1)%100;
 	}
 
