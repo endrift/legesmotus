@@ -120,6 +120,7 @@ ifeq ($(MACHINE)$(NOBUNDLE),Darwin)
 
 CLI_INSTALLER = Install\ Command\ Line\ Tools.app
 DMG = legesmotus-$(VERSION)-mac-$(ARCH).dmg
+DMG_NAME = "Leges Motus $(VERSION)"
 .PHONY: bundle dist cli-installer
 
 ifneq ($(ARCH),universal)
@@ -148,22 +149,25 @@ endif
 $(DMG): $(CLI_INSTALLER)
 	$(RM) -r tmp
 	mkdir -p tmp
+	mkdir -p tmp/Other\ Stuff
 	cp $(BASEDIR)/client/legesmotus.icns tmp/.VolumeIcon.icns
 	SetFile -c icnC tmp/.VolumeIcon.icns
 	cp $(BASEDIR)/README tmp/README.TXT
-	cp $(BASEDIR)/{CHANGES,COPYING,NEW_MAP_FORMAT} tmp
+	cp $(BASEDIR)/{CHANGES,COPYING,NEW_MAP_FORMAT} tmp/Other\ Stuff
 	cp -R Leges\ Motus.app tmp
-	cp -R $(CLI_INSTALLER) tmp
-	hdiutil create -srcfolder tmp -volname "Leges Motus $(VERSION)" -format UDRW -ov raw-$(DMG)
+	cp -R $(CLI_INSTALLER) tmp/Other\ Stuff
+	cp $(BASEDIR)/mac/lmbg.png tmp/.lmbg.png
+	hdiutil create -srcfolder tmp -volname $(DMG_NAME) -format UDRW -ov raw-$(DMG)
 	$(RM) -r tmp
 	mkdir -p tmp
 	@# This is to set the volume icon. No, really
 	hdiutil attach raw-$(DMG) -mountpoint tmp
 	SetFile -a C tmp
+	osascript $(BASEDIR)/mac/polish_dmg.applescript $(DMG_NAME)
 	hdiutil detach tmp
 	$(RM) $(DMG)
 	hdiutil convert raw-$(DMG) -format UDZO -o $(DMG)
-	$(RM) raw-$(DMG)
+	#$(RM) raw-$(DMG)
 	$(RM) -r tmp
 	
 
