@@ -62,7 +62,7 @@ ConvolveKernel::ConvolveKernel(Curve* curve, int kwidth, int kheight, double nor
 }
 
 ConvolveKernel::~ConvolveKernel() {
-	delete m_data;
+	delete[] m_data;
 }
 
 SDL_Surface* ConvolveKernel::convolve(SDL_Surface* source) const {

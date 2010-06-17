@@ -3,6 +3,8 @@
 #include "gui/Label.hpp"
 #include "gui/GLESContext.hpp"
 #include "client/Sprite.hpp"
+#include "client/ConvolveKernel.hpp"
+#include "client/Curve.hpp"
 #include <iostream>
 #include <sstream>
 #include "SDL_image.h"
@@ -14,9 +16,14 @@ using namespace std;
 int main(int argc, char *argv[]) {
 	GameWindow *window = GameWindow::get_instance(500, 100, 24, GameWindow::VSYNC);
 	GLESContext ctx(500, 100);
+	LinearCurve curve(0, 1);
+	ConvolveKernel kernel(&curve, 7, 7);
 	
 	Font font(string("data/fonts/JuraMedium.ttf"), 30, &ctx);
+	Font cfont(string("data/fonts/JuraMedium.ttf"), 30, &ctx, &kernel);
 	Label l(string("This is text! Oh god..."), &font);
+	Label sl(&cfont);
+	l.set_shadow(&sl);
 	Label p(&font);
 	l.set_align(Label::ALIGN_CENTER);
 	p.set_align(Label::ALIGN_RIGHT);

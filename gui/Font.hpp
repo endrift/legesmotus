@@ -36,14 +36,16 @@
 #define Font NewFont
 
 namespace LM {
+	class ConvolveKernel;
+
 	class Font {
 	public:
 		struct Glyph {
 		private:
 			DrawContext* m_ctx;
+			DrawContext::Image image;
 
 		public:
-			DrawContext::Image image;
 			float advance;
 			float bearing;
 			float baseline;
@@ -53,8 +55,10 @@ namespace LM {
 			int bitmap_height;
 
 			Glyph();
-			Glyph(const FT_GlyphSlot& glyph, DrawContext* ctx);
-			~Glyph();
+			Glyph(const FT_GlyphSlot& glyph, DrawContext* ctx, ConvolveKernel* kernel);
+			virtual ~Glyph();
+
+			virtual void draw() const;
 		};
 
 	private:
@@ -64,14 +68,20 @@ namespace LM {
 		FT_Face m_face;
 		std::map<int, Glyph*> m_glyphs;
 		DrawContext* m_ctx;
+		ConvolveKernel* m_kernel;
+
+	protected:
+		virtual Glyph* make_glyph(const FT_GlyphSlot& glyph);
 
 	public:
-		Font(const std::string& filename, float size, DrawContext* ctx);
-		~Font();
+		Font(const std::string& filename, float size, DrawContext* ctx, ConvolveKernel* kernel = 0);
+		virtual ~Font();
 
 		const Glyph* get_glyph(int character);
 		float get_height() const;
 		float kern(int lchar, int rchar) const;
+
+		const ConvolveKernel* get_kernel() const;
 	};
 }
 

@@ -23,6 +23,7 @@
  */
 
 #include "Label.hpp"
+#include "client/ConvolveKernel.hpp"
 #include <cmath>
 
 using namespace LM;
@@ -33,6 +34,7 @@ Label::Label(Font* font) {
 	set_height(font->get_height());
 	m_align = ALIGN_LEFT;
 	m_tracking = 0;
+	m_shadow = NULL;
 }
 
 Label::Label(const wstring& str, Font* font) : m_text(str) {
@@ -40,6 +42,7 @@ Label::Label(const wstring& str, Font* font) : m_text(str) {
 	set_height(font->get_height());
 	m_align = ALIGN_LEFT;
 	m_tracking = 0;
+	m_shadow = NULL;
 	recalculate_width();
 }
 
@@ -49,6 +52,7 @@ Label::Label(const string& str, Font* font) : m_text(str.length(), L' ') {
 	copy(str.begin(), str.end(), m_text.begin());
 	m_align = ALIGN_LEFT;
 	m_tracking = 0;
+	m_shadow = NULL;
 	recalculate_width();
 }
 
@@ -69,6 +73,10 @@ void Label::recalculate_width() {
 void Label::set_string(const wstring& str) {
 	m_text = str;
 	recalculate_width();
+
+	if (m_shadow != NULL) {
+		m_shadow->set_string(m_text);
+	}
 }
 
 void Label::set_string(const string& str) {
@@ -76,6 +84,10 @@ void Label::set_string(const string& str) {
 	m_text.reserve(str.size());
 	copy(str.begin(), str.end(), m_text.begin());
 	recalculate_width();
+
+	if (m_shadow != NULL) {
+		m_shadow->set_string(m_text);
+	}
 }
 
 void Label::set_color(Color color) {
@@ -84,6 +96,10 @@ void Label::set_color(Color color) {
 
 void Label::set_align(Align align) {
 	m_align = align;
+
+	if (m_shadow != NULL) {
+		m_shadow->set_align(align);
+	}
 }
 
 Label::Align Label::get_align() const {
@@ -93,9 +109,35 @@ Label::Align Label::get_align() const {
 void Label::set_tracking(float tracking) {
 	m_tracking = tracking;
 	recalculate_width();
+
+	if (m_shadow != NULL) {
+		m_shadow->set_tracking(tracking);
+	}
+}
+
+void Label::set_shadow(Label* shadow) {
+	if (shadow != this) {
+		m_shadow = shadow;
+		if (shadow != NULL) {
+			m_shadow->set_string(m_text);
+			m_shadow->set_tracking(m_tracking);
+			m_shadow->set_align(m_align);
+		}
+	}
+}
+
+Label* Label::get_shadow() {
+	return m_shadow;
 }
 
 void Label::redraw(DrawContext* ctx) const {
+	if (m_shadow != NULL) {
+		const ConvolveKernel* kernel = m_shadow->get_font()->get_kernel();
+		ctx->translate(-kernel->get_width() / 2.0, -kernel->get_height() / 2.0);
+		m_shadow->redraw(ctx);
+		ctx->translate(kernel->get_width() / 2.0, kernel->get_height() / 2.0);
+	}
+
 	float total_advance = 0;
 	int align = 0;
 	wchar_t prev_char = -1;
@@ -115,13 +157,15 @@ void Label::redraw(DrawContext* ctx) const {
 		float advance = glyph->advance + m_tracking + kern;
 		int height = - glyph->height + glyph->baseline;
 		ctx->translate(glyph->bearing, height);
-		if (glyph->bitmap_width > 0 && glyph->bitmap_height > 0) {
-			ctx->draw_image(glyph->bitmap_width, glyph->bitmap_height, glyph->image);
-		}
+		glyph->draw();
 		ctx->translate(advance - int(glyph->bearing), -height);
 		total_advance += advance;
 		prev_char = *iter;
 	}
 
 	ctx->translate(align - (total_advance + get_x()), -get_y());
+}
+
+const Font* Label::get_font() const {
+	return m_font;
 }

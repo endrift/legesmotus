@@ -23,8 +23,12 @@
  */
 
 #include "Font.hpp"
+#include "client/ConvolveKernel.hpp"
 #include "common/Exception.hpp"
 #include <cmath>
+
+// XXX remove SDL dependency here
+#include "SDL.h"
 
 using namespace LM;
 using namespace std;
@@ -32,7 +36,7 @@ using namespace std;
 FT_Library Font::m_library;
 bool Font::m_init = false;
 
-Font::Font(const std::string& filename, float size, DrawContext* ctx) {
+Font::Font(const std::string& filename, float size, DrawContext* ctx, ConvolveKernel* kernel) {
 	// TODO error checking
 	FT_Error err;
 	if (!m_init) {
@@ -42,8 +46,6 @@ Font::Font(const std::string& filename, float size, DrawContext* ctx) {
 		}
 		m_init = true;
 	}
-
-	m_ctx = ctx;
 	err = FT_New_Face(m_library, filename.c_str(), 0, &m_face);
 	if (err) {
 		throw new Exception("Could not initialize font");
@@ -53,6 +55,9 @@ Font::Font(const std::string& filename, float size, DrawContext* ctx) {
 	if (err) {
 		throw new Exception("Could not initialize font size");
 	}
+
+	m_ctx = ctx;
+	m_kernel = kernel;
 }
 
 Font::~Font() {
@@ -71,7 +76,7 @@ Font::Glyph::Glyph() {
 	image = 0;
 }
 
-Font::Glyph::Glyph(const FT_GlyphSlot& glyph, DrawContext* ctx) {
+Font::Glyph::Glyph(const FT_GlyphSlot& glyph, DrawContext* ctx, ConvolveKernel* kernel) {
 	m_ctx = ctx;
 	advance = ldexp(glyph->metrics.horiAdvance, -6);
 	bearing = ldexp(glyph->metrics.horiBearingX, -6);
@@ -81,7 +86,18 @@ Font::Glyph::Glyph(const FT_GlyphSlot& glyph, DrawContext* ctx) {
 	bitmap_width = glyph->bitmap.pitch;
 	bitmap_height = glyph->bitmap.rows;
 	if (bitmap_width > 0 && bitmap_height > 0) {
-		image = m_ctx->gen_image(&bitmap_width, &bitmap_height, DrawContext::ALPHA, glyph->bitmap.buffer);
+		if (kernel == NULL) {
+			image = m_ctx->gen_image(&bitmap_width, &bitmap_height, DrawContext::ALPHA, glyph->bitmap.buffer);
+		} else {
+			// FIXME figure out why we pass 2 here and not 1
+			SDL_Surface* surf = SDL_CreateRGBSurfaceFrom(glyph->bitmap.buffer, glyph->bitmap.width, bitmap_height, 2, bitmap_width, 0, 0, 0, 0xFF);
+			SDL_Surface* conv = kernel->convolve(surf);
+			bitmap_width = conv->pitch;
+			bitmap_height = conv->h;
+			image = m_ctx->gen_image(&bitmap_width, &bitmap_height, DrawContext::ALPHA, (unsigned char*) conv->pixels);
+			SDL_FreeSurface(surf);
+			SDL_FreeSurface(conv);
+		}
 	} else {
 		image = 0;
 	}
@@ -91,6 +107,16 @@ Font::Glyph::~Glyph() {
 	m_ctx->del_image(image);
 }
 
+void Font::Glyph::draw() const {
+	if (bitmap_width > 0 && bitmap_height > 0) {
+		m_ctx->draw_image(bitmap_width, bitmap_height, image);
+	}
+}
+
+Font::Glyph* Font::make_glyph(const FT_GlyphSlot& glyph) {
+	return new Glyph(m_face->glyph, m_ctx, m_kernel);
+}
+
 const Font::Glyph* Font::get_glyph(int character) {
 	if (m_glyphs.find(character) == m_glyphs.end()) {
 		FT_Error err = FT_Load_Char(m_face, character, FT_LOAD_RENDER);
@@ -98,7 +124,7 @@ const Font::Glyph* Font::get_glyph(int character) {
 			return NULL;
 		}
 
-		Glyph* g = new Glyph(m_face->glyph, m_ctx);
+		Glyph* g = make_glyph(m_face->glyph);
 		m_glyphs[character] = g;
 	}
 	return m_glyphs[character];
@@ -119,4 +145,8 @@ float Font::kern(int lchar, int rchar) const {
 	FT_UInt rglyph = FT_Get_Char_Index(m_face, rchar);
 	FT_Get_Kerning(m_face, lglyph, rglyph, FT_KERNING_DEFAULT, &kern);
 	return ldexp(kern.x, -6);
+}
+
+const ConvolveKernel* Font::get_kernel() const {
+	return m_kernel;
 }

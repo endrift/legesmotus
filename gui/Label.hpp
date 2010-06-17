@@ -45,6 +45,7 @@ namespace LM {
 		Align m_align;
 		Color m_color;
 		float m_tracking;
+		Label* m_shadow;
 
 		void recalculate_width();
 
@@ -62,6 +63,11 @@ namespace LM {
 		Align get_align() const;
 
 		void set_tracking(float tracking);
+
+		void set_shadow(Label* shadow);
+		Label* get_shadow();
+
+		const Font* get_font() const;
 
 		virtual void redraw(DrawContext* ctx) const;
 	};
