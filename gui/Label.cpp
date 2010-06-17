@@ -26,8 +26,6 @@
 #include "client/ConvolveKernel.hpp"
 #include <cmath>
 
-#include "client/compat_gl.h"
-
 using namespace LM;
 using namespace std;
 
