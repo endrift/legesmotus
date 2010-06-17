@@ -130,22 +130,32 @@ Label* Label::get_shadow() {
 	return m_shadow;
 }
 
+void Label::set_font(Font* font) {
+	m_font = font;
+}
+
+const Font* Label::get_font() const {
+	return m_font;
+}
+
 void Label::redraw(DrawContext* ctx) const {
 	if (m_shadow != NULL) {
-		const ConvolveKernel* kernel = m_shadow->get_font()->get_kernel();
-		ctx->translate(-kernel->get_width() / 2.0, -kernel->get_height() / 2.0);
 		m_shadow->redraw(ctx);
-		ctx->translate(kernel->get_width() / 2.0, kernel->get_height() / 2.0);
 	}
 
 	float total_advance = 0;
 	int align = 0;
 	wchar_t prev_char = -1;
+	const ConvolveKernel* kernel = get_font()->get_kernel();
 
 	if (get_align() == ALIGN_CENTER) {
 		align = get_width() * 0.5f;
 	} else if (get_align() == ALIGN_RIGHT) {
 		align = get_width();
+	}
+
+	if (kernel != NULL) {
+		ctx->translate(-kernel->get_width() / 2.0, -kernel->get_height() / 2.0);
 	}
 
 	ctx->set_draw_color(m_color);
@@ -164,8 +174,8 @@ void Label::redraw(DrawContext* ctx) const {
 	}
 
 	ctx->translate(align - (total_advance + get_x()), -get_y());
-}
 
-const Font* Label::get_font() const {
-	return m_font;
+	if (kernel != NULL) {
+		ctx->translate(kernel->get_width() / 2.0, kernel->get_height() / 2.0);
+	}
 }

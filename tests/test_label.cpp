@@ -49,6 +49,14 @@ int main(int argc, char *argv[]) {
 
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		/*if (phase % 100 > 50) {
+			l.set_font(&font);
+			sl.set_font(&cfont);
+		} else {
+			l.set_font(&cfont);
+			sl.set_font(&font);
+		}*/
+
 		float f = sin(phase*M_PI/50.0f);
 		float c = (1-f)*0.5f;
 		ctx.scale(1, 1/(c+0.8));

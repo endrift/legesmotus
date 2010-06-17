@@ -67,6 +67,7 @@ namespace LM {
 		void set_shadow(Label* shadow);
 		Label* get_shadow();
 
+		void set_font(Font* font);
 		const Font* get_font() const;
 
 		virtual void redraw(DrawContext* ctx) const;
