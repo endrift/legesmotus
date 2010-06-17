@@ -63,6 +63,7 @@ namespace LM {
 
 		virtual void		rotate (double angle);
 		virtual void		scale (double factor);
+		virtual void		translate(double x, double y);
 	
 		virtual bool		is_centered () const { return false; }
 

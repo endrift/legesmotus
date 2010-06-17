@@ -32,14 +32,28 @@
 #	ammo=30
 #	ammo_recharge=500
 
-3-impact:IMPACT
+#3-impact:IMPACT
+#	name=Impact Cannon
+#	hud=large_cannon.png
+#	force=20
+#	cooldown=2000
+#	recoil=4.0
+#	normal=10,-1:-15:-1:cannon_back.png;10,-1:-15:1:cannon_front.png
+#	firing=10,-1:-15:-1:cannon_back.png;10,-1:-15:1:cannon_front_shot.png
+	
+3-impact:AREA
 	name=Impact Cannon
 	hud=large_cannon.png
 	force=20
+	damage=10
+	freeze=1000
 	cooldown=2000
 	recoil=4.0
 	normal=10,-1:-15:-1:cannon_back.png;10,-1:-15:1:cannon_front.png
 	firing=10,-1:-15:-1:cannon_back.png;10,-1:-15:1:cannon_front_shot.png
+	pivot=0,0;
+	shape=poly:0,0;1000,100;1000,-100;0,0;
+#	move=false; # not yet implemented
 
 #4-thaw:THAW
 #	name=Thaw Gun

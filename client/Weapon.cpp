@@ -31,6 +31,8 @@
 #include "ImpactCannon.hpp"
 #include "SpreadGun.hpp"
 #include "ThawGun.hpp"
+#include "AreaGun.hpp"
+#include <iostream>
 
 using namespace LM;
 using namespace std;
@@ -46,9 +48,11 @@ Weapon*	Weapon::new_weapon (WeaponReader& data) {
 	const char*	weapon_id = data.get_id().c_str();
 
 	if (strcasecmp(weapon_type, "standard") == 0)	{ return new StandardGun(weapon_id, data); }
-	if (strcasecmp(weapon_type, "spread") == 0)	{ return new SpreadGun(weapon_id, data); }
-	if (strcasecmp(weapon_type, "impact") == 0)	{ return new ImpactCannon(weapon_id, data); }
-	if (strcasecmp(weapon_type, "thaw") == 0)	{ return new ThawGun(weapon_id, data); }
+	else if (strcasecmp(weapon_type, "spread") == 0)	{ return new SpreadGun(weapon_id, data); }
+	else if (strcasecmp(weapon_type, "impact") == 0)	{ return new ImpactCannon(weapon_id, data); }
+	else if (strcasecmp(weapon_type, "thaw") == 0)	{ return new ThawGun(weapon_id, data); }
+	else if (strcasecmp(weapon_type, "area") == 0)	{ return new AreaGun(weapon_id, data); }
+	else { cerr << "Error: unknown weapon type: " << weapon_type << endl; }
 
 	return NULL;
 }

@@ -402,7 +402,11 @@ namespace LM {
 		void		shoot_in_line(Point startpos, double direction, std::multiset<HitObject>& hit_objects);
 
 		// Find all hit objects in the given shape, and populate the given set
-		//void		shoot_in_region(const Shape& shape, bool penetrate_players, bool penetrate_obstacles, std::list<Player*>& hit_players); // TODO (#141)
+		// Planned for future: bool penetrate_players, bool penetrate_obstacles
+		std::list<Point> shoot_in_region(const Shape& shape, const Point& pivot, std::list<Player*>& hit_players);
+		
+		// Check if an object is occluded from view from a given point
+		Point		is_occluded(const Point& startpos, Point& objectcenter, HitObject& object);
 		
 		// Scan both the local network and the meta server for servers:
 		void		scan_all();

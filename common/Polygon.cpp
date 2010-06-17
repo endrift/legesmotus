@@ -224,3 +224,12 @@ void	Polygon::scale (double factor) {
 	}
 }
 
+void	Polygon::translate (double x, double y) {
+	Point dist(x, y);
+	for (LineList::iterator it(m_lines.begin()); it != m_lines.end(); ++it) {
+		it->first += dist;
+		it->second += dist;
+		m_upper_left += dist;
+	}
+}
+

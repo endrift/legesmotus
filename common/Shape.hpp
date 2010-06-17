@@ -63,6 +63,9 @@ namespace LM {
 
 		// Scale the shape by the given factor
 		virtual void		scale (double factor) = 0;
+		
+		// Move the shape by the given factor
+		virtual void		translate (double x, double y) = 0;
 
 		
 		// Returns true if this shape is oriented from its center (e.g. a circle),

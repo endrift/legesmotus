@@ -113,6 +113,11 @@ void	Circle::scale (double factor) {
 	radius *= factor;
 }
 
+void	Circle::translate (double x, double y) {
+	center.x += x;
+	center.y += y;
+}
+
 double	Circle::dist_from_circle(const Circle& other) const {
 	double distance = Point::distance(center, other.center);
 	if (distance > radius + other.radius) {

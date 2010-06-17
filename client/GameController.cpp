@@ -94,7 +94,7 @@ const unsigned int GameController::PING_FREQUENCY = 2000;
 const unsigned int GameController::CHAT_TRANSITION_TIME = 200;
 const unsigned int GameController::CHAT_LIMIT = 120;
 
-static bool	sort_resolution(pair<int, int> pairone, pair<int, int> pairtwo) {
+static bool sort_resolution(pair<int, int> pairone, pair<int, int> pairtwo) {
 	if (pairone.first == pairtwo.first) {
 		return pairone.second < pairtwo.second;
 	}
@@ -3671,20 +3671,80 @@ bool	GameController::damage (int amount, const Player* aggressor) {
 	return false;
 }
 
-GameController::HitObject::HitObject (double arg_distance, Point arg_point, BaseMapObject* arg_map_object)
-{
+GameController::HitObject::HitObject (double arg_distance, Point arg_point, BaseMapObject* arg_map_object) {
 	distance = arg_distance;
 	point = arg_point;
 	map_object = arg_map_object;
 	player = 0;
 }
 
-GameController::HitObject::HitObject (double arg_distance, Point arg_point, Player* arg_player)
-{
+GameController::HitObject::HitObject (double arg_distance, Point arg_point, Player* arg_player) {
 	distance = arg_distance;
 	point = arg_point;
 	map_object = 0;
 	player = arg_player;
+}
+
+// Starting at a given pivot point, find all players that are in a given region, populate
+// the given set with the players that are hit. Returns a list of hit points.
+// TODO: add and make use of bool penetrate_players, bool penetrate_obstacles
+list<Point>	GameController::shoot_in_region(const Shape& shape, const Point& pivot, std::list<Player*>& hit_players) {
+	list<Point> hit_points;
+	
+	// Find the players in this region
+	for (map<uint32_t, GraphicalPlayer>::iterator it(m_players.begin()); it != m_players.end(); ++it) {
+		GraphicalPlayer& thisplayer = it->second;
+		if (thisplayer.get_id() == m_player_id) {
+			continue;
+		}
+		
+		Point	playerpos = thisplayer.get_position();
+
+		Circle	player_circle(playerpos, thisplayer.get_radius());
+
+		double	angle = 0;
+		double	intersecting = shape.solid_intersects_circle(player_circle, &angle);
+		if (intersecting == -1) {
+			// Not intersecting
+			continue;
+		}
+		
+		double	distance = Point::distance(pivot, playerpos);
+		if (distance != -1) {
+			HitObject thishit = HitObject(distance, playerpos, &thisplayer);
+		
+			// Don't add the player if it's occluded.
+			Point actualhit = is_occluded(pivot, playerpos, thishit);
+			if (actualhit.x == -1 && actualhit.y == -1) {
+				// Not actually a hit
+				continue;
+			}
+
+			hit_players.push_back(&thisplayer);
+			hit_points.push_back(actualhit);
+		}
+	}
+	return hit_points;
+}
+
+// Check if any objects are in the way of this object starting at a given point
+// If occluded, return (-1, -1). If not, return the hit point.
+Point	GameController::is_occluded(const Point& startpos, Point& objectcenter, HitObject& object) {
+	double x_dist = objectcenter.x - startpos.x;
+	double y_dist = objectcenter.y - startpos.y;
+	double direction = atan2(y_dist, x_dist);
+	
+	multiset<HitObject>	hit_objects;
+	shoot_in_line(startpos, direction, hit_objects);
+	
+	// Find the nearest hit object, check if it's the same as the given object
+	const HitObject& nearest_hit(*hit_objects.begin());
+	
+	if (nearest_hit.map_object == object.map_object || nearest_hit.player == object.player) {
+		return nearest_hit.point;
+	} else {
+		return Point(-1, -1);
+	}
 }
 
 // Starting from the given point, shoot in a STRAIGHT LINE in the given direction,
@@ -3769,8 +3829,7 @@ Point GameController::find_shootable_object(Point startpos, double direction, Ba
 
 
 
-void	GameController::weapon_info_packet(PacketReader& reader)
-{
+void	GameController::weapon_info_packet(PacketReader& reader) {
 	size_t			weapon_index;
 	WeaponReader		weapon_data;
 	reader >> weapon_index;
