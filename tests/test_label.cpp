@@ -20,7 +20,8 @@ int main(int argc, char *argv[]) {
 	ConvolveKernel kernel(&curve, 7, 7);
 	
 	Font font(string("data/fonts/JuraMedium.ttf"), 30, &ctx);
-	Font cfont(string("data/fonts/JuraMedium.ttf"), 30, &ctx, &kernel);
+	Font cfont(string("data/fonts/JuraMedium.ttf"), 30, &ctx, false, &kernel);
+	//Font icfont(string("data/fonts/JuraMedium.ttf"), 30, &ctx, true, &kernel);
 	Label l(string("This is text! Oh god..."), &font);
 	Label sl(&cfont);
 	l.set_shadow(&sl);
@@ -49,21 +50,14 @@ int main(int argc, char *argv[]) {
 
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		/*if (phase % 100 > 50) {
-			l.set_font(&font);
-			sl.set_font(&cfont);
-		} else {
-			l.set_font(&cfont);
-			sl.set_font(&font);
-		}*/
-
 		float f = sin(phase*M_PI/50.0f);
 		float c = (1-f)*0.5f;
-		ctx.scale(1, 1/(c+0.8));
+		//ctx.scale(1, 1/(c+0.8));
 		l.set_color(Color(c, c, c, 1));
-		l.set_tracking(4.0f*c);
+		//l.set_tracking(4.0f*c);
+		l.set_skew(f);
 		l.redraw(&ctx);
-		ctx.scale(1, (c+0.8));
+		//ctx.scale(1, (c+0.8));
 
 		ctx.translate(245, 35);
 		ctx.scale(0.5f, 0.5f);

@@ -46,6 +46,7 @@ namespace LM {
 		Color m_color;
 		float m_tracking;
 		Label* m_shadow;
+		float m_skew;
 
 		void recalculate_width();
 
@@ -63,6 +64,7 @@ namespace LM {
 		Align get_align() const;
 
 		void set_tracking(float tracking);
+		void set_skew(float skew);
 
 		void set_shadow(Label* shadow);
 		Label* get_shadow();

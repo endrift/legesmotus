@@ -135,6 +135,22 @@ void GLESContext::rotate(float degrees) {
 	glRotatef(degrees, 0, 0, 1);
 }
 
+void GLESContext::skew_x(float amount) {
+	float mat[16] = {  1,      0, 0, 0,
+					  -amount, 1, 0, 0,
+					   0,      0, 1, 0,
+					   0,      0, 0, 1 };
+	glMultMatrixf(mat);
+}
+
+void GLESContext::skew_y(float amount) {
+	float mat[16] = { 1, -amount, 0, 0,
+					  0,       1, 0, 0,
+					  0,       0, 1, 0,
+					  0,       0, 0, 1 };
+	glMultMatrixf(mat);
+}
+
 void GLESContext::set_draw_color(Color c) {
 	glColor4f(c.r, c.g, c.b, c.a);
 }

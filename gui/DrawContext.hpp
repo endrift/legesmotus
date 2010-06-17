@@ -77,6 +77,8 @@ namespace LM {
 		virtual void	translate(float x, float y) = 0;
 		virtual void	scale(float x, float y) = 0;
 		virtual void	rotate(float degrees) = 0;
+		virtual void	skew_x(float amount) = 0;
+		virtual void	skew_y(float amount) = 0;
 
 		virtual void	set_draw_color(Color c) = 0;
 

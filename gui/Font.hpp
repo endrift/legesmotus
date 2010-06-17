@@ -30,6 +30,7 @@
 #include <vector>
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#include FT_GLYPH_H
 #include "DrawContext.hpp"
 
 // A temporary measure
@@ -55,7 +56,7 @@ namespace LM {
 			int bitmap_height;
 
 			Glyph();
-			Glyph(const FT_GlyphSlot& glyph, DrawContext* ctx, ConvolveKernel* kernel);
+			Glyph(const FT_GlyphSlot& glyph, DrawContext* ctx, bool italic, ConvolveKernel* kernel);
 			virtual ~Glyph();
 
 			virtual void draw() const;
@@ -69,12 +70,13 @@ namespace LM {
 		std::map<int, Glyph*> m_glyphs;
 		DrawContext* m_ctx;
 		ConvolveKernel* m_kernel;
+		bool m_italic;
 
 	protected:
 		virtual Glyph* make_glyph(const FT_GlyphSlot& glyph);
 
 	public:
-		Font(const std::string& filename, float size, DrawContext* ctx, ConvolveKernel* kernel = 0);
+		Font(const std::string& filename, float size, DrawContext* ctx, bool italic = false, ConvolveKernel* kernel = 0);
 		virtual ~Font();
 
 		const Glyph* get_glyph(int character);

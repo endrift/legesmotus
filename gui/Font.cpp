@@ -36,7 +36,7 @@ using namespace std;
 FT_Library Font::m_library;
 bool Font::m_init = false;
 
-Font::Font(const std::string& filename, float size, DrawContext* ctx, ConvolveKernel* kernel) {
+Font::Font(const std::string& filename, float size, DrawContext* ctx, bool italic, ConvolveKernel* kernel) {
 	// TODO error checking
 	FT_Error err;
 	if (!m_init) {
@@ -57,6 +57,7 @@ Font::Font(const std::string& filename, float size, DrawContext* ctx, ConvolveKe
 	}
 
 	m_ctx = ctx;
+	m_italic = italic;
 	m_kernel = kernel;
 }
 
@@ -76,31 +77,49 @@ Font::Glyph::Glyph() {
 	image = 0;
 }
 
-Font::Glyph::Glyph(const FT_GlyphSlot& glyph, DrawContext* ctx, ConvolveKernel* kernel) {
+Font::Glyph::Glyph(const FT_GlyphSlot& glyph, DrawContext* ctx, bool italic, ConvolveKernel* kernel) {
+	FT_Glyph ft_glyph;
+	FT_BitmapGlyph ft_bmp;
 	m_ctx = ctx;
-	advance = ldexp(glyph->metrics.horiAdvance, -6);
 	bearing = ldexp(glyph->metrics.horiBearingX, -6);
 	baseline = ldexp(glyph->metrics.height - glyph->metrics.horiBearingY, -6);
 	width = ldexp(glyph->metrics.width, -6);
 	height = ldexp(glyph->metrics.height, -6);
-	bitmap_width = glyph->bitmap.pitch;
-	bitmap_height = glyph->bitmap.rows;
+	// TODO error checking
+	FT_Get_Glyph(glyph, &ft_glyph);
+	if (italic) {
+		FT_Matrix skew;
+		skew.xx = 0x10000;
+		skew.xy = 0x04000;
+		skew.yx = 0x00000;
+		skew.yy = 0x10000;
+		FT_Glyph_Transform(ft_glyph, &skew, NULL);
+	}
+	advance = ldexp(ft_glyph->advance.x, -16);
+	FT_Glyph_To_Bitmap(&ft_glyph, FT_RENDER_MODE_NORMAL, NULL, 1);
+	ft_bmp = reinterpret_cast<FT_BitmapGlyph>(ft_glyph);
+	bitmap_width = ft_bmp->bitmap.pitch;
+	bitmap_height = ft_bmp->bitmap.rows;
 	if (bitmap_width > 0 && bitmap_height > 0) {
-		if (kernel == NULL) {
-			image = m_ctx->gen_image(&bitmap_width, &bitmap_height, DrawContext::ALPHA, glyph->bitmap.buffer);
-		} else {
+		SDL_Surface* sdl_bmp = NULL;
+		unsigned char* bmp = ft_bmp->bitmap.buffer;
+		if (kernel != NULL) {
 			// FIXME figure out why we pass 2 here and not 1
-			SDL_Surface* surf = SDL_CreateRGBSurfaceFrom(glyph->bitmap.buffer, glyph->bitmap.width, bitmap_height, 2, bitmap_width, 0, 0, 0, 0xFF);
-			SDL_Surface* conv = kernel->convolve(surf);
-			bitmap_width = conv->pitch;
-			bitmap_height = conv->h;
-			image = m_ctx->gen_image(&bitmap_width, &bitmap_height, DrawContext::ALPHA, (unsigned char*) conv->pixels);
+			SDL_Surface* surf = SDL_CreateRGBSurfaceFrom(bmp, ft_bmp->bitmap.width, bitmap_height, 2, bitmap_width, 0, 0, 0, 0xFF);
+			sdl_bmp = kernel->convolve(surf);
 			SDL_FreeSurface(surf);
-			SDL_FreeSurface(conv);
+			bitmap_width = sdl_bmp->pitch;
+			bitmap_height = sdl_bmp->h;
+			bmp = (unsigned char*) sdl_bmp->pixels;
+		}
+		image = m_ctx->gen_image(&bitmap_width, &bitmap_height, DrawContext::ALPHA, bmp);
+		if (sdl_bmp != NULL) {
+			SDL_FreeSurface(sdl_bmp);
 		}
 	} else {
 		image = 0;
 	}
+	FT_Done_Glyph(ft_glyph);
 }
 
 Font::Glyph::~Glyph() {
@@ -114,12 +133,12 @@ void Font::Glyph::draw() const {
 }
 
 Font::Glyph* Font::make_glyph(const FT_GlyphSlot& glyph) {
-	return new Glyph(m_face->glyph, m_ctx, m_kernel);
+	return new Glyph(m_face->glyph, m_ctx, m_italic, m_kernel);
 }
 
 const Font::Glyph* Font::get_glyph(int character) {
 	if (m_glyphs.find(character) == m_glyphs.end()) {
-		FT_Error err = FT_Load_Char(m_face, character, FT_LOAD_RENDER);
+		FT_Error err = FT_Load_Char(m_face, character, FT_LOAD_DEFAULT);
 		if (err) {
 			return NULL;
 		}

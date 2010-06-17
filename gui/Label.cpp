@@ -26,6 +26,8 @@
 #include "client/ConvolveKernel.hpp"
 #include <cmath>
 
+#include <OpenGL/gl.h>
+
 using namespace LM;
 using namespace std;
 
@@ -34,6 +36,7 @@ Label::Label(Font* font) {
 	set_height(font->get_height());
 	m_align = ALIGN_LEFT;
 	m_tracking = 0;
+	m_skew = 0;
 	m_shadow = NULL;
 }
 
@@ -42,6 +45,7 @@ Label::Label(const wstring& str, Font* font) : m_text(str) {
 	set_height(font->get_height());
 	m_align = ALIGN_LEFT;
 	m_tracking = 0;
+	m_skew = 0;
 	m_shadow = NULL;
 	recalculate_width();
 }
@@ -52,6 +56,7 @@ Label::Label(const string& str, Font* font) : m_text(str.length(), L' ') {
 	copy(str.begin(), str.end(), m_text.begin());
 	m_align = ALIGN_LEFT;
 	m_tracking = 0;
+	m_skew = 0;
 	m_shadow = NULL;
 	recalculate_width();
 }
@@ -115,6 +120,16 @@ void Label::set_tracking(float tracking) {
 	}
 }
 
+void Label::set_skew(float skew) {
+	m_skew = skew;
+	//recalculate_width();
+	//set_width(get_width()+(fabs(get_font()->get_height()*skew)));
+
+	if (m_shadow != NULL) {
+		m_shadow->set_skew(skew);
+	}
+}
+
 void Label::set_shadow(Label* shadow) {
 	if (shadow != this) {
 		m_shadow = shadow;
@@ -149,10 +164,12 @@ void Label::redraw(DrawContext* ctx) const {
 	const ConvolveKernel* kernel = get_font()->get_kernel();
 
 	if (get_align() == ALIGN_CENTER) {
-		align = get_width() * 0.5f;
+		align = (get_width() + m_skew*get_font()->get_height()*0.5) * 0.5f;
 	} else if (get_align() == ALIGN_RIGHT) {
-		align = get_width();
+		align = get_width() + m_skew*get_font()->get_height()*0.5;
 	}
+
+	ctx->skew_x(m_skew);
 
 	if (kernel != NULL) {
 		ctx->translate(-kernel->get_width() / 2.0, -kernel->get_height() / 2.0);
@@ -168,7 +185,7 @@ void Label::redraw(DrawContext* ctx) const {
 		int height = - glyph->height + glyph->baseline;
 		ctx->translate(glyph->bearing, height);
 		glyph->draw();
-		ctx->translate(advance - int(glyph->bearing), -height);
+		ctx->translate(advance - glyph->bearing, -height);
 		total_advance += advance;
 		prev_char = *iter;
 	}
@@ -178,4 +195,6 @@ void Label::redraw(DrawContext* ctx) const {
 	if (kernel != NULL) {
 		ctx->translate(kernel->get_width() / 2.0, kernel->get_height() / 2.0);
 	}
+
+	ctx->skew_x(-m_skew);
 }
