@@ -33,6 +33,7 @@ Label::Label(Font* font) {
 	m_font = font;
 	set_height(font->get_height());
 	m_align = ALIGN_LEFT;
+	m_skew_align = VALIGN_MIDDLE;
 	m_tracking = 0;
 	m_skew = 0;
 	m_shadow = NULL;
@@ -42,6 +43,7 @@ Label::Label(const wstring& str, Font* font) : m_text(str) {
 	m_font = font;
 	set_height(font->get_height());
 	m_align = ALIGN_LEFT;
+	m_skew_align = VALIGN_MIDDLE;
 	m_tracking = 0;
 	m_skew = 0;
 	m_shadow = NULL;
@@ -53,6 +55,7 @@ Label::Label(const string& str, Font* font) : m_text(str.length(), L' ') {
 	set_height(font->get_height());
 	copy(str.begin(), str.end(), m_text.begin());
 	m_align = ALIGN_LEFT;
+	m_skew_align = VALIGN_MIDDLE;
 	m_tracking = 0;
 	m_skew = 0;
 	m_shadow = NULL;
@@ -128,6 +131,18 @@ void Label::set_skew(float skew) {
 	}
 }
 
+void Label::set_skew_align(VAlign align) {
+	m_skew_align = align;
+
+	if (m_shadow != NULL) {
+		m_shadow->set_skew_align(align);
+	}
+}
+
+Label::VAlign Label::get_skew_align() const {
+	return m_skew_align;
+}
+
 void Label::set_shadow(Label* shadow) {
 	if (shadow != this) {
 		m_shadow = shadow;
@@ -157,14 +172,21 @@ void Label::redraw(DrawContext* ctx) const {
 	}
 
 	float total_advance = 0;
-	int align = 0;
+	float align = 0;
+	float valign = 0;
 	wchar_t prev_char = -1;
 	const ConvolveKernel* kernel = get_font()->get_kernel();
 
+	if (get_skew_align() == VALIGN_TOP) {
+		valign = get_font()->get_height();
+	} else if (get_skew_align() == VALIGN_MIDDLE) {
+		valign = get_font()->get_height() * 0.5f;
+	}
+
 	if (get_align() == ALIGN_CENTER) {
-		align = (get_width() + m_skew*get_font()->get_height()*0.5) * 0.5f;
+		align = (get_width() + m_skew*valign) * 0.5f;
 	} else if (get_align() == ALIGN_RIGHT) {
-		align = get_width() + m_skew*get_font()->get_height()*0.5;
+		align = get_width() + m_skew*valign;
 	}
 
 	ctx->skew_x(m_skew);

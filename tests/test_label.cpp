@@ -16,17 +16,21 @@ using namespace std;
 int main(int argc, char *argv[]) {
 	GameWindow *window = GameWindow::get_instance(500, 100, 24, GameWindow::VSYNC);
 	GLESContext ctx(500, 100);
-	LinearCurve curve(0, 1);
-	ConvolveKernel kernel(&curve, 7, 7);
+	LinearCurve curve(1, 0);
+	ConstantCurve bcurve(1, 1);
+	ConvolveKernel kernel(&curve, 7, 2);
+	ConvolveKernel bkernel(&bcurve, 4, 1, 1);
 	
-	Font font(string("data/fonts/JuraMedium.ttf"), 30, &ctx);
+	Font font(string("data/fonts/JuraMedium.ttf"), 30, &ctx, false, &bkernel);
 	Font cfont(string("data/fonts/JuraMedium.ttf"), 30, &ctx, false, &kernel);
 	//Font icfont(string("data/fonts/JuraMedium.ttf"), 30, &ctx, true, &kernel);
-	Label l(string("This is text! Oh god..."), &font);
+	Label l(string("I'm nauseous! I'm nauseous..."), &font);
 	Label sl(&cfont);
 	l.set_shadow(&sl);
 	Label p(&font);
 	l.set_align(Label::ALIGN_CENTER);
+	l.set_skew_align(Label::VALIGN_BOTTOM);
+	sl.set_skew_align(Label::VALIGN_TOP);
 	p.set_align(Label::ALIGN_RIGHT);
 	
 	SDL_ShowCursor(SDL_TRUE);

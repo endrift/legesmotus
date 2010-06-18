@@ -39,6 +39,12 @@ namespace LM {
 			ALIGN_CENTER
 		};
 
+		enum VAlign {
+			VALIGN_TOP,
+			VALIGN_BOTTOM,
+			VALIGN_MIDDLE
+		};
+
 	private:
 		Font* m_font;
 		std::wstring m_text;
@@ -47,6 +53,7 @@ namespace LM {
 		float m_tracking;
 		Label* m_shadow;
 		float m_skew;
+		VAlign m_skew_align;
 
 		void recalculate_width();
 
@@ -63,8 +70,12 @@ namespace LM {
 		void set_align(Align align);
 		Align get_align() const;
 
+
 		void set_tracking(float tracking);
+
 		void set_skew(float skew);
+		void set_skew_align(VAlign align);
+		VAlign get_skew_align() const;
 
 		void set_shadow(Label* shadow);
 		Label* get_shadow();
