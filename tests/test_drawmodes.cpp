@@ -13,7 +13,6 @@ int main(int argc, char *argv[]) {
 	bool running = true;
 	float wx = 75;
 	float hy = 75;
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	while(running) {
 		SDL_Event e;
 		while(SDL_PollEvent(&e) != 0) {

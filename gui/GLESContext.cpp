@@ -43,8 +43,9 @@ GLESContext::GLESContext(int width, int height) {
 
 	m_bound_img = 0;
 
-	//glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glEnable(GL_STENCIL_TEST);
+	glEnable(GL_BLEND);
 	glBlendColor(1.0f, 1.0f, 1.0f, 1.0f);
 	set_draw_mode(NORMAL);
 }
@@ -164,7 +165,7 @@ void GLESContext::set_draw_color(Color c) {
 void GLESContext::set_draw_mode(DrawMode m) {
 	switch (m) {
 		case NORMAL:
-		glBlendFunc(GL_CONSTANT_COLOR, GL_ZERO);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		break;
 
 		case MULTIPLY:
@@ -302,6 +303,7 @@ void GLESContext::bind_image(Image img) {
 void GLESContext::draw_bound_image(int width, int height) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	GLint vertices[8] = {
 		0, 0,
 		width, 0,
