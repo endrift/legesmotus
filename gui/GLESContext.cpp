@@ -45,6 +45,8 @@ GLESContext::GLESContext(int width, int height) {
 
 	//glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glEnable(GL_STENCIL_TEST);
+	glBlendColor(1.0f, 1.0f, 1.0f, 1.0f);
+	set_draw_mode(NORMAL);
 }
 
 GLESContext::~GLESContext() {
@@ -151,8 +153,28 @@ void GLESContext::skew_y(float amount) {
 	glMultMatrixf(mat);
 }
 
+void GLESContext::set_screen_color(Color c) {
+	glBlendColor(c.r, c.g, c.b, c.a);
+}
+
 void GLESContext::set_draw_color(Color c) {
 	glColor4f(c.r, c.g, c.b, c.a);
+}
+
+void GLESContext::set_draw_mode(DrawMode m) {
+	switch (m) {
+		case NORMAL:
+		glBlendFunc(GL_CONSTANT_COLOR, GL_ZERO);
+		break;
+
+		case MULTIPLY:
+		glBlendFunc(GL_DST_COLOR, GL_ZERO);
+		break;
+
+		case ADD:
+		glBlendFunc(GL_CONSTANT_COLOR, GL_ONE);
+		break;
+	}
 }
 
 void GLESContext::draw_arc(float len, float xr, float yr, int fine) {
@@ -289,6 +311,29 @@ void GLESContext::draw_bound_image(int width, int height) {
 
 	glVertexPointer(2, GL_INT, 0, vertices);
 	glTexCoordPointer(2, GL_INT, 0, m_rect_tex_vertices);
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+}
+
+void GLESContext::draw_bound_image_region(int width, int height,
+										  float corner0x, float corner0y,
+										  float corner1x, float corner1y) {
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	GLint vertices[8] = {
+		0, 0,
+		width, 0,
+		width, height,
+		0, height
+	};
+	GLfloat texcoords[8] = {
+		corner0x, corner0y,
+		corner1x, corner0y,
+		corner1x, corner1y,
+		corner0x, corner1y
+	};
+
+	glVertexPointer(2, GL_INT, 0, vertices);
+	glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 

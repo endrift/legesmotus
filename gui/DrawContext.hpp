@@ -34,9 +34,16 @@ namespace LM {
 	class DrawContext {
 	public:
 		typedef unsigned int Image;
+
 		enum PixelFormat {
 			RGBA,
 			ALPHA
+		};
+
+		enum DrawMode {
+			NORMAL,
+			ADD,
+			MULTIPLY
 		};
 
 	private:
@@ -80,7 +87,9 @@ namespace LM {
 		virtual void	skew_x(float amount) = 0;
 		virtual void	skew_y(float amount) = 0;
 
+		virtual void	set_screen_color(Color c) = 0;
 		virtual void	set_draw_color(Color c) = 0;
+		virtual void	set_draw_mode(DrawMode m) = 0;
 
 		virtual void	draw_arc(float circumf, float xr, float yr, int fine) = 0;
 		virtual void	draw_arc_fill(float circumf, float xr, float yr, int fine) = 0;
@@ -103,6 +112,9 @@ namespace LM {
 		virtual void	draw_image(int width, int height, Image img) = 0;
 		virtual void	bind_image(Image img) = 0;
 		virtual void	draw_bound_image(int width, int height) = 0;
+		virtual void	draw_bound_image_region(int width, int height,
+												float corner0x, float corner0y,
+												float corner1x, float corner1y) = 0;
 
 		virtual void	redraw() = 0;
 	};

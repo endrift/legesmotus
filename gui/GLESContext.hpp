@@ -71,7 +71,9 @@ namespace LM {
 		virtual void	skew_x(float amount);
 		virtual void	skew_y(float amount);
 
+		virtual void	set_screen_color(Color c);
 		virtual void	set_draw_color(Color c);
+		virtual void	set_draw_mode(DrawMode m);
 
 		virtual void	draw_arc(float circumf, float xr, float yr, int fine);
 		virtual void	draw_arc_fill(float circumf, float xr, float yr, int fine);
@@ -90,6 +92,9 @@ namespace LM {
 		virtual void	draw_image(int width, int height, Image img);
 		virtual void	bind_image(Image img);
 		virtual void	draw_bound_image(int width, int height);
+		virtual void	draw_bound_image_region(int width, int height,
+												float corner0x, float corner0y,
+												float corner1x, float corner1y);
 
 		// TODO more GL properties (framebuffers?)
 
