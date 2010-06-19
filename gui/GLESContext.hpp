@@ -45,7 +45,11 @@ namespace LM {
 		GLfloat	m_arc_vertices[2*(MAX_ARC_FINE + 2)];
 		GLfloat	m_rect_vertices[8];
 
+		// Current state
 		GLuint	m_bound_img;
+		bool	m_img_bound;
+		Color	m_color;
+		DrawMode m_mode;
 
 		void	prepare_arc(float len, float xr, float yr, int fine);
 		void	prepare_rect(float w, float h);
@@ -53,6 +57,8 @@ namespace LM {
 	public:
 		GLESContext(int width, int height);
 		virtual ~GLESContext();
+
+		virtual void	make_active();
 
 		virtual int		get_width() const;
 		virtual int		get_height() const;
@@ -71,7 +77,6 @@ namespace LM {
 		virtual void	skew_x(float amount);
 		virtual void	skew_y(float amount);
 
-		virtual void	set_screen_color(Color c);
 		virtual void	set_draw_color(Color c);
 		virtual void	set_draw_mode(DrawMode m);
 
@@ -89,8 +94,9 @@ namespace LM {
 		virtual Image	gen_image(int* width, int* height, PixelFormat format, unsigned char* data);
 		virtual void	del_image(Image img);
 
-		virtual void	draw_image(int width, int height, Image img);
 		virtual void	bind_image(Image img);
+		virtual void	unbind_image();
+		virtual void	draw_image(int width, int height, Image img);
 		virtual void	draw_bound_image(int width, int height);
 		virtual void	draw_bound_image_region(int width, int height,
 												float corner0x, float corner0y,

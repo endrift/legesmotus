@@ -68,6 +68,8 @@ namespace LM {
 		void	mouse_move(int x, int y);
 		void	keypress(int key, bool down);*/
 
+		virtual void	make_active() = 0;
+
 		virtual int		get_width() const = 0;
 		virtual int		get_height() const = 0;
 
@@ -87,7 +89,6 @@ namespace LM {
 		virtual void	skew_x(float amount) = 0;
 		virtual void	skew_y(float amount) = 0;
 
-		virtual void	set_screen_color(Color c) = 0;
 		virtual void	set_draw_color(Color c) = 0;
 		virtual void	set_draw_mode(DrawMode m) = 0;
 
@@ -109,8 +110,9 @@ namespace LM {
 		virtual Image	gen_image(int* width, int* height, PixelFormat format, unsigned char* data) = 0;
 		virtual void	del_image(Image img) = 0;
 
-		virtual void	draw_image(int width, int height, Image img) = 0;
 		virtual void	bind_image(Image img) = 0;
+		virtual void	unbind_image() = 0;
+		virtual void	draw_image(int width, int height, Image img) = 0;
 		virtual void	draw_bound_image(int width, int height) = 0;
 		virtual void	draw_bound_image_region(int width, int height,
 												float corner0x, float corner0y,

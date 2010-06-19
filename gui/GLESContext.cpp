@@ -42,15 +42,21 @@ GLESContext::GLESContext(int width, int height) {
 	m_depth = 0;
 
 	m_bound_img = 0;
+	m_img_bound = false;
 
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glEnable(GL_STENCIL_TEST);
 	glEnable(GL_BLEND);
-	glBlendColor(1.0f, 1.0f, 1.0f, 1.0f);
 	set_draw_mode(NORMAL);
 }
 
 GLESContext::~GLESContext() {
+}
+
+void GLESContext::make_active() {
+	glBindTexture(GL_TEXTURE_2D, m_bound_img);
+	glColor4f(m_color.r, m_color.g, m_color.b, m_color.a);
+	set_draw_mode(m_mode);
 }
 
 void GLESContext::prepare_arc(float len, float xr, float yr, int fine) {
@@ -76,7 +82,6 @@ void GLESContext::prepare_rect(float w, float h) {
 	m_rect_vertices[5] = h/2.0f;
 	m_rect_vertices[6] = -w/2.0f;
 	m_rect_vertices[7] = h/2.0f;
-	glTexCoordPointer(2, GL_FLOAT, 0, m_rect_tex_vertices);
 	glVertexPointer(2, GL_FLOAT, 0, m_rect_vertices);
 }
 
@@ -154,12 +159,9 @@ void GLESContext::skew_y(float amount) {
 	glMultMatrixf(mat);
 }
 
-void GLESContext::set_screen_color(Color c) {
-	glBlendColor(c.r, c.g, c.b, c.a);
-}
-
 void GLESContext::set_draw_color(Color c) {
 	glColor4f(c.r, c.g, c.b, c.a);
+	m_color = c;
 }
 
 void GLESContext::set_draw_mode(DrawMode m) {
@@ -176,6 +178,7 @@ void GLESContext::set_draw_mode(DrawMode m) {
 		glBlendFunc(GL_CONSTANT_COLOR, GL_ONE);
 		break;
 	}
+	m_mode = m;
 }
 
 void GLESContext::draw_arc(float len, float xr, float yr, int fine) {
@@ -291,19 +294,31 @@ void GLESContext::del_image(Image img) {
 void GLESContext::draw_image(int width, int height, Image img) {
 	bind_image(img);
 	draw_bound_image(width, height);
+	unbind_image();
 }
 
 void GLESContext::bind_image(Image img) {
-	//if (m_bound_img != img) {
+	// XXX uncomment when graphics revamp is done
+	//if (m_bound_img != img || !m_img_bound) {
 		glBindTexture(GL_TEXTURE_2D, img);
 		m_bound_img = img;
 	//}
+	if (!m_img_bound) {
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		m_img_bound = true;
+	}
+}
+
+void GLESContext::unbind_image() {
+	if (m_img_bound) {
+		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+		m_img_bound = false;
+	}
 }
 
 void GLESContext::draw_bound_image(int width, int height) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	GLint vertices[8] = {
 		0, 0,
 		width, 0,
