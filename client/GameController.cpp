@@ -3740,7 +3740,10 @@ Point	GameController::is_occluded(const Point& startpos, Point& objectcenter, Hi
 	// Find the nearest hit object, check if it's the same as the given object
 	const HitObject& nearest_hit(*hit_objects.begin());
 	
-	if (nearest_hit.map_object == object.map_object || nearest_hit.player == object.player) {
+	if ((nearest_hit.map_object != NULL && object.map_object != NULL &&
+			 nearest_hit.map_object == object.map_object) 
+			|| (nearest_hit.player != NULL && object.player != NULL &&
+			 nearest_hit.player->get_id() == object.player->get_id())) {
 		return nearest_hit.point;
 	} else {
 		return Point(-1, -1);
