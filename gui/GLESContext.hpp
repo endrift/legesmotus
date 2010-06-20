@@ -36,7 +36,7 @@ namespace LM {
 		static const int MAX_ARC_FINE = 64;
 
 	private:
-		static GLint	m_rect_tex_vertices[8];
+		static const GLint	m_rect_tex_vertices[8];
 
 		GLint	m_width;
 		GLint	m_height;
@@ -99,8 +99,8 @@ namespace LM {
 		virtual void	draw_image(int width, int height, Image img);
 		virtual void	draw_bound_image(int width, int height);
 		virtual void	draw_bound_image_region(int width, int height,
-												float corner0x, float corner0y,
-												float corner1x, float corner1y);
+												float tex_x, float tex_y,
+												float tex_height, float tex_width);
 
 		// TODO more GL properties (framebuffers?)
 

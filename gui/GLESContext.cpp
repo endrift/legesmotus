@@ -29,7 +29,7 @@
 
 using namespace LM;
 
-GLint GLESContext::m_rect_tex_vertices[] = {
+const GLint GLESContext::m_rect_tex_vertices[] = {
 	0, 0,
 	1, 0,
 	1, 1,
@@ -332,26 +332,22 @@ void GLESContext::draw_bound_image(int width, int height) {
 }
 
 void GLESContext::draw_bound_image_region(int width, int height,
-										  float corner0x, float corner0y,
-										  float corner1x, float corner1y) {
+										  float tex_x, float tex_y,
+										  float tex_width, float tex_height) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	GLint vertices[8] = {
-		0, 0,
-		width, 0,
-		width, height,
-		0, height
-	};
-	GLfloat texcoords[8] = {
-		corner0x, corner0y,
-		corner1x, corner0y,
-		corner1x, corner1y,
-		corner0x, corner1y
-	};
+	prepare_rect(width, height);
 
-	glVertexPointer(2, GL_INT, 0, vertices);
-	glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
+	glMatrixMode(GL_TEXTURE);
+	glLoadIdentity();
+
+	glTranslatef(-tex_x/tex_width, -tex_y/tex_height, 0);
+	glScalef(width/(tex_width), height/(tex_height), 1.0);
+
+	glTexCoordPointer(2, GL_INT, 0, m_rect_tex_vertices);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+	glLoadIdentity();
 }
 
 void GLESContext::redraw() {
