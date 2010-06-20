@@ -3,6 +3,8 @@
 #include "SDL.h"
 #include "SDL_image.h"
 
+#include <iostream>
+
 using namespace LM;
 using namespace std;
 
@@ -16,6 +18,11 @@ int main(int argc, char *argv[]) {
 	int wx = 64;
 	int hy = 64;
 	SDL_Surface* img = IMG_Load("data/sprites/metal_bgtile64.png");
+	cout << hex << showbase;
+	cout << img->format->Rmask << endl;
+	cout << img->format->Gmask << endl;
+	cout << img->format->Bmask << endl;
+	cout << img->format->Amask << endl;
 	DrawContext::Image imgh = ctx.gen_image(&wx, &hy, DrawContext::RGBA, (unsigned char*)img->pixels);
 	SDL_FreeSurface(img);
 	ctx.bind_image(imgh);

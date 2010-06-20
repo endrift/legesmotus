@@ -30,21 +30,21 @@ int main(int argc, char *argv[]) {
 		ctx.translate(150.0f, 0.0f);
 
 		ctx.translate(0, 37.5f);
-		ctx.set_draw_mode(DrawContext::NORMAL);
+		ctx.set_blend_mode(DrawContext::NORMAL);
 		ctx.translate(-25.0f, 25.0f);
 		ctx.draw_rect_fill(wx, hy);
 		ctx.translate(50.0f, 25.0f);
 		ctx.draw_rect_fill(wx, hy);
 
 		ctx.translate(-25.0, 25.0f);
-		ctx.set_draw_mode(DrawContext::ADD);
+		ctx.set_blend_mode(DrawContext::ADD);
 		ctx.translate(-25.0f, 25.0f);
 		ctx.draw_rect_fill(wx, hy);
 		ctx.translate(50.0f, 25.0f);
 		ctx.draw_rect_fill(wx, hy);
 
 		ctx.translate(-25.0, 25.0f);
-		ctx.set_draw_mode(DrawContext::MULTIPLY);
+		ctx.set_blend_mode(DrawContext::MULTIPLY);
 		ctx.translate(-25.0f, 25.0f);
 		ctx.draw_rect_fill(wx, hy);
 		ctx.translate(50.0f, 25.0f);

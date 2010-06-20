@@ -49,7 +49,7 @@ namespace LM {
 		GLuint	m_bound_img;
 		bool	m_img_bound;
 		Color	m_color;
-		DrawMode m_mode;
+		BlendMode m_mode;
 
 		void	prepare_arc(float len, float xr, float yr, int fine);
 		void	prepare_rect(float w, float h);
@@ -78,7 +78,7 @@ namespace LM {
 		virtual void	skew_y(float amount);
 
 		virtual void	set_draw_color(Color c);
-		virtual void	set_draw_mode(DrawMode m);
+		virtual void	set_blend_mode(BlendMode m);
 
 		virtual void	draw_arc(float circumf, float xr, float yr, int fine);
 		virtual void	draw_arc_fill(float circumf, float xr, float yr, int fine);

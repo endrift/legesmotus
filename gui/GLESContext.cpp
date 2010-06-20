@@ -47,7 +47,7 @@ GLESContext::GLESContext(int width, int height) {
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glEnable(GL_STENCIL_TEST);
 	glEnable(GL_BLEND);
-	set_draw_mode(NORMAL);
+	set_blend_mode(NORMAL);
 }
 
 GLESContext::~GLESContext() {
@@ -56,7 +56,7 @@ GLESContext::~GLESContext() {
 void GLESContext::make_active() {
 	glBindTexture(GL_TEXTURE_2D, m_bound_img);
 	glColor4f(m_color.r, m_color.g, m_color.b, m_color.a);
-	set_draw_mode(m_mode);
+	set_blend_mode(m_mode);
 }
 
 void GLESContext::prepare_arc(float len, float xr, float yr, int fine) {
@@ -164,7 +164,7 @@ void GLESContext::set_draw_color(Color c) {
 	m_color = c;
 }
 
-void GLESContext::set_draw_mode(DrawMode m) {
+void GLESContext::set_blend_mode(BlendMode m) {
 	switch (m) {
 		case NORMAL:
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -175,7 +175,7 @@ void GLESContext::set_draw_mode(DrawMode m) {
 		break;
 
 		case ADD:
-		glBlendFunc(GL_CONSTANT_COLOR, GL_ONE);
+		glBlendFunc(GL_ONE, GL_ONE);
 		break;
 	}
 	m_mode = m;

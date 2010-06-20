@@ -40,7 +40,7 @@ namespace LM {
 			ALPHA
 		};
 
-		enum DrawMode {
+		enum BlendMode {
 			NORMAL,
 			ADD,
 			MULTIPLY
@@ -90,7 +90,7 @@ namespace LM {
 		virtual void	skew_y(float amount) = 0;
 
 		virtual void	set_draw_color(Color c) = 0;
-		virtual void	set_draw_mode(DrawMode m) = 0;
+		virtual void	set_blend_mode(BlendMode m) = 0;
 
 		virtual void	draw_arc(float circumf, float xr, float yr, int fine) = 0;
 		virtual void	draw_arc_fill(float circumf, float xr, float yr, int fine) = 0;
