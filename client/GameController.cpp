@@ -238,6 +238,8 @@ void GameController::init(GameWindow* window) {
 	m_last_clicked = 0;
 	m_muzzle_flash_start = 0;
 	
+	m_cooldown_updated = false;
+	
 	m_curr_weapon_image = NULL;
 	m_weapon_selector = NULL;
 	m_current_weapon = NULL;
@@ -707,6 +709,8 @@ void GameController::run(int lockfps) {
 	display_message("Welcome to Leges Motus!");
 	
 	while(m_quit_game == false) {
+		m_cooldown_updated = false;
+	
 		process_input();
 		
 		m_network.resend_acks();
@@ -890,7 +894,9 @@ void GameController::run(int lockfps) {
 			}
 			
 			// Update the cooldown bar.
-			update_cooldown_bar();
+			if (!m_cooldown_updated) {
+				update_cooldown_bar();
+			}
 			
 			// Uncomment if framerate is needed.
 			// the framerate:
@@ -1132,6 +1138,8 @@ void GameController::update_cooldown_bar(double new_cooldown) {
 	} else if (new_cooldown == -1) {
 		new_cooldown = 0;
 	}
+	
+	m_cooldown_updated = true;
 	
 	m_cooldown_bar->set_image_width((COOLDOWN_BAR_WIDTH-2) * (1.0-new_cooldown) + 2);
 }
@@ -1653,16 +1661,21 @@ void GameController::process_mouse_click(SDL_Event event) {
 		}
 		break;
 		case GAME_IN_PROGRESS: {
-			if (event.type != SDL_MOUSEBUTTONDOWN) {
-				return;
-			} else if (!m_overlay_background->is_invisible()) {
+			if (!m_overlay_background->is_invisible()) {
 				// Do nothing.
 			} else if (!m_chat_log->is_invisible()) {
 				// Do nothing.
 			} else if (event.button.button == 1) {
 				// Fire the gun if it's ready.
-				if (m_players.empty() || m_players[m_player_id].is_frozen() || m_players[m_player_id].is_dead() || !m_current_weapon)
+				if (m_players.empty() || m_players[m_player_id].is_frozen() || m_players[m_player_id].is_dead() || !m_current_weapon) {
 					return;
+				}
+				
+				m_current_weapon->mouse_button_event(event);
+				
+				if (event.type != SDL_MOUSEBUTTONDOWN) {
+					return;
+				}
 
 				double x_dist = (event.button.x + m_offset_x) - m_players[m_player_id].get_x();
 				double y_dist = (event.button.y + m_offset_y) - m_players[m_player_id].get_y();

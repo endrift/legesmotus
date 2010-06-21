@@ -55,6 +55,32 @@
 	shape=poly:0,0;1000,100;1000,-100;0,0;
 #	move=false; # not yet implemented
 
+4-machinegun:CHARGE
+	name=Machine Gun
+	hud=large_mgun.png
+	damage=20
+	cooldown=100
+	recoil=1.01
+	inaccuracy=4
+	continuous
+	normal=3,16:-15:1:mgun_noshot.png
+	firing=3,16:-15:1:mgun_shot.png
+	ammo=40
+	ammo_recharge=750
+	charge_time=3000
+
+#5-pulse:AREA
+#	name=Melee Pulse
+#	hud=large_mpulse.png
+#	force=10
+#	damage=200
+#	cooldown=1000
+#	recoil=0.0
+#	normal=5,20:-15:1:mpulse_noshot.png
+#	firing=5,20:-15:1:mpulse_noshot.png
+#	pivot=0,0;
+#	shape=circle:250
+
 #4-thaw:THAW
 #	name=Thaw Gun
 #	hud=large_gun.png

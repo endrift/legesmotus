@@ -26,6 +26,7 @@
 #define LM_CLIENT_WEAPON_HPP
 
 #include "common/Point.hpp"
+#include "SDL.h"
 #include <string>
 #include <stdint.h>
 
@@ -80,6 +81,8 @@ namespace LM {
 		virtual int		get_total_ammo () const { return 0; }
 		virtual int		get_current_ammo () const { return 0; }
 		virtual bool		has_limited_ammo () const { return get_total_ammo() != 0; }
+		
+		virtual void		mouse_button_event(const SDL_Event& event) { return; }
 
 		static Weapon*		new_weapon (WeaponReader&);
 	};

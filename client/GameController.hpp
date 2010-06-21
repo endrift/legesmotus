@@ -255,6 +255,7 @@ namespace LM {
 		
 		TableBackground* m_cooldown_bar;
 		TableBackground* m_cooldown_bar_back;
+		bool		m_cooldown_updated;
 		Graphic*	m_curr_weapon_image;
 		
 		void		update_visible_elements();
