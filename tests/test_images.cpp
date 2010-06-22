@@ -6,7 +6,6 @@
 #include <iostream>
 
 using namespace LM;
-using namespace std;
 
 int main(int argc, char *argv[]) {
 	GameWindow *window = GameWindow::get_instance(256, 256, 24, false);
@@ -18,11 +17,6 @@ int main(int argc, char *argv[]) {
 	int wx = 64;
 	int hy = 64;
 	SDL_Surface* img = IMG_Load("data/sprites/metal_bgtile64.png");
-	cout << hex << showbase;
-	cout << img->format->Rmask << endl;
-	cout << img->format->Gmask << endl;
-	cout << img->format->Bmask << endl;
-	cout << img->format->Amask << endl;
 	DrawContext::Image imgh = ctx.gen_image(&wx, &hy, DrawContext::RGBA, (unsigned char*)img->pixels);
 	SDL_FreeSurface(img);
 	ctx.bind_image(imgh);
@@ -66,8 +60,10 @@ int main(int argc, char *argv[]) {
 		ctx.load_identity();
 		ctx.translate(96.0f, 64.0f);
 		ctx.draw_bound_image(64, 64);
-		ctx.translate(32.0f, 128.0f);
+		ctx.translate(-32.0f, 128.0f);
 		ctx.draw_bound_image_region(wx, hy, 0, 0, 64, 64);
+		ctx.translate(128.0f, 0);
+		ctx.draw_bound_image_tiled(wx, hy, 0, 0, 64, 64);
 
 		SDL_GL_SwapBuffers();
 		SDL_Delay(20);

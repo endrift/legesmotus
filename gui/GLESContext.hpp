@@ -53,6 +53,10 @@ namespace LM {
 
 		void	prepare_arc(float len, float xr, float yr, int fine);
 		void	prepare_rect(float w, float h);
+
+		void	draw_subimage(int width, int height,
+							  float tex_x, float tex_y,
+							  float tex_width, float tex_height);
 		
 	public:
 		GLESContext(int width, int height);
@@ -101,6 +105,9 @@ namespace LM {
 		virtual void	draw_bound_image_region(int width, int height,
 												float tex_x, float tex_y,
 												float tex_height, float tex_width);
+		virtual void	draw_bound_image_tiled(int width, int height,
+											   float tex_x, float tex_y,
+											   float tex_height, float tex_width);
 
 		// TODO more GL properties (framebuffers?)
 

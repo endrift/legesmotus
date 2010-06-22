@@ -115,8 +115,11 @@ namespace LM {
 		virtual void	draw_image(int width, int height, Image img) = 0;
 		virtual void	draw_bound_image(int width, int height) = 0;
 		virtual void	draw_bound_image_region(int width, int height,
-												float corner0x, float corner0y,
-												float corner1x, float corner1y) = 0;
+												float tex_x, float tex_y,
+												float tex_height, float tex_width) = 0;
+		virtual void	draw_bound_image_tiled(int width, int height,
+											   float tex_x, float tex_y,
+											   float tex_height, float tex_width) = 0;
 
 		virtual void	redraw() = 0;
 	};
