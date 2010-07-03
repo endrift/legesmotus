@@ -47,8 +47,7 @@ namespace LM {
 		};
 
 	private:
-		std::vector<Widget*> m_widgets;
-		int		m_focusIndex;
+		Widget*	m_root_widget;
 
 	protected:
 		/*std::vector<Widget*>::iterator	begin();
@@ -56,15 +55,13 @@ namespace LM {
 		virtual void	focus_change(int oldFocus, int newFocus);*/
 
 	public:
+		DrawContext();
 		virtual ~DrawContext();
 
-		/*void	add_widget(Widget* widget, int index = -1);
-		void	remove_widget(int index);
-		void	remove_widget(Widget* widget);
-		Widget*	get_widget(int index);
-		int		num_widgets() const;
+		void	set_root_widget(Widget* widget);
+		Widget*	get_root_widget();
 
-		void	mouse_click(int x, int y, bool down, int button = 0);
+		/*void	mouse_click(int x, int y, bool down, int button = 0);
 		void	mouse_move(int x, int y);
 		void	keypress(int key, bool down);*/
 

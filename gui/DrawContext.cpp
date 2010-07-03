@@ -23,13 +23,27 @@
  */
 
 #include "DrawContext.hpp"
+#include "Widget.hpp"
 
 using namespace LM;
 using namespace std;
 
-DrawContext::~DrawContext() {
+DrawContext::DrawContext() {
+	m_root_widget = NULL;
 }
 
+DrawContext::~DrawContext() {
+	delete m_root_widget;
+}
+
+void DrawContext::set_root_widget(Widget* widget) {
+	m_root_widget = widget;
+	widget->set_parent(NULL);
+}
+
+Widget* DrawContext::get_root_widget() {
+	return m_root_widget;
+}
 
 void DrawContext::draw_roundrect(float w, float h, float r, int fine) {
 	draw_roundrect_fill(w, h, r, fine);

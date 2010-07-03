@@ -23,9 +23,11 @@
  */
 
 #include "GLESContext.hpp"
-#include "SDL.h"
+#include "Widget.hpp"
 #include "common/math.hpp"
 #include "common/Exception.hpp"
+
+#include "SDL.h"
 
 using namespace LM;
 
@@ -366,7 +368,10 @@ void GLESContext::draw_bound_image_tiled(int width, int height,
 }
 
 void GLESContext::redraw() {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	load_identity();
-	// TODO
+
+	get_root_widget()->draw(this);
+
+	SDL_GL_SwapBuffers();
 }
