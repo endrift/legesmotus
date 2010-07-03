@@ -40,7 +40,7 @@
 using namespace LM;
 using namespace std;
 
-const char LM::METASERVER_HOSTNAME[] = "meta.legesmotus.beanwood.com";
+const char LM::METASERVER_HOSTNAME[] = "m.legesmotus.endrift.com";
 
 string	LM::format_ip_address(const IPAddress& addr, bool resolve) {
 	string			hostname;
