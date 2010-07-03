@@ -90,10 +90,8 @@ void Widget::remove_child(Widget* child) {
 		child->m_parent = NULL;
 		for (multimap<int, Widget*>::iterator iter = m_children.begin(); iter != m_children.end(); ++iter) {
 			if (iter->second == child) {
-				m_children.erase(iter);
-				// We assume only one of this widget is here
-				// The iterator would break if we kept going, anyway
-				break; 
+				// Return the iterator to delete, but decrement iterator so it's not invalidated
+				m_children.erase(iter--);
 			}
 		}
 	}
@@ -131,6 +129,21 @@ bool Widget::contains_point(float x, float y) {
 	}
 
 	return true;
+}
+
+void Widget::change_priority(int old_priority, int new_priority) {
+	multimap<int, Widget*> buffer;
+	pair<multimap<int, Widget*>::iterator, multimap<int, Widget*>::iterator> range(m_children.equal_range(old_priority));
+	for (multimap<int, Widget*>::iterator iter = range.first; iter != range.second; ++iter) {
+		buffer.insert(make_pair(new_priority, iter->second));
+	}
+	m_children.erase(range.first, range.second);
+	m_children.insert(buffer.begin(), buffer.end());
+}
+
+void Widget::change_priority(Widget* widget, int new_priority) {
+	remove_child(widget);
+	add_child(widget, new_priority);
 }
 
 void Widget::set_x(float x) {
