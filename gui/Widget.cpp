@@ -43,9 +43,9 @@ Widget::Widget(Widget* parent) {
 
 Widget::~Widget() {
 	set_parent(NULL);
-	for (std::list<Widget*>::iterator iter = m_children.begin(); iter != m_children.end(); ++iter) {
-		(*iter)->m_parent = NULL;
-		delete *iter;
+	for (multimap<int, Widget*>::iterator iter = m_children.begin(); iter != m_children.end(); ++iter) {
+		iter->second->m_parent = NULL;
+		delete iter->second;
 	}
 }
 
@@ -75,41 +75,48 @@ Widget* Widget::get_parent() {
 	return m_parent;
 }
 
-void Widget::add_child(Widget* child) {
+void Widget::add_child(Widget* child, int priority) {
 	if (child != NULL) {
 		if (child->m_parent != NULL) {
 			child->m_parent->remove_child(child);
 		}
 		child->m_parent = this;
-		m_children.push_front(child);
+		m_children.insert(make_pair(priority, child));
 	}
 }
 
 void Widget::remove_child(Widget* child) {
 	if (child != NULL) {
 		child->m_parent = NULL;
-		m_children.remove(child);
+		for (multimap<int, Widget*>::iterator iter = m_children.begin(); iter != m_children.end(); ++iter) {
+			if (iter->second == child) {
+				m_children.erase(iter);
+				// We assume only one of this widget is here
+				// The iterator would break if we kept going, anyway
+				break; 
+			}
+		}
 	}
 }
 
-const list<Widget*>& Widget::get_children() {
+const multimap<int, Widget*>& Widget::get_children() {
 	return m_children;
 }
 
 Widget* Widget::top_child_at(float x, float y) {
-	for (list<Widget*>::iterator iter = m_children.begin(); iter != m_children.end(); ++iter) {
-		if ((*iter)->contains_point(x - get_x(), y - get_y())) {
-			return *iter;
+	for (multimap<int, Widget*>::iterator iter = m_children.begin(); iter != m_children.end(); ++iter) {
+		if (iter->second->contains_point(x - get_x(), y - get_y())) {
+			return iter->second;
 		}
 	}
 	return NULL;
 }
 
-list<Widget*> Widget::children_at(float x, float y) {
-	list<Widget*> children;
-	for (list<Widget*>::iterator iter = m_children.begin(); iter != m_children.end(); ++iter) {
-		if ((*iter)->contains_point(x - get_x(), y - get_y())) {
-			children.push_back(*iter);
+multimap<int, Widget*> Widget::children_at(float x, float y) {
+	multimap<int, Widget*> children;
+	for (multimap<int, Widget*>::iterator iter = m_children.begin(); iter != m_children.end(); ++iter) {
+		if (iter->second->contains_point(x - get_x(), y - get_y())) {
+			children.insert(*iter);
 		}
 	}
 	return children;
@@ -178,9 +185,9 @@ void Widget::mouse_clicked(float x, float y, bool down, int button) {
 }
 
 void Widget::mouse_moved(float x, float y, float delta_x, float delta_y) {
-	list<Widget*> children = children_at(x, y);
-	for (list<Widget*>::iterator iter = children.begin(); iter != children.end(); ++iter) {
-		(*iter)->mouse_moved(x - get_x(), y - get_y(), delta_x, delta_y);
+	multimap<int, Widget*> children = children_at(x, y);
+	for (multimap<int, Widget*>::iterator iter = children.begin(); iter != children.end(); ++iter) {
+		iter->second->mouse_moved(x - get_x(), y - get_y(), delta_x, delta_y);
 	}
 
 	s_mouse_moved(x, y, delta_x, delta_y);
@@ -194,8 +201,8 @@ void Widget::draw(DrawContext* ctx) const {
 	ctx->translate(get_x(), get_y());
 	ctx->clip();
 	draw_core(ctx, false);
-	for (list<Widget*>::const_iterator iter = m_children.begin(); iter != m_children.end(); ++iter) {
-		(*iter)->draw(ctx);
+	for (multimap<int, Widget*>::const_iterator iter = m_children.begin(); iter != m_children.end(); ++iter) {
+		iter->second->draw(ctx);
 	}
 	ctx->unclip();
 	draw_core(ctx, true);

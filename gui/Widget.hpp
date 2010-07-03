@@ -25,7 +25,7 @@
 #ifndef LM_GUI_WIDGET_HPP
 #define LM_GUI_WIDGET_HPP
 
-#include <list>
+#include <map>
 #include <boost/signals2/signal.hpp>
 // TODO #include "common/Point.hpp"
 #include "DrawContext.hpp"
@@ -34,7 +34,7 @@ namespace LM {
 	class Widget {
 	private:
 		Widget* m_parent;
-		std::list<Widget*> m_children;
+		std::multimap<int, Widget*> m_children;
 
 		float	m_x;
 		float	m_y;
@@ -50,13 +50,16 @@ namespace LM {
 
 		void	set_parent(Widget* new_parent);
 		Widget*	get_parent();
-		void	add_child(Widget* child);
+		void	add_child(Widget* child, int priority = 0);
 		void	remove_child(Widget* child);
-		const std::list<Widget*>& get_children();
+		const std::multimap<int, Widget*>& get_children();
 
 		Widget*	top_child_at(float x, float y);
-		std::list<Widget*> children_at(float x, float y);
+		std::multimap<int, Widget*> children_at(float x, float y);
 		virtual bool contains_point(float x, float y);
+
+		void change_priority(int old_priority, int new_priority);
+		void change_priority(Widget* widget, int new_priority);
 
 		virtual void set_x(float x);
 		virtual void set_y(float y);
