@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
 		l.set_color(Color(c, c, c, 1));
 		//l.set_tracking(4.0f*c);
 		l.set_skew(f);
-		l.redraw(&ctx);
+		l.draw(&ctx);
 		//ctx.scale(1, (c+0.8));
 
 		ctx.translate(245, 35);
@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
 		wstringstream s;
 		s << phase;
 		p.set_string(s.str());
-		p.redraw(&ctx);
+		p.draw(&ctx);
 		ctx.scale(2, 2);
 		ctx.translate(-245, -35);
 

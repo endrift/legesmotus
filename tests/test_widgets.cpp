@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-		w0.redraw(&ctx);
+		w0.draw(&ctx);
 
 		SDL_GL_SwapBuffers();
 		SDL_Delay(200);

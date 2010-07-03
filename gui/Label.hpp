@@ -83,7 +83,7 @@ namespace LM {
 		void set_font(Font* font);
 		const Font* get_font() const;
 
-		virtual void redraw(DrawContext* ctx) const;
+		virtual void draw(DrawContext* ctx) const;
 	};
 }
 

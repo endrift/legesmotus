@@ -171,7 +171,7 @@ CXXFLAGS += -Wnon-virtual-dtor
 
 ifeq ($(DEBUG),1)
  RELEASE=debug
- CFLAGS += -g -O0
+ CFLAGS += -g -O0 -DLM_DEBUG
 else
  RELEASE=release
  CFLAGS += -O2

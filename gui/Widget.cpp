@@ -49,7 +49,8 @@ Widget::~Widget() {
 	}
 }
 
-void Widget::draw(DrawContext* ctx) const {
+void Widget::draw_core(DrawContext* ctx, bool unclip) const {
+	(void)(unclip); // Unused
 	ctx->set_draw_color(Color(1, 1, 1, 0.1));
 	ctx->draw_rect_fill(get_width(), get_height());
 }
@@ -189,15 +190,15 @@ void Widget::keypress(int key, bool down) {
 	s_keypress(key, down);
 }
 
-void Widget::redraw(DrawContext* ctx) const {
+void Widget::draw(DrawContext* ctx) const {
 	ctx->translate(get_x(), get_y());
 	ctx->clip();
-	draw(ctx);
+	draw_core(ctx, false);
 	for (list<Widget*>::const_iterator iter = m_children.begin(); iter != m_children.end(); ++iter) {
-		(*iter)->redraw(ctx);
+		(*iter)->draw(ctx);
 	}
 	ctx->unclip();
-	draw(ctx);
+	draw_core(ctx, true);
 	ctx->finish_clip();
 	ctx->translate(-get_x(), -get_y());
 }

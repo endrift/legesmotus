@@ -1,5 +1,5 @@
 /*
- * gui/GuiWindow.hpp
+ * gui/Image.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,17 +22,58 @@
  * 
  */
 
-#ifndef LM_GUI_GUIWINDOW_HPP
-#define LM_GUI_GUIWINDOW_HPP
+#ifndef LM_GUI_IMAGE_HPP
+#define LM_GUI_IMAGE_HPP
 
-#include "Widget.hpp"
+#include "DrawContext.hpp"
+
+#include <string>
+
+// XXX remove SDL_Image dependency
+#include "SDL.h"
 
 namespace LM {
-	class GuiWindow : Widget {
+	class ResourceCache;
+
+	class Image {
 	private:
-		
+		static const char* m_image_dir;
+
+		ResourceCache*	m_cache;
+		std::string		m_name;
+
+		int m_width;
+		int m_height;
+		int m_pitch;
+
+		int m_handle_width;
+		int m_handle_height;
+
+		unsigned char*		m_pixels;
+		DrawContext::Image	m_handle;
+
+		void upconvert_8(SDL_Surface* image);
+		void upconvert_24(SDL_Surface* image);
+
 	public:
-		virtual void draw();
+		Image(const std::string& path, ResourceCache* cache, bool autogen = false);
+		Image(int width, int height, const std::string& name, ResourceCache* cache);
+		Image(const Image& other);
+		~Image();
+
+		DrawContext::Image gen_handle(bool autofree = true);
+		DrawContext::Image get_handle() const;
+		void delete_pixels();
+
+		int get_width() const;
+		int get_height() const;
+		int get_pitch() const;
+
+		int get_handle_width() const;
+		int get_handle_height() const;
+
+		const unsigned char* get_pixels() const;
+		unsigned char* get_pixels();
 	};
 }
 

@@ -224,7 +224,7 @@ void GLESContext::draw_rect_fill(float w, float h) {
 
 void GLESContext::draw_rect_line(float w, float h) {
 	prepare_rect(w, h);
-	glDrawArrays(GL_LINE_LOOP, 0, 4);
+	glDrawArrays(GL_LINE_STRIP, 0, 4);
 }
 
 void GLESContext::draw_line(float x1, float y1, float x2, float y2) {

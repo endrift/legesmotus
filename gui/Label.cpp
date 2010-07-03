@@ -166,9 +166,9 @@ const Font* Label::get_font() const {
 	return m_font;
 }
 
-void Label::redraw(DrawContext* ctx) const {
+void Label::draw(DrawContext* ctx) const {
 	if (m_shadow != NULL) {
-		m_shadow->redraw(ctx);
+		m_shadow->draw(ctx);
 	}
 
 	float total_advance = 0;

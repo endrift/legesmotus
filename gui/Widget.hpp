@@ -42,7 +42,7 @@ namespace LM {
 		float	m_h;
 
 	protected:
-		virtual void draw(DrawContext* ctx) const;
+		virtual void draw_core(DrawContext* ctx, bool unclip) const;
 
 	public:
 		Widget(Widget* parent = NULL);
@@ -75,7 +75,7 @@ namespace LM {
 		virtual void mouse_moved(float x, float y, float delta_x, float delta_y);
 		virtual void keypress(int key, bool down);
 
-		virtual void redraw(DrawContext* ctx) const;
+		virtual void draw(DrawContext* ctx) const;
 
 		boost::signals2::signal<void ()> s_focus;
 		boost::signals2::signal<void ()> s_blur;

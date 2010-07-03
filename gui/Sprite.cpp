@@ -1,5 +1,5 @@
 /*
- * gui/GuiWindow.hpp
+ * gui/Sprite.cpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,18 +22,27 @@
  * 
  */
 
-#ifndef LM_GUI_GUIWINDOW_HPP
-#define LM_GUI_GUIWINDOW_HPP
+#include "Sprite.hpp"
 
-#include "Widget.hpp"
+using namespace LM;
+using namespace std;
 
-namespace LM {
-	class GuiWindow : Widget {
-	private:
-		
-	public:
-		virtual void draw();
-	};
+Sprite::Sprite(Image* image) : Graphic(image) {
+	// Nothing to do
 }
 
-#endif
+Sprite::Sprite(const Sprite& other) : Graphic(other) {
+	// Nothing to do
+}
+
+Sprite* Sprite::clone() const {
+	return new Sprite(*this);
+}
+
+void Sprite::draw(DrawContext* ctx) const {
+	ctx->push_transform();
+	transform(ctx);
+	const Image* image = get_image();
+	ctx->draw_image(image->get_handle_width(), image->get_handle_height(), image->get_handle());
+	ctx->pop_transform();
+}
