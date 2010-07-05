@@ -1,7 +1,8 @@
 #include "client/GameWindow.hpp"
 #include "gui/GLESContext.hpp"
+#include "gui/ResourceCache.hpp"
+#include "gui/Image.hpp"
 #include "SDL.h"
-#include "SDL_image.h"
 
 #include <iostream>
 
@@ -16,10 +17,9 @@ int main(int argc, char *argv[]) {
 	bool mousedown = false;
 	int wx = 64;
 	int hy = 64;
-	SDL_Surface* img = IMG_Load("data/sprites/metal_bgtile64.png");
-	DrawContext::Image imgh = ctx.gen_image(&wx, &hy, DrawContext::RGBA, (unsigned char*)img->pixels);
-	SDL_FreeSurface(img);
-	ctx.bind_image(imgh);
+	ResourceCache cache("data", &ctx);
+	Image img("metal_bgtile64.png", &cache, true);
+	ctx.bind_image(img.get_handle());
 	while(running) {
 		SDL_Event e;
 		while(SDL_PollEvent(&e) != 0) {
@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
 					ctx.unbind_image();
 					break;
 				case SDLK_w:
-					ctx.bind_image(imgh);
+					ctx.bind_image(img.get_handle());
 					break;
 				default:
 					break;
