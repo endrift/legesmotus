@@ -33,6 +33,7 @@
 #include <vector>
 #include <algorithm>
 #include <cstdlib>
+#include <cstring>
 #include <ctime>
 #include <cstring>
 #include <iostream>
@@ -44,24 +45,51 @@
 using namespace LM;
 using namespace std;
 
-ServerScanner::ServerScanner() : m_network(*this) {
+ServerScanner::ServerScanner(const char* metaserver_address) : m_network(*this) {
 	m_client_version = LM_VERSION;
 	m_protocol_number = 5;
 	
-	if (const char* metaserver_address = getenv("LM_METASERVER")) {
-		// Address specified by $LM_METASERVER environment avariable
-		if (!resolve_hostname(m_metaserver_address, metaserver_address)) {
-			cerr << "Unable to resolve metaserver hostname, `" << metaserver_address << "' as specified in the $LM_METASERVER environment variable. Only scanning localhost." << endl;
+	bool	success = false;
+
+	if (metaserver_address != NULL || (metaserver_address = getenv("LM_METASERVER")) != NULL) {
+		// Address passed manually--override all else
+		if (strchr(metaserver_address, ':') == NULL) {
+			success = resolve_hostname(m_metaserver_address, metaserver_address, METASERVER_PORTNO);
+		} else {
+			success = resolve_hostname(m_metaserver_address, metaserver_address);
 		}
-	} else if (!resolve_hostname(m_metaserver_address, METASERVER_HOSTNAME, METASERVER_PORTNO)) {
-		cerr << "Unable to resolve metaserver hostname. Only scanning localhost." << endl;
+	} else {
+		metaserver_address = METASERVER_HOSTNAME;
+		success = resolve_hostname(m_metaserver_address, METASERVER_HOSTNAME, METASERVER_PORTNO);
+	}
+
+	if (!success) {
+		cerr << "Unable to resolve metaserver hostname, `" << metaserver_address << "'. Metaserver scanning disabled." << endl;
 	}
 }
 
-void 	ServerScanner::run(ostream* outfile) {
+void 	ServerScanner::scan(ostream* outfile, int to_scan) {
 	m_output = outfile;
+
 	srand(time(NULL));
-	scan_all();
+	m_current_scan_id = rand();
+
+	if (to_scan & SCAN_METASERVER) {
+		scan_metaserver();
+	}
+
+	if (to_scan & SCAN_LOCAL_NETWORK) {
+		scan_local_network();
+	}
+
+	if (to_scan & SCAN_LOOPBACK) {
+		scan_loopback();
+	}
+
+	if (to_scan & SCAN_UPGRADE) {
+		check_for_upgrade();
+	}
+
 	// Receive packets from all servers
 	// TODO customizable delay
 	while (m_network.receive_packets(5000));
@@ -133,16 +161,13 @@ void	ServerScanner::output_results() {
 	m_server_list.output(m_output);
 }
 
-void	ServerScanner::scan_all() {
+void	ServerScanner::scan_loopback() {
 	PacketWriter info_request_packet(INFO_PACKET);
-	m_current_scan_id = rand();
 	info_request_packet << m_protocol_number << m_current_scan_id << get_ticks() << m_client_version;
-	m_network.broadcast_packet(DEFAULT_PORTNO, info_request_packet);
 	IPAddress localhostip;
 	if (resolve_hostname(localhostip, "localhost", DEFAULT_PORTNO)) {
 		m_network.send_packet_to(localhostip, info_request_packet);
 	}
-	m_network.send_packet_to(m_metaserver_address, info_request_packet);
 }
 
 void    ServerScanner::check_for_upgrade() {
@@ -153,16 +178,16 @@ void    ServerScanner::check_for_upgrade() {
 
 void	ServerScanner::scan_local_network() {
 	PacketWriter info_request_packet(INFO_PACKET);
-	m_current_scan_id = rand();
 	info_request_packet << m_protocol_number << m_current_scan_id << get_ticks();
 	m_network.broadcast_packet(DEFAULT_PORTNO, info_request_packet);
 }
 
-void	ServerScanner::contact_metaserver() {
-	PacketWriter info_request_packet(INFO_PACKET);
-	m_current_scan_id = rand();
-	info_request_packet << m_protocol_number << m_current_scan_id << get_ticks() << m_client_version;
-	m_network.send_packet_to(m_metaserver_address, info_request_packet);
+void	ServerScanner::scan_metaserver() {
+	if (m_metaserver_address.port != 0) {
+		PacketWriter info_request_packet(INFO_PACKET);
+		info_request_packet << m_protocol_number << m_current_scan_id << get_ticks() << m_client_version;
+		m_network.send_packet_to(m_metaserver_address, info_request_packet);
+	}
 }
 
 void	ServerScanner::scan_server(const IPAddress& server_address) {

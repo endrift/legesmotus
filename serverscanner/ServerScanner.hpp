@@ -40,12 +40,23 @@ namespace LM {
 	// TODO expose methods better for more flexible usage
 	class ServerScanner {
 		public:
-			ServerScanner();
-			
+			ServerScanner(const char* metaserver_address = NULL);
+
+			enum ScanBits {
+				SCAN_METASERVER = 1,
+				SCAN_LOCAL_NETWORK = 2,
+				SCAN_LOOPBACK = 4,
+				SCAN_UPGRADE = 8,
+
+				SCAN_METASERVER_FULL = 9,
+
+				SCAN_ALL = 0xF
+			};
+
 			void	server_info(const IPAddress& server_address, PacketReader& reader);
 			void	upgrade_available(const IPAddress& server_address, PacketReader& reader);
 			void	hole_punch_packet(const IPAddress& server_address, PacketReader& reader);
-			void	run(std::ostream* outfile);
+			void	scan(std::ostream* outfile, int to_scan = SCAN_ALL);
 
 		private:
 			IPAddress	m_metaserver_address;
@@ -58,16 +69,14 @@ namespace LM {
 
 			void	output_results();
 
-			// Scan both the local network and the meta server for servers:
-			void	scan_all();
-
-			// TODO use the below functions
+			// Scan localhost for a server
+			void	scan_loopback();
 
 			// Scan the local network for servers:
 			void	scan_local_network();
 
 			// Connect to the meta server to scan the Internet
-			void	contact_metaserver();
+			void	scan_metaserver();
 
 			// Contact the meta server to check for upgrades
 			void	check_for_upgrade();

@@ -27,6 +27,7 @@
 #include "common/PathManager.hpp"
 #include "common/misc.hpp"
 #include "common/network.hpp"
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -35,13 +36,17 @@ using namespace LM;
 using namespace std;
 
 namespace {
-	bool run_from_finder = false;
-
 	void display_usage(const char* progname) {
 		cout << "Usage: " << progname << " [OPTION]" << endl;
 		cout << "Options:" << endl;
-		cout << "  -?, --help	display this help, and exit" << endl;
-		cout << "      --version\tdisplay version information and exit" << endl;
+		cout << "  -?, --help	  Display this help, and exit" << endl;
+		cout << "      --version  Display version information and exit" << endl;
+		cout << "  -h             Scan localhost" << endl;
+		cout << "  -l             Scan the local network" << endl;
+		cout << "  -m [address]   Scan metaserver. If address is specified, it is scanned as the" << endl;
+		cout << "                 metaserver instead of the default" << endl;
+		cout << "  -U             Disable scanning for upgrades when contacting the metaserver" << endl;
+		cout << "  -o filename    Output to file instead of stdout" << endl;
 	}
 
 	void display_version() {
@@ -52,11 +57,19 @@ namespace {
 		cout << "Leges Motus is free and open source software; see the source for copying conditions." << endl;
 		cout << "There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE." << endl;
 	}
+
+	void needs_opts(const char* progname, const char* flag) {
+		cerr << progname << ": `" << flag << "' flag requires an argument" << endl;
+		display_usage(progname);
+	}
 }
 
 extern "C" int main(int argc, char* argv[]) try {
-	ServerScanner	scanner;
 	string		file = "-";
+	bool		scanflags_seen = false;
+	int		scanflags = ServerScanner::SCAN_ALL;
+	int		scanmask = ServerScanner::SCAN_ALL;
+	const char*	metaserver = NULL;
 	
 	for (int i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "--version") == 0) {
@@ -65,17 +78,41 @@ extern "C" int main(int argc, char* argv[]) try {
 		} else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-?") == 0) {
 			display_usage(argv[0]);
 			return 0;
-		} else if (strncmp(argv[i], "-psn", 4) == 0) {
-			run_from_finder = true;
-		} else if (strncmp(argv[i], "-f", 4) == 0) {
-			if (i + 1 < argc) {
-				file = argv[i+1];
-				++i;
+		} else if (strncmp(argv[i], "-h", 3) == 0) {
+			if (scanflags_seen) {
+				scanflags |= ServerScanner::SCAN_LOOPBACK;
 			} else {
-				cerr << argv[0] << ": `-f' flag requires an argument" << endl;
-				display_usage(argv[0]);
+				scanflags = ServerScanner::SCAN_LOOPBACK;
+				scanflags_seen = true;
+			}
+		} else if (strncmp(argv[i], "-l", 3) == 0) {
+			if (scanflags_seen) {
+				scanflags |= ServerScanner::SCAN_LOCAL_NETWORK;
+			} else {
+				scanflags = ServerScanner::SCAN_LOCAL_NETWORK;
+				scanflags_seen = true;
+			}
+		} else if (strncmp(argv[i], "-m", 3) == 0) {
+			if (scanflags_seen) {
+				scanflags |= ServerScanner::SCAN_METASERVER_FULL;
+			} else {
+				scanflags = ServerScanner::SCAN_METASERVER_FULL;
+				scanflags_seen = true;
+			}
+			if (i + 1 < argc && argv[i+1][0] != '-') {
+				++i;
+				metaserver = argv[i];
+			}
+		} else if (strncmp(argv[i], "-o", 3) == 0) {
+			if (i + 1 < argc) {
+				++i;
+				file = argv[i];
+			} else {
+				needs_opts(argv[0], argv[i]);
 				return 2;
 			}
+		} else if (strncmp(argv[i], "-U", 3) == 0) {
+			scanmask &= ~ServerScanner::SCAN_UPGRADE;
 		} else {
 			cerr << argv[0] << ": Unrecognized option `" << argv[i] << "'" << endl;
 			display_usage(argv[0]);
@@ -83,6 +120,7 @@ extern "C" int main(int argc, char* argv[]) try {
 		}
 	}
 
+	ServerScanner	scanner(metaserver);
 	ostream* out;
 	ofstream outf;
 
@@ -97,7 +135,7 @@ extern "C" int main(int argc, char* argv[]) try {
 		out = &outf;
 	}
 
-	scanner.run(out);
+	scanner.scan(out, scanflags & scanmask);
 
 	outf.close();
 	
