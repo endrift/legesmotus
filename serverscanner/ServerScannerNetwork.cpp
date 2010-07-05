@@ -1,9 +1,9 @@
 /*
- * ServerScannerNetwork.cpp
+ * serverscanner/ServerScannerNetwork.cpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
- * Copyright 2009 Andrew Ayer, Nathan Partlan, Jeffrey Pfau
+ * Copyright 2009-2010 Andrew Ayer, Nathan Partlan, Jeffrey Pfau
  * 
  * Leges Motus is free and open source software.  You may redistribute it and/or
  * modify it under the terms of version 2, or (at your option) version 3, of the
@@ -96,7 +96,7 @@ void	ServerScannerNetwork::broadcast_packet(unsigned int portno, const PacketWri
 	send_packet_to(IPAddress(htonl(INADDR_BROADCAST), htons(portno)), packet);
 }
 
-void	ServerScannerNetwork::receive_packets(uint32_t timeout) {
+bool	ServerScannerNetwork::receive_packets(uint32_t timeout) {
 	UDPPacket	raw_packet(MAX_PACKET_LENGTH);
 	// Block until packets are received, timeout has elapsed, or a signal has been received.
 	bool		has_packets = m_socket.has_packets(timeout);
@@ -104,6 +104,8 @@ void	ServerScannerNetwork::receive_packets(uint32_t timeout) {
 	while (receive_raw_packet(raw_packet)) {
 		process_unbound_packet(raw_packet);
 	}
+
+	return has_packets;
 }
 
 void	ServerScannerNetwork::process_unbound_packet(const UDPPacket& raw_packet) {
@@ -113,11 +115,9 @@ void	ServerScannerNetwork::process_unbound_packet(const UDPPacket& raw_packet) {
 	case INFO_PACKET:
 		m_controller.server_info(raw_packet.get_address(), reader);
 		break;
-	#ifndef LM_NO_UPGRADE_NAG
 	case UPGRADE_AVAILABLE_PACKET:
 		m_controller.upgrade_available(raw_packet.get_address(), reader);
 		break;
-	#endif
 	case HOLE_PUNCH_PACKET:
 		m_controller.hole_punch_packet(raw_packet.get_address(), reader);
 		break;

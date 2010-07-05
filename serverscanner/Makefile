@@ -1,18 +1,15 @@
 BASEDIR = ..
-OBJS = ServerScannerNetwork.o ServerScanner.o
+OBJS = main.o ServerScannerNetwork.o ServerScanner.o ServerList.o
 	#put .o filenames here (DO NOT PUT .cpp!)
 include $(BASEDIR)/common.mk
 CXXFLAGS += $(CLIENTFLAGS)
 
-all: serverscanner
+all: lmscan
 
-serverscanner: main.o ../liblmserverscanner.a ../liblmcommon.a $(PLATFORM_DEP)
-	$(CXX) $(LDFLAGS) -o serverscanner $^
-
-../liblmserverscanner.a: $(OBJS)
-	$(AR) crus ../liblmserverscanner.a $^
+lmscan: $(OBJS) ../liblmcommon.a $(PLATFORM_DEP)
+	$(CXX) $(LDFLAGS) -o lmscan $^
 
 clean: common-clean
-	@$(RM) ../liblmserverscanner.a serverscanner
+	@$(RM) lmscan
 
 deps: common-deps

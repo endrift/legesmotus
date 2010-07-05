@@ -77,8 +77,8 @@ namespace LM {
 		 * Receiving packets
 		 */
 	
-		// Process all the pending packets and notify the game controller of their receipt
-		void		receive_packets(uint32_t timeout);
+		// Process all the pending packets and notify the scanner of their receipt
+		bool		receive_packets(uint32_t timeout);
 	
 	
 		/*

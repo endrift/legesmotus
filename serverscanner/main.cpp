@@ -1,9 +1,9 @@
 /*
- * main.cpp
+ * serverscanner/main.cpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
- * Copyright 2009 Andrew Ayer, Nathan Partlan, Jeffrey Pfau
+ * Copyright 2009-2010 Andrew Ayer, Nathan Partlan, Jeffrey Pfau
  * 
  * Leges Motus is free and open source software.  You may redistribute it and/or
  * modify it under the terms of version 2, or (at your option) version 3, of the
@@ -28,21 +28,11 @@
 #include "common/misc.hpp"
 #include "common/network.hpp"
 #include <iostream>
+#include <fstream>
 #include <sstream>
-
-#ifdef __APPLE__
-extern "C" {
-#include "mac_bridge.h"
-}
-#elif defined(__WIN32)
-#include <Windows.h>
-#endif
 
 using namespace LM;
 using namespace std;
-
-extern "C" void clean_exit() {
-}
 
 namespace {
 	bool run_from_finder = false;
@@ -54,23 +44,19 @@ namespace {
 		cout << "      --version\tdisplay version information and exit" << endl;
 	}
 
-	void display_legalese() {
-		cout << "Copyright 2009 Andrew Ayer, Nathan Partlan, Jeffrey Pfau" << endl;
-		cout << "Leges Motus is free and open source software; see the source for copying conditions." << endl;
-		cout << "There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE." << endl;
-	}
-
 	void display_version() {
 		cout << "Leges Motus Server Scanner" << endl;
 		cout << "Checks the Leges Motus master server." << endl;
 		cout << endl;
-		display_legalese();
+		cout << "Copyright 2009-2010 Andrew Ayer, Nathan Partlan, Jeffrey Pfau" << endl;
+		cout << "Leges Motus is free and open source software; see the source for copying conditions." << endl;
+		cout << "There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE." << endl;
 	}
 }
 
 extern "C" int main(int argc, char* argv[]) try {
-	ServerScanner*		game_controller;
-	string			file = "";
+	ServerScanner	scanner;
+	string		file = "-";
 	
 	for (int i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "--version") == 0) {
@@ -82,8 +68,14 @@ extern "C" int main(int argc, char* argv[]) try {
 		} else if (strncmp(argv[i], "-psn", 4) == 0) {
 			run_from_finder = true;
 		} else if (strncmp(argv[i], "-f", 4) == 0) {
-			file = argv[i+1];
-			++i;
+			if (i + 1 < argc) {
+				file = argv[i+1];
+				++i;
+			} else {
+				cerr << argv[0] << ": `-f' flag requires an argument" << endl;
+				display_usage(argv[0]);
+				return 2;
+			}
 		} else {
 			cerr << argv[0] << ": Unrecognized option `" << argv[i] << "'" << endl;
 			display_usage(argv[0]);
@@ -91,43 +83,28 @@ extern "C" int main(int argc, char* argv[]) try {
 		}
 	}
 
-	PathManager	pathman(argv[0]);
+	ostream* out;
+	ofstream outf;
 
-	bool restart = true;
-	while(restart) {
-
-		if (has_terminal_output()) {
-			cout << "Leges Motus Server Scanner" << endl;
-			display_legalese();
+	if (file == "-") {
+		out = &cout;
+	} else {
+		outf.open(file.c_str(), ios::out | ios::trunc);
+		if (!outf.good()) {
+			cerr << argv[0] << ": Couldn't open output file `" << file << "'" << endl;
+			return 1;
 		}
-		
-		game_controller = new ServerScanner();
-		game_controller->run(file);
-		
-		delete game_controller;
+		out = &outf;
 	}
-	
-	if (has_terminal_output()) {
-		cout << "Leges Motus Server Scanner is now exiting." << endl;
-	}
+
+	scanner.run(out);
+
+	outf.close();
 	
 	return 0;
 
 } catch (const Exception& e) {
 	cerr << "Error: " << e.what() << endl;
-	cerr << "1. If on X11, check that your $DISPLAY environment variable is set properly." << endl;
-	cerr << "2. Make sure that Leges Motus Server Scanner has been properly installed (if compiling from source, you should have run 'make install'), OR that your $LM_DATA_DIR environment variable is set to the directory containing the resources." << endl;
-
-	#ifdef __APPLE__
-	if (run_from_finder) {
-		toplevel_exception(e.what());
-	}
-	#elif defined(__WIN32)
-	stringstream s;
-	s << e.what() << endl;
-	s << "Please ensure that you are running the Server Scanner from the same directory as the game resources" << flush;
-	MessageBox(NULL, s.str().c_str(), NULL, MB_OK|MB_ICONERROR);
-	#endif
-
+	cerr << "Make sure that Leges Motus Server Scanner has been properly installed (if compiling from source, you should have run 'make install'), OR that your $LM_DATA_DIR environment variable is set to the directory containing the resources." << endl;
 	return 1;
 }
