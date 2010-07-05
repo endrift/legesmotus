@@ -1,6 +1,6 @@
 BASEDIR = ..
 OBJS = Widget.o DrawContext.o GLESContext.o GuiWindow.o Font.o Label.o \
-	Image.o ResourceCache.o Graphic.o Sprite.o
+	Image.o ResourceCache.o Graphic.o Sprite.o GraphicRegion.o
 include $(BASEDIR)/common.mk
 # Stopgap measure until client separated out
 CXXFLAGS += $(CLIENTFLAGS) $(shell freetype-config --cflags)

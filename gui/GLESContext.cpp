@@ -87,7 +87,7 @@ void GLESContext::prepare_rect(float w, float h) {
 	glVertexPointer(2, GL_FLOAT, 0, m_rect_vertices);
 }
 
-void GLESContext::draw_subimage(int width, int height,  float tex_x, float tex_y, float tex_width, float tex_height) {
+void GLESContext::draw_subimage(int width, int height, float tex_x, float tex_y, float tex_width, float tex_height) {
 	glMatrixMode(GL_TEXTURE);
 	glLoadIdentity();
 
@@ -352,7 +352,14 @@ void GLESContext::draw_bound_image_region(int width, int height,
 										  float tex_width, float tex_height) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	prepare_rect(width, height);
+	GLint vertices[8] = {
+		0, 0,
+		width, 0,
+		width, height,
+		0, height
+	};
+
+	glVertexPointer(2, GL_INT, 0, vertices);
 
 	draw_subimage(width, height, tex_x, tex_y, tex_width, tex_height);
 }
@@ -362,7 +369,14 @@ void GLESContext::draw_bound_image_tiled(int width, int height,
 										 float tex_width, float tex_height) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	prepare_rect(width, height);
+	GLint vertices[8] = {
+		0, 0,
+		width, 0,
+		width, height,
+		0, height
+	};
+
+	glVertexPointer(2, GL_INT, 0, vertices);
 
 	draw_subimage(width, height, tex_x, tex_y, tex_width, tex_height);
 }

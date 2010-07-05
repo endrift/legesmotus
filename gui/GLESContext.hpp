@@ -104,10 +104,10 @@ namespace LM {
 		virtual void	draw_bound_image(int width, int height);
 		virtual void	draw_bound_image_region(int width, int height,
 												float tex_x, float tex_y,
-												float tex_height, float tex_width);
+												float tex_width, float tex_height);
 		virtual void	draw_bound_image_tiled(int width, int height,
 											   float tex_x, float tex_y,
-											   float tex_height, float tex_width);
+											   float tex_width, float tex_height);
 
 		// TODO more GL properties (framebuffers?)
 

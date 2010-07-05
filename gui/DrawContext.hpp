@@ -113,10 +113,10 @@ namespace LM {
 		virtual void	draw_bound_image(int width, int height) = 0;
 		virtual void	draw_bound_image_region(int width, int height,
 												float tex_x, float tex_y,
-												float tex_height, float tex_width) = 0;
+												float tex_width, float tex_height) = 0;
 		virtual void	draw_bound_image_tiled(int width, int height,
 											   float tex_x, float tex_y,
-											   float tex_height, float tex_width) = 0;
+											   float tex_width, float tex_height) = 0;
 
 		virtual void	redraw() = 0;
 	};
