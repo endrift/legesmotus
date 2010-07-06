@@ -94,7 +94,7 @@ client: common
 
 gui: common client
 
-serverscanner: common client
+serverscanner: common
 
 metaserver: common
 

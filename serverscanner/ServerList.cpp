@@ -23,6 +23,7 @@
  */
 
 #include "ServerList.hpp"
+#include "common/timer.hpp"
 
 #include <sstream>
 
@@ -38,6 +39,7 @@ void ServerList::json_begin(ostream *outfile, const std::string& root) {
 void ServerList::json_end(ostream *outfile) {
 	json_end_dict(outfile);
 	json_end_dict(outfile);
+	(*outfile) << endl;
 }
 void ServerList::json_begin_dict(ostream *outfile) {
 	if (m_json_needs_comma) {
@@ -173,5 +175,9 @@ void ServerList::output(ostream *outfile) {
 		json_end_dict(outfile);
 	}
 	json_end_list(outfile);
+
+	json_add_dict_entry(outfile, "timestamp");
+	json_add_int(outfile, utc_time());
+
 	json_end(outfile);
 }

@@ -29,6 +29,7 @@
 
 namespace LM {
 	uint64_t	get_ticks();
+	uint64_t	utc_time();
 }
 
 #endif

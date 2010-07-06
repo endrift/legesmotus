@@ -53,6 +53,18 @@ uint64_t LM::get_ticks() {
 	return (now - start) / frequency;
 }
 
+uint64_t LM::utc_time() {
+	SYSTEMTIME	stime;
+	FILETIME	ftime;
+	PLARGE_INTEGER	usec;
+
+	GetSystemTime(&stime);
+	SystemTimeToFileTime(&stime, &ftime);
+	usec = ftime.dwHighDateTime;
+	usec = usec << 32 | ftime.dwLowDateTime;
+	return usec/10000000ULL - 11644473600ULL;
+}
+
 #else
 
 #include <sys/time.h>
@@ -71,6 +83,11 @@ uint64_t LM::get_ticks() {
 	const TimeOfDay		now;
 
 	return (now.tv.tv_sec - start.tv.tv_sec) * 1000ULL + (now.tv.tv_usec - start.tv.tv_usec) / 1000;
+}
+
+uint64_t LM::utc_time() {
+	const TimeOfDay	now;
+	return now.tv.tv_sec;
 }
 
 #endif
