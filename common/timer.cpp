@@ -56,12 +56,11 @@ uint64_t LM::get_ticks() {
 uint64_t LM::utc_time() {
 	SYSTEMTIME	stime;
 	FILETIME	ftime;
-	PLARGE_INTEGER	usec;
+	ULARGE_INTEGER	usec;
 
 	GetSystemTime(&stime);
 	SystemTimeToFileTime(&stime, &ftime);
-	usec = ftime.dwHighDateTime;
-	usec = usec << 32 | ftime.dwLowDateTime;
+	usec = (ftime.dwHighDateTime << 32ULL) | ftime.dwLowDateTime;
 	return usec/10000000ULL - 11644473600ULL;
 }
 

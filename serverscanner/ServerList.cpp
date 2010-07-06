@@ -30,16 +30,13 @@
 using namespace LM;
 using namespace std;
 
-void ServerList::json_begin(ostream *outfile, const std::string& root) {
+void ServerList::json_begin(ostream *outfile) {
 	m_json_indentation = 0;
 	m_json_needs_comma = false;
-	json_begin_dict(outfile);
-	json_add_dict_entry(outfile, root);
 	json_begin_dict(outfile);
 }
 
 void ServerList::json_end(ostream *outfile) {
-	json_end_dict(outfile);
 	json_end_dict(outfile);
 	(*outfile) << endl;
 }
@@ -135,7 +132,7 @@ void ServerList::add(const IPAddress& ipaddr, const Server& server) {
 void ServerList::output(ostream *outfile) {
 	stringstream buffer;
 
-	json_begin(outfile, "scan");
+	json_begin(outfile);
 	json_add_dict_entry(outfile, "servers");
 	json_begin_list(outfile);
 	for (map<IPAddress, Server>::const_iterator iter = m_list.begin(); iter != m_list.end(); ++iter) {

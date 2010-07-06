@@ -53,7 +53,7 @@ namespace LM {
 			int m_json_indentation;
 			bool m_json_needs_comma;
 
-			void json_begin(std::ostream *outfile, const std::string& root);
+			void json_begin(std::ostream *outfile);
 			void json_end(std::ostream *outfile);
 
 			void json_begin_dict(std::ostream *outfile);
