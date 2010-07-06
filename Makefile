@@ -47,7 +47,7 @@ default: $(MACHINE_TARGETS)
 $(MACHINE_TARGETS): TARGET=$(MAKECMDGOALS)
 $(MACHINE_TARGETS) $(UNIVERSAL_TARGET):
 	+@mkdir -p $(BUILDROOT)/$@
-	+$(MAKE) -C $(BUILDROOT)/$@ -f $(BASEDIR)/Makefile BASEDIR="$(BASEDIR)" ARCH=$(call isolate-arch,$@) $(PASSED) $(TARGET)
+	+@$(MAKE) -C $(BUILDROOT)/$@ -f $(BASEDIR)/Makefile BASEDIR="$(BASEDIR)" ARCH=$(call isolate-arch,$@) $(PASSED) $(TARGET)
 
 ifeq ($(MACHINE)$(NOBUNDLE),Darwin)
 bundle: TARGET = bundle
@@ -236,6 +236,14 @@ install-server: server install-common
 	install -d $(DESTDIR)$(BINDIR)
 	install server/lmserver $(DESTDIR)$(BINDIR)
 	strip $(DESTDIR)$(BINDIR)/lmserver
+
+install-metaserver: metaserver
+	install metaserver/lmmetaserver $(DESTDIR)$(BINDIR)
+	strip $(DESTDIR)$(BINDIR)/lmmetaserver
+
+install-serverscanner: serverscanner
+	install serverscanner/lmscan $(DESTDIR)$(BINDIR)
+	strip $(DESTDIR)$(BINDIR)/lmscan
 
 install-common:
 	install -d $(DESTDIR)$(DATADIR)/maps
