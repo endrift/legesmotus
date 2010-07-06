@@ -21,6 +21,11 @@ UNIVERSAL_TARGET = $(MACHINE)-universal-$(RELEASE)
 BUILDROOT = build
 NOCHAIN = dist
 
+ifneq ($(DESTDIR),)
+ # Can't seem to pass overridden variables
+ PASSED = DESTDIR="$(abspath $(DESTDIR))"
+endif
+
 CHAINED_GOALS= $(filter $(MAKECMDGOALS),$(NOCHAIN))
 ifeq ($(CHAINED_GOALS),)
 # This magic target lets us chain targets we can't find to the other targets
@@ -42,7 +47,7 @@ default: $(MACHINE_TARGETS)
 $(MACHINE_TARGETS): TARGET=$(MAKECMDGOALS)
 $(MACHINE_TARGETS) $(UNIVERSAL_TARGET):
 	+@mkdir -p $(BUILDROOT)/$@
-	+@$(MAKE) -C $(BUILDROOT)/$@ -f $(BASEDIR)/Makefile BASEDIR="$(BASEDIR)" ARCH=$(call isolate-arch,$@) $(TARGET)
+	+$(MAKE) -C $(BUILDROOT)/$@ -f $(BASEDIR)/Makefile BASEDIR="$(BASEDIR)" ARCH=$(call isolate-arch,$@) $(PASSED) $(TARGET)
 
 ifeq ($(MACHINE)$(NOBUNDLE),Darwin)
 bundle: TARGET = bundle
@@ -198,41 +203,45 @@ ifneq ($(PREFIX),)
 
 .PHONY: install-client install-server install-common
 
+ifneq ($(DESTDIR),)
+ override DESTDIR := "$(DESTDIR)"/
+endif
+
 install: default $(INSTALL_TARGETS)
 
 install-client: client install-common
 	install -d $(DESTDIR)$(DATADIR)/fonts
-	install -m 0644 data/fonts/* $(DESTDIR)$(DATADIR)/fonts
+	install -m 0644 $(BASEDIR)/data/fonts/* $(DESTDIR)$(DATADIR)/fonts
 	install -d $(DESTDIR)$(DATADIR)/sounds
-	install -m 0644 data/sounds/* $(DESTDIR)$(DATADIR)/sounds
+	install -m 0644 $(BASEDIR)/data/sounds/* $(DESTDIR)$(DATADIR)/sounds
 	install -d $(DESTDIR)$(DATADIR)/sprites
-	install -m 0644 data/sprites/* $(DESTDIR)$(DATADIR)/sprites
+	install -m 0644 $(BASEDIR)/data/sprites/* $(DESTDIR)$(DATADIR)/sprites
 	install -d $(DESTDIR)$(MANDIR)/man6
-	install -m 0644 man/man6/legesmotus.6 $(DESTDIR)$(MANDIR)/man6
+	install -m 0644 $(BASEDIR)/man/man6/legesmotus.6 $(DESTDIR)$(MANDIR)/man6
 	install -d $(DESTDIR)$(SHAREDIR)/applications
-	install -m 0644 client/legesmotus.desktop $(DESTDIR)$(SHAREDIR)/applications/legesmotus.desktop
+	install -m 0644 $(BASEDIR)/client/legesmotus.desktop $(DESTDIR)$(SHAREDIR)/applications/legesmotus.desktop
 	sed -e 's/\$$VERSION/$(subst /,\/,$(VERSION))/' $(INPLACE) $(DESTDIR)$(SHAREDIR)/applications/legesmotus.desktop
 	sed -e 's/\$$SHAREDIR/$(subst /,\/,$(SHAREDIR))/' $(INPLACE) $(DESTDIR)$(SHAREDIR)/applications/legesmotus.desktop
 	sed -e 's/\$$BINDIR/$(subst /,\/,$(BINDIR))/' $(INPLACE) $(DESTDIR)$(SHAREDIR)/applications/legesmotus.desktop
 	install -d $(DESTDIR)$(SHAREDIR)/icons/hicolor/256x256
-	install -m 0644 data/sprites/blue_head256.png $(DESTDIR)$(SHAREDIR)/icons/hicolor/256x256/legesmotus.png
+	install -m 0644 $(BASEDIR)/data/sprites/blue_head256.png $(DESTDIR)$(SHAREDIR)/icons/hicolor/256x256/legesmotus.png
 	which update-desktop-database && update-desktop-database $(DESTDIR)$(SHAREDIR)/applications || true
 	install -d $(DESTDIR)$(BINDIR)
-	install $(BUILD)/client/legesmotus $(DESTDIR)$(BINDIR)
+	install client/legesmotus $(DESTDIR)$(BINDIR)
 	strip $(DESTDIR)$(BINDIR)/legesmotus
 	
 install-server: server install-common
 	install -d $(DESTDIR)$(MANDIR)/man6
-	install -m 0644 man/man6/lmserver.6 $(DESTDIR)$(MANDIR)/man6
+	install -m 0644 $(BASEDIR)/man/man6/lmserver.6 $(DESTDIR)$(MANDIR)/man6
 	install -d $(DESTDIR)$(BINDIR)
-	install $(BUILD)/server/lmserver $(DESTDIR)$(BINDIR)
+	install server/lmserver $(DESTDIR)$(BINDIR)
 	strip $(DESTDIR)$(BINDIR)/lmserver
 
 install-common:
 	install -d $(DESTDIR)$(DATADIR)/maps
-	install -m 0644 data/maps/* $(DESTDIR)$(DATADIR)/maps
+	install -m 0644 $(BASEDIR)/data/maps/* $(DESTDIR)$(DATADIR)/maps
 	install -d $(DESTDIR)$(DATADIR)/weapons
-	install -m 0644 data/weapons/* $(DESTDIR)$(DATADIR)/weapons
+	install -m 0644 $(BASEDIR)/data/weapons/* $(DESTDIR)$(DATADIR)/weapons
 
 uninstall:
 	$(RM) -r $(DESTDIR)$(DATADIR)
