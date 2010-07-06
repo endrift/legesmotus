@@ -31,6 +31,8 @@ using namespace LM;
 using namespace std;
 
 void ServerList::json_begin(ostream *outfile, const std::string& root) {
+	m_json_indentation = 0;
+	m_json_needs_comma = false;
 	json_begin_dict(outfile);
 	json_add_dict_entry(outfile, root);
 	json_begin_dict(outfile);
