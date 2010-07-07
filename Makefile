@@ -6,6 +6,7 @@ BASEDIR = $(shell echo $(realpath .) | sed -e 's/ /\\ /')
 include $(BASEDIR)/common.mk
 
 distclean:
+	$(RM) cscope.*
 	$(RM) -r build
 	$(RM) config.mk
 
@@ -14,6 +15,10 @@ distclean:
 ifeq ($(ARCH),)
 
 # Figure out chdir
+
+cscope:
+	find . -follow -name .svn -prune -a -not -name .svn -o -name *.[ch]pp -o -name *.[hm] > cscope.files
+	cscope -v -q
 
 MACHINE_TARGETS = $(foreach ARCH,$(ARCHS),$(MACHINE)-$(ARCH)-$(RELEASE))
 isolate-arch = $(patsubst $(MACHINE)-%-$(RELEASE),%,$(1))
@@ -34,6 +39,7 @@ ifeq ($(CHAINED_GOALS),)
 
 %.mk:
 Makefile:
+cscope:
 
 else
  ifneq ($(CHAINED_GOALS),$(MAKECMDGOALS))
@@ -263,10 +269,6 @@ endif
 
 endif
 
-cscope: 
-	find . -follow -name SCCS -prune -o -name '*.[ch]pp' -print | grep -v svn > cscope.files
-	cscope -v -q
-
-.PHONY: deps clean common server client metaserver install uninstall $(ALL_PKGS) $(PKG_DIRS)
+.PHONY: cscope deps clean common server client metaserver install uninstall $(ALL_PKGS) $(PKG_DIRS)
 
 endif
