@@ -25,6 +25,7 @@ upgrade_nag=1
 server=1
 client=1
 metaserver=0
+serverscanner=0
 
 if [ `uname -s` = Darwin ]
 then
@@ -44,6 +45,7 @@ display_help () {
 	echo "  --disable-client         Disable building the client"
 	echo "  --disable-server         Disable building the server"
 	echo "  --enable-metaserver      Enable building the metaserver"
+	echo "  --enable-serverscanner   Enable building the server scanner"
 	echo "  --debug                  Enable a debug build"
 	echo "  --disable-bundle         (Mac OS X only) Build without frameworks or .app bundle"
 	echo "  --disable-universal      (Mac OS X only) Do not build universal binary"
@@ -137,6 +139,9 @@ do
 	--enable-metaserver)
 		metaserver=1
 		;;
+	--enable-serverscanner)
+		serverscanner=1
+		;;
 	--force)
 		force=1
 		;;
@@ -167,6 +172,10 @@ then
 	targets="$targets metaserver"
 fi
 
+if [ $serverscanner -eq 1 ]
+then
+	targets="$targets serverscanner"
+fi
 
 # Set defaults
 
@@ -301,6 +310,7 @@ echo "Share directory:    $sharedir"
 echo "Client:             `format_boolean $client`"
 echo "Server:             `format_boolean $server`"
 echo "Metaserver:         `format_boolean $metaserver`"
+echo "Server scanner:     `format_boolean $serverscanner`"
 
 if [ $client -eq 1 ]
 then

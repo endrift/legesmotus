@@ -35,9 +35,11 @@ endif
 CFLAGS += -DLM_DATA_DIR=\"$(DATADIR)\" -DLM_VERSION="\"$(VERSION)\""
 
 MACHINE ?= $(shell uname -s)
+# Windows is the only supported platform that doesn't have uname
 ifeq ($(MACHINE),)
  MACHINE = Windows
 else
+ # Unless it's MSYS
  ifeq ($(shell echo $(MACHINE) | cut -c 1-5),MINGW)
  MACHINE = Windows
  endif
@@ -57,6 +59,7 @@ ifeq ($(ARCHS),)
      ARCHS += i386
     endif
    else
+    # Does our SDL installation support these platforms?
     IS_X64 = $(shell lipo `sdl-config --prefix`/lib/libSDL.a -verify_arch x86_64 && echo x86_64)
     IS_X86 = $(shell lipo `sdl-config --prefix`/lib/libSDL.a -verify_arch i386 && echo i386)
     IS_PPC = $(shell lipo `sdl-config --prefix`/lib/libSDL.a -verify_arch ppc && echo ppc)
@@ -81,6 +84,7 @@ ifeq ($(ARCHS),)
  endif
 endif
 
+# Only Mac OS X can use fat binaries
 ifneq ($(filter $(ARCH),$(ARCHS)),$(ARCH))
  ifneq ($(MACHINE)-$(ARCH),Darwin-universal)
   $(error Disallowed architecture for this platform: $(ARCH))
@@ -106,13 +110,18 @@ ifeq ($(MACHINE)$(NOBUNDLE),Darwin)
   LIBS_SDL += -framework SDL_mixer
  endif
 else
+ # Solaris needs extra libraries for BSD sockets
  ifeq ($(MACHINE),SunOS)
   LIBS += -lnsl -lsocket -lresolv
  endif
- FLAGS_SDL = $(shell $(SDL_CONFIG) --cflags)
- LIBS_SDL = $(shell $(SDL_CONFIG) --libs) -lSDL_image -lSDL_ttf
- ifeq ($(NOSOUND),)
-  LIBS_SDL += -lSDL_mixer
+
+ # Grab SDL if we need it
+ ifneq ($(findstring client,$(TARGETS)),)
+  FLAGS_SDL := $(shell $(SDL_CONFIG) --cflags)
+  LIBS_SDL := $(shell $(SDL_CONFIG) --libs) -lSDL_image -lSDL_ttf
+  ifeq ($(NOSOUND),)
+   LIBS_SDL += -lSDL_mixer
+  endif
  endif
 endif
 
@@ -129,7 +138,7 @@ ifeq ($(MACHINE),Darwin)
   endif
  else
   ifeq ($(NOBUNDLE),)
-   # Test for Snow Leopard (SDL TTF's stock release is 32-bit)
+   # Test for Snow Leopard (SDL_TTF's stock framework is 32-bit)
    ifeq ($(shell test `uname -r | cut -f 1 -d .` -ge 10 && echo 1),1) 
     CFLAGS += -arch i386
    endif
@@ -139,6 +148,7 @@ ifeq ($(MACHINE),Darwin)
  LIBS_GL = -framework OpenGL
 else
  ifneq ($(findstring client,$(TARGETS)),)
+  # We're bulding the client
   # We need graphics libraries
   ifeq ($(MACHINE),Windows)
    LIBS_GL = -lopengl32
@@ -170,23 +180,30 @@ CFLAGS += -Wall
 CXXFLAGS += -Wnon-virtual-dtor
 
 ifeq ($(DEBUG),1)
- RELEASE=debug
+ RELEASE = debug
  CFLAGS += -g -O0 -DLM_DEBUG
 else
- RELEASE=release
- CFLAGS += -O2
+ RELEASE = release
+ # Take O-flag from CFLAGS if we already have it set
+ ifneq ($(filter -O%,$(CFLAGS)),)
+  CFLAGS += -O2
+ endif
 endif
 
 LDFLAGS += $(CFLAGS)
 CFLAGS += $(FLAGS_GL) $(INCLUDES)
+
+# Windows needs Winsock2 for BSD sockets
 ifeq ($(MACHINE),Windows)
  LIBS += -lwsock32
 endif
+
 CLIENTFLAGS = $(FLAGS_SDL)
 CLIENTLIBS = $(LIBS_GL) $(LIBS) $(LIBS_SDL)
 
 CXXFLAGS += $(CFLAGS)
 
+# Out-of-tree build madness
 ifneq ($(SUBDIR),)
  #SRCDIR = $(subst \ ,?,$(BASEDIR)/$(SUBDIR))
  SRCDIR = $(BASEDIR)/$(SUBDIR)
@@ -231,6 +248,7 @@ clean: common-clean
 .deps/deps.mk: $(OBJS:%.o=.deps/%.d)
 	cat .deps/*.d > .deps/deps.mk
 
+# Don't build deps on make clean
 ifneq ($(filter clean,$(MAKECMDGOALS)),clean)
  ifneq ($(OBJS),)
   #-include .deps/deps.mk
