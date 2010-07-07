@@ -30,153 +30,57 @@
 using namespace LM;
 using namespace std;
 
-void ServerList::json_begin(ostream *outfile) {
-	m_json_indentation = 0;
-	m_json_needs_comma = false;
-	json_begin_dict(outfile);
-}
-
-void ServerList::json_end(ostream *outfile) {
-	json_end_dict(outfile);
-	(*outfile) << endl;
-}
-void ServerList::json_begin_dict(ostream *outfile) {
-	if (m_json_needs_comma) {
-		(*outfile) << ",";
-		json_indent(outfile);
-	}
-
-	(*outfile) << "{";
-	++m_json_indentation;
-	json_indent(outfile);
-	m_json_needs_comma = false;
-}
-
-void ServerList::json_add_dict_entry(ostream *outfile, const std::string& name) {
-	if (m_json_needs_comma) {
-		(*outfile) << ",";
-		json_indent(outfile);
-	}
-
-	m_json_needs_comma = false;
-	json_add_string(outfile, name);
-	m_json_needs_comma = false;
-	(*outfile) << ": ";
-}
-
-void ServerList::json_end_dict(ostream *outfile) {
-	--m_json_indentation;
-	json_indent(outfile);
-	(*outfile) << "}";
-	m_json_needs_comma = true;
-}
-void ServerList::json_begin_list(ostream *outfile) {
-	(*outfile) << "[";
-	++m_json_indentation;
-	json_indent(outfile);
-	m_json_needs_comma = false;
-}
-
-void ServerList::json_end_list(ostream *outfile) {
-	--m_json_indentation;
-	json_indent(outfile);
-	(*outfile) << "]";
-	m_json_needs_comma = true;
-}
-
-void ServerList::json_add_string(ostream *outfile, const std::string& str) {
-	if (m_json_needs_comma) {
-		(*outfile) << ",";
-		json_indent(outfile);
-	}
-
-	string escaped = str;
-	// TODO escape;
-	escaped = '"' + escaped + '"';
-
-	(*outfile) << escaped;
-	m_json_needs_comma = true;
-}
-
-void ServerList::json_add_int(ostream *outfile, int num) {
-	if (m_json_needs_comma) {
-		(*outfile) << ",";
-		json_indent(outfile);
-	}
-
-	(*outfile) << num;
-	m_json_needs_comma = true;
-}
-
-void ServerList::json_add_int(ostream *outfile, uint64_t num) {
-	if (m_json_needs_comma) {
-		(*outfile) << ",";
-		json_indent(outfile);
-	}
-
-	(*outfile) << '"' <<  num << '"';
-	m_json_needs_comma = true;
-}
-
-void ServerList::json_indent(ostream *outfile) {
-	(*outfile) << '\n';
-	for (int i = 0; i < m_json_indentation; ++i) {
-		(*outfile) << '\t';	
-	}
-}
-
 void ServerList::add(const IPAddress& ipaddr, const Server& server) {
 	m_list[ipaddr] = server;
 }
 
-void ServerList::output(ostream *outfile) {
+void ServerList::output(OutputGenerator *out) {
 	stringstream buffer;
 
-	json_begin(outfile);
-	json_add_dict_entry(outfile, "servers");
-	json_begin_list(outfile);
+	out->begin();
+	out->add_dict_entry("servers");
+	out->begin_list();
 	for (map<IPAddress, Server>::const_iterator iter = m_list.begin(); iter != m_list.end(); ++iter) {
-		json_begin_dict(outfile);
+		out->begin_dict();
 
-		json_add_dict_entry(outfile, "ip_address");
+		out->add_dict_entry("ip_address");
 		buffer << iter->first << flush;
-		json_add_string(outfile, buffer.str());
+		out->add_string(buffer.str());
 		buffer.str(""); // TODO IPAddress std::String cast
 
-		json_add_dict_entry(outfile, "map_name");
-		json_add_string(outfile, iter->second.current_map_name);
+		out->add_dict_entry("map_name");
+		out->add_string(iter->second.current_map_name);
 
-		json_add_dict_entry(outfile, "team_count");
+		out->add_dict_entry("team_count");
 
-		json_begin_list(outfile);
-		json_add_int(outfile, iter->second.team_count[0]);
-		json_add_int(outfile, iter->second.team_count[1]);
-		json_end_list(outfile);
+		out->begin_list();
+		out->add_int(iter->second.team_count[0]);
+		out->add_int(iter->second.team_count[1]);
+		out->end_list();
 
-		json_add_dict_entry(outfile, "max_players");
-		json_add_int(outfile, iter->second.max_players);
+		out->add_dict_entry("max_players");
+		out->add_int(iter->second.max_players);
+		out->add_dict_entry("uptime");
+		out->add_int(iter->second.uptime);
 
-		json_add_dict_entry(outfile, "uptime");
-		json_add_int(outfile, iter->second.uptime);
+		out->add_dict_entry("time_left_in_game");
+		out->add_int(iter->second.time_left_in_game);
 
-		json_add_dict_entry(outfile, "time_left_in_game");
-		json_add_int(outfile, iter->second.time_left_in_game);
+		out->add_dict_entry("server_name");
+		out->add_string(iter->second.server_name);
 
-		json_add_dict_entry(outfile, "server_name");
-		json_add_string(outfile, iter->second.server_name);
+		out->add_dict_entry("server_location");
+		out->add_string(iter->second.server_location);
 
-		json_add_dict_entry(outfile, "server_location");
-		json_add_string(outfile, iter->second.server_location);
+		out->add_dict_entry("ping");
+		out->add_int(iter->second.ping);
 
-		json_add_dict_entry(outfile, "ping");
-		json_add_int(outfile, iter->second.ping);
-
-		json_end_dict(outfile);
+		out->end_dict();
 	}
-	json_end_list(outfile);
+	out->end_list();
 
-	json_add_dict_entry(outfile, "timestamp");
-	json_add_int(outfile, utc_time());
+	out->add_dict_entry("timestamp");
+	out->add_int(utc_time());
 
-	json_end(outfile);
+	out->end();
 }

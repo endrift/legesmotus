@@ -1,5 +1,5 @@
 BASEDIR = ..
-OBJS = main.o ServerScannerNetwork.o ServerScanner.o ServerList.o
+OBJS = main.o ServerScannerNetwork.o ServerScanner.o ServerList.o OutputGenerator.o
 	#put .o filenames here (DO NOT PUT .cpp!)
 include $(BASEDIR)/common.mk
 CXXFLAGS += $(CLIENTFLAGS)

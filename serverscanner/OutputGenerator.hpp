@@ -1,5 +1,5 @@
 /*
- * serverscanner/ServerList.hpp
+ * serverscanner/OutputGenerator.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,35 +22,40 @@
  * 
  */
 
-#ifndef LM_CLIENT_SERVERLIST_HPP
-#define LM_CLIENT_SERVERLIST_HPP
+#ifndef LM_CLIENT_OUTPUTGENERATOR_HPP
+#define LM_CLIENT_OUTPUTGENERATOR_HPP
 
-#include "common/IPAddress.hpp"
-#include "OutputGenerator.hpp"
-
+#include <stdint.h>
+#include <ostream>
 #include <string>
-#include <map>
 
 namespace LM {
-	class ServerList {
-		public:
-			struct Server {
-				std::string	current_map_name;
-				int		team_count[2];
-				int		max_players;
-				uint64_t	uptime;
-				uint64_t	time_left_in_game;
-				std::string	server_name;
-				std::string	server_location;
-				uint64_t	ping;
-			};
-
+	class OutputGenerator {
 		private:
-			std::map<IPAddress, Server> m_list;
+			std::ostream* m_out;
+			// JSON stuff
+			// TODO move to class
+			int m_indentation;
+			bool m_needs_comma;
+
+			void indent();
 
 		public:
-			void add(const IPAddress& ipaddr, const Server& server);
-			void output(OutputGenerator* out);
+			OutputGenerator(std::ostream *outfile);
+
+			void begin();
+			void end();
+
+			void begin_dict();
+			void add_dict_entry(const std::string& name);
+			void end_dict();
+
+			void begin_list();
+			void end_list();
+
+			void add_string(const std::string& str);
+			void add_int(int num);
+			void add_int(uint64_t num);
 	};
 }
 

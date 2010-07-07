@@ -24,6 +24,7 @@
 
 #include "ServerScanner.hpp"
 #include "ServerScannerNetwork.hpp"
+#include "OutputGenerator.hpp"
 #include "common/PacketReader.hpp"
 #include "common/PacketWriter.hpp"
 #include "common/network.hpp"
@@ -158,7 +159,8 @@ void	ServerScanner::upgrade_available(const IPAddress& server_address, PacketRea
 }
 
 void	ServerScanner::output_results() {
-	m_server_list.output(m_output);
+	OutputGenerator out(m_output);
+	m_server_list.output(&out);
 }
 
 void	ServerScanner::scan_loopback() {
