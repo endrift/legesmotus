@@ -37,16 +37,22 @@ using namespace std;
 
 namespace {
 	void display_usage(const char* progname) {
-		cout << "Usage: " << progname << " [OPTION]" << endl;
+		cout << "Usage: " << progname << " [options]" << endl;
 		cout << "Options:" << endl;
-		cout << "  -?, --help	  Display this help, and exit" << endl;
+		cout << "  -?, --help     Display this help, and exit" << endl;
 		cout << "      --version  Display version information and exit" << endl;
 		cout << "  -h             Scan localhost" << endl;
+		cout << "  -f format      Output format. If this flag is not specified, \"readable\" is" << endl;
+		cout << "                 assumed as the desired output" << endl;
 		cout << "  -l             Scan the local network" << endl;
 		cout << "  -m [address]   Scan metaserver. If address is specified, it is scanned as the" << endl;
 		cout << "                 metaserver instead of the default" << endl;
 		cout << "  -U             Disable scanning for upgrades when contacting the metaserver" << endl;
 		cout << "  -o filename    Output to file instead of stdout" << endl;
+		cout << endl;
+		cout << "Valid output formats are:" << endl;
+		cout << "  readable       An easily human-readable format" << endl;
+		cout << "  json           JSON output for easy parsing" << endl;
 	}
 
 	void display_version() {
@@ -70,6 +76,7 @@ extern "C" int main(int argc, char* argv[]) try {
 	int		scanflags = ServerScanner::SCAN_ALL;
 	int		scanmask = ServerScanner::SCAN_ALL;
 	const char*	metaserver = NULL;
+	ServerScanner::OutputType outfmt = ServerScanner::OUTPUT_HUMAN_READABLE;
 	
 	for (int i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "--version") == 0) {
@@ -84,6 +91,21 @@ extern "C" int main(int argc, char* argv[]) try {
 			} else {
 				scanflags = ServerScanner::SCAN_LOOPBACK;
 				scanflags_seen = true;
+			}
+		} else if (strncmp(argv[i], "-f", 3) == 0) {
+			if (i + 1 < argc) {
+				++i;
+				if (strcmp(argv[i], "readable") == 0) {
+					outfmt = ServerScanner::OUTPUT_HUMAN_READABLE;
+				} else if (strcmp(argv[i], "json") == 0) {
+					outfmt = ServerScanner::OUTPUT_JSON;
+				} else {
+					cerr << "Unrecognized output format `" << argv[i] <<"'" << endl;
+					return 2;
+				}
+			} else {
+				needs_opts(argv[0], argv[i]);
+				return 2;
 			}
 		} else if (strncmp(argv[i], "-l", 3) == 0) {
 			if (scanflags_seen) {
@@ -135,7 +157,7 @@ extern "C" int main(int argc, char* argv[]) try {
 		out = &outf;
 	}
 
-	scanner.scan(out, scanflags & scanmask);
+	scanner.scan(out, outfmt, scanflags & scanmask);
 
 	outf.close();
 	

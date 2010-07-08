@@ -25,6 +25,8 @@
 #include "ServerScanner.hpp"
 #include "ServerScannerNetwork.hpp"
 #include "OutputGenerator.hpp"
+#include "JsonGenerator.hpp"
+#include "ReadableGenerator.hpp"
 #include "common/PacketReader.hpp"
 #include "common/PacketWriter.hpp"
 #include "common/network.hpp"
@@ -69,11 +71,15 @@ ServerScanner::ServerScanner(const char* metaserver_address) : m_network(*this) 
 	}
 }
 
-void 	ServerScanner::scan(ostream* outfile, int to_scan) {
+void 	ServerScanner::scan(ostream* outfile, OutputType outtype, int to_scan) {
 	m_output = outfile;
 
 	srand(time(NULL));
 	m_current_scan_id = rand();
+
+	if (outtype == OUTPUT_HUMAN_READABLE) {
+		(*m_output) << "Starting scan..." << endl;
+	}
 
 	if (to_scan & SCAN_METASERVER) {
 		scan_metaserver();
@@ -94,7 +100,7 @@ void 	ServerScanner::scan(ostream* outfile, int to_scan) {
 	// Receive packets from all servers
 	// TODO customizable delay
 	while (m_network.receive_packets(5000));
-	output_results();
+	output_results(outtype);
 }
 
 void	ServerScanner::server_info(const IPAddress& server_address, PacketReader& info_packet) {
@@ -158,9 +164,17 @@ void	ServerScanner::upgrade_available(const IPAddress& server_address, PacketRea
 	cerr << "The latest version is " << latest_version << endl;
 }
 
-void	ServerScanner::output_results() {
-	OutputGenerator out(m_output);
-	m_server_list.output(&out);
+void	ServerScanner::output_results(OutputType type) {
+	switch (type) {
+	case OUTPUT_HUMAN_READABLE: {
+		ReadableGenerator out(m_output);
+		m_server_list.output(&out);
+	} break;
+	case OUTPUT_JSON: {
+		JsonGenerator out(m_output);
+		m_server_list.output(&out);
+	} break;
+	}
 }
 
 void	ServerScanner::scan_loopback() {

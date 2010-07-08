@@ -53,10 +53,15 @@ namespace LM {
 				SCAN_ALL = 0xF
 			};
 
+			enum OutputType {
+				OUTPUT_HUMAN_READABLE,
+				OUTPUT_JSON
+			};
+
 			void	server_info(const IPAddress& server_address, PacketReader& reader);
 			void	upgrade_available(const IPAddress& server_address, PacketReader& reader);
 			void	hole_punch_packet(const IPAddress& server_address, PacketReader& reader);
-			void	scan(std::ostream* outfile, int to_scan = SCAN_ALL);
+			void	scan(std::ostream* outfile, OutputType outtype, int to_scan = SCAN_ALL);
 
 		private:
 			IPAddress	m_metaserver_address;
@@ -67,7 +72,7 @@ namespace LM {
 			ServerList m_server_list;
 			std::ostream*	m_output;
 
-			void	output_results();
+			void	output_results(OutputType type);
 
 			// Scan localhost for a server
 			void	scan_loopback();

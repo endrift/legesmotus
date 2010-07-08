@@ -37,50 +37,64 @@ void ServerList::add(const IPAddress& ipaddr, const Server& server) {
 void ServerList::output(OutputGenerator *out) {
 	stringstream buffer;
 
+	out->add_column("ip_address", "Address");
+	out->add_column("map_name", "Map name");
+	out->add_column("team_count", "Players");
+	out->add_column("max_players", "Max players");
+	out->add_column("uptime", "Uptime");
+	out->add_column("time_left_in_game", "Time left");
+	out->add_column("server_location", "Location");
+	out->add_column("server_name", "Name");
+	out->add_column("ping", "Ping");
+	out->add_column("timestamp", "Scan time");
+	out->add_column("servers", "Servers");
+
 	out->begin();
-	out->add_dict_entry("servers");
+	out->begin_row();
+	out->add_cell("servers");
 	out->begin_list();
 	for (map<IPAddress, Server>::const_iterator iter = m_list.begin(); iter != m_list.end(); ++iter) {
-		out->begin_dict();
+		out->begin_row();
 
-		out->add_dict_entry("ip_address");
+		out->add_cell("ip_address");
 		buffer << iter->first << flush;
 		out->add_string(buffer.str());
 		buffer.str(""); // TODO IPAddress std::String cast
 
-		out->add_dict_entry("map_name");
+		out->add_cell("map_name");
 		out->add_string(iter->second.current_map_name);
 
-		out->add_dict_entry("team_count");
+		out->add_cell("team_count");
 
 		out->begin_list();
 		out->add_int(iter->second.team_count[0]);
 		out->add_int(iter->second.team_count[1]);
 		out->end_list();
 
-		out->add_dict_entry("max_players");
+		out->add_cell("max_players");
 		out->add_int(iter->second.max_players);
-		out->add_dict_entry("uptime");
+		out->add_cell("uptime");
 		out->add_int(iter->second.uptime);
 
-		out->add_dict_entry("time_left_in_game");
+		out->add_cell("time_left_in_game");
 		out->add_int(iter->second.time_left_in_game);
 
-		out->add_dict_entry("server_name");
+		out->add_cell("server_name");
 		out->add_string(iter->second.server_name);
 
-		out->add_dict_entry("server_location");
+		out->add_cell("server_location");
 		out->add_string(iter->second.server_location);
 
-		out->add_dict_entry("ping");
+		out->add_cell("ping");
 		out->add_int(iter->second.ping);
 
-		out->end_dict();
+		out->end_row();
 	}
 	out->end_list();
 
-	out->add_dict_entry("timestamp");
+	out->add_cell("timestamp");
 	out->add_int(utc_time());
 
+	out->end_row();
 	out->end();
 }

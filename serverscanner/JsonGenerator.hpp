@@ -1,5 +1,5 @@
 /*
- * serverscanner/OutputGenerator.hpp
+ * serverscanner/JsonGenerator.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,43 +22,39 @@
  * 
  */
 
-#ifndef LM_CLIENT_OUTPUTGENERATOR_HPP
-#define LM_CLIENT_OUTPUTGENERATOR_HPP
+#ifndef LM_CLIENT_JSONGENERATOR_HPP
+#define LM_CLIENT_JSONGENERATOR_HPP
+
+#include "OutputGenerator.hpp"
 
 #include <stdint.h>
 #include <ostream>
 #include <string>
-#include <map>
 
 namespace LM {
-	class OutputGenerator {
+	class JsonGenerator : public OutputGenerator {
 		private:
-			std::ostream* m_out;
-			std::map<std::string, std::string> m_col_mapping;
+			int m_indentation;
+			bool m_needs_comma;
 
-		protected:
-			std::ostream& out();
+			void indent();
 
 		public:
-			OutputGenerator(std::ostream *outstream);
-			virtual ~OutputGenerator() {};
+			JsonGenerator(std::ostream *outstream);
 
-			virtual void begin() = 0;
-			virtual void end() = 0;
+			virtual void begin();
+			virtual void end();
 
-			void add_column(const std::string& shortname, const std::string& longname);
-			const std::string& get_column(const std::string& shortname);
+			virtual void begin_row();
+			virtual void add_cell(const std::string& column);
+			virtual void end_row();
 
-			virtual void begin_row() = 0;
-			virtual void add_cell(const std::string& column) = 0;
-			virtual void end_row() = 0;
+			virtual void begin_list();
+			virtual void end_list();
 
-			virtual void begin_list() = 0;
-			virtual void end_list() = 0;
-
-			virtual void add_string(const std::string& str) = 0;
-			virtual void add_int(int num) = 0;
-			virtual void add_int(uint64_t num) = 0;
+			virtual void add_string(const std::string& str);
+			virtual void add_int(int num);
+			virtual void add_int(uint64_t num);
 	};
 }
 

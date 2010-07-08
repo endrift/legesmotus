@@ -31,97 +31,14 @@ OutputGenerator::OutputGenerator(ostream* out) {
 	m_out = out;
 }
 
-void OutputGenerator::begin() {
-	m_indentation = 0;
-	m_needs_comma = false;
-	begin_dict();
+ostream& OutputGenerator::out() {
+	return *m_out;
 }
 
-void OutputGenerator::end() {
-	end_dict();
-	(*m_out) << endl;
-}
-void OutputGenerator::begin_dict() {
-	if (m_needs_comma) {
-		(*m_out) << ",";
-		indent();
-	}
-
-	(*m_out) << "{";
-	++m_indentation;
-	indent();
-	m_needs_comma = false;
+void OutputGenerator::add_column(const string& shortname, const string& longname) {
+	m_col_mapping[shortname] = longname;
 }
 
-void OutputGenerator::add_dict_entry(const string& name) {
-	if (m_needs_comma) {
-		(*m_out) << ",";
-		indent();
-	}
-
-	m_needs_comma = false;
-	add_string(name);
-	m_needs_comma = false;
-	(*m_out) << ": ";
-}
-
-void OutputGenerator::end_dict() {
-	--m_indentation;
-	indent();
-	(*m_out) << "}";
-	m_needs_comma = true;
-}
-void OutputGenerator::begin_list() {
-	(*m_out) << "[";
-	++m_indentation;
-	indent();
-	m_needs_comma = false;
-}
-
-void OutputGenerator::end_list() {
-	--m_indentation;
-	indent();
-	(*m_out) << "]";
-	m_needs_comma = true;
-}
-
-void OutputGenerator::add_string(const string& str) {
-	if (m_needs_comma) {
-		(*m_out) << ",";
-		indent();
-	}
-
-	string escaped = str;
-	// TODO escape;
-	escaped = '"' + escaped + '"';
-
-	(*m_out) << escaped;
-	m_needs_comma = true;
-}
-
-void OutputGenerator::add_int(int num) {
-	if (m_needs_comma) {
-		(*m_out) << ",";
-		indent();
-	}
-
-	(*m_out) << num;
-	m_needs_comma = true;
-}
-
-void OutputGenerator::add_int(uint64_t num) {
-	if (m_needs_comma) {
-		(*m_out) << ",";
-		indent();
-	}
-
-	(*m_out) << '"' <<  num << '"';
-	m_needs_comma = true;
-}
-
-void OutputGenerator::indent() {
-	(*m_out) << '\n';
-	for (int i = 0; i < m_indentation; ++i) {
-		(*m_out) << '\t';	
-	}
+const string& OutputGenerator::get_column(const string& shortname) {
+	return m_col_mapping[shortname];
 }
