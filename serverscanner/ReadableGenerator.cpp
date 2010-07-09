@@ -24,6 +24,7 @@
 
 #include "ReadableGenerator.hpp"
 #include <sstream>
+#include <ctime>
 
 using namespace LM;
 using namespace std;
@@ -51,6 +52,7 @@ void ReadableGenerator::invalidate_row() {
 		out () << cell.second << "\n";
 	}
 	out() << endl;
+	m_longest_prefix = 0;
 }
 
 void ReadableGenerator::begin() {
@@ -68,7 +70,6 @@ void ReadableGenerator::begin_row() {
 		invalidate_row();
 	}
 
-	m_longest_prefix = 0;
 	m_active_cell.clear();
 }
 
@@ -126,13 +127,86 @@ void ReadableGenerator::add_int(int num) {
 	m_needs_comma = true;
 }
 
-void ReadableGenerator::add_int(uint64_t num) {
+void ReadableGenerator::add_time(time_t sec) {
+	static char timebuf[96];
 	stringstream entry;
 	if (m_needs_comma) {
 		entry << ", ";
 	}
 
-	entry << num;
+	strftime(timebuf, sizeof(timebuf), "%c", localtime(&sec));
+	entry << timebuf;
+	m_list_strings.top().append(entry.str());
+	m_needs_comma = true;
+}
+
+void ReadableGenerator::add_interval(uint64_t millis) {
+	stringstream entry;
+	if (m_needs_comma) {
+		entry << ", ";
+	}
+
+	if (millis == 0xFFFFFFFFFFFFFFFFULL) {
+		entry << "Forever";
+	} else if (millis < 60000) {
+		entry << millis << "ms";
+	} else {
+		millis /= 1000;
+		uint64_t sec = millis % 60;
+		millis /= 60;
+		uint64_t min = millis % 60;
+		millis /= 60;
+		uint64_t hr = millis % 24;
+		millis /= 24;
+		uint64_t days = millis;
+
+		m_needs_comma = false;
+		if (days) {
+			entry << days << " day";
+			if (days > 1) {
+				entry << "s";
+			}
+			m_needs_comma = true;
+		}
+
+		if (hr) {
+			if (m_needs_comma) {
+				entry << ", ";
+			}
+			entry << hr << " hour";
+			if (hr > 1) {
+				entry << "s";
+			}
+			m_needs_comma = true;
+		}
+
+		if (min) {
+			if (m_needs_comma) {
+				entry << ", ";
+			}
+			entry << min << " minute";
+			if (min > 1) {
+				entry << "s";
+			}
+			m_needs_comma = true;
+		}
+
+		if (sec) {
+			if (m_needs_comma) {
+				entry << ", ";
+			}
+			entry << sec << " second";
+			if (sec > 1) {
+				entry << "s";
+			}
+			m_needs_comma = true;
+		}
+
+		if (!m_needs_comma) {
+			entry << "0 seconds";
+		}
+	}
+
 	m_list_strings.top().append(entry.str());
 	m_needs_comma = true;
 }

@@ -58,7 +58,8 @@ namespace LM {
 
 			virtual void add_string(const std::string& str) = 0;
 			virtual void add_int(int num) = 0;
-			virtual void add_int(uint64_t num) = 0;
+			virtual void add_time(time_t sec) = 0;
+			virtual void add_interval(uint64_t millis) = 0;
 	};
 }
 

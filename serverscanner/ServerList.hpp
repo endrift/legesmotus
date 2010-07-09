@@ -50,7 +50,7 @@ namespace LM {
 
 		public:
 			void add(const IPAddress& ipaddr, const Server& server);
-			void output(OutputGenerator* out);
+			void output(OutputGenerator* out, uint64_t ticks);
 	};
 }
 

@@ -34,7 +34,7 @@ void ServerList::add(const IPAddress& ipaddr, const Server& server) {
 	m_list[ipaddr] = server;
 }
 
-void ServerList::output(OutputGenerator *out) {
+void ServerList::output(OutputGenerator *out, uint64_t ticks) {
 	stringstream buffer;
 
 	out->add_column("ip_address", "Address");
@@ -47,6 +47,7 @@ void ServerList::output(OutputGenerator *out) {
 	out->add_column("server_name", "Name");
 	out->add_column("ping", "Ping");
 	out->add_column("timestamp", "Scan time");
+	out->add_column("duration", "Scan duration");
 	out->add_column("servers", "Servers");
 
 	out->begin();
@@ -74,10 +75,10 @@ void ServerList::output(OutputGenerator *out) {
 		out->add_cell("max_players");
 		out->add_int(iter->second.max_players);
 		out->add_cell("uptime");
-		out->add_int(iter->second.uptime);
+		out->add_interval(iter->second.uptime);
 
 		out->add_cell("time_left_in_game");
-		out->add_int(iter->second.time_left_in_game);
+		out->add_interval(iter->second.time_left_in_game);
 
 		out->add_cell("server_name");
 		out->add_string(iter->second.server_name);
@@ -86,14 +87,17 @@ void ServerList::output(OutputGenerator *out) {
 		out->add_string(iter->second.server_location);
 
 		out->add_cell("ping");
-		out->add_int(iter->second.ping);
+		out->add_interval(iter->second.ping);
 
 		out->end_row();
 	}
 	out->end_list();
 
 	out->add_cell("timestamp");
-	out->add_int(utc_time());
+	out->add_time(utc_time());
+
+	out->add_cell("duration");
+	out->add_interval(ticks);
 
 	out->end_row();
 	out->end();

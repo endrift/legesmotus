@@ -70,6 +70,7 @@ namespace LM {
 			std::string 	m_client_version;
 			ServerScannerNetwork	m_network;
 			ServerList m_server_list;
+			uint64_t	m_start_ticks;
 			std::ostream*	m_output;
 
 			void	output_results(OutputType type);

@@ -89,8 +89,18 @@ void JsonGenerator::add_string(const string& str) {
 		indent();
 	}
 
-	string escaped = str;
-	// TODO escape;
+	string escaped;
+	for (size_t i = 0, j; i < str.length();) {
+		j = str.find_first_of("\"\\", i);
+		if (j == string::npos) {
+			escaped.append(str, i, str.length());
+			break;
+		}
+		escaped.append(str, i, j - i);
+		escaped.append(1, '\\');
+		escaped.append(1, str[j]);
+		i = j + 1;
+	}
 	escaped = '"' + escaped + '"';
 
 	out() << escaped;
@@ -107,13 +117,23 @@ void JsonGenerator::add_int(int num) {
 	m_needs_comma = true;
 }
 
-void JsonGenerator::add_int(uint64_t num) {
+void JsonGenerator::add_time(time_t sec) {
 	if (m_needs_comma) {
 		out() << ",";
 		indent();
 	}
 
-	out() << '"' <<  num << '"';
+	out() << sec;
+	m_needs_comma = true;
+}
+
+void JsonGenerator::add_interval(uint64_t millis) {
+	if (m_needs_comma) {
+		out() << ",";
+		indent();
+	}
+
+	out() << '"' << fixed <<  millis*1E-3 << '"';
 	m_needs_comma = true;
 }
 

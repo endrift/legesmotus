@@ -72,6 +72,7 @@ ServerScanner::ServerScanner(const char* metaserver_address) : m_network(*this) 
 }
 
 void 	ServerScanner::scan(ostream* outfile, OutputType outtype, int to_scan) {
+	m_start_ticks = get_ticks();
 	m_output = outfile;
 
 	srand(time(NULL));
@@ -165,14 +166,15 @@ void	ServerScanner::upgrade_available(const IPAddress& server_address, PacketRea
 }
 
 void	ServerScanner::output_results(OutputType type) {
+	uint64_t final = get_ticks() - m_start_ticks;
 	switch (type) {
 	case OUTPUT_HUMAN_READABLE: {
 		ReadableGenerator out(m_output);
-		m_server_list.output(&out);
+		m_server_list.output(&out, final);
 	} break;
 	case OUTPUT_JSON: {
 		JsonGenerator out(m_output);
-		m_server_list.output(&out);
+		m_server_list.output(&out, final);
 	} break;
 	}
 }
