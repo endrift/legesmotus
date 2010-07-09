@@ -17,8 +17,8 @@ ifeq ($(ARCH),)
 # Figure out chdir
 
 cscope:
-	find . -follow -name .svn -prune -a -not -name .svn -o -name *.[ch]pp -o -name *.[hm] > cscope.files
-	cscope -v -q
+	find . -follow -name .svn -o -name build -prune -o \( -name *.[ch]pp -print -o -name *.[hm] -print \) > cscope.files
+	cscope -bvq
 
 MACHINE_TARGETS = $(foreach ARCH,$(ARCHS),$(MACHINE)-$(ARCH)-$(RELEASE))
 isolate-arch = $(patsubst $(MACHINE)-%-$(RELEASE),%,$(1))
