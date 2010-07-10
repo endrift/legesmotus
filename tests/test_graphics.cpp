@@ -2,6 +2,7 @@
 #include "gui/ResourceCache.hpp"
 #include "gui/Image.hpp"
 #include "gui/Sprite.hpp"
+#include "gui/GraphicContainer.hpp"
 #include "gui/GraphicRegion.hpp"
 #include "gui/GLESContext.hpp"
 #include <cmath>
@@ -14,11 +15,27 @@ extern "C" int main(int argc, char* argv[]) {
 	GLESContext ctx(300, 300);
 	ResourceCache cache("data", &ctx);
 	Image blue("blue_armless.png", &cache, true);
+	Image bluef("blue_frontarm.png", &cache, true);
+	Image blueb("blue_backarm.png", &cache, true);
 	Image tile("metal_bgtile.png", &cache, true);
 	Sprite blue_s(&blue);
+	Sprite bluef_s(&bluef);
+	Sprite blueb_s(&blueb);
 	GraphicRegion tile_s(&tile);
+	GraphicContainer g;
 	blue_s.set_center_x(32);
 	blue_s.set_center_y(48);
+	bluef_s.set_center_x(-46);
+	bluef_s.set_center_y(-30);
+	bluef_s.set_x(13);
+	bluef_s.set_y(-18);
+	blueb_s.set_center_x(-27);
+	blueb_s.set_center_y(-29);
+	blueb_s.set_x(-2);
+	blueb_s.set_y(-18);
+	g.add_graphic("blue", &blue_s);
+	g.add_graphic("bluef", &bluef_s, 1);
+	g.add_graphic("blueb", &blueb_s, -1);
 	tile_s.set_center_x(128);
 	tile_s.set_center_y(128);
 	tile_s.set_width(256);
@@ -41,11 +58,17 @@ extern "C" int main(int argc, char* argv[]) {
 			}
 		}
 
-		blue_s.set_rotation(-frame / 400.0 * 360);
-		blue_s.set_x(cos(frame / 400.0 * 2*M_PI)*100+250);
-		blue_s.set_y(sin(frame / 400.0 * 2*M_PI)*100+250);
-		blue_s.set_scale_x((sin(frame / 200.0 * 2*M_PI)+1)/2.0);
-		blue_s.set_scale_y((sin(frame / 200.0 * 2*M_PI)+1)/2.0);
+		g.set_x(cos(frame / 400.0 * 2*M_PI)*100+250);
+		g.set_y(sin(frame / 400.0 * 2*M_PI)*100+250);
+		g.get_graphic("blue")->set_rotation(-frame / 400.0 * 360);
+		g.get_graphic("blue")->set_scale_x((sin(frame / 200.0 * 2*M_PI)+1)/2.0);
+		g.get_graphic("blue")->set_scale_y((sin(frame / 200.0 * 2*M_PI)+1)/2.0);
+		g.get_graphic("bluef")->set_rotation(-frame / 400.0 * 360);
+		g.get_graphic("bluef")->set_scale_x((sin(frame / 200.0 * 2*M_PI)+1)/2.0);
+		g.get_graphic("bluef")->set_scale_y((sin(frame / 200.0 * 2*M_PI)+1)/2.0);
+		g.get_graphic("blueb")->set_rotation(-frame / 400.0 * 360);
+		g.get_graphic("blueb")->set_scale_x((sin(frame / 200.0 * 2*M_PI)+1)/2.0);
+		g.get_graphic("blueb")->set_scale_y((sin(frame / 200.0 * 2*M_PI)+1)/2.0);
 		tile_s.set_image_width((sin(frame / 200.0 * 2*M_PI)+3)*16.0);
 		tile_s.set_image_height((sin(frame / 200.0 * 2*M_PI)+3)*16.0);
 		tile_s.set_image_x(128);
@@ -56,7 +79,7 @@ extern "C" int main(int argc, char* argv[]) {
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		tile_s.draw(&ctx);
-		blue_s.draw(&ctx);
+		g.draw(&ctx);
 
 		SDL_GL_SwapBuffers();
 		SDL_Delay(20);

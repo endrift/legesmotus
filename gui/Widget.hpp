@@ -41,9 +41,6 @@ namespace LM {
 		float	m_w;
 		float	m_h;
 
-	protected:
-		virtual void draw_core(DrawContext* ctx, bool unclip) const;
-
 	public:
 		Widget(Widget* parent = NULL);
 		virtual ~Widget();
