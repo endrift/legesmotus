@@ -38,6 +38,11 @@ using namespace std;
 const char* Image::m_image_dir = "sprites";
 
 Image::Image(const string& path, ResourceCache* cache, bool autogen) {
+	Image *self = cache->get<Image>(path);
+	if (self != NULL) {
+		*this = *self;
+		return;
+	}
 	stringstream s;
 	s << cache->get_root() << "/" << m_image_dir << "/" << path;
 	SDL_Surface *image = IMG_Load(s.str().c_str());
@@ -94,6 +99,8 @@ Image::Image(const string& path, ResourceCache* cache, bool autogen) {
 	}
 
 	SDL_FreeSurface(image);
+
+	m_cache->add(path, *this);
 }
 
 Image::Image(int width, int height, const string& name, ResourceCache* cache) {
@@ -110,19 +117,7 @@ Image::Image(int width, int height, const string& name, ResourceCache* cache) {
 }
 
 Image::Image(const Image& other) {
-	m_cache = other.m_cache;
-	m_width = other.m_width;
-	m_height = other.m_height;
-	m_pitch = other.m_pitch;
-	m_pixels = other.m_pixels;
-	m_handle = other.m_handle;
-	m_name = other.m_name;
-
-	m_handle = other.m_handle;
-	m_handle_width = other.m_handle_width;
-	m_handle_height = other.m_handle_height;
-
-	m_cache->increment<Image>(m_name);
+	*this = other;
 }
 
 Image::~Image() {
@@ -202,6 +197,18 @@ void Image::delete_pixels() {
 	m_pixels = NULL;
 }
 
+void Image::add_mipmap(const std::string& name, int level) {
+	Image image(name, m_cache, false);
+	add_mipmap(image, level);
+}
+
+void Image::add_mipmap(const Image& image, int level) {
+	gen_handle();
+	int w = image.get_width();
+	int h = image.get_height();
+	m_cache->get_context()->add_mipmap(get_handle(), level, &w, &h, DrawContext::RGBA, image.get_pixels());
+}
+
 int Image::get_width() const {
 	return m_width;
 }
@@ -237,4 +244,22 @@ unsigned char* Image::get_pixels() {
 		m_pixels = master->get_pixels();
 	}
 	return m_pixels;
+}
+
+Image& Image::operator=(const Image& other) {
+	m_cache = other.m_cache;
+	m_width = other.m_width;
+	m_height = other.m_height;
+	m_pitch = other.m_pitch;
+	m_pixels = other.m_pixels;
+	m_handle = other.m_handle;
+	m_name = other.m_name;
+
+	m_handle = other.m_handle;
+	m_handle_width = other.m_handle_width;
+	m_handle_height = other.m_handle_height;
+
+	m_cache->increment<Image>(m_name);
+
+	return *this;
 }

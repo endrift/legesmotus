@@ -101,6 +101,57 @@ void GLESContext::draw_subimage(int width, int height, float tex_x, float tex_y,
 	glMatrixMode(GL_MODELVIEW);
 }
 
+unsigned char* GLESContext::setup_texture(PixelFormat fmt, const unsigned char* data,
+										  int* w, int* h,
+										  GLint* bpc, GLint* ifmt,
+										  GLenum* glfmt, GLenum* type) {
+	int nwidth = to_pow_2(*w);
+	int nheight = to_pow_2(*h);
+	// 2px textures seem to break things
+	if (nwidth < 4) {
+		nwidth = 4;
+	}
+	if (nheight < 4) {
+		nheight = 4;
+	}
+
+	// XXX don't break const correctness
+	unsigned char* ndata = const_cast<unsigned char*>(data);
+
+	switch (fmt) {
+	case RGBA:
+		*bpc = 4;
+		*ifmt = 4;
+		*glfmt = GL_BGRA;
+		*type = GL_UNSIGNED_INT_8_8_8_8_REV;
+		break;
+	case ALPHA:
+		*bpc = 1;
+		*ifmt = GL_ALPHA8;
+		*glfmt = GL_ALPHA;
+		*type = GL_UNSIGNED_BYTE;
+		break;
+	default:
+		throw new Exception("Invalid image format");
+	}
+	
+
+	if (nwidth != *w || nheight != *h) {
+		ndata = new unsigned char[nwidth*nheight* *bpc];
+		for (int y = 0; y < *h; ++y) {
+			memcpy(&ndata[nwidth * y * *bpc], &data[*w * y * *bpc], *w * *bpc);
+			memset(&ndata[(nwidth * y + *w)* *bpc], 0, (nwidth - *w) * *bpc);
+		}
+		for (int y = *h; y < nheight; ++y) {
+			memset(&ndata[nwidth * y * *bpc], 0, nwidth * *bpc);
+		}
+	}
+
+	*w = nwidth;
+	*h = nheight;
+	return ndata;
+}
+
 int GLESContext::get_width() const {
 	return m_width;
 }
@@ -244,63 +295,49 @@ void GLESContext::draw_lines(float vertices[], int n, bool loop) {
 	glDrawArrays(loop?GL_LINE_LOOP:GL_LINE_STRIP, 0, n);
 }
 
-DrawContext::Image GLESContext::gen_image(int* width, int* height, PixelFormat format, unsigned char* data) {
+DrawContext::Image GLESContext::gen_image(int* width, int* height, PixelFormat format, const unsigned char* data) {
 	int w = *width;
 	int h = *height;
-	int nwidth = to_pow_2(w);
-	int nheight = to_pow_2(h);
-	// 2px textures seem to break things
-	if (nwidth < 4) {
-		nwidth = 4;
-	}
-	if (nheight < 4) {
-		nheight = 4;
-	}
 	GLint	bpc;
 	GLint	ifmt;
 	GLenum	glfmt;
 	GLenum	type;
-	unsigned char* ndata = data;
 
-	switch (format) {
-	case RGBA:
-		bpc = 4;
-		ifmt = 4;
-		glfmt = GL_BGRA;
-		type = GL_UNSIGNED_INT_8_8_8_8_REV;
-		break;
-	case ALPHA:
-		bpc = 1;
-		ifmt = GL_ALPHA8;
-		glfmt = GL_ALPHA;
-		type = GL_UNSIGNED_BYTE;
-		break;
-	default:
-		throw new Exception("Invalid image format");
-	}
+	unsigned char* ndata = setup_texture(format, data, &w, &h, &bpc, &ifmt, &glfmt, &type);
 
-	if (nwidth != w || nheight != h) {
-		ndata = new unsigned char[nwidth*nheight*bpc];
-		for (int y = 0; y < h; ++y) {
-			memcpy(&ndata[nwidth*y*bpc], &data[w*y*bpc], w*bpc);
-			memset(&ndata[(nwidth*y + w)*bpc], 0, (nwidth - w)*bpc);
-		}
-		for (int y = h; y < nheight; ++y) {
-			memset(&ndata[nwidth*y*bpc], 0, nwidth*bpc);
-		}
-	}
 	GLuint img;
 	glGenTextures(1, &img);
-	bind_image(img);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	bind_image(img);glTexParameterf(GL_TEXTURE_2D,
+		GL_GENERATE_MIPMAP, GL_TRUE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);	
-	glTexImage2D(GL_TEXTURE_2D, 0, ifmt, nwidth, nheight, 0, glfmt, type, ndata);
+	glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+	glTexImage2D(GL_TEXTURE_2D, 0, ifmt, w, h, 0, glfmt, type, ndata);
+	if (ndata != data) {
+		delete[] ndata;
+	}
+	*width = w;
+	*height = h;
+	return img;
+}
+
+void GLESContext::add_mipmap(Image handle, int level, int* width, int* height, PixelFormat format, const unsigned char* data) {
+	int nwidth = *width;
+	int nheight = *height;
+	GLint bpc;
+	GLint ifmt;
+	GLenum glfmt;
+	GLenum type;
+	unsigned char* ndata;
+	ndata = setup_texture(format, data, &nwidth, &nheight, &bpc, &ifmt, &glfmt, &type);
+
+	bind_image(handle);
+	glTexImage2D(GL_TEXTURE_2D, level, ifmt, nwidth, nheight, 0, glfmt, type, ndata);
 	if (ndata != data) {
 		delete[] ndata;
 	}
 	*width = nwidth;
 	*height = nheight;
-	return img;
 }
 
 void GLESContext::del_image(Image img) {

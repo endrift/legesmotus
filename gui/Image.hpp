@@ -65,6 +65,9 @@ namespace LM {
 		DrawContext::Image get_handle() const;
 		void delete_pixels();
 
+		void add_mipmap(const std::string& name, int level);
+		void add_mipmap(const Image& image, int level);
+
 		int get_width() const;
 		int get_height() const;
 		int get_pitch() const;
@@ -74,6 +77,8 @@ namespace LM {
 
 		const unsigned char* get_pixels() const;
 		unsigned char* get_pixels();
+
+		Image& operator=(const Image& other);
 	};
 }
 

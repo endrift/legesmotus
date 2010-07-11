@@ -57,6 +57,10 @@ namespace LM {
 		void	draw_subimage(int width, int height,
 							  float tex_x, float tex_y,
 							  float tex_width, float tex_height);
+
+		unsigned char*	setup_texture(PixelFormat fmt, const unsigned char* data,
+									  int* w, int* h, GLint* bpc, GLint* ifmt,
+									  GLenum* glfmt, GLenum* type);
 		
 	public:
 		GLESContext(int width, int height);
@@ -95,7 +99,8 @@ namespace LM {
 		virtual void	draw_line(float x1, float y1, float x2, float y2);
 		virtual void	draw_lines(float vertices[], int n, bool loop);
 
-		virtual Image	gen_image(int* width, int* height, PixelFormat format, unsigned char* data);
+		virtual Image	gen_image(int* width, int* height, PixelFormat format, const unsigned char* data);
+		virtual void	add_mipmap(Image handle, int level, int* width, int* height, PixelFormat format, const unsigned char* data);
 		virtual void	del_image(Image img);
 
 		virtual void	bind_image(Image img);

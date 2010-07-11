@@ -17,7 +17,8 @@ extern "C" int main(int argc, char* argv[]) {
 	Image blue("blue_armless.png", &cache, true);
 	Image bluef("blue_frontarm.png", &cache, true);
 	Image blueb("blue_backarm.png", &cache, true);
-	Image tile("metal_bgtile.png", &cache, true);
+	Image tile("metal_bgtile64.png", &cache, true);
+	tile.add_mipmap("metal_bgtile.png", 1);
 	Sprite blue_s(&blue);
 	Sprite bluef_s(&bluef);
 	Sprite blueb_s(&blueb);
