@@ -1,5 +1,5 @@
 /*
- * gui/Graphic.hpp
+ * gui/Bone.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,44 +22,30 @@
  * 
  */
 
-#ifndef LM_GUI_GRAPHIC_HPP
-#define LM_GUI_GRAPHIC_HPP
+#ifndef LM_GUI_BONE_HPP
+#define LM_GUI_BONE_HPP
 
-#include "DrawContext.hpp"
-#include "Image.hpp"
-#include "Bone.hpp"
 #include "common/misc.hpp"
 
-#include <map>
-
-// XXX remove this later
-#define Graphic NewGraphic
-
 namespace LM {
-	class Graphic {
+	class DrawContext;
+
+	class Bone {
 	private:
-		Image	m_image;
+		float	m_x;
+		float	m_y;
+		float	m_center_x;
+		float	m_center_y;
+		float	m_scale_x;
+		float	m_scale_y;
+		float	m_rotation;
 
-		Bone	m_bone;
-
-		int		m_image_w;
-		int		m_image_h;
-
-		bool	m_invisible;
-
-		Color	m_color;
-
-	protected:
-		Graphic(Image* image = NULL);
-		Graphic(const Graphic& other);
-
-		const Image*	get_image() const;
-
-		void	transform(DrawContext* ctx) const;
+		Bone*	m_parent;
 
 	public:
-		virtual	~Graphic();
-		virtual Graphic* clone() const = 0;
+		Bone(Bone* parent = NULL);
+
+		void	set_parent(Bone* parent);
 
 		void	set_x(float x);
 		void	set_y(float y);
@@ -79,16 +65,9 @@ namespace LM {
 		float	get_center_x() const;
 		float	get_center_y() const;
 
-		void	set_bone(const Bone& bone);
-		Bone*	get_bone();
+		void	transform(DrawContext* ctx) const;
 
-		void	set_invisible(bool invisible);
-		bool	is_invisible() const;
-
-		void	set_color(const Color& c);
-		const Color& get_color() const;
-
-		virtual void draw(DrawContext* ctx) const = 0;
+		void	diagnostic_draw(DrawContext* ctx) const;
 	};
 }
 

@@ -226,7 +226,7 @@ void GLESContext::draw_rect_fill(float w, float h) {
 
 void GLESContext::draw_rect_line(float w, float h) {
 	prepare_rect(w, h);
-	glDrawArrays(GL_LINE_STRIP, 0, 4);
+	glDrawArrays(GL_LINE_LOOP, 0, 4);
 }
 
 void GLESContext::draw_line(float x1, float y1, float x2, float y2) {
@@ -310,7 +310,6 @@ void GLESContext::del_image(Image img) {
 void GLESContext::draw_image(int width, int height, Image img) {
 	bind_image(img);
 	draw_bound_image(width, height);
-	unbind_image();
 }
 
 void GLESContext::bind_image(Image img) {
@@ -320,6 +319,7 @@ void GLESContext::bind_image(Image img) {
 		m_bound_img = img;
 	//}
 	if (!m_img_bound) {
+		glEnable(GL_TEXTURE_2D);
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		m_img_bound = true;
 	}
@@ -327,6 +327,7 @@ void GLESContext::bind_image(Image img) {
 
 void GLESContext::unbind_image() {
 	if (m_img_bound) {
+		glDisable(GL_TEXTURE_2D);
 		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 		m_img_bound = false;
 	}

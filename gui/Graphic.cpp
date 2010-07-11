@@ -23,20 +23,11 @@
  */
 
 #include "Graphic.hpp"
-#include <cmath>
 
 using namespace LM;
 using namespace std;
 
 Graphic::Graphic(Image* image) : m_image(*image), m_color(Color::WHITE) {
-	m_x = 0;
-	m_y = 0;
-	m_center_x = 0;
-	m_center_y = 0;
-	m_scale_x = 1;
-	m_scale_y = 1;
-	m_rotation = 0;
-
 	m_invisible = false;
 
 	if (m_image.get_handle() == 0) {
@@ -45,12 +36,7 @@ Graphic::Graphic(Image* image) : m_image(*image), m_color(Color::WHITE) {
 }
 
 Graphic::Graphic(const Graphic& other) : m_image(other.m_image), m_color(other.m_color) {
-	m_x = other.m_x;
-	m_y = other.m_y;
-	m_center_x = other.m_center_y;
-	m_scale_x = other.m_scale_x;
-	m_scale_y = other.m_scale_y;
-	m_rotation = other.m_rotation;
+	m_bone = other.m_bone;
 	m_invisible = other.m_invisible;
 }
 
@@ -63,67 +49,73 @@ const Image* Graphic::get_image() const {
 }
 
 void Graphic::transform(DrawContext* ctx) const {
-	ctx->translate(round(m_x), round(m_y));
-	ctx->rotate(m_rotation);
-	ctx->scale(m_scale_x, m_scale_y);
-	ctx->translate(-round(m_center_x), -round(m_center_y));
+	m_bone.transform(ctx);
 }
 
 void Graphic::set_x(float x) {
-	m_x = x;
+	m_bone.set_x(x);
 }
 
 void Graphic::set_y(float y) {
-	m_y = y;
+	m_bone.set_y(y);
 }
 
 void Graphic::set_scale_x(float scale_x) {
-	m_scale_x = scale_x;
+	m_bone.set_scale_x(scale_x);
 }
 
 void Graphic::set_scale_y(float scale_y) {
-	m_scale_y = scale_y;
+	m_bone.set_scale_y(scale_y);
 }
 
 void Graphic::set_rotation(float rotation) {
-	m_rotation = rotation;
+	m_bone.set_rotation(rotation);
 }
 
 float Graphic::get_x() const {
-	return m_x;
+	return m_bone.get_x();
 }
 
 float Graphic::get_y() const {
-	return m_y;
+	return m_bone.get_y();
 }
 
 float Graphic::get_scale_x() const {
-	return m_scale_x;
+	return m_bone.get_scale_x();
 }
 
 float Graphic::get_scale_y() const {
-	return m_scale_y;
+	return m_bone.get_scale_y();
 }
 
 float Graphic::get_rotation() const {
-	return m_rotation;
+	return m_bone.get_rotation();
 }
 
 void Graphic::set_center_x(float center_x) {
-	m_center_x = center_x;
+	m_bone.set_center_x(center_x);
 }
 
 void Graphic::set_center_y(float center_y) {
-	m_center_y = center_y;
+	m_bone.set_center_y(center_y);
 }
 
 float Graphic::get_center_x() const {
-	return m_center_x;
+	return m_bone.get_center_x();
 }
 
 float Graphic::get_center_y() const {
-	return m_center_y;
+	return m_bone.get_center_y();
 }
+
+void Graphic::set_bone(const Bone& bone) {
+	m_bone = bone;
+}
+
+Bone* Graphic::get_bone() {
+	return &m_bone;
+}
+
 void Graphic::set_invisible(bool invisible) {
 	m_invisible = invisible;
 }

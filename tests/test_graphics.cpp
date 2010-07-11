@@ -12,7 +12,7 @@ using namespace std;
 
 extern "C" int main(int argc, char* argv[]) {
 	GameWindow *window = GameWindow::get_instance(500, 500, 24, false);
-	GLESContext ctx(300, 300);
+	GLESContext ctx(500, 500);
 	ResourceCache cache("data", &ctx);
 	Image blue("blue_armless.png", &cache, true);
 	Image bluef("blue_frontarm.png", &cache, true);
@@ -23,14 +23,18 @@ extern "C" int main(int argc, char* argv[]) {
 	Sprite blueb_s(&blueb);
 	GraphicRegion tile_s(&tile);
 	GraphicContainer g;
+	Bone root;
+	blue_s.get_bone()->set_parent(&root);
 	blue_s.set_center_x(32);
 	blue_s.set_center_y(48);
-	bluef_s.set_center_x(-46);
-	bluef_s.set_center_y(-30);
+	bluef_s.get_bone()->set_parent(&root);
+	bluef_s.set_center_x(46);
+	bluef_s.set_center_y(30);
 	bluef_s.set_x(13);
 	bluef_s.set_y(-18);
-	blueb_s.set_center_x(-27);
-	blueb_s.set_center_y(-29);
+	blueb_s.get_bone()->set_parent(&root);
+	blueb_s.set_center_x(27);
+	blueb_s.set_center_y(29);
 	blueb_s.set_x(-2);
 	blueb_s.set_y(-18);
 	g.add_graphic("blue", &blue_s);
@@ -60,17 +64,13 @@ extern "C" int main(int argc, char* argv[]) {
 
 		g.set_x(cos(frame / 400.0 * 2*M_PI)*100+250);
 		g.set_y(sin(frame / 400.0 * 2*M_PI)*100+250);
-		g.get_graphic("blue")->set_rotation(-frame / 400.0 * 360);
-		g.get_graphic("blue")->set_scale_x((sin(frame / 200.0 * 2*M_PI)+1)/2.0);
-		g.get_graphic("blue")->set_scale_y((sin(frame / 200.0 * 2*M_PI)+1)/2.0);
+		root.set_rotation(-frame / 400.0 * 360);
+		root.set_scale_x((cos(frame / 200.0 * 2*M_PI)+1)/2.0);
+		root.set_scale_y((cos(frame / 200.0 * 2*M_PI)+1)/2.0);
 		g.get_graphic("bluef")->set_rotation(-frame / 400.0 * 360);
-		g.get_graphic("bluef")->set_scale_x((sin(frame / 200.0 * 2*M_PI)+1)/2.0);
-		g.get_graphic("bluef")->set_scale_y((sin(frame / 200.0 * 2*M_PI)+1)/2.0);
 		g.get_graphic("blueb")->set_rotation(-frame / 400.0 * 360);
-		g.get_graphic("blueb")->set_scale_x((sin(frame / 200.0 * 2*M_PI)+1)/2.0);
-		g.get_graphic("blueb")->set_scale_y((sin(frame / 200.0 * 2*M_PI)+1)/2.0);
-		tile_s.set_image_width((sin(frame / 200.0 * 2*M_PI)+3)*16.0);
-		tile_s.set_image_height((sin(frame / 200.0 * 2*M_PI)+3)*16.0);
+		tile_s.set_image_width((cos(frame / 200.0 * 2*M_PI)+3)*16.0);
+		tile_s.set_image_height((cos(frame / 200.0 * 2*M_PI)+3)*16.0);
 		tile_s.set_image_x(128);
 		tile_s.set_image_y(128);
 		++frame;
@@ -78,8 +78,17 @@ extern "C" int main(int argc, char* argv[]) {
 
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		ctx.load_identity();
+
 		tile_s.draw(&ctx);
 		g.draw(&ctx);
+
+		ctx.load_identity();
+		ctx.translate(g.get_x(), g.get_y());
+		root.diagnostic_draw(&ctx);
+		g.get_graphic("blue")->get_bone()->diagnostic_draw(&ctx);
+		g.get_graphic("bluef")->get_bone()->diagnostic_draw(&ctx);
+		g.get_graphic("blueb")->get_bone()->diagnostic_draw(&ctx);
 
 		SDL_GL_SwapBuffers();
 		SDL_Delay(20);
