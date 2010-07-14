@@ -1,5 +1,5 @@
 /*
- * gui/GuiWindow.hpp
+ * gui/SDLWindow.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,41 +22,33 @@
  * 
  */
 
-#ifndef LM_GUI_GUIWINDOW_HPP
-#define LM_GUI_GUIWINDOW_HPP
+#ifndef LM_GUI_SDLWINDOW_HPP
+#define LM_GUI_SDLWINDOW_HPP
 
-#include "common/misc.hpp"
-#include "Widget.hpp"
-
-#include <string>
+#include "GLESContext.hpp"
+#include "Window.hpp"
 
 namespace LM {
-	class Label;
+	class Image;
+	class DrawContext;
 
-	class GuiWindow : Widget {
+	class SDLWindow : public Window {
 	private:
-		std::wstring	m_title;
-		Label*	m_title_widget;
+		GLESContext*	m_context;
 
-		Color	m_decoration_color;
-		Color	m_title_color;
+	protected:
+		SDLWindow(int width, int height, int depth, int flags);
+		virtual ~SDLWindow();
+
+		virtual bool	rebuild(int width, int height, int depth, int flags);
+
+		virtual void	set_icon_internal(Image* icon);
 
 	public:
-		void	set_title_text(const std::wstring title);
+		static SDLWindow*	get_instance(int width, int height, int depth, int flags);
+		static SDLWindow*	get_optimal_instance(int flags = 0);
 
-		void	set_decoration_color(const Color& c);
-		void	set_title_color(const Color& c);
-		void	set_background_color(const Color& c);
-
-		float	get_viewport_width() const;
-		float	get_viewport_height() const;
-
-		void	set_main_widget(Widget* widget);
-
-		virtual void set_width(float w);
-		virtual void set_height(float h);
-
-		virtual void draw();
+		GLESContext*	get_context();
 	};
 }
 

@@ -48,6 +48,7 @@ namespace LM {
 
 	private:
 		Widget*	m_root_widget;
+		bool	m_dirtied;
 
 	protected:
 		/*std::vector<Widget*>::iterator	begin();
@@ -65,6 +66,10 @@ namespace LM {
 		void	mouse_move(int x, int y);
 		void	keypress(int key, bool down);*/
 
+		void	dirty();
+		void	clean();
+		bool	is_dirty();
+
 		virtual void	make_active() = 0;
 
 		virtual int		get_width() const = 0;
@@ -73,8 +78,9 @@ namespace LM {
 		virtual void	load_identity() = 0;
 		virtual void	push_transform() = 0;
 		virtual void	pop_transform() = 0;
-		virtual void	clip() = 0;
-		virtual void	unclip() = 0;
+		virtual void	start_clip() = 0;
+		virtual void	clip_add() = 0;
+		virtual void	clip_sub() = 0;
 		virtual void	finish_clip() = 0;
 		virtual int		clip_depth() = 0;
 

@@ -63,6 +63,8 @@ namespace LM {
 
 		DrawContext::Image gen_handle(bool autofree = true);
 		DrawContext::Image get_handle() const;
+
+		void reload(bool autogen = false);
 		void delete_pixels();
 
 		void add_mipmap(const std::string& name, int level);

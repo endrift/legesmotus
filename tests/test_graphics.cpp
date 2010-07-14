@@ -1,4 +1,4 @@
-#include "client/GameWindow.hpp"
+#include "gui/SDLWindow.hpp"
 #include "gui/ResourceCache.hpp"
 #include "gui/Image.hpp"
 #include "gui/Sprite.hpp"
@@ -11,9 +11,9 @@ using namespace LM;
 using namespace std;
 
 extern "C" int main(int argc, char* argv[]) {
-	GameWindow *window = GameWindow::get_instance(500, 500, 24, false);
-	GLESContext ctx(500, 500);
-	ResourceCache cache("data", &ctx);
+	SDLWindow* window = SDLWindow::get_instance(500, 500, 32, 0);
+	DrawContext* ctx = window->get_context();
+	ResourceCache cache("data", ctx);
 	Image blue("blue_armless.png", &cache, true);
 	Image bluef("blue_frontarm.png", &cache, true);
 	Image blueb("blue_backarm.png", &cache, true);
@@ -79,17 +79,17 @@ extern "C" int main(int argc, char* argv[]) {
 
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		ctx.load_identity();
+		ctx->load_identity();
 
-		tile_s.draw(&ctx);
-		g.draw(&ctx);
+		tile_s.draw(ctx);
+		g.draw(ctx);
 
-		ctx.load_identity();
-		ctx.translate(g.get_x(), g.get_y());
-		root.diagnostic_draw(&ctx);
-		g.get_graphic("blue")->get_bone()->diagnostic_draw(&ctx);
-		g.get_graphic("bluef")->get_bone()->diagnostic_draw(&ctx);
-		g.get_graphic("blueb")->get_bone()->diagnostic_draw(&ctx);
+		ctx->load_identity();
+		ctx->translate(g.get_x(), g.get_y());
+		root.diagnostic_draw(ctx);
+		g.get_graphic("blue")->get_bone()->diagnostic_draw(ctx);
+		g.get_graphic("bluef")->get_bone()->diagnostic_draw(ctx);
+		g.get_graphic("blueb")->get_bone()->diagnostic_draw(ctx);
 
 		SDL_GL_SwapBuffers();
 		SDL_Delay(20);

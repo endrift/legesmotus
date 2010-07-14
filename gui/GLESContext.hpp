@@ -74,8 +74,9 @@ namespace LM {
 		virtual void	load_identity();
 		virtual void	push_transform();
 		virtual void	pop_transform();
-		virtual void	clip();
-		virtual void	unclip();
+		virtual void	start_clip();
+		virtual void	clip_add();
+		virtual void	clip_sub();
 		virtual void	finish_clip();
 		virtual int		clip_depth();
 

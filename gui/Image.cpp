@@ -41,66 +41,12 @@ Image::Image(const string& path, ResourceCache* cache, bool autogen) {
 	Image *self = cache->get<Image>(path);
 	if (self != NULL) {
 		*this = *self;
-		return;
-	}
-	stringstream s;
-	s << cache->get_root() << "/" << m_image_dir << "/" << path;
-	SDL_Surface *image = IMG_Load(s.str().c_str());
-	if (image == NULL) {
-		throw new Exception("Image could not be loaded");
-	}
-
-	m_cache = cache;
-	m_width = image->w;
-	m_height = image->h;
-
-	m_pitch = image->w*4;
-
-	m_name = path;
-	m_handle = 0;
-
-	if (!autogen || image->format->BitsPerPixel != 32) {
-		m_pixels = new unsigned char[m_height*m_pitch];
 	} else {
-		m_pixels = NULL;
+		m_cache = cache;
+		m_name = path;
+		reload(autogen);
+		m_cache->add(path, *this);
 	}
-
-	switch (image->format->BitsPerPixel) {
-	case 32:
-		if (!autogen) {
-			memcpy(m_pixels, image->pixels, m_height*m_pitch);
-		}
-		break;
-
-	case 24:
-		upconvert_24(image);
-		break;
-
-	case 8:
-		upconvert_8(image);
-		break;
-
-	default:
-		throw new Exception("Can't handle unknown image depth");
-	}
-
-	if (autogen) {
-		if (image->format->BitsPerPixel == 32) {
-			m_pixels = (unsigned char*) image->pixels;
-		}
-
-		gen_handle(false);
-		
-		if (image->format->BitsPerPixel == 32) {
-			m_pixels = NULL;
-		} else {
-			delete_pixels();
-		}
-	}
-
-	SDL_FreeSurface(image);
-
-	m_cache->add(path, *this);
 }
 
 Image::Image(int width, int height, const string& name, ResourceCache* cache) {
@@ -117,6 +63,7 @@ Image::Image(int width, int height, const string& name, ResourceCache* cache) {
 }
 
 Image::Image(const Image& other) {
+	m_cache = NULL;
 	*this = other;
 }
 
@@ -186,6 +133,63 @@ DrawContext::Image Image::get_handle() const {
 	return m_handle;
 }
 
+void Image::reload(bool autogen) {
+	stringstream s;
+	s << m_cache->get_root() << "/" << m_image_dir << "/" << m_name;
+	SDL_Surface *image = IMG_Load(s.str().c_str());
+	if (image == NULL) {
+		throw new Exception("Image could not be loaded");
+	}
+
+	m_width = image->w;
+	m_height = image->h;
+
+	m_pitch = image->w*4;
+
+	m_handle = 0;
+
+	if (!autogen || image->format->BitsPerPixel != 32) {
+		m_pixels = new unsigned char[m_height*m_pitch];
+	} else {
+		m_pixels = NULL;
+	}
+
+	switch (image->format->BitsPerPixel) {
+	case 32:
+		if (!autogen) {
+			memcpy(m_pixels, image->pixels, m_height*m_pitch);
+		}
+		break;
+
+	case 24:
+		upconvert_24(image);
+		break;
+
+	case 8:
+		upconvert_8(image);
+		break;
+
+	default:
+		throw new Exception("Can't handle unknown image depth");
+	}
+
+	if (autogen) {
+		if (image->format->BitsPerPixel == 32) {
+			m_pixels = (unsigned char*) image->pixels;
+		}
+
+		gen_handle(false);
+		
+		if (image->format->BitsPerPixel == 32) {
+			m_pixels = NULL;
+		} else {
+			delete_pixels();
+		}
+	}
+
+	SDL_FreeSurface(image);
+}
+
 void Image::delete_pixels() {
 	Image* master = m_cache->get<Image>(m_name);
 	if (master == this || master == NULL) {
@@ -247,6 +251,10 @@ unsigned char* Image::get_pixels() {
 }
 
 Image& Image::operator=(const Image& other) {
+	if (m_cache != NULL) {
+		m_cache->decrement<Image>(m_name);
+	}
+
 	m_cache = other.m_cache;
 	m_width = other.m_width;
 	m_height = other.m_height;

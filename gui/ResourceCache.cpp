@@ -71,6 +71,10 @@ DrawContext::Image ResourceCache::get_image_handle(const string& name, bool auto
 	return handle;
 }
 
+void ResourceCache::set_context(DrawContext* ctx) {
+	m_ctx = ctx;
+}
+
 const string& ResourceCache::get_root() {
 	return m_root;
 }

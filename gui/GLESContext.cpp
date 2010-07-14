@@ -46,7 +46,9 @@ GLESContext::GLESContext(int width, int height) {
 	m_bound_img = 0;
 	m_img_bound = false;
 
+	glEnableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	glViewport(0, 0, width, height);
 	glEnable(GL_STENCIL_TEST);
 	glEnable(GL_BLEND);
 	set_blend_mode(NORMAL);
@@ -177,21 +179,25 @@ void GLESContext::pop_transform() {
 	glPopMatrix();
 }
 
-void GLESContext::clip() {
-	glStencilOp(GL_KEEP, GL_INCR, GL_INCR);
+
+void GLESContext::start_clip() {
+	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 	glStencilFunc(GL_EQUAL, m_depth, 0x7F);
 	++m_depth;
 }
 
-void GLESContext::unclip() {
-	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+void GLESContext::clip_add() {
+	glStencilOp(GL_KEEP, GL_INCR, GL_INCR);
+}
+
+void GLESContext::clip_sub() {
 	glStencilOp(GL_KEEP, GL_DECR, GL_DECR);
-	glStencilFunc(GL_EQUAL, m_depth, 0x7F);
-	--m_depth;
 }
 
 void GLESContext::finish_clip() {
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	--m_depth;
 }
 
 int GLESContext::clip_depth() {

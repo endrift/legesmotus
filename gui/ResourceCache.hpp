@@ -27,6 +27,7 @@
 
 #include "DrawContext.hpp"
 #include "Font.hpp"
+#include "common/Exception.hpp"
 
 #include <string>
 #include <map>
@@ -52,7 +53,7 @@ namespace LM {
 		template<typename T> instance_map<T>& get_instances();
 
 	public:
-		ResourceCache(const std::string& root, DrawContext* ctx);
+		ResourceCache(const std::string& root, DrawContext* ctx = NULL);
 		~ResourceCache();
 
 		void free_all_unused();
@@ -66,6 +67,8 @@ namespace LM {
 
 		DrawContext::Image get_image_handle(const std::string& name, bool autogen = true);
 
+		void set_context(DrawContext* ctx);
+
 		const std::string& get_root();
 		DrawContext* get_context();
 	};
@@ -77,6 +80,10 @@ namespace LM {
 	template<typename T>
 	void ResourceCache::add(const std::string& name, const T& res) {
 		instance_map<T>& instances = get_instances<T>();
+		if (name.empty()) {
+			throw new Exception("Can't add a nameless resource!");
+		}
+
 		if (instances.find(name) == instances.end()) {
 			instances[name] = make_pair(new T(res), 1);
 		}
