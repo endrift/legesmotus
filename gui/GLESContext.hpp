@@ -40,7 +40,6 @@ namespace LM {
 
 		GLint	m_width;
 		GLint	m_height;
-		int		m_depth;
 
 		GLfloat	m_arc_vertices[2*(MAX_ARC_FINE + 2)];
 		GLfloat	m_rect_vertices[8];
@@ -50,6 +49,12 @@ namespace LM {
 		bool	m_img_bound;
 		Color	m_color;
 		BlendMode m_mode;
+
+		int		m_stencil_depth;
+		int		m_stencil_func;
+		GLenum	m_stencil_type;
+
+		void	update_stencil();
 
 		void	prepare_arc(float len, float xr, float yr, int fine);
 		void	prepare_rect(float w, float h);
@@ -61,7 +66,7 @@ namespace LM {
 		unsigned char*	setup_texture(PixelFormat fmt, const unsigned char* data,
 									  int* w, int* h, GLint* bpc, GLint* ifmt,
 									  GLenum* glfmt, GLenum* type);
-		
+
 	public:
 		GLESContext(int width, int height);
 		virtual ~GLESContext();
@@ -74,10 +79,14 @@ namespace LM {
 		virtual void	load_identity();
 		virtual void	push_transform();
 		virtual void	pop_transform();
+
 		virtual void	start_clip();
 		virtual void	clip_add();
 		virtual void	clip_sub();
 		virtual void	finish_clip();
+		virtual void	invert_clip();
+		virtual void	push_clip();
+		virtual void	pop_clip();
 		virtual int		clip_depth();
 
 		virtual void	translate(float x, float y);

@@ -24,12 +24,6 @@
 
 #include "SDLWindow.hpp"
 
-#ifdef LM_FWBASED
-#include <SDL/SDL.h>
-#else
-#include "SDL.h"
-#endif
-
 using namespace LM;
 using namespace std;
 

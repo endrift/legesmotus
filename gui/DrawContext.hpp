@@ -41,9 +41,9 @@ namespace LM {
 		};
 
 		enum BlendMode {
-			NORMAL,
-			ADD,
-			MULTIPLY
+			BLEND_NORMAL,
+			BLEND_ADD,
+			BLEND_MULTIPLY
 		};
 
 	private:
@@ -78,10 +78,14 @@ namespace LM {
 		virtual void	load_identity() = 0;
 		virtual void	push_transform() = 0;
 		virtual void	pop_transform() = 0;
+
 		virtual void	start_clip() = 0;
 		virtual void	clip_add() = 0;
 		virtual void	clip_sub() = 0;
 		virtual void	finish_clip() = 0;
+		virtual void	invert_clip() = 0;
+		virtual void	push_clip() = 0;
+		virtual void	pop_clip() = 0;
 		virtual int		clip_depth() = 0;
 
 		// TODO offsets (translate -> scale -> rotate?, adustable order?)

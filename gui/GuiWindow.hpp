@@ -27,26 +27,32 @@
 
 #include "common/misc.hpp"
 #include "Widget.hpp"
+#include "Label.hpp"
+#include "Font.hpp"
 
 #include <string>
 
 namespace LM {
-	class Label;
-
-	class GuiWindow : Widget {
+	class GuiWindow : public Widget {
 	private:
-		std::wstring	m_title;
-		Label*	m_title_widget;
+		Label	m_title_widget;
 
 		Color	m_decoration_color;
 		Color	m_title_color;
+		Color	m_background_color;
+
+		float	m_decoration_width;
+		float	m_title_height;
+
+		Widget*	m_widget;
+
+		void	draw_decoration(DrawContext* ctx) const;
 
 	public:
-		void	set_title_text(const std::wstring title);
+		GuiWindow(Widget* parent = NULL);
 
-		void	set_decoration_color(const Color& c);
-		void	set_title_color(const Color& c);
-		void	set_background_color(const Color& c);
+		void	set_title_text(const std::wstring& title);
+		void	set_title_text_font(Font* font);
 
 		float	get_viewport_width() const;
 		float	get_viewport_height() const;
@@ -56,7 +62,7 @@ namespace LM {
 		virtual void set_width(float w);
 		virtual void set_height(float h);
 
-		virtual void draw();
+		virtual void draw(DrawContext* ctx) const;
 	};
 }
 

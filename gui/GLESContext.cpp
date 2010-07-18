@@ -41,7 +41,9 @@ const GLint GLESContext::m_rect_tex_vertices[] = {
 GLESContext::GLESContext(int width, int height) {
 	m_width = width;
 	m_height = height;
-	m_depth = 0;
+
+	m_stencil_depth = 0;
+	m_stencil_type = GL_GEQUAL;
 
 	m_bound_img = 0;
 	m_img_bound = false;
@@ -51,7 +53,7 @@ GLESContext::GLESContext(int width, int height) {
 	glViewport(0, 0, width, height);
 	glEnable(GL_STENCIL_TEST);
 	glEnable(GL_BLEND);
-	set_blend_mode(NORMAL);
+	set_blend_mode(BLEND_NORMAL);
 }
 
 GLESContext::~GLESContext() {
@@ -61,6 +63,10 @@ void GLESContext::make_active() {
 	glBindTexture(GL_TEXTURE_2D, m_bound_img);
 	glColor4f(m_color.r, m_color.g, m_color.b, m_color.a);
 	set_blend_mode(m_mode);
+}
+
+void GLESContext::update_stencil() {
+	glStencilFunc(m_stencil_type, m_stencil_depth + m_stencil_func, 0xFF);
 }
 
 void GLESContext::prepare_arc(float len, float xr, float yr, int fine) {
@@ -179,29 +185,57 @@ void GLESContext::pop_transform() {
 	glPopMatrix();
 }
 
-
 void GLESContext::start_clip() {
 	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-	glStencilFunc(GL_EQUAL, m_depth, 0x7F);
-	++m_depth;
+	++m_stencil_depth;
+	clip_add();
 }
 
 void GLESContext::clip_add() {
+	m_stencil_func = -1;
 	glStencilOp(GL_KEEP, GL_INCR, GL_INCR);
+	update_stencil();
+
+	//set_draw_color(Color(1, 0, 0, 1));
 }
 
 void GLESContext::clip_sub() {
+	m_stencil_func = 0;
 	glStencilOp(GL_KEEP, GL_DECR, GL_DECR);
+	update_stencil();
+
+	//set_draw_color(Color(0, 0, 1, 1));
 }
 
 void GLESContext::finish_clip() {
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-	--m_depth;
+	--m_stencil_depth;
+	update_stencil();
+}
+
+void GLESContext::invert_clip() {
+	if (m_stencil_type == GL_GEQUAL) {
+		m_stencil_type = GL_LEQUAL;
+	} else if (m_stencil_type == GL_LEQUAL) {
+		m_stencil_type = GL_GEQUAL;
+	}
+
+	update_stencil();
+}
+
+void GLESContext::push_clip() {
+	++m_stencil_depth;
+	update_stencil();
+}
+
+void GLESContext::pop_clip() {
+	--m_stencil_depth;
+	update_stencil();
 }
 
 int GLESContext::clip_depth() {
-	return m_depth;
+	return m_stencil_depth;
 }
 
 void GLESContext::translate(float x, float y) {
@@ -239,16 +273,16 @@ void GLESContext::set_draw_color(Color c) {
 
 void GLESContext::set_blend_mode(BlendMode m) {
 	switch (m) {
-		case NORMAL:
+		case BLEND_NORMAL:
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		break;
 
-		case MULTIPLY:
+		case BLEND_MULTIPLY:
 		glBlendFunc(GL_DST_COLOR, GL_ZERO);
 		break;
 
-		case ADD:
-		glBlendFunc(GL_ONE, GL_ONE);
+		case BLEND_ADD:
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 		break;
 	}
 	m_mode = m;
@@ -322,6 +356,7 @@ DrawContext::Image GLESContext::gen_image(int* width, int* height, PixelFormat f
 	if (ndata != data) {
 		delete[] ndata;
 	}
+	unbind_image();
 	*width = w;
 	*height = h;
 	return img;
@@ -342,6 +377,7 @@ void GLESContext::add_mipmap(Image handle, int level, int* width, int* height, P
 	if (ndata != data) {
 		delete[] ndata;
 	}
+	unbind_image();
 	*width = nwidth;
 	*height = nheight;
 }
@@ -353,6 +389,7 @@ void GLESContext::del_image(Image img) {
 void GLESContext::draw_image(int width, int height, Image img) {
 	bind_image(img);
 	draw_bound_image(width, height);
+	unbind_image();
 }
 
 void GLESContext::bind_image(Image img) {

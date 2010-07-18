@@ -1,5 +1,5 @@
-#include "client/GameWindow.hpp"
-#include "gui/Widget.hpp"
+#include "gui/SDLWindow.hpp"
+#include "gui/GuiWindow.hpp"
 #include "gui/GLESContext.hpp"
 #include <iostream>
 
@@ -7,35 +7,28 @@ using namespace LM;
 using namespace std;
 
 int main(int argc, char *argv[]) {
-	GameWindow *window = GameWindow::get_instance(300, 300, 24, GameWindow::VSYNC);
-	GLESContext ctx(300, 300);
-	Widget* w0 = new Widget;
-	Widget* w1 = new Widget(w0);
-	Widget* w2 = new Widget(w0);
-	Widget* w3 = new Widget(w1);
-	Widget* w4 = new Widget(w1);
-	w0->set_x(150);
-	w0->set_y(150);
-	w0->set_width(50);
-	w0->set_height(50);
-	w1->set_x(20);
-	w1->set_y(20);
-	w1->set_width(20);
-	w1->set_height(20);
-	w2->set_x(-20);
-	w2->set_y(-20);
-	w2->set_width(20);
-	w2->set_height(20);
-	w3->set_x(5);
-	w3->set_y(5);
-	w3->set_width(16);
-	w3->set_height(16);
-	w4->set_x(-5);
-	w4->set_y(-5);
-	w4->set_width(16);
-	w4->set_height(16);
+	SDLWindow *window = SDLWindow::get_instance(300, 300, 24, SDLWindow::FLAG_VSYNC);
+	GLESContext *ctx = window->get_context();
+	Font f("data/fonts/DustHomeMedium.ttf", 18, ctx);
+	Widget w0;
+	w0.set_x(150);
+	w0.set_y(150);
+	GuiWindow gwin0(&w0);
+	gwin0.set_title_text_font(&f);
+	gwin0.set_title_text(L"Window 0");
+	gwin0.set_width(200);
+	gwin0.set_height(200);
+	gwin0.set_x(-20);
+	gwin0.set_y(-20);
+	GuiWindow gwin1(&w0);
+	gwin1.set_title_text_font(&f);
+	gwin1.set_title_text(L"Window 1");
+	gwin1.set_width(200);
+	gwin1.set_height(200);
+	gwin1.set_x(20);
+	gwin1.set_y(20);
 
-	ctx.set_root_widget(w0);
+	ctx->set_root_widget(&w0);
 
 	SDL_ShowCursor(SDL_TRUE);
 
@@ -47,17 +40,10 @@ int main(int argc, char *argv[]) {
 			case SDL_QUIT:
 				running = 0;
 				break;
-			case SDL_MOUSEMOTION:
-				w0->mouse_moved(e.motion.x, e.motion.y, e.motion.xrel, e.motion.yrel);
-				break;
-			case SDL_MOUSEBUTTONDOWN:
-			case SDL_MOUSEBUTTONUP:
-				w0->mouse_clicked(e.button.x, e.button.y, e.button.state == SDL_PRESSED);
-				break;
 			}
 		}
 
-		ctx.redraw();
+		ctx->redraw();
 
 		SDL_Delay(200);
 	}

@@ -28,6 +28,12 @@
 #include "GLESContext.hpp"
 #include "Window.hpp"
 
+#ifdef LM_FWBASED
+#include <SDL/SDL.h>
+#else
+#include "SDL.h"
+#endif
+
 namespace LM {
 	class Image;
 	class DrawContext;

@@ -58,7 +58,7 @@ namespace LM {
 		void recalculate_width();
 
 	public:
-		Label(Font* font);
+		Label(Font* font = NULL);
 		Label(const std::wstring& str, Font* font);
 		Label(const std::string& str, Font* font);
 
@@ -69,7 +69,6 @@ namespace LM {
 
 		void set_align(Align align);
 		Align get_align() const;
-
 
 		void set_tracking(float tracking);
 

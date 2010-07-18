@@ -30,8 +30,7 @@ using namespace LM;
 using namespace std;
 
 Label::Label(Font* font) {
-	m_font = font;
-	set_height(font->get_height());
+	set_font(font);
 	m_align = ALIGN_LEFT;
 	m_skew_align = VALIGN_MIDDLE;
 	m_tracking = 0;
@@ -40,8 +39,7 @@ Label::Label(Font* font) {
 }
 
 Label::Label(const wstring& str, Font* font) : m_text(str) {
-	m_font = font;
-	set_height(font->get_height());
+	set_font(font);
 	m_align = ALIGN_LEFT;
 	m_skew_align = VALIGN_MIDDLE;
 	m_tracking = 0;
@@ -51,8 +49,7 @@ Label::Label(const wstring& str, Font* font) : m_text(str) {
 }
 
 Label::Label(const string& str, Font* font) : m_text(str.length(), L' ') {
-	m_font = font;
-	set_height(font->get_height());
+	set_font(font);
 	copy(str.begin(), str.end(), m_text.begin());
 	m_align = ALIGN_LEFT;
 	m_skew_align = VALIGN_MIDDLE;
@@ -66,11 +63,13 @@ void Label::recalculate_width() {
 	float total_advance = 0;
 	wchar_t prev_char = -1;
 
-	for (wstring::const_iterator iter = m_text.begin(); iter != m_text.end(); ++iter) {
-		const Font::Glyph* glyph = m_font->get_glyph(*iter);
-		float kern = m_font->kern(prev_char, *iter);
-		total_advance += glyph->advance + m_tracking + kern;
-		prev_char = *iter;
+	if (m_font != NULL) {
+		for (wstring::const_iterator iter = m_text.begin(); iter != m_text.end(); ++iter) {
+			const Font::Glyph* glyph = m_font->get_glyph(*iter);
+			float kern = m_font->kern(prev_char, *iter);
+			total_advance += glyph->advance + m_tracking + kern;
+			prev_char = *iter;
+		}
 	}
 
 	set_width(total_advance);
@@ -160,6 +159,10 @@ Label* Label::get_shadow() {
 
 void Label::set_font(Font* font) {
 	m_font = font;
+	if (font != NULL) {
+		set_height(font->get_height());
+	}
+	recalculate_width();
 }
 
 const Font* Label::get_font() const {
@@ -169,6 +172,10 @@ const Font* Label::get_font() const {
 void Label::draw(DrawContext* ctx) const {
 	if (m_shadow != NULL) {
 		m_shadow->draw(ctx);
+	}
+
+	if (m_font == NULL) {
+		return;
 	}
 
 	float total_advance = 0;
