@@ -54,6 +54,7 @@ namespace LM {
 
 		void upconvert_8(SDL_Surface* image);
 		void upconvert_24(SDL_Surface* image);
+		void rearrange_32(SDL_Surface* image);
 
 	public:
 		Image(const std::string& path, ResourceCache* cache, bool autogen = false);

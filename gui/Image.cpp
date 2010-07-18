@@ -107,10 +107,27 @@ void Image::upconvert_24(SDL_Surface* image) {
 
 	for (int row = 0; row < m_height; ++row) {
 		for (int col = 0; col < m_width; ++col) {
-			m_pixels[m_pitch*row + 4*col + 0] = pixels[image->pitch*row + col + r];
-			m_pixels[m_pitch*row + 4*col + 1] = pixels[image->pitch*row + col + g];
-			m_pixels[m_pitch*row + 4*col + 2] = pixels[image->pitch*row + col + b];
+			m_pixels[m_pitch*row + 4*col + 0] = pixels[image->pitch*row + 3*col + r];
+			m_pixels[m_pitch*row + 4*col + 1] = pixels[image->pitch*row + 3*col + g];
+			m_pixels[m_pitch*row + 4*col + 2] = pixels[image->pitch*row + 3*col + b];
 			m_pixels[m_pitch*row + 4*col + 3] = 0xFF;
+		}
+	}
+}
+
+void Image::rearrange_32(SDL_Surface* image) {
+	unsigned char* pixels = (unsigned char*) image->pixels;
+	int r = image->format->Rshift >> 3;
+	int g = image->format->Gshift >> 3;
+	int b = image->format->Bshift >> 3;
+	int a = image->format->Ashift >> 3;
+
+	for (int row = 0; row < m_height; ++row) {
+		for (int col = 0; col < m_width; ++col) {
+			m_pixels[m_pitch*row + 4*col + 0] = pixels[image->pitch*row + 4*col + r];
+			m_pixels[m_pitch*row + 4*col + 1] = pixels[image->pitch*row + 4*col + g];
+			m_pixels[m_pitch*row + 4*col + 2] = pixels[image->pitch*row + 4*col + b];
+			m_pixels[m_pitch*row + 4*col + 3] = pixels[image->pitch*row + 4*col + a];
 		}
 	}
 }
@@ -148,17 +165,11 @@ void Image::reload(bool autogen) {
 
 	m_handle = 0;
 
-	if (!autogen || image->format->BitsPerPixel != 32) {
-		m_pixels = new unsigned char[m_height*m_pitch];
-	} else {
-		m_pixels = NULL;
-	}
+	m_pixels = new unsigned char[m_height*m_pitch];
 
 	switch (image->format->BitsPerPixel) {
 	case 32:
-		if (!autogen) {
-			memcpy(m_pixels, image->pixels, m_height*m_pitch);
-		}
+		rearrange_32(image);
 		break;
 
 	case 24:
@@ -174,17 +185,8 @@ void Image::reload(bool autogen) {
 	}
 
 	if (autogen) {
-		if (image->format->BitsPerPixel == 32) {
-			m_pixels = (unsigned char*) image->pixels;
-		}
-
 		gen_handle(false);
-		
-		if (image->format->BitsPerPixel == 32) {
-			m_pixels = NULL;
-		} else {
-			delete_pixels();
-		}
+		delete_pixels();
 	}
 
 	SDL_FreeSurface(image);

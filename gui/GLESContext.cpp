@@ -130,8 +130,8 @@ unsigned char* GLESContext::setup_texture(PixelFormat fmt, const unsigned char* 
 	case RGBA:
 		*bpc = 4;
 		*ifmt = 4;
-		*glfmt = GL_BGRA;
-		*type = GL_UNSIGNED_INT_8_8_8_8_REV;
+		*glfmt = GL_RGBA;
+		*type = GL_UNSIGNED_BYTE;
 		break;
 	case ALPHA:
 		*bpc = 1;
