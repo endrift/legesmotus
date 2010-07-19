@@ -79,21 +79,15 @@ Image::~Image() {
 
 void Image::upconvert_8(SDL_Surface* image) {
 	unsigned char* pixels = (unsigned char*) image->pixels;
-	int tr = 0xFFFFFFFF & image->format->Rmask;
-	int tg = 0xFFFFFFFF & image->format->Gmask;
-	int tb = 0xFFFFFFFF & image->format->Bmask;
-	tr &= image->format->colorkey;
-	tg &= image->format->colorkey;
-	tb &= image->format->colorkey;
 	for (int row = 0; row < m_height; ++row) {
 		for (int col = 0; col < m_width; ++col) {
-			m_pixels[m_pitch*row + 4*col + 0] = image->format->palette->colors[pixels[image->pitch*row + col]].r;
-			m_pixels[m_pitch*row + 4*col + 1] = image->format->palette->colors[pixels[image->pitch*row + col]].g;
-			m_pixels[m_pitch*row + 4*col + 2] = image->format->palette->colors[pixels[image->pitch*row + col]].b;
-			m_pixels[m_pitch*row + 4*col + 3] = 0xFF;
-
-			if (m_pixels[m_pitch*row + 4*col + 0] == tr && m_pixels[m_pitch*row + 4*col + 1] == tg && m_pixels[m_pitch*row + 4*col + 2] == tb) {
+			if (image->flags & SDL_SRCCOLORKEY && pixels[image->pitch*row + col] == image->format->colorkey) {
 				m_pixels[m_pitch*row + 4*col + 3] = 0;
+			} else {
+				m_pixels[m_pitch*row + 4*col + 0] = image->format->palette->colors[pixels[image->pitch*row + col]].r;
+				m_pixels[m_pitch*row + 4*col + 1] = image->format->palette->colors[pixels[image->pitch*row + col]].g;
+				m_pixels[m_pitch*row + 4*col + 2] = image->format->palette->colors[pixels[image->pitch*row + col]].b;
+				m_pixels[m_pitch*row + 4*col + 3] = 0xFF;
 			}
 		}
 	}
