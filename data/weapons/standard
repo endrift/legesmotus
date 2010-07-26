@@ -1,9 +1,12 @@
-1-rifle:STANDARD
+1-rifle:PENETRATION
 	name=Rifle
 	hud=large_rifle.png
-	damage=100
+	damage=130
 	cooldown=1200
 	recoil=1.7
+	penetrate_players=0.75
+	penetrate_walls=0.0
+	max_penetration=3
 	normal=4,20:-15:1:rifle_noshot.png
 	firing=4,20:-15:1:rifle_shot.png
 

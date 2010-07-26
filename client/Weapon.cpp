@@ -33,6 +33,7 @@
 #include "ThawGun.hpp"
 #include "AreaGun.hpp"
 #include "ChargeGun.hpp"
+#include "PenetrationGun.hpp"
 #include <iostream>
 
 using namespace LM;
@@ -54,6 +55,7 @@ Weapon*	Weapon::new_weapon (WeaponReader& data) {
 	else if (strcasecmp(weapon_type, "thaw") == 0)	{ return new ThawGun(weapon_id, data); }
 	else if (strcasecmp(weapon_type, "area") == 0)	{ return new AreaGun(weapon_id, data); }
 	else if (strcasecmp(weapon_type, "charge") == 0)	{ return new ChargeGun(weapon_id, data); }
+	else if (strcasecmp(weapon_type, "penetration") == 0)	{ return new PenetrationGun(weapon_id, data); }
 	else { cerr << "Error: unknown weapon type: " << weapon_type << endl; }
 
 	return NULL;
