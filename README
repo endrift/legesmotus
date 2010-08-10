@@ -19,16 +19,27 @@ GAMEPLAY
 
 The objective of the game is to reach the opposing team's gate and stay next to it until it opens fully.
 
-Shoot enemy players to freeze them. They will un-freeze a number of seconds after they are frozen.
+Shoot enemy players to freeze them.  They will un-freeze a number of seconds after they are frozen.
 
-You can move by jumping off of any obstacle, and you will jump in the direction of the mouse pointer. You will also move due to the recoil from firing your gun. When frozen, you will bounce off of obstacles. If you unfreeze away from obstacles, shoot your weapon to move back towards the nearest obstacle.
+You can move by jumping off of any obstacle, and you will jump in the direction of the mouse pointer.  You will also move due to the recoil from firing your gun.  When frozen, you will bounce off of obstacles.  If you unfreeze away from obstacles, shoot your weapon to move back towards the nearest obstacle.
 
 
-BUILDING AND INSTALLING
+INSTALLING ON WINDOWS
 
-Please note that only GNU Make is supported. If the default 'make' command is not GNU Make, please install and use it where appropriate. Generally it is called gmake when it is not make.
+The Windows verion of Leges Motus is distributed as a binary.  Simply unzip the archive.  Leges Motus has no installer on Windows and simply deleted to remove it.  However, configuration files will be retained in your home directory.
+
+
+INSTALLING ON MAC OS X
+
+Simply drag the Leges Motus application into the Applications folder to install Leges Motus on Mac OS X.  To install the server, you need to use the bundled Install Command Line Tools script.
+
+
+BUILDING AND INSTALLING ON *NIX
+
+Please note that only GNU Make is supported.  If the default 'make' command is not GNU Make, please install and use it where appropriate.  Generally it is called gmake when it is not make.
 
 1. Run './configure' in the top level directory.
+   You can also use the --help option to find out all of the supported options for this script.  If you're using a Mac, make sure to specify --disable-bundle for a flat build.
    This script will check to make sure you have the required libraries installed.
 
 2. Run 'make' to build the server and client.
@@ -38,20 +49,20 @@ Please note that only GNU Make is supported. If the default 'make' command is no
 See "ADVANCED BUILDING" below for more advanced build options.
 
 
-RUNNING THE CLIENT
+RUNNING THE CLIENT ON *NIX
 
 To run the client, if Leges Motus is in your path, run the 'legesmotus' command.  You can also double click on legesmotus.exe on Windows and the Leges Motus application on Mac, but you cannot specify command line options in this manner.
 
 The client supports the following command-line options:
-  -n NAME	set your player name (default: your user name)
-  -t red|blue	set your team (default: auto-balanced)
-  -s SERVER	set the hostname of the server (default: use the server browser)
-  -p PORTNO	set the port number of the server (default: 16877)
-  -w WIDTH	set the screen width, in pixels (default: 1024)
-  -h HEIGHT	set the screen height, in pixels (default: 768)
-  -f		run the game in fullscreen
-  -?, --help	display this help, and exit
-      --version	display version information and exit
+  -n NAME        set your player name (default: your user name)
+  -t red|blue    set your team (default: auto-balanced)
+  -s SERVER      set the hostname of the server (default: use the server browser)
+  -p PORTNO      set the port number of the server (default: 16877)
+  -w WIDTH       set the screen width, in pixels (default: 1024)
+  -h HEIGHT      set the screen height, in pixels (default: 768)
+  -f             run the game in fullscreen
+  -?, --help     display this help, and exit
+      --version  display version information and exit
 
 
 REQUIREMENTS
@@ -64,7 +75,7 @@ The following libraries must be installed in order to build and run the Leges Mo
  SDL_mixer (optional)
  OpenGL
 
-All of these are bundled in the Windows and Mac OS X packages, except for OpenGL, which should already be installed on the system. No additional libraries are needed to build or run the server.
+All of these are bundled in the Windows and Mac OS X packages, except for OpenGL, which should already be installed on the system.  No additional libraries are needed to build or run the server.
 
 If you do not have SDL_mixer installed and/or you would like to build without sound support, you may pass the --disable-sound option to configure.
 
@@ -74,22 +85,22 @@ RUNNING THE SERVER
 To run the server, run the 'lmserver' command, or double click on lmserver.exe on Windows.
 
 The server supports the following command-line options:
-  -c CONFFILE	load server configuration options from the given file (default: no config file)
-  -o OPT=VALUE  set the configuration option named OPT to VALUE
-  -m MAPNAME	set the map name (default: alpha1)
-  -p PORTNO	set the port number to listen on (default: 16877)
-  -P PASSWORD	set the admin password (default: admin mode is disabled)
-  -i ADDRESS	address of interface to listen on (default: listen on all interfaces)
-  -d		daemonize the server (not on Windows)
-  -u USERNAME	drop privileges to given user (only super user may use) (not on Windows)
-  -g GROUPNAME	drop privileges to given group (only super user may use) (not on Windows)
-  -l		(local server) do not register with the meta server
-  -?, --help	display this help, and exit
-      --version	display version information and exit
+  -c CONFFILE    load server configuration options from the given file (default: no config file)
+  -o OPT=VALUE   set the configuration option named OPT to VALUE
+  -m MAPNAME     set the map name (default: alpha1)
+  -p PORTNO	     set the port number to listen on (default: 16877)
+  -P PASSWORD    set the admin password (default: admin mode is disabled)
+  -i ADDRESS     address of interface to listen on (default: listen on all interfaces)
+  -d             daemonize the server (not on Windows)
+  -u USERNAME    drop privileges to given user (only super user may use) (not on Windows)
+  -g GROUPNAME   drop privileges to given group (only super user may use) (not on Windows)
+  -l             (local server) do not register with the meta server
+  -?, --help     display this help, and exit
+      --version  display version information and exit
 
 By default, the Leges Motus server will contact the meta server so other players on the Internet can connect to and play on the server.  If you would NOT like your server to appear in server browsers of other Internet users, pass the -l ("local") option to lmserver, or set the server configuration option "register_server" to "no".
 
-If a server is run behind a firewall, and it is registered with the meta server, the meta server will attempt to traverse the firewall so that clients outside the firewall are able to connect to the server.  However, this technique does not work with all firewalls, and is not 100% reliable.  If you intend to host a long-running server behind a firewall, you are strongly recommended to modify your firewall settings to allow/forward UDP port 16877.
+If a server is run behind a firewall, and it is registered with the meta server, the metaserver will attempt to traverse the firewall so that clients outside the firewall are able to connect to the server.  However, this technique does not work with all firewalls, and is not 100% reliable.  If you intend to host a long-running server behind a firewall, you are strongly recommended to modify your firewall settings to allow/forward UDP port 16877.
 
 
 SPECIFYING THE DATA DIRECTORY
@@ -99,77 +110,78 @@ By default, Leges Motus expects to find its data in /usr/local/share/games/leges
 
 CONTROLS
 
-	space		Jump in direction of mouse pointer
-	left click	Fire in direction of mouse pointer
-	right click	Switch weapons
-	1 through 8	Switch weapons (if available)
-	t		Open chat
-	y		Open team chat
-	~		Open chat log
-	ESC		Return to main menu / close chat console
-	tab		Show the scoreboard
+	space        Jump in direction of mouse pointer
+	left click   Fire in direction of mouse pointer
+	right click  Switch weapons
+	1 through 8  Switch weapons (if available)
+	t            Open chat
+	y            Open team chat
+	~            Open chat log
+	ESC          Return to main menu / close chat console
+	tab          Show the scoreboard
 
 
 CLIENT COMMANDS
 
 These commands are entered in the client's chat bar:
 
-	/tchat MESSAGE	Send a message to your team
-	/name NEWNAME	Change your name
-	/team red|blue	Change teams
-	/server COMMAND	Send the command to the server (see below for list of server commands)
-	/quit		Quit the game
-	/legal		Show legal information (copyright and warranty)
-	NAME: MESSAGE	Send message to specified player only
+	/tchat MESSAGE   Send a message to your team
+	/name NEWNAME    Change your name
+	/team red|blue   Change teams
+	/server COMMAND  Send the command to the server (see below for list of server commands)
+	/quit            Quit the game
+	/legal           Show legal information (copyright and warranty)
+	NAME: MESSAGE    Send message to specified player only
 
 
 SERVER COMMANDS
 
 These commands are entered in the client's chat bar.  Some commands (marked as [op]) require you to authenticate first with the password specified on the command-line to the server.
 
-	/server auth PASSWORD	Authenticate with given password
-	/server teamscore 	Return the score for each team
-	/server teamcount	Return the number of players on each team
-	/server maps		Retrieve a list of maps
-	/server balance		Balance the teams [op]
-	/server shakeup		Randomly reform the teams [op]
-	/server reset		Reset the scores [op]
-	/server map MAPNAME	Load the given map [op]
-	/server newgame		Start new game [op]
-	/server kick PLAYER	Kick a player [op]
-	/server shutdown	Shutdown the server [op]
-	/server help		Display this help
+	/server auth PASSWORD  Authenticate with given password
+	/server teamscore      Return the score for each team
+	/server teamcount      Return the number of players on each team
+	/server maps           Retrieve a list of maps
+	/server balance        Balance the teams [op]
+	/server shakeup        Randomly reform the teams [op]
+	/server reset          Reset the scores [op]
+	/server map MAPNAME    Load the given map [op]
+	/server newgame        Start new game [op]
+	/server kick PLAYER    Kick a player [op]
+	/server shutdown       Shutdown the server [op]
+	/server help           Display this help
 
 If no operator password is set, then any player connecting from the localhost (127.0.0.1) will be given operator status.  If this is undesirable behavior, then be sure to set an operator password.
 
 
 ON THE INTERNET
 
-Home Page (News, Screenshots):	http://legesmotus.cs.brown.edu/
-Project Page (Downloads):	http://sourceforge.net/projects/legesmotus/
-Trac Page (Bugs, Wiki):		http://sourceforge.net/apps/trac/legesmotus/
-IRC Channel:			irc.freenode.net #legesmotus
-Subversion Repository:		http://legesmotus.svn.sourceforge.net/svnroot/legesmotus
+Home Page (News, Screenshots, Wiki): http://legesmotus.endrift.com/
+Project Page (Downloads):            http://sourceforge.net/projects/legesmotus/
+Trac Page (Bugs):                    http://sourceforge.net/apps/trac/legesmotus/
+IRC Channel:                         irc.freenode.net #legesmotus
+Subversion Repository:               https://legesmotus.svn.sourceforge.net/svnroot/legesmotus
 
-For documentation and to report bugs and feature requests, visit Trac.  For immediate help or to try to find a game, stop by our IRC channel.
+For bugs and feature requests, visit Trac.  For immediate help or to try to find a game, stop by our IRC channel.  For documentation, visit the wiki.
 
 
 ORGANIZATION
 
-The code is divided into four components, located in the following directories:
+The code is divided into five components, located in the following directories:
 
-	common		Common code for both client and server
-	client		The client
-	server		The server
-	metaserver	The meta server (you should not run a meta server)
+	common         Common code for both client and server
+	client         The client
+	server         The server
+	serverscanner  A command line tool for scanning a metaserver
+	metaserver     The metaserver (running a metaserver is not recommended)
 
 The data for the program are located in the data directory, and are divided into five parts:
 
-	data/fonts	Fonts
-	data/maps	Maps
-	data/sounds	Sounds
-	data/sprites	Sprites
-	data/weapons	Weapon configurations
+	data/fonts    Fonts
+	data/maps     Maps
+	data/sounds   Sounds
+	data/sprites  Sprites
+	data/weapons  Weapon configurations
 
 
 ADVANCED BUILDING
@@ -203,19 +215,20 @@ Note that, by default, the version of Leges Motus that is built on an OS X compu
 
 When built with a configuration like this, it should work on 10.5, and, assuming you have the SDK for 10.4 installed, 10.4 as well.
 
+
 CREDITS
 
 Original Designers and Programmers:
-	Andrew Ayer		Server, networking, support code, map handling
-	Nathan Partlan		Game logic, component integration, client design and interface, physics
-	Jeffrey Pfau		Graphics code, sprites, multi-platform support
-	Danny Schneider		Maps, sound, assist with client
+	Andrew Ayer      Server, networking, support code, map handling
+	Nathan Partlan   Game logic, component integration, client design and interface, physics, server scanner
+	Jeffrey Pfau     Graphics code, sprites, multi-platform support, server scanner
+	Danny Schneider  Maps, sound, assist with client
 
 Thanks:
-	Kenny Coane		Official project mentor
-	Robert Mustacchi	Shadow mentor
-	Jon Silverman		All-around great guy
-	Hayden Greif-Neill	Loyal advocacy and an endless list of excellent suggestions
+	Kenny Coane         Official project mentor
+	Robert Mustacchi    Shadow mentor
+	Jon Silverman       All-around great guy
+	Hayden Greif-Neill  Loyal advocacy and an endless list of excellent suggestions
 	All our testers in the Sun Lab at Brown University's Department of Computer Science
 
 Public Domain Sounds From:
@@ -229,6 +242,7 @@ Creative Commons Sampling 1.0 License Sounds:
 
 	By hammerklavier (http://www.freesound.org/usersViewSingle.php?id=430462)
             MOURNFUL CADENCE-Plain.aif (http://www.freesound.org/samplesViewSingle.php?id=49287)
+
 
 COPYRIGHT AND WARRANTY
 
