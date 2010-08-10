@@ -1,14 +1,12 @@
 BASEDIR = ..
-OBJS = Controller.o GameLogic.o
-include $(BASEDIR)/common.mk
-CXXFLAGS += $(CLIENTFLAGS) $(shell freetype-config --cflags)
-
+LIBSRCS = Controller.cpp GameLogic.cpp
 LIBRARY=../liblmnewclient.a
 
-all: $(LIBRARY)
+include $(BASEDIR)/common.mk
 
-$(LIBRARY): $(OBJS)
-	$(AR) crus $(LIBRARY) $^
+CXXFLAGS += $(CLIENTFLAGS) $(shell freetype-config --cflags)
+
+all: $(LIBRARY)
 
 clean: common-clean
 	@$(RM) $(LIBRARY)

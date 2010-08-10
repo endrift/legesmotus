@@ -214,22 +214,31 @@ ifneq ($(SUBDIR),)
  #VPATH = $(SRCDIR)
 endif
 
+BINOBJS = $(foreach obj,$(BINSRCS),$(obj).o)
+LIBOBJS = $(foreach obj,$(LIBSRCS),$(obj).o)
+OBJS = $(BINOBJS) $(LIBOBJS)
+
+ifneq ($(LIBRARY),)
+$(LIBRARY): $(LIBOBJS)
+	$(AR) crus $(LIBRARY) $^
+endif
+
 %.a:
 	$(AR) crus $@ $^
 
-%.o: %.cpp
+%.cpp.o: %.cpp %.cpp.d
 	$(CXX) -c $(CXXFLAGS) $< -o $@
 
-%.o: %.m
+%.m.o: %.m %.m.d
 	$(CC) -c $(CFLAGS) $< -o $@
 
-%.o: %.rc
+%.rc.o: %.rc %.rc.d
 	windres $< -o $@
 
-.deps/%.d: %.cpp .deps
+%.d: %
 	$(CXX) -M $(CXXFLAGS) $< | sed -e 's,^\([^:]*\)\.o:,\1.o $@:,' > $@
 
-common-deps: .deps .deps/deps.mk
+common-deps: deps.mk
 
 common-tidy:
 	@$(RM) -r *.{o,dSYM}
@@ -237,20 +246,17 @@ common-tidy:
 
 common-clean: common-tidy
 	@$(RM) -r *.{a,dmg,app}
-	@$(RM) -r .deps
+	@$(RM) *.d
 
 tidy: common-tidy
 clean: common-clean
 
-.deps:
-	mkdir -p .deps
-
-.deps/deps.mk: $(OBJS:%.o=.deps/%.d)
-	cat .deps/*.d > .deps/deps.mk
+deps.mk: $(OBJS:%.o=%.d)
+	cat *.d > deps.mk
 
 # Don't build deps on make clean
 ifneq ($(filter clean,$(MAKECMDGOALS)),clean)
  ifneq ($(OBJS),)
-  #-include .deps/deps.mk
+  -include deps.mk
  endif
 endif

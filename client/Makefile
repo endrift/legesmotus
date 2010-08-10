@@ -1,40 +1,45 @@
 BASEDIR = ..
-OBJS = ClientNetwork.o ClientSDL.o GameController.o GameWindow.o Sprite.o GraphicalPlayer.o \
-	Graphic.o TiledGraphic.o GraphicGroup.o GraphicalMap.o Font.o TextManager.o Text.o Mask.o \
-	Radar.o TableBackground.o ScrollArea.o ScrollBar.o Transition.o Curve.o TransitionManager.o \
-	ClientConfiguration.o MapReceiver.o ServerBrowser.o ChatLog.o RadialBackground.o \
-	ConvolveKernel.o MapObjectParams.o BaseMapObject.o Obstacle.o Decoration.o ClientGate.o \
-	ClientMap.o RepulsionField.o Menu.o MenuItem.o TextMenuItem.o ArbitraryMenu.o ForceField.o \
-	Weapon.o StandardGun.o SpreadGun.o ImpactCannon.o Hazard.o Form.o FormItem.o ListMenuItem.o \
-	RadialMenu.o GraphicMenuItem.o TextInput.o GraphicsCache.o ThawGun.o AreaGun.o ChargeGun.o \
-	PenetrationGun.o
-	#put .o filenames here (DO NOT PUT .cpp!)
+LIBSRCS := ClientNetwork.cpp ClientSDL.cpp GameController.cpp GameWindow.cpp Sprite.cpp GraphicalPlayer.cpp \
+	Graphic.cpp TiledGraphic.cpp GraphicGroup.cpp GraphicalMap.cpp Font.cpp TextManager.cpp Text.cpp Mask.cpp \
+	Radar.cpp TableBackground.cpp ScrollArea.cpp ScrollBar.cpp Transition.cpp Curve.cpp TransitionManager.cpp \
+	ClientConfiguration.cpp MapReceiver.cpp ServerBrowser.cpp ChatLog.cpp RadialBackground.cpp \
+	ConvolveKernel.cpp MapObjectParams.cpp BaseMapObject.cpp Obstacle.cpp Decoration.cpp ClientGate.cpp \
+	ClientMap.cpp RepulsionField.cpp Menu.cpp MenuItem.cpp TextMenuItem.cpp ArbitraryMenu.cpp ForceField.cpp \
+	Weapon.cpp StandardGun.cpp SpreadGun.cpp ImpactCannon.cpp Hazard.cpp Form.cpp FormItem.cpp ListMenuItem.cpp \
+	RadialMenu.cpp GraphicMenuItem.cpp TextInput.cpp GraphicsCache.cpp ThawGun.cpp AreaGun.cpp ChargeGun.cpp \
+	PenetrationGun.cpp
+BINSRCS := main.cpp
+
 include $(BASEDIR)/common.mk
+LIBRARY := ../liblmclient.a
+
 CXXFLAGS += $(CLIENTFLAGS)
 
 ifeq ($(NOSOUND),)
-OBJS += SoundController.o
+LIBSRCS += SoundController.cpp
 else
 CXXFLAGS += -DLM_NOSOUND
-OBJS += SoundController_dummy.o
+LIBSRCS += SoundController_dummy.cpp
 endif
 
+# XXX having to include this bit again is hackish...
+$(LIBRARY): $(LIBOBJS)
+	$(AR) crus $(LIBRARY) $^
+
 ifeq ($(MACHINE),Windows)
-PLATFORM_DEP = legesmotus-res.o
-legesmotus-res.o: legesmotus.ico
+BINSRCS += legesmotus-res.rc
+legesmotus-res.rc: legesmotus.ico
 endif
 ifeq ($(MACHINE),Darwin)
-PLATFORM_DEP = mac.o
+BINSRCS += mac.m
 endif
 
 all: legesmotus
 
-legesmotus: main.o ../liblmclient.a ../liblmcommon.a $(PLATFORM_DEP)
+legesmotus: $(BINOBJS) $(LIBRARY) ../liblmcommon.a
 	$(CXX) $(LDFLAGS) -o legesmotus $^ $(CLIENTLIBS)
 
-../liblmclient.a: $(OBJS)
-
 clean: common-clean
-	@$(RM) ../liblmclient.a legesmotus
+	@$(RM) $(LIBRARY) legesmotus
 
 deps: common-deps

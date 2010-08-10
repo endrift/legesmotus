@@ -1,14 +1,15 @@
 BASEDIR = ..
-OBJS = Map.o Exception.o Player.o Polygon.o Point.o Shape.o Circle.o PacketReader.o PacketWriter.o StringTokenizer.o math.o misc.o network.o team.o timer.o MapReader.o GameParameters.o WeaponReader.o WeaponFile.o \
-	UDPSocket.o UDPPacket.o IPAddress.o PacketQueue.o AckManager.o CommonNetwork.o PacketHeader.o \
-	PathManager.o ConfigManager.o Version.o #put .o filenames here (DO NOT PUT .cpp!)
+LIBSRCS := Map.cpp Exception.cpp Player.cpp Polygon.cpp Point.cpp Shape.cpp Circle.cpp PacketReader.cpp \
+	PacketWriter.cpp StringTokenizer.cpp math.cpp misc.cpp network.cpp team.cpp timer.cpp MapReader.cpp \
+	GameParameters.cpp WeaponReader.cpp WeaponFile.cpp UDPSocket.cpp UDPPacket.cpp IPAddress.cpp PacketQueue.cpp \
+	AckManager.cpp CommonNetwork.cpp PacketHeader.cpp PathManager.cpp ConfigManager.cpp Version.cpp
+LIBRARY := ../liblmcommon.a
+
 include $(BASEDIR)/common.mk
 
-all: ../liblmcommon.a
-
-../liblmcommon.a: $(OBJS)
+all: $(LIBRARY)
 
 clean: common-clean
-	@$(RM) ../liblmcommon.a
+	@$(RM) $(LIBRARY)
 
 deps: common-deps

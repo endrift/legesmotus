@@ -1,15 +1,17 @@
 BASEDIR = ..
-OBJS = GateStatus.o Server.o ServerConfig.o ServerMap.o ServerNetwork.o ServerPlayer.o Spawnpoint.o GameModeHelper.o ClassicMode.o DeathmatchMode.o ZombieMode.o #put .o filenames here (DO NOT PUT .cpp!)
+LIBSRCS := GateStatus.cpp Server.cpp ServerConfig.cpp ServerMap.cpp ServerNetwork.cpp ServerPlayer.cpp Spawnpoint.cpp \
+	GameModeHelper.cpp ClassicMode.cpp DeathmatchMode.cpp ZombieMode.cpp
+BINSRCS := main.cpp
+LIBRARY := ../liblmserver.a
+
 include $(BASEDIR)/common.mk
 
 all: lmserver
 
-lmserver: main.o ../liblmserver.a ../liblmcommon.a
+lmserver: $(BINOBJS) $(LIBRARY) ../liblmcommon.a
 	$(CXX) $(LDFLAGS) -o lmserver $^ $(LIBS)
 
-../liblmserver.a: $(OBJS)
-
 clean: common-clean
-	@$(RM) ../liblmserver.a lmserver
+	@$(RM) $(LIBRARY) lmserver
 
 deps: common-deps
