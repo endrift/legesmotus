@@ -243,7 +243,7 @@ install-server: server install-common
 	install server/lmserver $(DESTDIR)$(BINDIR)
 	strip $(DESTDIR)$(BINDIR)/lmserver
 
-install-metaserver: metaserver
+install-metaserver: metaserver install-common
 	install metaserver/lmmetaserver $(DESTDIR)$(BINDIR)
 	strip $(DESTDIR)$(BINDIR)/lmmetaserver
 
@@ -252,6 +252,7 @@ install-serverscanner: serverscanner
 	strip $(DESTDIR)$(BINDIR)/lmscan
 
 install-common:
+	install -d $(DESTDIR)$(BINDIR)
 	install -d $(DESTDIR)$(DATADIR)/maps
 	install -m 0644 $(BASEDIR)/data/maps/* $(DESTDIR)$(DATADIR)/maps
 	install -d $(DESTDIR)$(DATADIR)/weapons
