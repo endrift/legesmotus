@@ -28,6 +28,7 @@
 #ifdef __WIN32
 #include "Winsock2.h"
 #else
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #endif
 
