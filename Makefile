@@ -225,10 +225,11 @@ install-client: client install-common
 	install -d $(DESTDIR)$(MANDIR)/man6
 	install -m 0644 $(BASEDIR)/man/man6/legesmotus.6 $(DESTDIR)$(MANDIR)/man6
 	install -d $(DESTDIR)$(SHAREDIR)/applications
-	install -m 0644 $(BASEDIR)/client/legesmotus.desktop $(DESTDIR)$(SHAREDIR)/applications/legesmotus.desktop
-	sed -e 's/\$$VERSION/$(subst /,\/,$(VERSION))/' $(INPLACE) $(DESTDIR)$(SHAREDIR)/applications/legesmotus.desktop
-	sed -e 's/\$$SHAREDIR/$(subst /,\/,$(SHAREDIR))/' $(INPLACE) $(DESTDIR)$(SHAREDIR)/applications/legesmotus.desktop
-	sed -e 's/\$$BINDIR/$(subst /,\/,$(BINDIR))/' $(INPLACE) $(DESTDIR)$(SHAREDIR)/applications/legesmotus.desktop
+	sed -e 's/\$$VERSION/$(subst /,\/,$(VERSION))/' \
+	    -e 's/\$$SHAREDIR/$(subst /,\/,$(SHAREDIR))/' \
+	    -e 's/\$$BINDIR/$(subst /,\/,$(BINDIR))/' \
+	    $(BASEDIR)/client/legesmotus.desktop > $(DESTDIR)$(SHAREDIR)/applications/legesmotus.desktop
+	chmod 644 $(DESTDIR)$(SHAREDIR)/applications/legesmotus.desktop
 	install -d $(DESTDIR)$(SHAREDIR)/icons/hicolor/256x256
 	install -m 0644 $(BASEDIR)/data/sprites/blue_head256.png $(DESTDIR)$(SHAREDIR)/icons/hicolor/256x256/legesmotus.png
 	which update-desktop-database && update-desktop-database $(DESTDIR)$(SHAREDIR)/applications || true

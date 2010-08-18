@@ -91,13 +91,6 @@ ifneq ($(filter $(ARCH),$(ARCHS)),$(ARCH))
  endif
 endif
 
-# BSD sed does not like -i'' for in-place, but Linux does not like -i ''
-ifeq ($(MACHINE),Linux)
- INPLACE = -i''
-else
- INPLACE = -i ''
-endif
-
 ifeq ($(MACHINE)$(NOBUNDLE),Darwin)
  export MACOSX_DEPLOYMENT_TARGET=10.4
  FLAGS_SDL  = -I$(FRAMEWORKS)/SDL.framework/Headers
