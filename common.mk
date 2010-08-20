@@ -151,7 +151,7 @@ else
     LIBS_GL = -lGL
    else
     ifeq ($(XDIR),)
-     ifneq ($(shell ls -d /usr/X11),)
+     ifneq ($(shell ls -d /usr/X11 2>/dev/null),)
       XDIR = /usr/X11
      else
       ifneq ($(shell ls -d /usr/X11R? 2>/dev/null),)
@@ -200,12 +200,7 @@ CXXFLAGS += $(CFLAGS)
 ifneq ($(SUBDIR),)
  #SRCDIR = $(subst \ ,?,$(BASEDIR)/$(SUBDIR))
  SRCDIR = $(BASEDIR)/$(SUBDIR)
- vpath %.c $(SRCDIR)
- vpath %.cpp $(SRCDIR)
- vpath %.m $(SRCDIR)
- vpath %.o $(SRCDIR)
- vpath %.rc $(SRCDIR)
- #VPATH = $(SRCDIR)
+ VPATH = $(SRCDIR)
 endif
 
 BINOBJS = $(foreach obj,$(BINSRCS),$(obj).o)
@@ -229,8 +224,11 @@ endif
 %.rc.o: %.rc
 	windres $< -o $@
 
-%.d: %
+%.cpp.d: %.cpp
 	$(CXX) -M $(CXXFLAGS) $< | sed -e 's,^\([^:]*\)\.o:,\1.o $@:,' > $@
+
+%.m.d: %.m
+	$(CC) -M $(CFLAGS) $< | sed -e 's,^\([^:]*\)\.o:,\1.o $@:,' > $@
 
 common-deps: deps.mk
 
