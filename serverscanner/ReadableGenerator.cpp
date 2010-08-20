@@ -38,6 +38,7 @@ void ReadableGenerator::invalidate_row() {
 		 m_current_row.push(make_pair(m_active_cell, m_list_strings.top()));
 		 m_list_strings.pop();
 		 m_needs_break = false;
+		 m_active_cell.clear();
 	}
 
 	while (!m_current_row.empty()) {
@@ -118,33 +119,20 @@ void ReadableGenerator::add_string(const string& str) {
 
 void ReadableGenerator::add_int(int num) {
 	stringstream entry;
-	if (m_needs_comma) {
-		entry << ", ";
-	}
-
 	entry << num;
-	m_list_strings.top().append(entry.str());
-	m_needs_comma = true;
+
+	add_string(entry.str());
 }
 
 void ReadableGenerator::add_time(time_t sec) {
 	static char timebuf[96];
-	stringstream entry;
-	if (m_needs_comma) {
-		entry << ", ";
-	}
-
 	strftime(timebuf, sizeof(timebuf), "%c", localtime(&sec));
-	entry << timebuf;
-	m_list_strings.top().append(entry.str());
-	m_needs_comma = true;
+
+	add_string(timebuf);
 }
 
 void ReadableGenerator::add_interval(uint64_t millis) {
 	stringstream entry;
-	if (m_needs_comma) {
-		entry << ", ";
-	}
 
 	if (millis == 0xFFFFFFFFFFFFFFFFULL) {
 		entry << "Forever";
@@ -207,7 +195,6 @@ void ReadableGenerator::add_interval(uint64_t millis) {
 		}
 	}
 
-	m_list_strings.top().append(entry.str());
-	m_needs_comma = true;
+	add_string(entry.str());
 }
 
