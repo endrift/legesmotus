@@ -6,7 +6,7 @@ SERVER = $(BASEDIR)/server
 FRAMEWORKS = /Library/Frameworks
 
 # Version strings
-VERSION = 0.4.0-svn
+VERSION = 0.4.0
 
 # These may be overridden by config.mk
 DATADIR = data
@@ -91,13 +91,6 @@ ifneq ($(filter $(ARCH),$(ARCHS)),$(ARCH))
  endif
 endif
 
-# BSD sed does not like -i'' for in-place, but Linux does not like -i ''
-ifeq ($(MACHINE),Linux)
- INPLACE = -i''
-else
- INPLACE = -i ''
-endif
-
 ifeq ($(MACHINE)$(NOBUNDLE),Darwin)
  export MACOSX_DEPLOYMENT_TARGET=10.4
  FLAGS_SDL  = -I$(FRAMEWORKS)/SDL.framework/Headers
@@ -158,7 +151,7 @@ else
     LIBS_GL = -lGL
    else
     ifeq ($(XDIR),)
-     ifneq ($(shell ls -d /usr/X11),)
+     ifneq ($(shell ls -d /usr/X11 2>/dev/null),)
       XDIR = /usr/X11
      else
       ifneq ($(shell ls -d /usr/X11R? 2>/dev/null),)
@@ -207,11 +200,7 @@ CXXFLAGS += $(CFLAGS)
 ifneq ($(SUBDIR),)
  #SRCDIR = $(subst \ ,?,$(BASEDIR)/$(SUBDIR))
  SRCDIR = $(BASEDIR)/$(SUBDIR)
- vpath %.c $(SRCDIR)
- vpath %.cpp $(SRCDIR)
- vpath %.m $(SRCDIR)
- vpath %.o $(SRCDIR)
- #VPATH = $(SRCDIR)
+ VPATH = $(SRCDIR)
 endif
 
 BINOBJS = $(foreach obj,$(BINSRCS),$(obj).o)
@@ -232,11 +221,14 @@ endif
 %.m.o: %.m %.m.d
 	$(CC) -c $(CFLAGS) $< -o $@
 
-%.rc.o: %.rc %.rc.d
+%.rc.o: %.rc
 	windres $< -o $@
 
-%.d: %
+%.cpp.d: %.cpp
 	$(CXX) -M $(CXXFLAGS) $< | sed -e 's,^\([^:]*\)\.o:,\1.o $@:,' > $@
+
+%.m.d: %.m
+	$(CC) -M $(CFLAGS) $< | sed -e 's,^\([^:]*\)\.o:,\1.o $@:,' > $@
 
 common-deps: deps.mk
 

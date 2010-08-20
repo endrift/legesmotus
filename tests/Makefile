@@ -2,8 +2,8 @@ BASEDIR = ..
 NOBUNDLE = 1
 include $(BASEDIR)/common.mk
 TESTOBJS = 
-CXXFLAGS += $(CLIENTFLAGS) $(shell freetype-config --cflags) -I../client
-LIBS := $(CLIENTLIBS) $(shell freetype-config --libs)
+CXXFLAGS += $(CLIENTFLAGS) -I../client
+LIBS := $(CLIENTLIBS) 
 
 all: $(TESTOBJS)
 
