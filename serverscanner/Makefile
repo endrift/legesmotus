@@ -3,12 +3,11 @@ BINSRCS := ServerScannerNetwork.cpp ServerScanner.cpp ServerList.cpp OutputGener
 	ReadableGenerator.cpp
 BINSRCS += main.cpp
 include $(BASEDIR)/common.mk
-CXXFLAGS += $(CLIENTFLAGS)
 
 all: lmscan
 
 lmscan: $(BINOBJS) ../liblmcommon.a
-	$(CXX) $(LDFLAGS) -o lmscan $^
+	$(CXX) $(LDFLAGS) -o lmscan $^ $(LIBS)
 
 clean: common-clean
 	@$(RM) lmscan

@@ -28,6 +28,7 @@ $(LIBRARY): $(LIBOBJS)
 
 ifeq ($(MACHINE),Windows)
 BINSRCS += legesmotus.rc
+legesmotus.rc: legesmotus.ico
 endif
 ifeq ($(MACHINE),Darwin)
 BINSRCS += mac.m

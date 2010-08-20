@@ -57,6 +57,7 @@ void ReadableGenerator::invalidate_row() {
 }
 
 void ReadableGenerator::begin() {
+	m_list_strings.push(""); // We need an initial entry
 	m_longest_prefix = 0;
 	m_needs_break = false;
 	m_needs_comma = false;
