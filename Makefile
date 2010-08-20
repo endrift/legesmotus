@@ -223,7 +223,6 @@ install-client: client install-common
 	install -d $(DESTDIR)$(MANDIR)/man6
 	install -m 0644 $(BASEDIR)/man/man6/legesmotus.6 $(DESTDIR)$(MANDIR)/man6
 	install -d $(DESTDIR)$(SHAREDIR)/applications
-	install -m 0644 $(BASEDIR)/client/legesmotus.desktop $(DESTDIR)$(SHAREDIR)/applications/legesmotus.desktop
 	sed -e 's/\$$VERSION/$(subst /,\/,$(VERSION))/' \
 	    -e 's/\$$SHAREDIR/$(subst /,\/,$(SHAREDIR))/' \
 	    -e 's/\$$BINDIR/$(subst /,\/,$(BINDIR))/' \

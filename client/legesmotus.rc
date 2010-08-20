@@ -1,1 +1,25 @@
 IDI_ICON1               ICON    DISCARDABLE     "legesmotus.ico"
+
+// TODO make this info updatable
+1 VERSIONINFO
+ FILEVERSION 0, 4, 0, 0
+ PRODUCTVERSION 0, 4, 0, 0
+ FILEFLAGSMASK 0x3f
+ FILEOS 0x4
+ FILETYPE 0x1
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "040904b0"
+    BEGIN
+      VALUE "FileDescription", "Leges Motus"
+      VALUE "FileVersion", "0.4.0"
+      VALUE "Full Version", "0.4.0"
+      VALUE "InternalName", "legesmotus"
+      VALUE "LegalCopyright", "Copyright 2010"
+      VALUE "OriginalFilename", "legesmotus.exe"
+      VALUE "ProductName", "Leges Motus"
+      VALUE "ProductVersion", "0.4.0" 
+    END
+  END 
+END

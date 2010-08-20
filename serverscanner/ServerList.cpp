@@ -52,46 +52,48 @@ void ServerList::output(OutputGenerator *out, uint64_t ticks) {
 
 	out->begin();
 	out->begin_row();
-	out->add_cell("servers");
-	out->begin_list();
-	for (map<IPAddress, Server>::const_iterator iter = m_list.begin(); iter != m_list.end(); ++iter) {
-		out->begin_row();
-
-		out->add_cell("ip_address");
-		buffer << iter->first << flush;
-		out->add_string(buffer.str());
-		buffer.str(""); // TODO IPAddress std::String cast
-
-		out->add_cell("map_name");
-		out->add_string(iter->second.current_map_name);
-
-		out->add_cell("team_count");
-
+	if (!m_list.empty()) {
+		out->add_cell("servers");
 		out->begin_list();
-		out->add_int(iter->second.team_count[0]);
-		out->add_int(iter->second.team_count[1]);
+		for (map<IPAddress, Server>::const_iterator iter = m_list.begin(); iter != m_list.end(); ++iter) {
+			out->begin_row();
+
+			out->add_cell("ip_address");
+			buffer << iter->first << flush;
+			out->add_string(buffer.str());
+			buffer.str(""); // TODO IPAddress std::String cast
+
+			out->add_cell("map_name");
+			out->add_string(iter->second.current_map_name);
+
+			out->add_cell("team_count");
+
+			out->begin_list();
+			out->add_int(iter->second.team_count[0]);
+			out->add_int(iter->second.team_count[1]);
+			out->end_list();
+
+			out->add_cell("max_players");
+			out->add_int(iter->second.max_players);
+			out->add_cell("uptime");
+			out->add_interval(iter->second.uptime);
+
+			out->add_cell("time_left_in_game");
+			out->add_interval(iter->second.time_left_in_game);
+
+			out->add_cell("server_name");
+			out->add_string(iter->second.server_name);
+
+			out->add_cell("server_location");
+			out->add_string(iter->second.server_location);
+
+			out->add_cell("ping");
+			out->add_interval(iter->second.ping);
+
+			out->end_row();
+		}
 		out->end_list();
-
-		out->add_cell("max_players");
-		out->add_int(iter->second.max_players);
-		out->add_cell("uptime");
-		out->add_interval(iter->second.uptime);
-
-		out->add_cell("time_left_in_game");
-		out->add_interval(iter->second.time_left_in_game);
-
-		out->add_cell("server_name");
-		out->add_string(iter->second.server_name);
-
-		out->add_cell("server_location");
-		out->add_string(iter->second.server_location);
-
-		out->add_cell("ping");
-		out->add_interval(iter->second.ping);
-
-		out->end_row();
 	}
-	out->end_list();
 
 	out->add_cell("timestamp");
 	out->add_time(utc_time());
