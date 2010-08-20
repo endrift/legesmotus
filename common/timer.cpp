@@ -56,7 +56,7 @@ uint64_t LM::get_ticks() {
 uint64_t LM::utc_time() {
 	SYSTEMTIME	stime;
 	FILETIME	ftime;
-	ULARGE_INTEGER	usec;
+	uint64_t	usec;
 
 	GetSystemTime(&stime);
 	SystemTimeToFileTime(&stime, &ftime);

@@ -204,6 +204,7 @@ ifneq ($(SUBDIR),)
  vpath %.cpp $(SRCDIR)
  vpath %.m $(SRCDIR)
  vpath %.o $(SRCDIR)
+ vpath %.rc $(SRCDIR)
  #VPATH = $(SRCDIR)
 endif
 
@@ -225,7 +226,7 @@ endif
 %.m.o: %.m %.m.d
 	$(CC) -c $(CFLAGS) $< -o $@
 
-%.rc.o: %.rc %.rc.d
+%.rc.o: %.rc
 	windres $< -o $@
 
 %.d: %

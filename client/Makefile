@@ -27,8 +27,7 @@ $(LIBRARY): $(LIBOBJS)
 	$(AR) crus $(LIBRARY) $^
 
 ifeq ($(MACHINE),Windows)
-BINSRCS += legesmotus-res.rc
-legesmotus-res.rc: legesmotus.ico
+BINSRCS += legesmotus.rc
 endif
 ifeq ($(MACHINE),Darwin)
 BINSRCS += mac.m
