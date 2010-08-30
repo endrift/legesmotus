@@ -38,6 +38,7 @@
 #include "common/misc.hpp"
 #include "common/PathManager.hpp"
 #include "common/timer.hpp"
+#include "common/Version.hpp"
 #include <string>
 #include <cstdlib>
 #include <cstring>
@@ -48,9 +49,6 @@
 
 using namespace LM;
 using namespace std;
-
-// This can't be an enum because we want overloading of operator<< to work OK.
-const int	Server::SERVER_PROTOCOL_VERSION = 5;
 
 const char	Server::SERVER_VERSION[] = LM_VERSION;
 
@@ -439,21 +437,24 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 	timeout_players();
 
 	// Parse the join packet
-	int			client_version;
+	int			client_proto_version;
 	string			requested_name;
 	char			team;
+	Version			client_compat_version;
 
-	packet >> client_version;
+	packet >> client_proto_version;
 
-	cerr << "Join request from " << format_ip_address(address) << ": Client version=" << client_version << endl;
+	cerr << "Join request from " << format_ip_address(address) << ": Client protocol version: " << client_proto_version << ", Client gameplay version: " << client_compat_version << endl;
 
-	if (client_version != SERVER_PROTOCOL_VERSION) {
+	if (client_proto_version == PROTOCOL_VERSION) {
+		packet >> client_compat_version >> requested_name >> team;
+	}
+
+	if (client_proto_version != PROTOCOL_VERSION || client_compat_version != COMPAT_VERSION) {
 		cerr << "Rejected join for incompatible client version." << endl;
 		reject_join(address, "Incompatible version.  Please upgrade your client.");
 		return;
 	}
-
-	packet >> requested_name >> team;
 
 	sanitize_player_name(requested_name);
 
@@ -525,7 +526,7 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 	++m_team_count[team - 'A'];
 
 	uint32_t		player_id = m_next_player_id++;
-	ServerPlayer&		new_player = m_players[player_id].init(player_id, address, client_version, name.c_str(), team, m_timeout_queue);
+	ServerPlayer&		new_player = m_players[player_id].init(player_id, address, client_proto_version, name.c_str(), team, m_timeout_queue);
 
 	cerr << requested_name << ": Joined on team " << team << ", with ID " << player_id << endl;
 
@@ -536,7 +537,7 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 
 	// Send the welcome packet back to this client.
 	PacketWriter		welcome_packet(WELCOME_PACKET);
-	welcome_packet << SERVER_PROTOCOL_VERSION << player_id << name << team;
+	welcome_packet << PROTOCOL_VERSION << player_id << name << team;
 	m_network.send_reliable_packet(address, welcome_packet);
 
 	if (is_first_player) {
@@ -597,7 +598,7 @@ void	Server::info(const IPAddress& address, PacketReader& request_packet) {
 	request_packet >> client_protocol_version >> scan_id >> scan_start_time;
 
 	PacketWriter	response_packet(INFO_PACKET);
-	response_packet << scan_id << scan_start_time << SERVER_PROTOCOL_VERSION << m_current_map.get_name() << m_team_count[0] << m_team_count[1] << m_params.max_players << get_ticks() << gametime_left() << m_server_name << m_server_location;
+	response_packet << scan_id << scan_start_time << PROTOCOL_VERSION << COMPAT_VERSION << m_current_map.get_name() << m_team_count[0] << m_team_count[1] << m_params.max_players << get_ticks() << gametime_left() << m_server_name << m_server_location;
 	m_network.send_packet(address, response_packet);
 }
 
@@ -1100,7 +1101,7 @@ void	Server::register_with_metaserver() {
 	m_last_metaserver_contact_time = get_ticks();
 
 	PacketWriter	packet(REGISTER_SERVER_PACKET);
-	packet << SERVER_PROTOCOL_VERSION << SERVER_VERSION << m_listen_address;
+	packet << PROTOCOL_VERSION << SERVER_VERSION << m_listen_address;
 	m_network.send_packet(m_metaserver_address, packet);
 }
 

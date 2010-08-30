@@ -50,7 +50,6 @@ namespace LM {
 	
 	class Server {
 	public:
-		static const int	SERVER_PROTOCOL_VERSION;	// Defined in Server.cpp
 		static const char	SERVER_VERSION[];		// Defined in Server.cpp
 	
 		// Internal time constants - should not be set by user

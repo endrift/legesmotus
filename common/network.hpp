@@ -45,6 +45,8 @@ namespace LM {
 	enum { METASERVER_PORTNO = 16878 };
 	extern const char METASERVER_HOSTNAME[];
 
+	const int PROTOCOL_VERSION = 6;
+
 	// Packet types:
 	enum {
 		ACK_PACKET = 0,
