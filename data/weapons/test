@@ -22,6 +22,19 @@
 	normal=5,20:-15:1:sgun_noshot.png
 	firing=5,20:-15:1:sgun_shot.png
 
+#3-mgun:STANDARD
+#	name=Machine Gun
+#	hud=large_mgun.png
+#	damage=20
+#	cooldown=250
+#	recoil=1.01
+#	inaccuracy=7
+#	continuous
+#	normal=3,16:-15:1:mgun_noshot.png
+#	firing=3,16:-15:1:mgun_shot.png
+#	ammo=30
+#	ammo_recharge=500
+
 #3-impact:IMPACT
 #	name=Impact Cannon
 #	hud=large_cannon.png
@@ -70,3 +83,9 @@
 #	firing=5,20:-15:1:mpulse_noshot.png
 #	pivot=0,0;
 #	shape=circle:250
+
+4-thaw:THAW
+	name=Thaw Gun
+	hud=large_gun.png
+	normal=3,19:-15:1:gun_noshot.png
+	firing=3,19:-15:1:gun_shot.png
