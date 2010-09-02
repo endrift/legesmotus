@@ -53,7 +53,7 @@ ifeq ($(ARCHS),)
   ifeq ($(MACHINE),Darwin)
    ifeq ($(NOBUNDLE),)
     ifeq ($(UNIVERSAL),)
-     ARCHS += $(shell arch)
+     ARCHS += $(shell uname -m)
     else
      ARCHS += ppc
      ARCHS += i386
@@ -79,7 +79,7 @@ ifeq ($(ARCHS),)
     endif
    endif
   else
-   ARCHS += $(shell arch)
+   ARCHS += $(shell uname -m)
   endif
  endif
 endif
