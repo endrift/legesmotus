@@ -61,8 +61,9 @@ bundle: $(MACHINE_TARGETS)
 
 ifneq ($(UNIVERSAL),)
 bundle:
+	$(RM) -r $(BUILDROOT)/$(UNIVERSAL_TARGET)
 	mkdir -p $(BUILDROOT)/$(UNIVERSAL_TARGET)
-	cp -r $(BUILDROOT)/$(firstword $(MACHINE_TARGETS))/Leges\ Motus.app $(BUILDROOT)/$(UNIVERSAL_TARGET)/
+	cp -Rf $(BUILDROOT)/$(firstword $(MACHINE_TARGETS))/Leges\ Motus.app $(BUILDROOT)/$(UNIVERSAL_TARGET)/
 	lipo -create $(foreach TARGET,$(MACHINE_TARGETS),-arch $(call isolate-arch,$(TARGET)) $(BUILDROOT)/$(TARGET)/Leges\ Motus.app/Contents/MacOS/legesmotus ) -output $(BUILDROOT)/$(UNIVERSAL_TARGET)/Leges\ Motus.app/Contents/MacOS/legesmotus
 	lipo -create $(foreach TARGET,$(MACHINE_TARGETS),-arch $(call isolate-arch,$(TARGET)) $(BUILDROOT)/$(TARGET)/Leges\ Motus.app/Contents/MacOS/lmserver ) -output $(BUILDROOT)/$(UNIVERSAL_TARGET)/Leges\ Motus.app/Contents/MacOS/lmserver
 
@@ -86,7 +87,7 @@ INSTALL_TARGETS = $(addprefix install-,$(TARGETS))
 ifneq ($(ARCH),universal)
 
 SRC_PKG = common server client
-AUX_PKG = tests serverscanner metaserver
+AUX_PKG = serverscanner metaserver
 ALL_PKG = $(SRC_PKG) $(AUX_PKG)
 
 default: $(TARGETS)
@@ -145,10 +146,10 @@ Leges\ Motus.app: client server
 	cp -Rf $(BASEDIR)/data "$@"/Contents/Resources/
 	sed -e 's/\$$VERSION/$(VERSION)/' -i '' "$@"/Contents/Info.plist
 	find "$@" -name .svn -print0 | xargs -0 rm -rf
-	test -d "$@"/Contents/Frameworks/SDL.framework || cp -Rf /Library/Frameworks/SDL.framework "$@"/Contents/Frameworks
-	test -d "$@"/Contents/Frameworks/SDL_image.framework || cp -Rf /Library/Frameworks/SDL_image.framework "$@"/Contents/Frameworks
-	test -d "$@"/Contents/Frameworks/SDL_ttf.framework || cp -Rf /Library/Frameworks/SDL_ttf.framework "$@"/Contents/Frameworks
-	test -d "$@"/Contents/Frameworks/SDL_mixer.framework || cp -Rf /Library/Frameworks/SDL_mixer.framework "$@"/Contents/Frameworks
+	bash $(BASEDIR)/mac/prepare_framework.sh SDL "$@"
+	bash $(BASEDIR)/mac/prepare_framework.sh SDL_image "$@"
+	bash $(BASEDIR)/mac/prepare_framework.sh SDL_ttf "$@"
+	bash $(BASEDIR)/mac/prepare_framework.sh SDL_mixer "$@"
 
 bundle: Leges\ Motus.app
 
@@ -176,7 +177,7 @@ $(DMG): $(CLI_INSTALLER)
 	hdiutil detach tmp
 	$(RM) $(DMG)
 	hdiutil convert raw-$(DMG) -format UDZO -o $(DMG)
-	#$(RM) raw-$(DMG)
+	$(RM) raw-$(DMG)
 	$(RM) -r tmp
 	
 

@@ -53,7 +53,7 @@ ifeq ($(ARCHS),)
   ifeq ($(MACHINE),Darwin)
    ifeq ($(NOBUNDLE),)
     ifeq ($(UNIVERSAL),)
-     ARCHS += $(shell arch)
+     ARCHS += $(shell uname -m)
     else
      ARCHS += ppc
      ARCHS += i386
@@ -79,7 +79,7 @@ ifeq ($(ARCHS),)
     endif
    endif
   else
-   ARCHS += $(shell arch)
+   ARCHS += $(shell uname -m)
   endif
  endif
 endif
@@ -243,12 +243,16 @@ common-clean: common-tidy
 tidy: common-tidy
 clean: common-clean
 
+ifneq ($(ARCH),)
+# Don't touch deps if we're not in a chdir
+
 deps.mk: $(OBJS:%.o=%.d)
 	cat *.d > deps.mk
 
-# Don't build deps on make clean
-ifneq ($(filter clean,$(MAKECMDGOALS)),clean)
- ifneq ($(OBJS),)
-  -include deps.mk
+ # Don't build deps on make clean
+ ifneq ($(filter clean,$(MAKECMDGOALS)),clean)
+  ifneq ($(OBJS),)
+   -include deps.mk
+  endif
  endif
 endif

@@ -25,6 +25,7 @@
 #include "misc.hpp"
 #include "network.hpp"
 #include "Exception.hpp"
+#include "Version.hpp"
 #include <string>
 #include <cstring>
 #include <cctype>
@@ -34,6 +35,8 @@
 
 using namespace LM;
 using namespace std;
+
+const Version LM::COMPAT_VERSION(0, 4, 0);
 
 #ifdef __WIN32
 

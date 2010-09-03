@@ -33,6 +33,10 @@
 extern "C" void clean_exit();
 
 namespace LM {
+	class Version;
+
+	// The compatibility version of this
+	extern const Version	COMPAT_VERSION;
 	// Return the username of the current user.
 	std::string		get_username();
 

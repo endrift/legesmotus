@@ -47,6 +47,7 @@
 #include "common/misc.hpp"
 #include "common/Shape.hpp"
 #include "common/Circle.hpp"
+#include "common/Version.hpp"
 
 #include "SDL_image.h"
 
@@ -224,7 +225,7 @@ void GameController::init(GameWindow* window) {
 	m_last_ping_sent = 0;
 	
 	m_client_version = LM_VERSION;
-	m_protocol_number = 5;
+	m_protocol_number = PROTOCOL_VERSION;
 	
 	m_pixel_depth = window->get_depth();
 	m_fullscreen = window->is_fullscreen();
@@ -583,7 +584,7 @@ void GameController::init(GameWindow* window) {
 	// Initialize the frozen status bar label.
 	m_text_manager->set_active_color(1.0, 1.0, 1.0);
 	m_text_manager->set_active_font(m_font);
-	m_frozen_status_text = m_text_manager->place_string("Frozen", m_frozen_status_rect->get_x() + 1, m_frozen_status_rect->get_y() + 2, TextManager::CENTER, GameWindow::LAYER_HUD, TEXT_LAYER);
+	m_frozen_status_text = m_text_manager->place_string("Frozen", m_frozen_status_rect->get_x() + 1, m_frozen_status_rect->get_y() + 2, TextManager::CENTER, GameWindow::LAYER_HUD);
 
 	// Initialize the energy bar.
 	m_energy_text = NULL;
@@ -2172,6 +2173,7 @@ void GameController::connect_to_server(const IPAddress& server_address, char tea
 	
 	PacketWriter join_request(JOIN_PACKET);
 	join_request << m_protocol_number;
+	join_request << COMPAT_VERSION;
 	join_request << m_name;
 	if (is_valid_team(team)) {
 		join_request << team;
@@ -2215,24 +2217,29 @@ void GameController::disconnect() {
  * When we receive a welcome packet.
  */
 void GameController::welcome(PacketReader& reader) {
-	int serverversion;
+	int server_proto_version;
 	int playerid;
 	string playername;
 	char team;
 	
-	reader >> serverversion >> playerid >> playername >> team;
+	reader >> server_proto_version >> playerid >> playername >> team;
 	
 	m_player_id = playerid;
 	m_name = playername;
 
-	cout << "Received welcome packet. Version: " << serverversion << ", Player ID: " << playerid << ", Name: " << playername << ", Team: " << team << endl;
+	cout << "Received welcome packet. Player ID: " << playerid << ", Name: " << playername << ", Team: " << team << endl;
 	
-	if (serverversion != m_protocol_number) {
+	if (server_proto_version != m_protocol_number) {
 		ostringstream serveraddress;
 		serveraddress << "Error: Server has a different protocol. Server: ";
-		serveraddress << serverversion;
+		serveraddress << server_proto_version;
 		serveraddress << " You: ";
 		serveraddress << m_protocol_number;
+		if (server_proto_version > m_protocol_number) {
+			serveraddress << ". Please upgrade your client.";
+		} else {
+			serveraddress << ". Your client is too new.";
+		}
 		display_message(serveraddress.str());
 		
 		disconnect();
@@ -3206,7 +3213,8 @@ void	GameController::server_info(const IPAddress& server_address, PacketReader& 
 		uint64_t	time_left_in_game;
 		string		server_name;
 		string		server_location;
-		info_packet >> server_protocol_version >> current_map_name >> team_count[0] >> team_count[1] >> max_players >> uptime >> time_left_in_game >> server_name >> server_location;
+		Version		server_compat_version;
+		info_packet >> server_protocol_version >> server_compat_version >> current_map_name >> team_count[0] >> team_count[1] >> max_players >> uptime >> time_left_in_game >> server_name >> server_location;
 		
 		m_ping = get_ticks() - scan_start_time;
 		if (request_packet_id == m_current_ping_id) {
@@ -3216,7 +3224,7 @@ void	GameController::server_info(const IPAddress& server_address, PacketReader& 
 		
 		//cerr << "Received INFO packet from " << format_ip_address(server_address, true) << ": Protocol=" << server_protocol_version << "; Map=" << current_map_name << "; Blue players=" << team_count[0] << "; Red players=" << team_count[1] << "; Ping time=" << get_ticks() - scan_start_time << "ms"  << "; Uptime=" << uptime << endl;
 		
-		if (server_protocol_version != m_protocol_number) {
+		if (server_protocol_version != m_protocol_number || server_compat_version != COMPAT_VERSION) {
 			//cerr << "Server with different protocol found: " << format_ip_address(server_address, true) << ": Protocol=" << server_protocol_version << "; Map=" << current_map_name << "; Blue players=" << team_count[0] << "; Red players=" << team_count[1] << "; Ping time=" << get_ticks() - scan_start_time << "ms" << endl;
 			return;
 		}
