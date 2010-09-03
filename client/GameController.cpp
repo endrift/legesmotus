@@ -253,14 +253,14 @@ void GameController::init(GameWindow* window) {
 	m_menu_back->set_center_x(0);
 	m_window->register_graphic(m_menu_back, GameWindow::LAYER_MENU);
 
-	m_font = new Font(m_path_manager.data_path("DustHomeMedium.ttf", "fonts"), 14);
-	m_bold_font = new Font(m_path_manager.data_path("DustHomeMedium.ttf", "fonts"), 14);
+	m_font = new Font(m_path_manager.data_path("JuraMedium.ttf", "fonts"), 14);
+	m_bold_font = new Font(m_path_manager.data_path("JuraDemiBold.ttf", "fonts"), 14);
 	m_bold_font->set_font_style(true, false);
 	m_text_manager = new TextManager(m_font, m_window);
 	
-	m_menu_font = new Font(m_path_manager.data_path("DustHomeMedium.ttf", "fonts"), 24);
-	m_large_menu_font = new Font(m_path_manager.data_path("DustHomeMedium.ttf", "fonts"), 30);
-	m_medium_font = new Font(m_path_manager.data_path("DustHomeMedium.ttf", "fonts"), 20);
+	m_menu_font = new Font(m_path_manager.data_path("JuraDemiBold.ttf", "fonts"), 24);
+	m_large_menu_font = new Font(m_path_manager.data_path("JuraDemiBold.ttf", "fonts"), 30);
+	m_medium_font = new Font(m_path_manager.data_path("JuraMedium.ttf", "fonts"), 20);
 	
 	m_sound_controller = SoundController::get_instance(*this, m_path_manager);
 	m_holding_gate = false;

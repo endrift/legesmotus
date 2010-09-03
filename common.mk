@@ -243,12 +243,16 @@ common-clean: common-tidy
 tidy: common-tidy
 clean: common-clean
 
+ifneq ($(ARCH),)
+# Don't touch deps if we're not in a chdir
+
 deps.mk: $(OBJS:%.o=%.d)
 	cat *.d > deps.mk
 
-# Don't build deps on make clean
-ifneq ($(filter clean,$(MAKECMDGOALS)),clean)
- ifneq ($(OBJS),)
-  -include deps.mk
+ # Don't build deps on make clean
+ ifneq ($(filter clean,$(MAKECMDGOALS)),clean)
+  ifneq ($(OBJS),)
+   -include deps.mk
+  endif
  endif
 endif
