@@ -584,7 +584,7 @@ void GameController::init(GameWindow* window) {
 	// Initialize the frozen status bar label.
 	m_text_manager->set_active_color(1.0, 1.0, 1.0);
 	m_text_manager->set_active_font(m_font);
-	m_frozen_status_text = m_text_manager->place_string("Frozen", m_frozen_status_rect->get_x() + 1, m_frozen_status_rect->get_y() + 2, TextManager::CENTER, GameWindow::LAYER_HUD, TEXT_LAYER);
+	m_frozen_status_text = m_text_manager->place_string("Frozen", m_frozen_status_rect->get_x() + 1, m_frozen_status_rect->get_y() + 2, TextManager::CENTER, GameWindow::LAYER_HUD);
 
 	// Initialize the energy bar.
 	m_energy_text = NULL;
