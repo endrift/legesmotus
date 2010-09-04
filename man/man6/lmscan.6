@@ -1,0 +1,78 @@
+.TH "lmscan" "6" "0.4" "AGWA, Greywhind, Archaemic" "Games"
+.SH "NAME"
+.LP 
+legesmotus \- A team\-based, networked, 2D shooter set in zero\-gravity
+.SH "SYNTAX"
+.LP 
+lmscan [-h] [\-f \fIformat\fP] [\-l] [\-m \fIaddress\fP] [-U] [\-o \fIfilename\fP]
+.br 
+
+If none of -h, -l or -m are specified, they are all implied.
+.SH "DESCRIPTION"
+.LP 
+Scans for running servers for the game Leges Motus.
+.SH "OPTIONS"
+.LP 
+.TP 
+\fB\-h\fR
+Scan localhost.
+.TP 
+\fB\-f\fR <\fIformat\fP>\fR
+Outputs the results of the scan in one of the following formats:
+.RS
+.IP \[bu]
+readable
+.br
+An easily human-readable format. This is the default.
+.IP \[bu]
+json
+.br
+Use JavaScript Object Notation (JSON) to output the results.
+.RE
+.TP 
+\fB\-l\fR
+Scan the local network.
+.TP 
+\fB\-m\fR [\fIaddress\fP]\fR
+Scan the metaserver. If \fIaddress\fP is not specified, the default metaserver is used.
+.TP 
+\fB\-U\fR
+Do not check to see if there is an upgrade available.
+.TP 
+\fB\-o\fR \fIfilename\fP\fR
+Output to a file instead of stdout.
+.TP 
+\fB\-?\fR, \fB\-\-help\fR
+Output help information and exit.
+.TP 
+\fB\-\-version\fR
+Output version information and exit.
+.SH "AUTHORS"
+.LP 
+Andrew Ayer <agwadude@users.sourceforge.net>
+.br 
+Nathan Partlan <greywhind@users.sourceforge.net>
+.br 
+Jeffrey Pfau <archaemic@users.sourceforge.net>
+.br 
+.SH "COPYRIGHT"
+.LP 
+Copyright 2009-2010 Andrew Ayer, Nathan Partlan, Jeffrey Pfau
+.LP 
+Leges Motus is free and open source software.  You may redistribute it and/or
+modify it under the terms of version 2, or (at your option) version 3, of the
+GNU General Public License (GPL), as published by the Free Software Foundation.
+.LP 
+Leges Motus is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.  See the full text of the GNU General Public License for
+further detail.
+.LP 
+For a full copy of the GNU General Public License, please see the COPYING file
+in the root of the source code tree.  You may also retrieve a copy from
+<\fBhttp://www.gnu.org/licenses/gpl\-2.0.txt\fR>, or request a copy by writing to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111\-1307  USA
+.SH "SEE ALSO"
+.LP 
+lmserver(6), lmscan(6)
