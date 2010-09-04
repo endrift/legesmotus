@@ -29,6 +29,7 @@
 #include "ServerList.hpp"
 #include "common/PacketReader.hpp"
 #include "common/PacketWriter.hpp"
+#include "common/Version.hpp"
 
 #include <string>
 #include <ostream>
@@ -64,14 +65,15 @@ namespace LM {
 			void	scan(std::ostream* outfile, OutputType outtype, int to_scan = SCAN_ALL);
 
 		private:
-			IPAddress	m_metaserver_address;
-			uint32_t	m_current_scan_id;
-			int		m_protocol_number;
-			std::string 	m_client_version;
-			ServerScannerNetwork	m_network;
+			IPAddress m_metaserver_address;
+			uint32_t m_current_scan_id;
+			int m_protocol_number;
+			std::string m_client_version;
+			Version m_client_compat;
+			ServerScannerNetwork m_network;
 			ServerList m_server_list;
-			uint64_t	m_start_ticks;
-			std::ostream*	m_output;
+			uint64_t m_start_ticks;
+			std::ostream* m_output;
 
 			void	output_results(OutputType type);
 
