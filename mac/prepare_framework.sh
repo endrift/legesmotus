@@ -3,6 +3,8 @@
 clean_framework() {
 	echo Cleaning $1 in $(pwd)
 
+	# Actually stripping the binaries causes SDL_TTF linking to fail
+
 	rm -rf $1.framework/Headers
 	#strip $1.framework/$1
 

@@ -66,6 +66,7 @@ bundle:
 	cp -Rf $(BUILDROOT)/$(firstword $(MACHINE_TARGETS))/Leges\ Motus.app $(BUILDROOT)/$(UNIVERSAL_TARGET)/
 	lipo -create $(foreach TARGET,$(MACHINE_TARGETS),-arch $(call isolate-arch,$(TARGET)) $(BUILDROOT)/$(TARGET)/Leges\ Motus.app/Contents/MacOS/legesmotus ) -output $(BUILDROOT)/$(UNIVERSAL_TARGET)/Leges\ Motus.app/Contents/MacOS/legesmotus
 	lipo -create $(foreach TARGET,$(MACHINE_TARGETS),-arch $(call isolate-arch,$(TARGET)) $(BUILDROOT)/$(TARGET)/Leges\ Motus.app/Contents/MacOS/lmserver ) -output $(BUILDROOT)/$(UNIVERSAL_TARGET)/Leges\ Motus.app/Contents/MacOS/lmserver
+	lipo -create $(foreach TARGET,$(MACHINE_TARGETS),-arch $(call isolate-arch,$(TARGET)) $(BUILDROOT)/$(TARGET)/Leges\ Motus.app/Contents/MacOS/lmscan ) -output $(BUILDROOT)/$(UNIVERSAL_TARGET)/Leges\ Motus.app/Contents/MacOS/lmscan
 
 dist: TARGET=cli-installer dist
 dist: bundle $(UNIVERSAL_TARGET)
@@ -108,8 +109,6 @@ serverscanner: common
 
 metaserver: common
 
-tests: common server client
-
 else
 default:
 	$(error Must specify a target when doing a universal sub-build)
@@ -134,12 +133,13 @@ DMG_NAME = "Leges Motus $(VERSION)"
 .PHONY: bundle dist cli-installer
 
 ifneq ($(ARCH),universal)
-Leges\ Motus.app: client server
+Leges\ Motus.app: client server serverscanner
 	mkdir -p "$@"/Contents/MacOS
 	mkdir -p "$@"/Contents/Resources
 	mkdir -p "$@"/Contents/Frameworks
 	cp -f client/legesmotus "$@"/Contents/MacOS/
 	cp -f server/lmserver "$@"/Contents/MacOS
+	cp -f serverscanner/lmscan "$@"/Contents/MacOS
 	cp -f $(BASEDIR)/client/Info.plist "$@"/Contents/
 	cp -f $(BASEDIR)/client/legesmotus.icns "$@"/Contents/Resources/
 	cp -Rf $(BASEDIR)/client/legesmotus.nib "$@"/Contents/Resources/
