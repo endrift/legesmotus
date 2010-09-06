@@ -196,6 +196,7 @@ install: bundle
 	install -d $(MANDIR)/man6
 	install -m 0644 $(BASEDIR)/man/man6/legesmotus.6 $(MANDIR)/man6
 	install -m 0644 $(BASEDIR)/man/man6/lmserver.6 $(MANDIR)/man6
+	install -m 0644 $(BASEDIR)/man/man6/lmscan.6 $(MANDIR)/man6
 
 uninstall:
 	$(RM) -r /Applications/Leges\ Motus.app
@@ -248,6 +249,8 @@ install-metaserver: metaserver install-common
 	strip $(DESTDIR)$(BINDIR)/lmmetaserver
 
 install-serverscanner: serverscanner
+	install -d $(DESTDIR)$(MANDIR)/man6
+	install -m 0644 $(BASEDIR)/man/man6/lmscan.6 $(DESTDIR)$(MANDIR)/man6
 	install serverscanner/lmscan $(DESTDIR)$(BINDIR)
 	strip $(DESTDIR)$(BINDIR)/lmscan
 
@@ -261,7 +264,7 @@ install-common:
 uninstall:
 	$(RM) -r $(DESTDIR)$(DATADIR)
 	$(RM) $(DESTDIR)$(BINDIR)/lmserver $(DESTDIR)$(BINDIR)/legesmotus
-	$(RM) $(DESTDIR)$(MANDIR)/man6/lmserver.6 $(DESTDIR)$(MANDIR)/man6/legesmotus.6
+	$(DESTDIR)$(MANDIR)/man6/legesmotus.6 $(RM) $(DESTDIR)$(MANDIR)/man6/lmserver.6 $(DESTDIR)$(MANDIR)/man6/lmscan.6
 	$(RM) $(DESTDIR)$(PREFIX)/share/icons/hicolor/256x256/legesmotus.png $(DESTDIR)$(PREFIX)/share/applications/legesmotus.desktop
 #else
 #$(error Prefix not specified. Please specify one by running the configure script)
