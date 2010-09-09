@@ -1,5 +1,25 @@
 Leges Motus Version History:
 --------------------------
+v. 0.4.0 - 09/06/10:
+ New Features
+  - Several new gun types
+    - Penetration gun type: can shoot through multiple players
+    - Area gun type: can hit more than one player in an area
+  - Weapons can now be scrolled through using the scroll wheel
+  - During the game, the in-progress game can be seen behind the menu
+  - Added a command-line server scanner (not in Windows distribution)
+  - New protocol version that allows for incompatible game versions to share the same protocol but not connect to each other
+  - The build process now does out-of-tree builds
+
+
+  Bug Fixes
+   - Fixed a memory leak pertaining to text shadows
+   - Minor fixes enabling better portability (e.g. to OpenBSD)
+
+
+  Other Changes
+   - The metaserver has moved from meta.legesmotus.beanwood.com to m.legesmotus.endrift.com
+--------------------------
 v. 0.3.0 - 04/24/10:
  New Features:
   - Extensible and configurable set of multiple weapons.

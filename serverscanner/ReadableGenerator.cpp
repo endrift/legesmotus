@@ -134,6 +134,7 @@ void ReadableGenerator::add_time(time_t sec) {
 
 void ReadableGenerator::add_interval(uint64_t millis) {
 	stringstream entry;
+	bool needs_comma = false;
 
 	if (millis == 0xFFFFFFFFFFFFFFFFULL) {
 		entry << "Forever";
@@ -149,49 +150,48 @@ void ReadableGenerator::add_interval(uint64_t millis) {
 		millis /= 24;
 		uint64_t days = millis;
 
-		m_needs_comma = false;
 		if (days) {
 			entry << days << " day";
 			if (days > 1) {
 				entry << "s";
 			}
-			m_needs_comma = true;
+			needs_comma = true;
 		}
 
 		if (hr) {
-			if (m_needs_comma) {
+			if (needs_comma) {
 				entry << ", ";
 			}
 			entry << hr << " hour";
 			if (hr > 1) {
 				entry << "s";
 			}
-			m_needs_comma = true;
+			needs_comma = true;
 		}
 
 		if (min) {
-			if (m_needs_comma) {
+			if (needs_comma) {
 				entry << ", ";
 			}
 			entry << min << " minute";
 			if (min > 1) {
 				entry << "s";
 			}
-			m_needs_comma = true;
+			needs_comma = true;
 		}
 
 		if (sec) {
-			if (m_needs_comma) {
+			if (needs_comma) {
 				entry << ", ";
 			}
 			entry << sec << " second";
 			if (sec > 1) {
 				entry << "s";
 			}
-			m_needs_comma = true;
+			needs_comma = true;
 		}
 
-		if (!m_needs_comma) {
+		if (!needs_comma) {
 			entry << "0 seconds";
 		}
 	}

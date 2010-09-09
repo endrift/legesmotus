@@ -48,9 +48,9 @@
 using namespace LM;
 using namespace std;
 
-ServerScanner::ServerScanner(const char* metaserver_address) : m_network(*this) {
+ServerScanner::ServerScanner(const char* metaserver_address) : m_client_compat(COMPAT_VERSION), m_network(*this) {
 	m_client_version = LM_VERSION;
-	m_protocol_number = 5;
+	m_protocol_number = PROTOCOL_VERSION;
 	
 	bool	success = false;
 
@@ -79,7 +79,7 @@ void 	ServerScanner::scan(ostream* outfile, OutputType outtype, int to_scan) {
 	m_current_scan_id = rand();
 
 	if (outtype == OUTPUT_HUMAN_READABLE) {
-		(*m_output) << "Starting scan..." << endl;
+		(*m_output) << "Scanning for servers compatible with version " << m_client_version << "..." << endl;
 	}
 
 	if (to_scan & SCAN_METASERVER) {
@@ -124,17 +124,19 @@ void	ServerScanner::server_info(const IPAddress& server_address, PacketReader& i
 		// A response from an actual server
 		// Get the info on the server, and present it to the user
 		int server_protocol_version;
+		Version server_compat_version;
 		ServerList::Server info;
-		info_packet >> server_protocol_version;
+		info_packet >> server_protocol_version >> server_compat_version;
 		info_packet >> info.current_map_name >> info.team_count[0] >> info.team_count[1] >>
 			info.max_players >> info.uptime >> info.time_left_in_game >>
 			info.server_name >> info.server_location;
 		
 		info.ping = get_ticks() - scan_start_time;
 		
-		//cerr << "Received INFO packet from " << format_ip_address(server_address, true) << ": Protocol=" << server_protocol_version << "; Map=" << current_map_name << "; Blue players=" << team_count[0] << "; Red players=" << team_count[1] << "; Ping time=" << get_ticks() - scan_start_time << "ms"  << "; Uptime=" << uptime << endl;
+		//cerr << "Received INFO packet from " << format_ip_address(server_address, true) << ": Protocol=" << server_protocol_version << "; Compat version=" << server_compat_version << "; Map=" << info.current_map_name << "; Blue players=" << info.team_count[0] << "; Red players=" << info.team_count[1] << "; Ping time=" << get_ticks() - scan_start_time << "ms"  << "; Uptime=" << info.uptime << endl;
 		
-		if (server_protocol_version != m_protocol_number) {
+		if (server_protocol_version != m_protocol_number || server_compat_version != m_client_compat) {
+			//cerr << server_protocol_version << " != " << m_protocol_number << " || " << server_compat_version << " != " << m_client_compat << endl;
 			// Different protocol version. Discard.
 			return;
 		}

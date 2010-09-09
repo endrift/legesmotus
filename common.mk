@@ -6,7 +6,7 @@ SERVER = $(BASEDIR)/server
 FRAMEWORKS = /Library/Frameworks
 
 # Version strings
-VERSION = 0.4.0-svn
+VERSION = 0.5.0-svn
 
 # These may be overridden by config.mk
 DATADIR = data

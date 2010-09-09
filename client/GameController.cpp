@@ -1666,28 +1666,32 @@ void GameController::process_mouse_click(SDL_Event event) {
 				// Do nothing.
 			} else if (!m_chat_log->is_invisible()) {
 				// Do nothing.
-			} else if (event.button.button == 1) {
-				// Fire the gun if it's ready.
-				if (m_players.empty() || m_players[m_player_id].is_frozen() || m_players[m_player_id].is_dead() || !m_current_weapon) {
-					return;
+			} else if (event.type == SDL_MOUSEBUTTONUP || event.type == SDL_MOUSEBUTTONDOWN) {
+				if (event.button.button == SDL_BUTTON_LEFT) {
+					// Fire the gun if it's ready.
+					if (m_players.empty() || m_players[m_player_id].is_frozen() || m_players[m_player_id].is_dead() || !m_current_weapon) {
+						return;
+					}
+					
+					m_current_weapon->mouse_button_event(event);
+					
+					if (event.type != SDL_MOUSEBUTTONDOWN) {
+						return;
+					}
+	
+					double x_dist = (event.button.x + m_offset_x) - m_players[m_player_id].get_x();
+					double y_dist = (event.button.y + m_offset_y) - m_players[m_player_id].get_y();
+					double direction = atan2(y_dist, x_dist);
+					if (m_last_weapon_switch == 0 || (get_ticks() - m_last_weapon_switch) > m_params.weapon_switch_delay) {
+						m_current_weapon->fire(m_players[m_player_id], *this, m_players[m_player_id].get_position(), direction);
+					}
+				} else if (event.type == SDL_MOUSEBUTTONUP) {
+					if (event.button.button == SDL_BUTTON_WHEELUP) {
+						next_weapon();
+					} else if (event.button.button == SDL_BUTTON_WHEELDOWN) {
+						previous_weapon();
+					}
 				}
-				
-				m_current_weapon->mouse_button_event(event);
-				
-				if (event.type != SDL_MOUSEBUTTONDOWN) {
-					return;
-				}
-
-				double x_dist = (event.button.x + m_offset_x) - m_players[m_player_id].get_x();
-				double y_dist = (event.button.y + m_offset_y) - m_players[m_player_id].get_y();
-				double direction = atan2(y_dist, x_dist);
-				if (m_last_weapon_switch == 0 || (get_ticks() - m_last_weapon_switch) > m_params.weapon_switch_delay) {
-					m_current_weapon->fire(m_players[m_player_id], *this, m_players[m_player_id].get_position(), direction);
-				}
-			} else if (event.button.button == SDL_BUTTON_WHEELUP) {
-				next_weapon();
-			} else if (event.button.button == SDL_BUTTON_WHEELDOWN) {
-				previous_weapon();
 			}
 		}
 	}
@@ -3505,32 +3509,26 @@ void GameController::set_radar_mode(RadarMode mode) {
 void GameController::next_weapon() {
 	// Change to the next weapon in the list.
 	map<string, Weapon*>::iterator it(m_weapons.begin());
-	int i = 0;
-	for (; it != m_weapons.end(); it++) {
+	for (int i = 0; it != m_weapons.end(); it++, i++) {
 		if (it->second == m_current_weapon) {
-			if (i >= m_weapons.size()-1) {
-				i = -1;
-			}
 			change_weapon(i+1);
 			break;
 		}
-		i++;
 	}
 }
 
 void GameController::previous_weapon() {
 	// Change to the previous weapon in the list.
 	map<string, Weapon*>::iterator it(m_weapons.begin());
-	int i = 0;
-	for (; it != m_weapons.end(); it++) {
+	for (int i = 0; it != m_weapons.end(); it++, i++) {
 		if (it->second == m_current_weapon) {
-			if (i <= 0) {
+			if (i == 0) {
 				i = m_weapons.size();
 			}
-			change_weapon(i-1);
+			i--;
+			change_weapon(i);
 			break;
 		}
-		i++;
 	}
 }
 
