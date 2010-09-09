@@ -1,5 +1,5 @@
 /*
- * newclient/Controller.hpp
+ * gui/GraphicalMap.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,37 +22,17 @@
  * 
  */
 
-#ifndef LM_NEWCLIENT_CONTROLLER_HPP
-#define LM_NEWCLIENT_CONTROLLER_HPP
+#ifndef LM_GUI_GRAPHICALMAP_HPP
+#define LM_GUI_GRAPHICALMAP_HPP
 
-#include <string>
-#include "GameLogic.hpp"
+#include "common/Map.hpp"
 
 namespace LM {
-	class Player;
-	class Map;
+	class GraphicalMap : public Map {
+	private:
 
-	class Controller {
 	public:
-		enum {
-			NO_CHANGE     = 0x00,
-			JUMPING       = 0x01,
-			CHANGE_AIM    = 0x02,
-			CHANGE_WEAPON = 0x04,
-			FIRE_WEAPON   = 0x08,
-			SEND_MESSAGE  = 0x10
-		};
 
-		virtual ~Controller() {}
-
-		virtual void update(uint64_t diff, const GameLogic& state) = 0;
-
-		virtual int get_changes() const = 0;
-		virtual float get_aim() const = 0;
-		virtual int get_weapon() const = 0;
-
-		virtual std::wstring get_message() const = 0;
-		virtual void received_message(const Player* p, const std::wstring& message) = 0;
 	};
 }
 

@@ -1,5 +1,5 @@
 /*
- * gui/SDLController.cpp
+ * newclient/Client.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,8 +22,27 @@
  * 
  */
 
-#include "SDLController.hpp"
+#ifndef LM_NEWCLIENT_CLIENT_HPP
+#define LM_NEWCLIENT_CLIENT_HPP
 
-using namespace LM;
-using namespace std;
+#include "client/ClientNetwork.hpp"
 
+namespace LM {
+	class Player;
+	class Controller;
+	class GameLogic;
+
+	class Client {
+	private:
+		Controller* m_controller;
+		GameLogic* m_logic;
+		ClientNetwork m_network;
+
+	public:
+		virtual ~Client();
+		virtual Player* make_player(const char* name, uint32_t id, char team);
+
+	};
+}
+
+#endif

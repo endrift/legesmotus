@@ -61,10 +61,12 @@ bundle: $(MACHINE_TARGETS)
 
 ifneq ($(UNIVERSAL),)
 bundle:
+	$(RM) -r $(BUILDROOT)/$(UNIVERSAL_TARGET)
 	mkdir -p $(BUILDROOT)/$(UNIVERSAL_TARGET)
-	cp -r $(BUILDROOT)/$(firstword $(MACHINE_TARGETS))/Leges\ Motus.app $(BUILDROOT)/$(UNIVERSAL_TARGET)/
+	cp -Rf $(BUILDROOT)/$(firstword $(MACHINE_TARGETS))/Leges\ Motus.app $(BUILDROOT)/$(UNIVERSAL_TARGET)/
 	lipo -create $(foreach TARGET,$(MACHINE_TARGETS),-arch $(call isolate-arch,$(TARGET)) $(BUILDROOT)/$(TARGET)/Leges\ Motus.app/Contents/MacOS/legesmotus ) -output $(BUILDROOT)/$(UNIVERSAL_TARGET)/Leges\ Motus.app/Contents/MacOS/legesmotus
 	lipo -create $(foreach TARGET,$(MACHINE_TARGETS),-arch $(call isolate-arch,$(TARGET)) $(BUILDROOT)/$(TARGET)/Leges\ Motus.app/Contents/MacOS/lmserver ) -output $(BUILDROOT)/$(UNIVERSAL_TARGET)/Leges\ Motus.app/Contents/MacOS/lmserver
+	lipo -create $(foreach TARGET,$(MACHINE_TARGETS),-arch $(call isolate-arch,$(TARGET)) $(BUILDROOT)/$(TARGET)/Leges\ Motus.app/Contents/MacOS/lmscan ) -output $(BUILDROOT)/$(UNIVERSAL_TARGET)/Leges\ Motus.app/Contents/MacOS/lmscan
 
 dist: TARGET=cli-installer dist
 dist: bundle $(UNIVERSAL_TARGET)
@@ -135,22 +137,23 @@ DMG_NAME = "Leges Motus $(VERSION)"
 .PHONY: bundle dist cli-installer
 
 ifneq ($(ARCH),universal)
-Leges\ Motus.app: client server
+Leges\ Motus.app: client server serverscanner
 	mkdir -p "$@"/Contents/MacOS
 	mkdir -p "$@"/Contents/Resources
 	mkdir -p "$@"/Contents/Frameworks
 	cp -f client/legesmotus "$@"/Contents/MacOS/
-	cp -f server/lmserver "$@"/Contents/MacOS
+	cp -f server/lmserver "$@"/Contents/MacOS/
+	cp -f serverscanner/lmscan "$@"/Contents/MacOS/
 	cp -f $(BASEDIR)/client/Info.plist "$@"/Contents/
 	cp -f $(BASEDIR)/client/legesmotus.icns "$@"/Contents/Resources/
 	cp -Rf $(BASEDIR)/client/legesmotus.nib "$@"/Contents/Resources/
 	cp -Rf $(BASEDIR)/data "$@"/Contents/Resources/
 	sed -e 's/\$$VERSION/$(VERSION)/' -i '' "$@"/Contents/Info.plist
 	find "$@" -name .svn -print0 | xargs -0 rm -rf
-	test -d "$@"/Contents/Frameworks/SDL.framework || cp -Rf /Library/Frameworks/SDL.framework "$@"/Contents/Frameworks
-	test -d "$@"/Contents/Frameworks/SDL_image.framework || cp -Rf /Library/Frameworks/SDL_image.framework "$@"/Contents/Frameworks
-	test -d "$@"/Contents/Frameworks/SDL_ttf.framework || cp -Rf /Library/Frameworks/SDL_ttf.framework "$@"/Contents/Frameworks
-	test -d "$@"/Contents/Frameworks/SDL_mixer.framework || cp -Rf /Library/Frameworks/SDL_mixer.framework "$@"/Contents/Frameworks
+	bash $(BASEDIR)/mac/prepare_framework.sh SDL "$@"
+	bash $(BASEDIR)/mac/prepare_framework.sh SDL_image "$@"
+	bash $(BASEDIR)/mac/prepare_framework.sh SDL_ttf "$@"
+	bash $(BASEDIR)/mac/prepare_framework.sh SDL_mixer "$@"
 
 bundle: Leges\ Motus.app
 
@@ -178,7 +181,7 @@ $(DMG): $(CLI_INSTALLER)
 	hdiutil detach tmp
 	$(RM) $(DMG)
 	hdiutil convert raw-$(DMG) -format UDZO -o $(DMG)
-	#$(RM) raw-$(DMG)
+	$(RM) raw-$(DMG)
 	$(RM) -r tmp
 	
 
@@ -197,6 +200,7 @@ install: bundle
 	install -d $(MANDIR)/man6
 	install -m 0644 $(BASEDIR)/man/man6/legesmotus.6 $(MANDIR)/man6
 	install -m 0644 $(BASEDIR)/man/man6/lmserver.6 $(MANDIR)/man6
+	install -m 0644 $(BASEDIR)/man/man6/lmscan.6 $(MANDIR)/man6
 
 uninstall:
 	$(RM) -r /Applications/Leges\ Motus.app
@@ -249,6 +253,8 @@ install-metaserver: metaserver install-common
 	strip $(DESTDIR)$(BINDIR)/lmmetaserver
 
 install-serverscanner: serverscanner
+	install -d $(DESTDIR)$(MANDIR)/man6
+	install -m 0644 $(BASEDIR)/man/man6/lmscan.6 $(DESTDIR)$(MANDIR)/man6
 	install serverscanner/lmscan $(DESTDIR)$(BINDIR)
 	strip $(DESTDIR)$(BINDIR)/lmscan
 
@@ -262,7 +268,7 @@ install-common:
 uninstall:
 	$(RM) -r $(DESTDIR)$(DATADIR)
 	$(RM) $(DESTDIR)$(BINDIR)/lmserver $(DESTDIR)$(BINDIR)/legesmotus
-	$(RM) $(DESTDIR)$(MANDIR)/man6/lmserver.6 $(DESTDIR)$(MANDIR)/man6/legesmotus.6
+	$(DESTDIR)$(MANDIR)/man6/legesmotus.6 $(RM) $(DESTDIR)$(MANDIR)/man6/lmserver.6 $(DESTDIR)$(MANDIR)/man6/lmscan.6
 	$(RM) $(DESTDIR)$(PREFIX)/share/icons/hicolor/256x256/legesmotus.png $(DESTDIR)$(PREFIX)/share/applications/legesmotus.desktop
 #else
 #$(error Prefix not specified. Please specify one by running the configure script)

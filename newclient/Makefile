@@ -1,5 +1,5 @@
 BASEDIR = ..
-LIBSRCS = Controller.cpp GameLogic.cpp
+LIBSRCS = Controller.cpp GameLogic.cpp Client.cpp
 LIBRARY=../liblmnewclient.a
 
 include $(BASEDIR)/common.mk

@@ -1,5 +1,5 @@
 /*
- * newclient/Controller.hpp
+ * gui/InputDriver.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,37 +22,27 @@
  * 
  */
 
-#ifndef LM_NEWCLIENT_CONTROLLER_HPP
-#define LM_NEWCLIENT_CONTROLLER_HPP
+#ifndef LM_GUI_INPUTDRIVER_HPP
+#define LM_GUI_INPUTDRIVER_HPP
 
-#include <string>
-#include "GameLogic.hpp"
+#include "common/Point.hpp"
+#include "input.hpp"
 
 namespace LM {
-	class Player;
-	class Map;
-
-	class Controller {
+	class InputDriver {
+	private:
+		// Pending events stored here
 	public:
-		enum {
-			NO_CHANGE     = 0x00,
-			JUMPING       = 0x01,
-			CHANGE_AIM    = 0x02,
-			CHANGE_WEAPON = 0x04,
-			FIRE_WEAPON   = 0x08,
-			SEND_MESSAGE  = 0x10
-		};
+		virtual ~InputDriver();
 
-		virtual ~Controller() {}
+		virtual int update() = 0;
 
-		virtual void update(uint64_t diff, const GameLogic& state) = 0;
+		virtual Point mouse_position() const = 0;
+		virtual int mouse_buttons() const = 0;
 
-		virtual int get_changes() const = 0;
-		virtual float get_aim() const = 0;
-		virtual int get_weapon() const = 0;
-
-		virtual std::wstring get_message() const = 0;
-		virtual void received_message(const Player* p, const std::wstring& message) = 0;
+		bool poll_keys(KeyEvent* event);
+		bool poll_mouse_motion(MouseMotionEvent* event);
+		bool poll_mouse_buttons(MouseButtonEvent* event);
 	};
 }
 

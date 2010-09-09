@@ -1,5 +1,5 @@
 /*
- * gui/SDLController.hpp
+ * gui/input.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,17 +22,20 @@
  * 
  */
 
-#ifndef LM_GUI_SDLCONTROLLER_HPP
-#define LM_GUI_SDLCONTROLLER_HPP
-
-#include "newclient/Controller.hpp"
+#ifndef LM_GUI_INPUT_HPP
+#define LM_GUI_INPUT_HPP
 
 namespace LM {
-	class SDLController : public Controller {
-	private:
+	enum Keys {
+	};
 
-	public:
+	struct KeyEvent {
+	};
 
+	struct MouseMotionEvent {
+	};
+
+	struct MouseButtonEvent {
 	};
 }
 
