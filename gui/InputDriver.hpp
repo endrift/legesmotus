@@ -28,10 +28,20 @@
 #include "common/Point.hpp"
 #include "input.hpp"
 
+#include <queue>
+
 namespace LM {
 	class InputDriver {
 	private:
-		// Pending events stored here
+		std::queue<KeyEvent> m_key_events;
+		std::queue<MouseMotionEvent> m_motion_events;
+		std::queue<MouseButtonEvent> m_button_events;
+
+	protected:
+		void register_event(const KeyEvent& event);
+		void register_event(const MouseMotionEvent& event);
+		void register_event(const MouseButtonEvent& event);
+
 	public:
 		virtual ~InputDriver();
 

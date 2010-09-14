@@ -26,17 +26,70 @@
 #define LM_GUI_INPUT_HPP
 
 namespace LM {
-	enum Keys {
+	enum KeyType {
+		KEY_LETTER = 0,
+		KEY_OTHER,
+		KEY_NUMPAD,
+		KEY_UP,
+		KEY_RIGHT,
+		KEY_DOWN,
+		KEY_LEFT,
+		KEY_L_SHIFT,
+		KEY_R_SHIFT,
+		KEY_L_CONTROL,
+		KEY_R_CONTROL,
+		KEY_L_ALT,
+		KEY_R_ALT,
+		KEY_L_META,
+		KEY_R_META,
+		KEY_BACKSPACE,
+		KEY_TAB,
+		KEY_ENTER,
+		KEY_INSERT,
+		KEY_DELETE,
+		KEY_HOME,
+		KEY_END,
+		KEY_PGUP,
+		KEY_PGDN
+	};
+
+	enum KeyModifier {
+		MOD_SHIFT = 1,
+		MOD_CONTROL = 2,
+		MOD_ALT = 4,
+		MOD_META = 8
+	};
+
+	enum MouseButton {
+		BUTTON_LEFT = 1,
+		BUTTON_MIDDLE = 2,
+		BUTTON_RIGHT = 3,
+		BUTTON_WHEEL_LEFT = 6,
+		BUTTON_WHEEL_RIGHT = 7,
+		BUTTON_WHEEL_UP = 4,
+		BUTTON_WHEEL_DOWN = 5
 	};
 
 	struct KeyEvent {
+		wchar_t character;
+		KeyType type;
+		int modifiers;
+		bool down;
 	};
 
 	struct MouseMotionEvent {
+		int x, y;
+		int dx, dy;
 	};
 
 	struct MouseButtonEvent {
+		int button;
+		bool down;
 	};
+
+	inline int mouse_button_bit(MouseButton button) {
+		return 1<<(button - 1);
+	}
 }
 
 #endif

@@ -29,8 +29,6 @@
 
 namespace LM {
 	class SDLInputDriver : public InputDriver {
-	private:
-
 	public:
 		virtual int update();
 

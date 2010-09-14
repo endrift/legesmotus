@@ -27,3 +27,44 @@
 using namespace LM;
 using namespace std;
 
+void InputDriver::register_event(const KeyEvent& event) {
+	m_key_events.push(event);
+}
+
+void InputDriver::register_event(const MouseMotionEvent& event) {
+	m_motion_events.push(event);
+}
+
+void InputDriver::register_event(const MouseButtonEvent& event) {
+	m_button_events.push(event);
+}
+
+bool InputDriver::poll_keys(KeyEvent* event) {
+	if (m_key_events.empty()) {
+		return false;
+	}
+
+	*event = m_key_events.front();
+	m_key_events.pop();
+	return true;
+}
+
+bool InputDriver::poll_mouse_motion(MouseMotionEvent* event) {
+	if (m_motion_events.empty()) {
+		return false;
+	}
+
+	*event = m_motion_events.front();
+	m_motion_events.pop();
+	return true;
+}
+
+bool InputDriver::poll_mouse_buttons(MouseButtonEvent* event) {
+	if (m_button_events.empty()) {
+		return false;
+	}
+
+	*event = m_button_events.front();
+	m_button_events.pop();
+	return true;
+}
