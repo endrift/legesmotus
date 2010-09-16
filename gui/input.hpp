@@ -30,6 +30,7 @@ namespace LM {
 		KEY_LETTER = 0,
 		KEY_OTHER,
 		KEY_NUMPAD,
+		KEY_ESCAPE,
 		KEY_UP,
 		KEY_RIGHT,
 		KEY_DOWN,
@@ -50,7 +51,22 @@ namespace LM {
 		KEY_HOME,
 		KEY_END,
 		KEY_PGUP,
-		KEY_PGDN
+		KEY_PGDN,
+		KEY_F1,
+		KEY_F2,
+		KEY_F3,
+		KEY_F4,
+		KEY_F5,
+		KEY_F6,
+		KEY_F7,
+		KEY_F8,
+		KEY_F9,
+		KEY_F10,
+		KEY_F11,
+		KEY_F12,
+		KEY_F13,
+		KEY_F14,
+		KEY_F15
 	};
 
 	enum KeyModifier {
@@ -90,6 +106,8 @@ namespace LM {
 	inline int mouse_button_bit(MouseButton button) {
 		return 1<<(button - 1);
 	}
+	
+	const wchar_t* get_key_name(const KeyEvent& key);
 }
 
 #endif

@@ -30,11 +30,12 @@
 namespace LM {
 	class SDLInputDriver : public InputDriver {
 	public:
+		SDLInputDriver();
+
 		virtual int update();
 
 		virtual Point mouse_position() const;
 		virtual int mouse_buttons() const;
-
 	};
 }
 

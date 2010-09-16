@@ -27,6 +27,10 @@
 using namespace LM;
 using namespace std;
 
+InputDriver::~InputDriver() {
+	// Nothing to do
+}
+
 void InputDriver::register_event(const KeyEvent& event) {
 	m_key_events.push(event);
 }

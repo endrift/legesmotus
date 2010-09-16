@@ -33,6 +33,10 @@ using namespace std;
 		ke.type = KEY_ ## lmk; \
 		break
 
+SDLInputDriver::SDLInputDriver() {
+	SDL_EnableUNICODE(true);
+}
+
 int SDLInputDriver::update() {
 	int updates = 0;
 	SDL_Event e;
@@ -48,6 +52,7 @@ int SDLInputDriver::update() {
 		case SDL_KEYUP:
 			ke.down = e.key.state == SDL_PRESSED;
 			ke.character = ks->unicode;
+			ke.modifiers = 0;
 			ke.modifiers |= (ks->mod & KMOD_SHIFT)?MOD_SHIFT:0;
 			ke.modifiers |= (ks->mod & KMOD_CTRL)?MOD_CONTROL:0;
 			ke.modifiers |= (ks->mod & KMOD_ALT)?MOD_ALT:0;
@@ -57,6 +62,7 @@ int SDLInputDriver::update() {
 				ke.type = KEY_NUMPAD;
 			} else {
 				switch (ks->sym) {
+					KEYMAP(ESCAPE, ESCAPE);
 					KEYMAP(BACKSPACE, BACKSPACE);
 					KEYMAP(TAB, TAB);
 					KEYMAP(CLEAR, OTHER);
@@ -80,6 +86,21 @@ int SDLInputDriver::update() {
 					KEYMAP(RIGHT, RIGHT);
 					KEYMAP(DOWN, DOWN);
 					KEYMAP(LEFT, LEFT);
+					KEYMAP(F1, F1);
+					KEYMAP(F2, F2);
+					KEYMAP(F3, F3);
+					KEYMAP(F4, F4);
+					KEYMAP(F5, F5);
+					KEYMAP(F6, F6);
+					KEYMAP(F7, F7);
+					KEYMAP(F8, F8);
+					KEYMAP(F9, F9);
+					KEYMAP(F10, F10);
+					KEYMAP(F11, F11);
+					KEYMAP(F12, F12);
+					KEYMAP(F13, F13);
+					KEYMAP(F14, F14);
+					KEYMAP(F15, F15);
 
 					default:
 						ke.type = KEY_LETTER;
@@ -113,12 +134,12 @@ int SDLInputDriver::update() {
 	return updates;
 }
 
-Point InputDriver::mouse_position() const {
+Point SDLInputDriver::mouse_position() const {
 	int x, y;
 	SDL_GetMouseState(&x, &y);
 	return Point(x, y);
 }
 
-int InputDriver::mouse_buttons() const {
+int SDLInputDriver::mouse_buttons() const {
 	return SDL_GetMouseState(NULL, NULL);
 }
