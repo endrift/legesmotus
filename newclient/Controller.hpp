@@ -26,6 +26,8 @@
 #define LM_NEWCLIENT_CONTROLLER_HPP
 
 #include <string>
+#include <stdint.h>
+
 #include "GameLogic.hpp"
 
 namespace LM {
