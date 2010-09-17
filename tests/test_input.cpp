@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
 			MouseButtonEvent mbe;
 
 			while (input.poll_keys(&ke)) {
-				wcout << L"Key pressed: " << get_key_name(ke) << endl;
+				wcout << L"Key pressed: " << get_key_name(ke) << " (Raw: " << ke.raw << ")" << endl;
 				if (ke.type == KEY_ESCAPE) {
 					running = false;
 				}

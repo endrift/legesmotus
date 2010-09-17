@@ -57,6 +57,7 @@ int SDLInputDriver::update() {
 			ke.modifiers |= (ks->mod & KMOD_CTRL)?MOD_CONTROL:0;
 			ke.modifiers |= (ks->mod & KMOD_ALT)?MOD_ALT:0;
 			ke.modifiers |= (ks->mod & KMOD_META)?MOD_META:0;
+			ke.raw = ks->sym;
 
 			if (ks->sym >= SDLK_KP0 && ks->sym <= SDLK_KP_EQUALS) {
 				ke.type = KEY_NUMPAD;
