@@ -101,7 +101,7 @@ namespace LM {
 		bool compare_name(const char* other_name) const { return strcasecmp(m_name.c_str(), other_name) == 0; }
 		
 		// Simple setters
-		void set_name(const char* name);
+		virtual void set_name(const char* name);
 		virtual void set_id(uint32_t id);
 		virtual void set_team(char team);
 		virtual void set_score(int score);
@@ -115,11 +115,11 @@ namespace LM {
 		void set_velocity(double xvel, double yvel) { set_velocity(Vector(xvel, yvel)); }
 		virtual void set_velocity(Vector v);
 		virtual void set_rotation_degrees(double rotation);
-		virtual void set_rotation_radians(double rotation);
+		void set_rotation_radians(double rotation);
 		virtual void set_rotational_vel(double rotation);
-		virtual void set_rotational_vel_radians(double rotation);
+		void set_rotational_vel_radians(double rotation);
 		virtual void set_gun_rotation_degrees(double gun_rotation);
-		virtual void set_gun_rotation_radians(double gun_rotation);
+		void set_gun_rotation_radians(double gun_rotation);
 		virtual void set_is_invisible(bool is_invisible);
 		virtual void set_is_frozen(bool is_frozen);
 		virtual void set_is_grabbing_obstacle(bool);

@@ -107,6 +107,8 @@ client: common
 
 gui: common client
 
+newclient: common
+
 serverscanner: common
 
 metaserver: common

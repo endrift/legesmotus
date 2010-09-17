@@ -1,5 +1,5 @@
 /*
- * newclient/Client.cpp
+ * gui/main.cpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,35 +22,23 @@
  * 
  */
 
-#include "Client.hpp"
-#include "common/Player.hpp"
-#include "common/timer.hpp"
+#ifdef __APPLE__
+extern "C" {
+// FIXME port over mac_bridge
+//#include "mac_bridge.h"
+}
+#elif defined(__WIN32)
+#include <Windows.h>
+#endif
+
+#include "GuiClient.hpp"
 
 using namespace LM;
 using namespace std;
 
-Client::~Client() {
-	// TODO
-}
+extern "C" int main(int argc, char* argv[]) {
+	GuiClient game;
+	game.run();
 
-void Client::step(uint64_t diff) {
-	//m_network.receive_packets();
-}
-
-const char* Client::get_res_directory() const {
-	// TODO get from env
-	return LM_DATA_DIR;
-}
-
-Player* Client::make_player(const char* name, uint32_t id, char team) {
-	return new Player(name, id, team);
-}
-
-void Client::run() {
-	uint64_t last_time = get_ticks();
-	while (true) { // TODO need a way to quit
-		uint64_t current_time = get_ticks();
-		step(current_time - last_time);
-		last_time = current_time;
-	}
+	return 0;
 }

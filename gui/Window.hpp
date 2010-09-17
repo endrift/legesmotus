@@ -30,6 +30,7 @@
 namespace LM {
 	class Image;
 	class DrawContext;
+	class Widget;
 
 	class Window {
 	public:
@@ -73,6 +74,11 @@ namespace LM {
 		bool	resize(int width, int height, int depth, int flags);
 
 		virtual DrawContext*	get_context() = 0;
+
+		void set_root_widget(Widget* root);
+		Widget* get_root_widget();
+
+		void redraw();
 	};
 
 	class VmodeNotSupportedException : public Exception {

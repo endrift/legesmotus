@@ -3,6 +3,7 @@ LIBSRCS := Widget.cpp DrawContext.cpp GLESContext.cpp GuiWindow.cpp Font.cpp Lab
 	GraphicContainer.cpp Graphic.cpp Sprite.cpp Bone.cpp GraphicRegion.cpp Window.cpp SDLWindow.cpp GuiClient.cpp \
 	GraphicalMap.cpp GraphicalPlayer.cpp InputDriver.cpp SDLInputDriver.cpp InputSink.cpp HumanController.cpp \
 	input.cpp
+BINSRCS := main.cpp
 LIBRARY := ../liblmgui.a
 
 include $(BASEDIR)/common.mk
@@ -11,7 +12,10 @@ include $(BASEDIR)/common.mk
 CXXFLAGS += $(CLIENTFLAGS) $(shell freetype-config --cflags)
 CXXFLAGS += -I../client
 
-all: $(LIBRARY)
+all: $(LIBRARY) legesmotus
+
+legesmotus: $(BINOBJS) $(LIBRARY) ../liblmnewclient.a ../liblmcommon.a
+	$(CXX) $(LDFLAGS) -o legesmotus $^ $(CLIENTLIBS)
 
 clean: common-clean
 	@$(RM) $(LIBRARY)

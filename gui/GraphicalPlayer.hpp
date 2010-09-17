@@ -25,12 +25,35 @@
 #ifndef LM_GUI_GRAPHICALPLAYER_HPP
 #define LM_GUI_GRAPHICALPLAYER_HPP
 
+#include "common/Player.hpp"
+#include "GraphicContainer.hpp"
+#include "Bone.hpp"
+#include <string>
+#include "Sprite.hpp"
+
 namespace LM {
-	class GraphicalPlayer {
+	class ResourceCache;
+
+	class GraphicalPlayer : public Player {
 	private:
+		GraphicContainer m_graphic_root;
+		Bone m_root_bone;
+		Sprite* m_head;
+		Sprite* m_torso;
+		Sprite* m_front_arm;
+		Sprite* m_back_arm;
+		Sprite* m_front_leg;
+		Sprite* m_back_leg;
 
 	public:
+		GraphicalPlayer(const char* name, uint32_t id, char team, ResourceCache* cache);
+		~GraphicalPlayer();
 
+		GraphicContainer* get_graphic();
+		Bone* get_bone();
+
+		virtual void set_x(double x);
+		virtual void set_y(double y); 
 	};
 }
 

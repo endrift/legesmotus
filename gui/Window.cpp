@@ -23,6 +23,8 @@
  */
 
 #include "Window.hpp"
+#include "DrawContext.hpp"
+#include "Widget.hpp"
 
 using namespace LM;
 using namespace std;
@@ -86,6 +88,18 @@ int Window::get_depth() const {
 
 bool Window::is_fullscreen() const {
 	return m_fullscreen;
+}
+
+void Window::set_root_widget(Widget* root) {
+	get_context()->set_root_widget(root);
+}
+
+Widget* Window::get_root_widget() {
+	return get_context()->get_root_widget();
+}
+
+void Window::redraw() {
+	get_context()->redraw();
 }
 
 VmodeNotSupportedException::VmodeNotSupportedException(const string& message, int width, int height, int depth, bool fullscreen) : Exception(message) {

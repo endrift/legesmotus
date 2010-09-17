@@ -27,6 +27,7 @@
 
 #include "common/misc.hpp"
 #include "newclient/Client.hpp"
+#include "GraphicalPlayer.hpp"
 
 namespace LM {
 	class Window;
@@ -34,18 +35,24 @@ namespace LM {
 	class InputSink;
 	class HumanController;
 	class Player;
+	class ResourceCache;
 
 	class GuiClient : public Client {
 	private:
 		Window* m_window;
-		InputDriver* m_input;
 		HumanController* m_gcontrol;
 		InputSink* m_input_sink;
+		ResourceCache* m_cache;
+
+		void preload();
 
 	public:
-		virtual Player* make_player(const char name, uint32_t id, char team);
+		GuiClient();
+		virtual ~GuiClient();
 
-		void run();
+		virtual GraphicalPlayer* make_player(const char* name, uint32_t id, char team);
+
+		virtual void run();
 	};
 }
 

@@ -166,7 +166,7 @@ void Player::set_rotation_degrees(double rotation) {
 }
 
 void Player::set_rotation_radians(double rotation) {
-	m_rotation = get_normalized_angle(rotation * RADIANS_TO_DEGREES);
+	set_rotation_degrees(rotation * RADIANS_TO_DEGREES);
 }
 
 void Player::set_rotational_vel(double rotation) {
@@ -174,7 +174,7 @@ void Player::set_rotational_vel(double rotation) {
 }
 
 void Player::set_rotational_vel_radians(double rotation) {
-	m_rotational_vel = rotation * RADIANS_TO_DEGREES;
+	set_rotational_vel(rotation * RADIANS_TO_DEGREES);
 }
 
 void Player::set_gun_rotation_degrees(double gun_rotation) {
@@ -182,7 +182,7 @@ void Player::set_gun_rotation_degrees(double gun_rotation) {
 }
 
 void Player::set_gun_rotation_radians(double gun_rotation) {
-	m_gun_rotation = get_normalized_angle(gun_rotation * RADIANS_TO_DEGREES);
+	set_gun_rotation_degrees(gun_rotation * RADIANS_TO_DEGREES);
 }
 
 void Player::set_is_invisible(bool is_invisible) {

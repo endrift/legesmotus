@@ -31,12 +31,12 @@ extern "C" int main(int argc, char* argv[]) {
 	bluef_s.get_bone()->set_parent(&root);
 	bluef_s.set_center_x(46);
 	bluef_s.set_center_y(30);
-	bluef_s.set_x(13);
+	bluef_s.set_x(14);
 	bluef_s.set_y(-18);
 	blueb_s.get_bone()->set_parent(&root);
 	blueb_s.set_center_x(27);
 	blueb_s.set_center_y(29);
-	blueb_s.set_x(-2);
+	blueb_s.set_x(-5);
 	blueb_s.set_y(-18);
 	g.add_graphic("blue", &blue_s);
 	g.add_graphic("bluef", &bluef_s, 1);
