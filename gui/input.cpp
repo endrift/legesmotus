@@ -51,6 +51,9 @@ const wchar_t* LM::get_key_name(const KeyEvent& key) {
 		KEYTYPE_NAME(R_ALT, "Alt (R)");
 		KEYTYPE_NAME(L_META, "Meta (L)");
 		KEYTYPE_NAME(R_META, "Meta (R)");
+		KEYTYPE_NAME(L_SUPER, "Windows (L)");
+		KEYTYPE_NAME(R_SUPER, "Windows (R)");
+		KEYTYPE_NAME(MENU, "Menu");
 		KEYTYPE_NAME(BACKSPACE, "Backspace");
 		KEYTYPE_NAME(TAB, "Tab");
 		KEYTYPE_NAME(ENTER, "Enter");

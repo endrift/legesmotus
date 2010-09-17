@@ -83,6 +83,9 @@ int SDLInputDriver::update() {
 					KEYMAP(LALT, L_ALT);
 					KEYMAP(RMETA, R_META);
 					KEYMAP(LMETA, L_META);
+					KEYMAP(RSUPER, R_SUPER);
+					KEYMAP(LSUPER, L_SUPER);
+					KEYMAP(MENU, MENU);
 					KEYMAP(UP, UP);
 					KEYMAP(RIGHT, RIGHT);
 					KEYMAP(DOWN, DOWN);
