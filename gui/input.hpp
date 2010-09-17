@@ -89,6 +89,7 @@ namespace LM {
 	struct KeyEvent {
 		wchar_t character;
 		KeyType type;
+		long raw;
 		int modifiers;
 		bool down;
 	};

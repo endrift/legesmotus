@@ -28,6 +28,10 @@ int main(int argc, char *argv[]) {
 			while (input.poll_mouse_motion(&mme)) {
 				cout << "Mouse moved " << mme.dx << ", " << mme.dy << " to " << mme.x << ", " << mme.y << endl;
 			}
+
+			while (input.poll_mouse_buttons(&mbe)) {
+				cout << "Mouse button " << mbe.button << (mbe.down?" pressed":" released") << endl;
+			}
 		}
 	}
 

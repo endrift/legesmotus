@@ -80,8 +80,12 @@ const wchar_t* LM::get_key_name(const KeyEvent& key) {
 			if (key.character == L'\r') {
 				return L"Numpad Enter";
 			}
-			npk[wcslen(npk) - 1] = key.character;
-			return npk;
+			if (key.character) {
+				npk[wcslen(npk) - 1] = key.character;
+				return npk;
+			} else if (!key.down) {
+				return L"Numpad released";
+			}
 
 		case KEY_LETTER:
 			if (key.character) {
