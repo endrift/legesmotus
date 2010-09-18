@@ -103,5 +103,30 @@ void GraphicalPlayer::set_y(double y) {
 
 void GraphicalPlayer::set_rotation_degrees(double rotation) {
 	// TODO un-hardcode angle
-	m_graphic_root.get_graphic("front_arm")->set_rotation(rotation - 110);
+	// Red team is right-handed, blue team is left-handed
+	bool handedness = true;
+	int flip = 1;
+	if (get_team() != 'A') {
+		handedness = false;
+	}
+
+	if ((rotation > 90 && rotation < 270) || rotation < -90) {
+		handedness = get_team() == 'A';
+	} else {
+		handedness = get_team() != 'A';
+		flip = -flip;
+	}
+
+	if (get_team() != 'A') {
+		rotation = -rotation + 180;
+	}
+
+	m_root_bone.set_scale_x(flip);
+	if (handedness) {
+		m_graphic_root.get_graphic("front_arm")->set_rotation(rotation - 120);
+		m_graphic_root.get_graphic("back_arm")->set_rotation(0);
+	} else {
+		m_graphic_root.get_graphic("front_arm")->set_rotation(0);
+		m_graphic_root.get_graphic("back_arm")->set_rotation(-rotation + 60);
+	}
 }

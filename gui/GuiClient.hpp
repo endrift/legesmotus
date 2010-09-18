@@ -43,10 +43,14 @@ namespace LM {
 		HumanController* m_gcontrol;
 		InputSink* m_input_sink;
 		InputDriver* m_input;
+
 		ResourceCache* m_cache;
+		std::vector<std::string> m_preloaded_images;
 
 		void preload();
 		void preload_image(const char* filename);
+
+		void cleanup();
 
 		void read_input();
 		void set_input_sink(InputSink* input_sink);

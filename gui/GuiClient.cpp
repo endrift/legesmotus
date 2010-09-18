@@ -75,7 +75,13 @@ void GuiClient::preload() {
 void GuiClient::preload_image(const char* filename) {
 	Image img(filename, m_cache, true);
 	m_cache->increment<Image>(filename);
-	// TODO store that this is preloaded somewhere
+	m_preloaded_images.push_back(filename);
+}
+
+void GuiClient::cleanup() {
+	for (vector<string>::iterator iter = m_preloaded_images.begin(); iter != m_preloaded_images.end(); ++iter) {
+		m_cache->decrement<Image>(*iter);
+	}
 }
 
 void GuiClient::read_input() {
@@ -89,6 +95,9 @@ void GuiClient::read_input() {
 
 	while (m_input->poll_keys(&ke)) {
 		m_input_sink->key_pressed(ke);
+		if (ke.type == KEY_ESCAPE) {
+			set_running(false);
+		}
 	}
 
 	while (m_input->poll_mouse_motion(&mme)) {
@@ -143,4 +152,6 @@ void GuiClient::run() {
 		m_window->redraw();
 		last_time = current_time;
 	}
+
+	cleanup();
 }
