@@ -37,56 +37,50 @@ GraphicalPlayer::GraphicalPlayer(const char* name, uint32_t id, char team, Resou
 		color = "red";
 	}
 
-	m_head = new Sprite(cache->get<Image>(color + "_head.png"));
-	m_torso = new Sprite(cache->get<Image>(color + "_torso.png"));
-	m_front_arm = new Sprite(cache->get<Image>(color + "_frontarm.png"));
-	m_back_arm = new Sprite(cache->get<Image>(color + "_backarm.png"));
-	m_front_leg = new Sprite(cache->get<Image>(color + "_frontleg.png"));
-	m_back_leg = new Sprite(cache->get<Image>(color + "_backleg.png"));
-
-	m_torso->get_bone()->set_parent(&m_root_bone);
-	m_torso->set_center_x(32);
-	m_torso->set_center_y(48);
-	m_head->get_bone()->set_parent(&m_root_bone);
-	m_head->set_center_x(35);
-	m_head->set_center_y(23);
-	m_head->set_x(3);
-	m_head->set_y(-25);
-	m_front_arm->get_bone()->set_parent(&m_root_bone);
-	m_front_arm->set_center_x(46);
-	m_front_arm->set_center_y(30);
-	m_front_arm->set_x(14);
-	m_front_arm->set_y(-18);
-	m_back_arm->get_bone()->set_parent(&m_root_bone);
-	m_back_arm->set_center_x(27);
-	m_back_arm->set_center_y(29);
-	m_back_arm->set_x(-5);
-	m_back_arm->set_y(-19);
-	m_front_leg->get_bone()->set_parent(&m_root_bone);
-	m_front_leg->set_center_x(37);
-	m_front_leg->set_center_y(60);
-	m_front_leg->set_x(5);
-	m_front_leg->set_y(12);
-	m_back_leg->get_bone()->set_parent(&m_root_bone);
-	m_back_leg->set_center_x(26);
-	m_back_leg->set_center_y(60);
-	m_back_leg->set_x(-6);
-	m_back_leg->set_y(12);
-	m_graphic_root.add_graphic("head", m_head, 1);
-	m_graphic_root.add_graphic("torso", m_torso, 0);
-	m_graphic_root.add_graphic("front_arm", m_front_arm, 3);
-	m_graphic_root.add_graphic("back_arm", m_back_arm, -2);
-	m_graphic_root.add_graphic("front_leg", m_front_leg, 2);
-	m_graphic_root.add_graphic("back_leg", m_back_leg, 1);
+	Sprite head(cache->get<Image>(color + "_head.png"));
+	Sprite torso(cache->get<Image>(color + "_torso.png"));
+	Sprite front_arm(cache->get<Image>(color + "_frontarm.png"));
+	Sprite back_arm(cache->get<Image>(color + "_backarm.png"));
+	Sprite front_leg(cache->get<Image>(color + "_frontleg.png"));
+	Sprite back_leg(cache->get<Image>(color + "_backleg.png"));
+    
+	torso.get_bone()->set_parent(&m_root_bone);
+	torso.set_center_x(32);
+	torso.set_center_y(48);
+	head.get_bone()->set_parent(&m_root_bone);
+	head.set_center_x(35);
+	head.set_center_y(23);
+	head.set_x(3);
+	head.set_y(-25);
+	front_arm.get_bone()->set_parent(&m_root_bone);
+	front_arm.set_center_x(46);
+	front_arm.set_center_y(30);
+	front_arm.set_x(14);
+	front_arm.set_y(-18);
+	back_arm.get_bone()->set_parent(&m_root_bone);
+	back_arm.set_center_x(27);
+	back_arm.set_center_y(29);
+	back_arm.set_x(-5);
+	back_arm.set_y(-19);
+	front_leg.get_bone()->set_parent(&m_root_bone);
+	front_leg.set_center_x(37);
+	front_leg.set_center_y(60);
+	front_leg.set_x(5);
+	front_leg.set_y(12);
+	back_leg.get_bone()->set_parent(&m_root_bone);
+	back_leg.set_center_x(26);
+	back_leg.set_center_y(60);
+	back_leg.set_x(-6);
+	back_leg.set_y(12);
+	m_graphic_root.add_graphic("head", &head, 1);
+	m_graphic_root.add_graphic("torso", &torso, 0);
+	m_graphic_root.add_graphic("front_arm", &front_arm, 3);
+	m_graphic_root.add_graphic("back_arm", &back_arm, -2);
+	m_graphic_root.add_graphic("front_leg", &front_leg, 2);
+	m_graphic_root.add_graphic("back_leg", &back_leg, 1);
 }
 
 GraphicalPlayer::~GraphicalPlayer() {
-	delete m_head;
-	delete m_torso;
-	delete m_front_arm;
-	delete m_back_arm;
-	delete m_front_leg;
-	delete m_back_leg;
 }
 
 GraphicContainer* GraphicalPlayer::get_graphic() {
@@ -105,4 +99,9 @@ void GraphicalPlayer::set_x(double x) {
 void GraphicalPlayer::set_y(double y) {
 	Player::set_y(y);
 	m_graphic_root.set_y(y);
+}
+
+void GraphicalPlayer::set_rotation_degrees(double rotation) {
+	// TODO un-hardcode angle
+	m_graphic_root.get_graphic("front_arm")->set_rotation(rotation - 110);
 }

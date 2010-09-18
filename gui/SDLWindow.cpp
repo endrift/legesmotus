@@ -81,7 +81,7 @@ SDLWindow::SDLWindow(int width, int height, int depth, int flags) : Window(width
 #endif
 
 	SDL_WM_SetCaption("Leges Motus","Leges Motus");
-	SDL_ShowCursor(SDL_DISABLE);
+	//SDL_ShowCursor(SDL_DISABLE);
 	SDL_Surface* screen = SDL_SetVideoMode(width, height, depth, rflags);
 	if (screen == NULL) {
 		throw Exception(SDL_GetError());

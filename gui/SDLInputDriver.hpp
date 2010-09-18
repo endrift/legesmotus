@@ -34,7 +34,7 @@ namespace LM {
 
 		virtual int update();
 
-		virtual Point mouse_position() const;
+		virtual void mouse_position(int* x, int* y) const;
 		virtual int mouse_buttons() const;
 	};
 }

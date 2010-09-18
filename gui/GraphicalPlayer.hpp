@@ -38,12 +38,6 @@ namespace LM {
 	private:
 		GraphicContainer m_graphic_root;
 		Bone m_root_bone;
-		Sprite* m_head;
-		Sprite* m_torso;
-		Sprite* m_front_arm;
-		Sprite* m_back_arm;
-		Sprite* m_front_leg;
-		Sprite* m_back_leg;
 
 	public:
 		GraphicalPlayer(const char* name, uint32_t id, char team, ResourceCache* cache);
@@ -53,7 +47,8 @@ namespace LM {
 		Bone* get_bone();
 
 		virtual void set_x(double x);
-		virtual void set_y(double y); 
+		virtual void set_y(double y);
+		virtual void set_rotation_degrees(double rotation);
 	};
 }
 

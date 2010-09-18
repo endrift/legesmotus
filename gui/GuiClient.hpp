@@ -31,20 +31,25 @@
 
 namespace LM {
 	class Window;
-	class InputDriver;
 	class InputSink;
 	class HumanController;
 	class Player;
 	class ResourceCache;
+	class InputDriver;
 
 	class GuiClient : public Client {
 	private:
 		Window* m_window;
 		HumanController* m_gcontrol;
 		InputSink* m_input_sink;
+		InputDriver* m_input;
 		ResourceCache* m_cache;
 
 		void preload();
+		void preload_image(const char* filename);
+
+		void read_input();
+		void set_input_sink(InputSink* input_sink);
 
 	public:
 		GuiClient();

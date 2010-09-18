@@ -23,7 +23,64 @@
  */
 
 #include "HumanController.hpp"
+#include "InputDriver.hpp"
+#include <cmath>
 
 using namespace LM;
 using namespace std;
 
+HumanController::HumanController() {
+	m_changeset = 0;
+}
+
+void HumanController::set_viewport_size(int w, int h) {
+	m_view_w = w;
+	m_view_h = h;
+}
+
+void HumanController::key_pressed(const KeyEvent& event) {
+}
+
+void HumanController::mouse_moved(const MouseMotionEvent& event) {
+	m_changes[m_changeset ^ 1] |= CHANGE_AIM;
+	m_mouse_x = event.x;
+	m_mouse_y = event.y;
+}
+
+void HumanController::mouse_clicked(const MouseButtonEvent& event) {
+}
+
+void HumanController::update(uint64_t diff, const GameLogic& state) {
+	m_changes[m_changeset] = 0;
+	m_changeset ^= 1;
+}
+
+int HumanController::get_changes() const {
+	return m_changes[m_changeset];
+}
+
+float HumanController::get_aim() const {
+	int xrel = m_mouse_x - (m_view_w>>1);
+	int yrel = m_mouse_y - (m_view_h>>1);
+
+	return atan2(yrel, xrel);
+}
+
+float HumanController::get_distance() const {
+	int xrel = m_mouse_x - (m_view_w>>1);
+	int yrel = m_mouse_y - (m_view_h>>1);
+
+	return hypot(xrel, yrel);
+}
+
+int HumanController::get_weapon() const {
+	return m_weapon;
+}
+
+wstring HumanController::get_message() const {
+	return L"";
+}
+
+void HumanController::received_message(const Player* p, const wstring& message) {
+	// Nothing to do
+}

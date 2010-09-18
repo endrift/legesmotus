@@ -31,20 +31,35 @@
 namespace LM {
 	class HumanController : public InputSink, public Controller {
 	private:
+		// We need to swap changesets so we can clear one during update
+		int m_changes[2];
+		int m_changeset;
+
+		int m_mouse_x;
+		int m_mouse_y;
+		int m_view_w;
+		int m_view_h;
+
+		int m_weapon;
 
 	public:
-		virtual void update(uint64_t diff, const GameLogic &state);
+		HumanController();
+
+		void set_viewport_size(int w, int h);
+
+		virtual void key_pressed(const KeyEvent& event);
+		virtual void mouse_moved(const MouseMotionEvent& event);
+		virtual void mouse_clicked(const MouseButtonEvent& event);
+
+		virtual void update(uint64_t diff, const GameLogic& state);
 
 		virtual int get_changes() const;
 		virtual float get_aim() const;
+		virtual float get_distance() const;
 		virtual int get_weapon() const;
 
 		virtual std::wstring get_message() const;
 		virtual void received_message(const Player* p, const std::wstring& message);
-
-		virtual void key_pressed(KeyEvent* event) = 0;
-		virtual void mouse_moved(MouseMotionEvent* event) = 0;
-		virtual void mouse_clicked(MouseButtonEvent* event) = 0;
 	};
 }
 

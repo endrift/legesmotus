@@ -47,7 +47,7 @@ namespace LM {
 
 		virtual int update() = 0;
 
-		virtual Point mouse_position() const = 0;
+		virtual void mouse_position(int* x, int* y) const = 0;
 		virtual int mouse_buttons() const = 0;
 
 		bool poll_keys(KeyEvent* event);

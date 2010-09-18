@@ -105,7 +105,7 @@ server: common
 
 client: common
 
-gui: common client
+gui: common client newclient
 
 newclient: common
 

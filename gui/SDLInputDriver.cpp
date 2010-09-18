@@ -138,10 +138,8 @@ int SDLInputDriver::update() {
 	return updates;
 }
 
-Point SDLInputDriver::mouse_position() const {
-	int x, y;
-	SDL_GetMouseState(&x, &y);
-	return Point(x, y);
+void SDLInputDriver::mouse_position(int* x, int* y) const {
+	SDL_GetMouseState(x, y);
 }
 
 int SDLInputDriver::mouse_buttons() const {

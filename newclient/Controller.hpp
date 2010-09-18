@@ -51,6 +51,7 @@ namespace LM {
 
 		virtual int get_changes() const = 0;
 		virtual float get_aim() const = 0;
+		virtual float get_distance() const = 0;
 		virtual int get_weapon() const = 0;
 
 		virtual std::wstring get_message() const = 0;

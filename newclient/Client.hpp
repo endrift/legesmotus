@@ -38,6 +38,8 @@ namespace LM {
 		GameLogic* m_logic;
 		//ClientNetwork m_network;
 
+		bool m_running;
+
 	protected:
 		// Networking, GameLogic calls, and base client updates are handled here
 		void step(uint64_t diff);
@@ -47,6 +49,11 @@ namespace LM {
 	public:
 		virtual ~Client();
 		virtual Player* make_player(const char* name, uint32_t id, char team);
+
+		void set_controller(Controller* controller);
+
+		void set_running(bool running);
+		bool running() const;
 
 		// Main loop: override for subclass behaviors, but call step inside
 		virtual void run();

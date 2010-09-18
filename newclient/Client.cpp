@@ -23,6 +23,7 @@
  */
 
 #include "Client.hpp"
+#include "Controller.hpp"
 #include "common/Player.hpp"
 #include "common/timer.hpp"
 
@@ -35,6 +36,8 @@ Client::~Client() {
 
 void Client::step(uint64_t diff) {
 	//m_network.receive_packets();
+	 
+	m_controller->update(diff, *m_logic);
 }
 
 const char* Client::get_res_directory() const {
@@ -44,6 +47,18 @@ const char* Client::get_res_directory() const {
 
 Player* Client::make_player(const char* name, uint32_t id, char team) {
 	return new Player(name, id, team);
+}
+
+void Client::set_controller(Controller* controller) {
+	m_controller = controller;
+}
+
+void Client::set_running(bool running) {
+	m_running = running;
+}
+
+bool Client::running() const {
+	return m_running;
 }
 
 void Client::run() {
