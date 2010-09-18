@@ -25,6 +25,7 @@
 #include "GraphicalPlayer.hpp"
 #include "Sprite.hpp"
 #include "ResourceCache.hpp"
+#include "common/math.hpp"
 
 using namespace LM;
 using namespace std;
@@ -102,6 +103,11 @@ void GraphicalPlayer::set_y(double y) {
 }
 
 void GraphicalPlayer::set_rotation_degrees(double rotation) {
+	Player::set_rotation_degrees(rotation);
+	m_root_bone.set_rotation(rotation);
+}
+
+void GraphicalPlayer::set_gun_rotation_degrees(double rotation) {
 	// TODO un-hardcode angle
 	// Red team is right-handed, blue team is left-handed
 	bool handedness = true;
@@ -109,6 +115,8 @@ void GraphicalPlayer::set_rotation_degrees(double rotation) {
 	if (get_team() != 'A') {
 		handedness = false;
 	}
+	rotation -= get_rotation_degrees();
+	rotation = get_normalized_angle(rotation);
 
 	if ((rotation > 90 && rotation < 270) || rotation < -90) {
 		handedness = get_team() == 'A';

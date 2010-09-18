@@ -126,26 +126,29 @@ void GuiClient::run() {
 	Sprite crosshair(m_cache->get<Image>("aim.png"));
 	crosshair.set_center_x(32);
 	crosshair.set_center_y(32);
-	crosshair.set_x(100);
+	crosshair.set_x(128);
 	crosshair.get_bone()->set_parent(&crosshair_bone);
 	aim.add_graphic(&crosshair);
-	GraphicalPlayer a_player("foo", 0, 'A', m_cache);
+	GraphicalPlayer a_player("foo", 0, 'B', m_cache);
 	a_player.get_graphic()->set_parent(&root);
 	m_window->set_root_widget(&root);
 	root.set_x(400);
 	root.set_y(300);
+	a_player.set_rotational_vel(60);
 	// XXX end testing code
 
 	uint64_t last_time = get_ticks();
 	while (running()) {
 		uint64_t current_time = get_ticks();
+		uint64_t diff = current_time - last_time;
 
 		read_input();
 
-		step(current_time - last_time);
+		step(diff);
 
 		// XXX move to client, game logic
-		a_player.set_rotation_radians(m_gcontrol->get_aim());
+		a_player.update_rotation(diff/1000.0f);
+		a_player.set_gun_rotation_radians(m_gcontrol->get_aim());
 		crosshair_bone.set_rotation(m_gcontrol->get_aim() * RADIANS_TO_DEGREES);
 		// XXX end
 
