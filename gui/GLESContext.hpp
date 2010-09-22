@@ -76,6 +76,9 @@ namespace LM {
 		virtual int		get_width() const;
 		virtual int		get_height() const;
 
+		virtual void	set_active_camera();
+		virtual void	set_active_graphics();
+
 		virtual void	load_identity();
 		virtual void	push_transform();
 		virtual void	pop_transform();

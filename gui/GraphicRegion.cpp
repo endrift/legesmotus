@@ -117,5 +117,6 @@ void GraphicRegion::draw(DrawContext* ctx) const {
 	} else {
 		ctx->draw_bound_image_region(m_width, m_height, m_img_x, m_img_y, m_img_width, m_img_height);
 	}
+	ctx->unbind_image();
 	ctx->pop_transform();
 }

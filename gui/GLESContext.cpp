@@ -59,12 +59,6 @@ GLESContext::GLESContext(int width, int height) {
 GLESContext::~GLESContext() {
 }
 
-void GLESContext::make_active() {
-	glBindTexture(GL_TEXTURE_2D, m_bound_img);
-	glColor4f(m_color.r, m_color.g, m_color.b, m_color.a);
-	set_blend_mode(m_mode);
-}
-
 void GLESContext::update_stencil() {
 	glStencilFunc(m_stencil_type, m_stencil_depth + m_stencil_func, 0xFF);
 }
@@ -160,12 +154,26 @@ unsigned char* GLESContext::setup_texture(PixelFormat fmt, const unsigned char* 
 	return ndata;
 }
 
+void GLESContext::make_active() {
+	glBindTexture(GL_TEXTURE_2D, m_bound_img);
+	glColor4f(m_color.r, m_color.g, m_color.b, m_color.a);
+	set_blend_mode(m_mode);
+}
+
 int GLESContext::get_width() const {
 	return m_width;
 }
 
 int GLESContext::get_height() const {
 	return m_height;
+}
+
+void GLESContext::set_active_camera() {
+	glMatrixMode(GL_PROJECTION);
+}
+
+void GLESContext::set_active_graphics() {
+	glMatrixMode(GL_MODELVIEW);
 }
 
 void GLESContext::load_identity() {
