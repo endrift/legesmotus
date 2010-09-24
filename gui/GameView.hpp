@@ -31,12 +31,15 @@ namespace LM {
 	class GameView : public Widget {
 	private:
 		float m_scale;
-		float m_offsetX;
-		float m_offsetY;
+		float m_offset_x;
+		float m_offset_y;
+		float m_scale_base;
 
 		void recalc_scale();
 
 	public:
+		GameView(Widget* parent = NULL);
+
 		enum Layer {
 			BACKGROUND = -1,
 			PLAYERS = 0
@@ -44,6 +47,9 @@ namespace LM {
 
 		virtual void set_width(float w);
 		virtual void set_height(float h);
+		void set_offset_x(float x);
+		void set_offset_y(float y);
+		void set_scale_base(float s);
 
 		virtual void draw(DrawContext* ctx) const;
 	};

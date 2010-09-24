@@ -25,12 +25,21 @@
 #ifndef LM_NEWCLIENT_GAMELOGIC_HPP
 #define LM_NEWCLIENT_GAMELOGIC_HPP
 
+#include "common/Player.hpp"
+#include <map>
+
 namespace LM {
 	class GameLogic {
 	private:
+		std::map<uint32_t, Player*> m_players;
 
 	public:
+		~GameLogic();
 
+		void add_player(Player* player);
+		void remove_player(uint32_t id);
+
+		Player* get_player(uint32_t id);
 	};
 }
 

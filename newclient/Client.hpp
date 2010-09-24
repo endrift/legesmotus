@@ -46,6 +46,12 @@ namespace LM {
 
 		virtual const char* get_res_directory() const;
 
+		virtual void add_player(Player* player);
+		virtual void set_own_player(uint32_t id);
+		virtual void remove_player(uint32_t id);
+
+		Player* get_player(uint32_t id);
+
 	public:
 		virtual ~Client();
 		virtual Player* make_player(const char* name, uint32_t id, char team);
@@ -54,6 +60,21 @@ namespace LM {
 
 		void set_running(bool running);
 		bool running() const;
+
+		// Packet callbacks
+		virtual void begin_game();
+		virtual void end_game();
+		virtual void new_round();
+		virtual void start_round();
+		virtual void end_round();
+
+		virtual void welcome(uint32_t player_id,
+		                     std::string player_name,
+		                     char team);
+
+		virtual void announce(uint32_t player_id,
+		                      std::string player_name,
+		                      char team);
 
 		// Main loop: override for subclass behaviors, but call step inside
 		virtual void run();

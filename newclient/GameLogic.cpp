@@ -27,3 +27,22 @@
 using namespace LM;
 using namespace std;
 
+GameLogic::~GameLogic() {
+	for (map<uint32_t, Player*>::iterator iter = m_players.begin(); iter != m_players.end(); ++iter) {
+		delete iter->second;
+	}
+}
+
+void GameLogic::add_player(Player* player) {
+	m_players[player->get_id()] = player;
+}
+
+void GameLogic::remove_player(uint32_t id) {
+	Player* player = m_players[id];
+	m_players[id] = NULL;
+	delete player;
+}
+
+Player* GameLogic::get_player(uint32_t id) {
+	return m_players[id];
+}

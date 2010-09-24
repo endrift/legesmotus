@@ -47,11 +47,20 @@ GuiClient::GuiClient() {
 	set_controller(m_gcontrol);
 
 	preload();
+
+	m_window->set_root_widget(&m_root);
+	m_view.set_parent(&m_root);
+	m_view.set_width(m_window->get_width());
+	m_view.set_height(m_window->get_height());
 }
 
 GuiClient::~GuiClient() {
 	delete m_cache;
 	delete m_input;
+
+	// Clean up associations to prevent deletion failures
+	m_root.set_parent(NULL);
+	m_view.set_parent(NULL);
 
 	// TODO destroy window
 }
@@ -113,6 +122,33 @@ void GuiClient::set_input_sink(InputSink* input_sink) {
 	m_input_sink = input_sink;
 }
 
+void GuiClient::add_player(Player* player) {
+	Client::add_player(player);
+	GraphicalPlayer *gp = static_cast<GraphicalPlayer*>(player);
+	m_view.add_child(gp->get_graphic(), GameView::PLAYERS);
+}
+
+void GuiClient::set_own_player(uint32_t id) {
+	Client::set_own_player(id);
+	m_player = static_cast<GraphicalPlayer*>(get_player(id));
+}
+
+void GuiClient::remove_player(uint32_t id) {
+	Player *p = get_player(id);
+	if (p == NULL) {
+		return;
+	}
+
+	GraphicalPlayer *gp = static_cast<GraphicalPlayer*>(p);
+	m_view.remove_child(gp->get_graphic());
+
+	if (m_player != NULL && m_player->get_id() == id) {
+		m_player = NULL;
+	}
+
+	Client::remove_player(id);
+}
+
 GraphicalPlayer* GuiClient::make_player(const char* name, uint32_t id, char team) {
 	return new GraphicalPlayer(name, id, team, m_cache);
 }
@@ -120,21 +156,22 @@ GraphicalPlayer* GuiClient::make_player(const char* name, uint32_t id, char team
 void GuiClient::run() {
 	set_running(true);
 	// XXX testing code
-	Widget root;
 	Bone crosshair_bone;
-	GraphicContainer aim(&root);
+	GraphicContainer aim(&m_root);
 	Sprite crosshair(m_cache->get<Image>("aim.png"));
 	crosshair.set_center_x(32);
 	crosshair.set_center_y(32);
 	crosshair.set_x(128);
 	crosshair.get_bone()->set_parent(&crosshair_bone);
 	aim.add_graphic(&crosshair);
-	GraphicalPlayer a_player("foo", 0, 'B', m_cache);
-	a_player.get_graphic()->set_parent(&root);
-	m_window->set_root_widget(&root);
-	root.set_x(400);
-	root.set_y(300);
-	a_player.set_rotational_vel(60);
+	aim.set_x(m_window->get_width()/2);
+	aim.set_y(m_window->get_height()/2);
+	m_view.set_scale_base(1024);
+	crosshair_bone.set_scale_x(m_window->get_width()/768.0f);
+	crosshair_bone.set_scale_y(m_window->get_height()/768.0f);
+	begin_game();
+	welcome(0, "Foo", 'A');
+	m_player->set_rotational_vel(60);
 	// XXX end testing code
 
 	uint64_t last_time = get_ticks();
@@ -147,14 +184,24 @@ void GuiClient::run() {
 		step(diff);
 
 		// XXX move to client, game logic
-		a_player.update_rotation(diff/1000.0f);
-		a_player.set_gun_rotation_radians(m_gcontrol->get_aim());
+		m_player->update_rotation(diff/1000.0f);
+		m_player->set_gun_rotation_radians(m_gcontrol->get_aim());
 		crosshair_bone.set_rotation(m_gcontrol->get_aim() * RADIANS_TO_DEGREES);
 		// XXX end
+
+		// Recenter player
+		if (m_player != NULL) {
+			m_view.set_offset_x(m_player->get_x());
+			m_view.set_offset_y(m_player->get_y());
+		}
 
 		m_window->redraw();
 		last_time = current_time;
 	}
+	
+	// XXX testing code
+	end_game();
+	// XXX end testing code
 
 	cleanup();
 }

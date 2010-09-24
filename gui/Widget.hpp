@@ -49,6 +49,7 @@ namespace LM {
 		Widget*	get_parent();
 		void	add_child(Widget* child, int priority = 0);
 		void	remove_child(Widget* child);
+		void	clear_children();
 		const std::multimap<int, Widget*>& get_children();
 
 		Widget*	top_child_at(float x, float y);

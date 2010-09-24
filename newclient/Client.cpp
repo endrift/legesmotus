@@ -45,6 +45,53 @@ const char* Client::get_res_directory() const {
 	return LM_DATA_DIR;
 }
 
+void Client::add_player(Player* player) {
+	m_logic->add_player(player);
+}
+
+void Client::set_own_player(uint32_t id) {
+	// TODO figure out if GameLogic needs to know this
+}
+
+void Client::remove_player(uint32_t id) {
+	m_logic->remove_player(id);
+}
+
+Player* Client::get_player(uint32_t id) {
+	return m_logic->get_player(id);
+}
+
+void Client::begin_game() {
+	m_logic = new GameLogic;
+}
+
+void Client::end_game() {
+	delete m_logic;
+	m_logic = NULL;
+}
+
+void Client::new_round() {
+	// TODO
+}
+
+void Client::start_round() {
+	// TODO
+}
+
+void Client::end_round() {
+	// TODO
+}
+
+void Client::welcome(uint32_t player_id, string player_name, char team) {
+	announce(player_id, player_name, team);
+	set_own_player(player_id);
+}
+
+void Client::announce(uint32_t player_id, string player_name, char team) {
+	Player* player = make_player(player_name.c_str(), player_id, team);
+	add_player(player);
+}
+
 Player* Client::make_player(const char* name, uint32_t id, char team) {
 	return new Player(name, id, team);
 }

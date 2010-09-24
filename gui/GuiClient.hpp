@@ -28,6 +28,7 @@
 #include "common/misc.hpp"
 #include "newclient/Client.hpp"
 #include "GraphicalPlayer.hpp"
+#include "GameView.hpp"
 
 namespace LM {
 	class Window;
@@ -43,6 +44,10 @@ namespace LM {
 		HumanController* m_gcontrol;
 		InputSink* m_input_sink;
 		InputDriver* m_input;
+		GameView m_view;
+		Widget m_root;
+
+		GraphicalPlayer* m_player;
 
 		ResourceCache* m_cache;
 		std::vector<std::string> m_preloaded_images;
@@ -54,6 +59,11 @@ namespace LM {
 
 		void read_input();
 		void set_input_sink(InputSink* input_sink);
+
+	protected:
+		virtual void add_player(Player* player);
+		virtual void set_own_player(uint32_t id);
+		virtual void remove_player(uint32_t id);
 
 	public:
 		GuiClient();

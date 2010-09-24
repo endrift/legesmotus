@@ -43,10 +43,7 @@ Widget::Widget(Widget* parent) {
 
 Widget::~Widget() {
 	set_parent(NULL);
-	for (multimap<int, Widget*>::iterator iter = m_children.begin(); iter != m_children.end(); ++iter) {
-		iter->second->m_parent = NULL;
-		delete iter->second;
-	}
+	clear_children();
 }
 
 void Widget::set_parent(Widget* new_parent) {
@@ -88,6 +85,13 @@ void Widget::remove_child(Widget* child) {
 				m_children.erase(iter--);
 			}
 		}
+	}
+}
+
+void Widget::clear_children() {
+	for (multimap<int, Widget*>::iterator iter = m_children.begin(); iter != m_children.end(); ++iter) {
+		iter->second->m_parent = NULL;
+		delete iter->second;
 	}
 }
 

@@ -27,8 +27,15 @@
 using namespace LM;
 using namespace std;
 
+GameView::GameView(Widget* parent) : Widget(parent) {
+	m_offset_x = 0;
+	m_offset_y = 0;
+	m_scale_base = 1024;
+}
+
 void GameView::recalc_scale() {
-	m_scale = max<float>(get_width(), get_height()) / 1024;
+	// TODO put base scale elsewhere
+	m_scale = max<float>(get_width(), get_height()) / m_scale_base;
 }
 
 void GameView::set_width(float w) {
@@ -41,12 +48,23 @@ void GameView::set_height(float h) {
 	recalc_scale();
 }
 
+void GameView::set_offset_x(float x) {
+	m_offset_x = x;
+}
+
+void GameView::set_offset_y(float y) {
+	m_offset_y = y;
+}
+
+void GameView::set_scale_base(float s) {
+	m_scale_base = s;
+}
+
 void GameView::draw(DrawContext* ctx) const {
 	ctx->set_active_camera();
 	ctx->push_transform();
-	ctx->translate(get_width()/2, get_height()/2);
+	ctx->translate(get_width()/2 - m_offset_x, get_height()/2 - m_offset_y);
 	ctx->scale(m_scale, m_scale);
-	//ctx->translate(get_width()/2, get_height()/2);
 	ctx->set_active_graphics();
 
 	Widget::draw(ctx);
