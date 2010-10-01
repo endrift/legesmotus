@@ -97,8 +97,9 @@ namespace LM {
 		virtual void	clear();
 
 		// Parse the given packet representation of a map object and add it to the map
-		// TODO make this take a MapObject
+		// TODO remove this top one
 		virtual void	add_object(MapReader& data);
+		virtual void	add_object(MapObject* object);
 
 		friend PacketReader&	operator>>(PacketReader& packet, Map& map);
 		friend PacketWriter&	operator<<(PacketWriter& packet, const Map& map);

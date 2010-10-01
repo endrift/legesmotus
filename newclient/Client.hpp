@@ -29,6 +29,7 @@
 
 namespace LM {
 	class Player;
+	class Map;
 	class Controller;
 	class GameLogic;
 
@@ -52,9 +53,12 @@ namespace LM {
 
 		Player* get_player(uint32_t id);
 
+		virtual void set_map(Map* map);
+
 	public:
 		virtual ~Client();
 		virtual Player* make_player(const char* name, uint32_t id, char team);
+		virtual Map* make_map();
 
 		void set_controller(Controller* controller);
 

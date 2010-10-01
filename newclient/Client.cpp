@@ -24,6 +24,7 @@
 
 #include "Client.hpp"
 #include "Controller.hpp"
+#include "common/Map.hpp"
 #include "common/Player.hpp"
 #include "common/timer.hpp"
 
@@ -61,11 +62,18 @@ Player* Client::get_player(uint32_t id) {
 	return m_logic->get_player(id);
 }
 
+void Client::set_map(Map* map) {
+	// TODO
+}
+
 void Client::begin_game() {
-	m_logic = new GameLogic;
+	Map* map = make_map();
+	set_map(map);
+	m_logic = new GameLogic(map);
 }
 
 void Client::end_game() {
+	set_map(NULL);
 	delete m_logic;
 	m_logic = NULL;
 }
@@ -94,6 +102,10 @@ void Client::announce(uint32_t player_id, string player_name, char team) {
 
 Player* Client::make_player(const char* name, uint32_t id, char team) {
 	return new Player(name, id, team);
+}
+
+Map* Client::make_map() {
+	return new Map;
 }
 
 void Client::set_controller(Controller* controller) {

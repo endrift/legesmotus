@@ -23,7 +23,28 @@
  */
 
 #include "GraphicalMap.hpp"
+#include "GraphicalMapObject.hpp"
+#include "common/MapObject.hpp"
+#include "ResourceCache.hpp"
 
 using namespace LM;
 using namespace std;
 
+GraphicalMap::GraphicalMap(ResourceCache *cache) {
+	m_cache = cache;
+}
+
+GraphicalMapObject* GraphicalMap::make_client_map_object(MapReader* reader) {
+	return new GraphicalMapObject(m_cache);
+}
+
+void GraphicalMap::add_object(MapObject* object) {
+	Map::add_object(object);
+	GraphicalMapObject* obj = static_cast<GraphicalMapObject*>(object->get_client_part());
+	// TODO What if it's foreground!?
+	m_background.add_graphic(obj->get_graphic());
+}
+
+GraphicContainer* GraphicalMap::get_background() {
+	return &m_background;
+}

@@ -34,9 +34,7 @@ Decoration::Decoration(Point position, ClientMapObject* clientpart) : MapObject(
 }
 
 void Decoration::init(MapReader* reader) {
-	if (m_clientpart != NULL) {
-		m_clientpart->read(reader);
-	}
+	MapObject::init(reader);
 
 	while (reader->has_more()) {
 		string param_string;

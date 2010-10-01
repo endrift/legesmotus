@@ -27,11 +27,12 @@
 
 namespace LM {
 	class MapReader;
+	class MapObject;
 
 	class ClientMapObject {
 	public:
 		virtual ~ClientMapObject() {}
-		virtual void read(MapReader* reader) = 0;
+		virtual void read(MapReader* reader, MapObject* owner) = 0;
 	};
 }
 

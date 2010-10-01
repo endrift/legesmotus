@@ -53,7 +53,7 @@ namespace LM {
 
 	public:
 		explicit MapObject(Point position, ClientMapObject* clientpart = NULL) : m_position(position) { m_clientpart = clientpart; }
-		virtual ~MapObject() { }
+		virtual ~MapObject();
 
 		Point get_position() const { return m_position; }
 		
@@ -62,6 +62,8 @@ namespace LM {
 		float get_scale_x() { return m_scale_x; }
 		float get_scale_y() { return m_scale_y; }
 		float get_rotation() { return m_rotation; } // in degrees
+
+		ClientMapObject* get_client_part();
 
 		Shape* make_bounding_shape(const std::string& shape_string, Point position) const;
 		// Returns the shape that bounds this map object
@@ -113,7 +115,7 @@ namespace LM {
 		virtual void disengage(GameLogic* logic, Player* player) = 0;
 
 		
-		virtual void init(MapReader* reader) = 0;
+		virtual void init(MapReader* reader);
 	};
 }
 

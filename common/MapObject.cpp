@@ -22,13 +22,19 @@
  * 
  */
 
+#include "ClientMapObject.hpp"
 #include "MapObject.hpp"
 #include "MapReader.hpp"
 #include "Polygon.hpp"
 #include <memory>
+#include <cstring>
 
 using namespace LM;
 using namespace std;
+
+MapObject::~MapObject() {
+	delete m_clientpart;
+}
 
 bool MapObject::parse_param(const char* option_string) {
 	if (strncmp(option_string, "tile=", 5) == 0) {
@@ -45,6 +51,10 @@ bool MapObject::parse_param(const char* option_string) {
 	}
 
 	return true;
+}
+
+ClientMapObject* MapObject::get_client_part() {
+	return m_clientpart;
 }
 
 Shape* MapObject::make_bounding_shape(const std::string& shape_string, Point position) const {
@@ -68,4 +78,10 @@ Shape* MapObject::make_bounding_shape(const std::string& shape_string, Point pos
 	shape->scale(m_scale_x); // TODO: support scaling of shapes in both x and y directions
 
 	return shape.release();
+}
+
+void MapObject::init(MapReader* reader) {
+	if (m_clientpart != NULL) {
+		m_clientpart->read(reader, this);
+	}
 }

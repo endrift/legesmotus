@@ -40,11 +40,9 @@ void	Obstacle::collide(GameLogic* logic, Player* player, Point old_position, flo
 }
 
 void	Obstacle::init(MapReader* reader) {
-	if (m_clientpart != NULL) {
-		m_clientpart->read(reader);
-	}
+	MapObject::init(reader);
 
-	string		bounding_shape;
+	string bounding_shape;
 
 	(*reader) >> bounding_shape;
 

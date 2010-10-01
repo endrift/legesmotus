@@ -144,12 +144,22 @@ void	Map::clear() {
 	m_revision = 0;
 	m_width = m_height = 0;
 	m_options.clear();
+
+	while (!m_objects.empty()) {
+		MapObject* victim = m_objects.back();
+		m_objects.pop_back();
+		delete victim;
+	}
 }
 
 void	Map::add_object(MapReader& data) {
 	if (MapObject* object = make_map_object(&data)) {
-		m_objects.push_back(object);
+		add_object(object);
 	}
+}
+
+void	Map::add_object(MapObject* object) {
+	m_objects.push_back(object);
 }
 
 Map::ObjectType	Map::parse_object_type(const char* type_string) {

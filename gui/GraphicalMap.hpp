@@ -26,13 +26,27 @@
 #define LM_GUI_GRAPHICALMAP_HPP
 
 #include "common/Map.hpp"
+#include "GraphicContainer.hpp"
+#include "GraphicalMapObject.hpp"
+
+#define GraphicalMap NewGraphicalMap
 
 namespace LM {
+	class ResourceCache;
+
 	class GraphicalMap : public Map {
 	private:
+		ResourceCache* m_cache;
+		GraphicContainer m_background;
+
+	protected:
+		virtual GraphicalMapObject* make_client_map_object(MapReader* reader);
+
+		virtual void add_object(MapObject* object);
 
 	public:
-
+		GraphicalMap(ResourceCache* cache);
+		GraphicContainer* get_background();
 	};
 }
 

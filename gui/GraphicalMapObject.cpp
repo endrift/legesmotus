@@ -1,5 +1,5 @@
 /*
- * newclient/GameLogic.cpp
+ * gui/GraphicalMapObject.cpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,33 +22,43 @@
  * 
  */
 
-#include "GameLogic.hpp"
-#include "common/Map.hpp"
+#include "GraphicalMapObject.hpp"
+#include "Image.hpp"
+#include "common/MapReader.hpp"
+#include "common/MapObject.hpp"
+#include "GraphicRegion.hpp"
+#include "ResourceCache.hpp"
 
 using namespace LM;
 using namespace std;
 
-GameLogic::GameLogic(Map* map) {
-	m_map = map;
+GraphicalMapObject::GraphicalMapObject(ResourceCache* cache) {
+	m_cache = cache;
+	m_graphic = NULL;
 }
 
-GameLogic::~GameLogic() {
-	for (map<uint32_t, Player*>::iterator iter = m_players.begin(); iter != m_players.end(); ++iter) {
-		delete iter->second;
+GraphicalMapObject::~GraphicalMapObject() {
+	delete m_graphic;
+}
+
+void GraphicalMapObject::read(MapReader* reader, MapObject* owner) {
+	string graphic_name;
+	(*reader) >> graphic_name;
+
+	if (graphic_name == "-") {
+		return;
 	}
-	delete m_map;
+
+	Image image(graphic_name + ".png", m_cache, true);
+	m_graphic = new GraphicRegion(&image);
+	m_graphic->set_x(owner->get_position().x);
+	m_graphic->set_y(owner->get_position().y);
+	m_graphic->set_width(image.get_width());
+	m_graphic->set_height(image.get_height());
+
+	// TODO other properties
 }
 
-void GameLogic::add_player(Player* player) {
-	m_players[player->get_id()] = player;
-}
-
-void GameLogic::remove_player(uint32_t id) {
-	Player* player = m_players[id];
-	m_players[id] = NULL;
-	delete player;
-}
-
-Player* GameLogic::get_player(uint32_t id) {
-	return m_players[id];
+Graphic* GraphicalMapObject::get_graphic() {
+	return m_graphic;
 }

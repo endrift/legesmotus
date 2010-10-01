@@ -28,6 +28,7 @@
 #include "common/misc.hpp"
 #include "newclient/Client.hpp"
 #include "GraphicalPlayer.hpp"
+#include "GraphicalMap.hpp"
 #include "GameView.hpp"
 
 namespace LM {
@@ -48,6 +49,7 @@ namespace LM {
 		Widget m_root;
 
 		GraphicalPlayer* m_player;
+		GraphicalMap* m_map;
 
 		ResourceCache* m_cache;
 		std::vector<std::string> m_preloaded_images;
@@ -65,11 +67,14 @@ namespace LM {
 		virtual void set_own_player(uint32_t id);
 		virtual void remove_player(uint32_t id);
 
+		virtual void set_map(Map* map);
+
 	public:
 		GuiClient();
 		virtual ~GuiClient();
 
 		virtual GraphicalPlayer* make_player(const char* name, uint32_t id, char team);
+		virtual GraphicalMap* make_map();
 
 		virtual void run();
 	};

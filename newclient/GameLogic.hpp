@@ -29,11 +29,15 @@
 #include <map>
 
 namespace LM {
+	class Map;
+
 	class GameLogic {
 	private:
 		std::map<uint32_t, Player*> m_players;
+		Map* m_map;
 
 	public:
+		GameLogic(Map* map);
 		~GameLogic();
 
 		void add_player(Player* player);

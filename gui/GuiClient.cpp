@@ -52,6 +52,8 @@ GuiClient::GuiClient() {
 	m_view.set_parent(&m_root);
 	m_view.set_width(m_window->get_width());
 	m_view.set_height(m_window->get_height());
+
+	m_map = NULL;
 }
 
 GuiClient::~GuiClient() {
@@ -149,8 +151,22 @@ void GuiClient::remove_player(uint32_t id) {
 	Client::remove_player(id);
 }
 
+void GuiClient::set_map(Map* map) {
+	if (m_map != NULL) {
+		m_view.remove_child(m_map->get_background());
+	}
+	if (map != NULL) {
+		m_map = static_cast<GraphicalMap*>(map);
+		m_view.add_child(m_map->get_background(), GameView::BACKGROUND);
+	}
+}
+
 GraphicalPlayer* GuiClient::make_player(const char* name, uint32_t id, char team) {
 	return new GraphicalPlayer(name, id, team, m_cache);
+}
+
+GraphicalMap* GuiClient::make_map() {
+	return new GraphicalMap(m_cache);
 }
 
 void GuiClient::run() {
@@ -170,6 +186,7 @@ void GuiClient::run() {
 	crosshair_bone.set_scale_x(m_window->get_width()/768.0f);
 	crosshair_bone.set_scale_y(m_window->get_height()/768.0f);
 	begin_game();
+	m_map->load_file((m_cache->get_root() + "/maps/alpha1-test.map").c_str());
 	welcome(0, "Foo", 'A');
 	m_player->set_rotational_vel(60);
 	// XXX end testing code

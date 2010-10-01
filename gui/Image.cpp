@@ -40,6 +40,7 @@ const char* Image::m_image_dir = "sprites";
 Image::Image(const string& path, ResourceCache* cache, bool autogen) {
 	Image *self = cache->get<Image>(path);
 	if (self != NULL) {
+		m_cache = NULL;
 		*this = *self;
 	} else {
 		m_cache = cache;
