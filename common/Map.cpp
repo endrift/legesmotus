@@ -24,6 +24,7 @@
 
 #include "Map.hpp"
 #include "MapReader.hpp"
+#include "MapObject.hpp"
 #include "StringTokenizer.hpp"
 #include "PacketReader.hpp"
 #include "PacketWriter.hpp"
@@ -45,6 +46,28 @@ Map::Map() {
 
 Map::~Map() {
 	Map::clear();
+}
+
+MapObject* Map::make_map_object(MapReader* reader) {
+	Point				position;
+	(*reader) >> position;
+
+	MapObject* object;
+	ClientMapObject* clientpart = make_client_map_object(reader);
+
+	switch (reader->get_type()) {
+	case Map::OBSTACLE:
+		object = new Obstacle(position, clientpart);
+		break;
+	case Map::DECORATION:
+		object = new Decoration(position, clientpart);
+		break;
+	default:
+		return NULL;
+	}
+
+	object->init(reader);
+	return object;
 }
 
 bool	Map::is_loaded(const char* name, int revision) const {
@@ -121,6 +144,12 @@ void	Map::clear() {
 	m_revision = 0;
 	m_width = m_height = 0;
 	m_options.clear();
+}
+
+void	Map::add_object(MapReader& data) {
+	if (MapObject* object = make_map_object(&data)) {
+		m_objects.push_back(object);
+	}
 }
 
 Map::ObjectType	Map::parse_object_type(const char* type_string) {
