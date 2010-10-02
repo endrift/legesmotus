@@ -112,17 +112,16 @@ void Image::upconvert_24(SDL_Surface* image) {
 
 void Image::rearrange_32(SDL_Surface* image) {
 	unsigned char* pixels = (unsigned char*) image->pixels;
-	int r = image->format->Rshift >> 3;
-	int g = image->format->Gshift >> 3;
-	int b = image->format->Bshift >> 3;
-	int a = image->format->Ashift >> 3;
+
+	int aloss = (1 << image->format->Aloss) - 1;
 
 	for (int row = 0; row < m_height; ++row) {
 		for (int col = 0; col < m_width; ++col) {
-			m_pixels[m_pitch*row + 4*col + 0] = pixels[image->pitch*row + 4*col + r];
-			m_pixels[m_pitch*row + 4*col + 1] = pixels[image->pitch*row + 4*col + g];
-			m_pixels[m_pitch*row + 4*col + 2] = pixels[image->pitch*row + 4*col + b];
-			m_pixels[m_pitch*row + 4*col + 3] = pixels[image->pitch*row + 4*col + a];
+			int* pixel = (int*)&pixels[image->pitch*row + 4*col];
+			m_pixels[m_pitch*row + 4*col + 0] = (*pixel & image->format->Rmask)>>image->format->Rshift;
+			m_pixels[m_pitch*row + 4*col + 1] = (*pixel & image->format->Gmask)>>image->format->Gshift;
+			m_pixels[m_pitch*row + 4*col + 2] = (*pixel & image->format->Bmask)>>image->format->Bshift;
+			m_pixels[m_pitch*row + 4*col + 3] = ((*pixel & image->format->Amask)>>image->format->Ashift) + aloss;
 		}
 	}
 }
