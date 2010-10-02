@@ -32,25 +32,73 @@
 using namespace LM;
 using namespace std;
 
+MapObject::MapObject(Point position, ClientMapObject* clientpart) {
+	m_position = position;
+	m_clientpart = clientpart;
+}
+
 MapObject::~MapObject() {
 	delete m_clientpart;
 }
 
 bool MapObject::parse_param(const char* option_string) {
 	if (strncmp(option_string, "tile=", 5) == 0) {
-		m_is_tiled = true;
-		m_tile_dimensions = Vector::make_from_string(option_string + 5);
+		set_is_tiled(true);
+		set_tile_dimensions(Vector::make_from_string(option_string + 5));
 	} else if (strcmp(option_string, "notile") == 0) {
-		m_is_tiled = false;
+		set_is_tiled(false);
 	} else if (strncmp(option_string, "scale=", 6) == 0) {
-		m_scale_x = m_scale_y = atof(option_string + 6);
+		set_scale_x(atof(option_string + 6));
+		set_scale_y(atof(option_string + 6));
 	} else if (strncmp(option_string, "rotate=", 7) == 0) {
-		m_rotation = atof(option_string + 7);
+		set_rotation(atof(option_string + 7));
 	} else {
 		return false;
 	}
 
 	return true;
+}
+
+void MapObject::set_position(Point position) {
+	m_position = position;
+	if (m_clientpart != NULL) {
+		m_clientpart->set_position(position);
+	}
+}
+
+void MapObject::set_is_tiled(bool is_tiled) {
+	m_is_tiled = is_tiled;
+	if (m_clientpart != NULL) {
+		m_clientpart->set_is_tiled(is_tiled);
+	}
+}
+
+void MapObject::set_tile_dimensions(Vector tile_dimensions) {
+	m_tile_dimensions = tile_dimensions;
+	if (m_clientpart != NULL) {
+		m_clientpart->set_tile_dimensions(tile_dimensions);
+	}
+}
+
+void MapObject::set_scale_x(float scale_x) {
+	m_scale_x = scale_x;
+	if (m_clientpart != NULL) {
+		m_clientpart->set_scale_x(scale_x);
+	}
+}
+
+void MapObject::set_scale_y(float scale_y) {
+	m_scale_y = scale_y;
+	if (m_clientpart != NULL) {
+		m_clientpart->set_scale_y(scale_y);
+	}
+}
+
+void MapObject::set_rotation(float rotation) {
+	m_rotation = rotation;
+	if (m_clientpart != NULL) {
+		m_clientpart->set_rotation(rotation);
+	}
 }
 
 ClientMapObject* MapObject::get_client_part() {

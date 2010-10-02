@@ -39,7 +39,6 @@ namespace LM {
 	class MapObject {
 	private:
 		Point m_position;
-
 		bool m_is_tiled;
 		Vector m_tile_dimensions;
 		float m_scale_x;
@@ -52,16 +51,22 @@ namespace LM {
 		bool parse_param(const char* option_string);
 
 	public:
-		explicit MapObject(Point position, ClientMapObject* clientpart = NULL) : m_position(position) { m_clientpart = clientpart; }
+		explicit MapObject(Point position, ClientMapObject* clientpart = NULL);
 		virtual ~MapObject();
 
 		Point get_position() const { return m_position; }
-		
-		bool get_is_tiled() { return m_is_tiled; }
-		Vector get_tile_dimensions()  { return m_tile_dimensions; }
-		float get_scale_x() { return m_scale_x; }
-		float get_scale_y() { return m_scale_y; }
-		float get_rotation() { return m_rotation; } // in degrees
+		bool get_is_tiled() const { return m_is_tiled; }
+		Vector get_tile_dimensions() const { return m_tile_dimensions; }
+		float get_scale_x() const { return m_scale_x; }
+		float get_scale_y() const { return m_scale_y; }
+		float get_rotation() const { return m_rotation; }
+
+		void set_position(Point position); 
+		void set_is_tiled(bool is_tiled);
+		void set_tile_dimensions(Vector tile_dimensions);
+		void set_scale_x(float scale_x);
+		void set_scale_y(float scale_y);
+		void set_rotation(float rotation);
 
 		ClientMapObject* get_client_part();
 

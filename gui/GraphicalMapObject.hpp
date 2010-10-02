@@ -43,6 +43,13 @@ namespace LM {
 
 		virtual void read(MapReader* reader, MapObject* owner);
 
+		virtual void set_position(Point position); 
+		virtual void set_is_tiled(bool is_tiled);
+		virtual void set_tile_dimensions(Vector tile_dimensions);
+		virtual void set_scale_x(float scale_x);
+		virtual void set_scale_y(float scale_y);
+		virtual void set_rotation(float rotation);
+
 		Graphic* get_graphic();
 	};
 }

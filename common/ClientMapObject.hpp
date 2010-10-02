@@ -25,6 +25,8 @@
 #ifndef LM_COMMON_CLIENTMAPOBJECT_HPP
 #define LM_COMMON_CLIENTMAPOBJECT_HPP
 
+#include "common/Point.hpp"
+
 namespace LM {
 	class MapReader;
 	class MapObject;
@@ -33,6 +35,13 @@ namespace LM {
 	public:
 		virtual ~ClientMapObject() {}
 		virtual void read(MapReader* reader, MapObject* owner) = 0;
+
+		virtual void set_position(Point position) = 0; 
+		virtual void set_is_tiled(bool is_tiled) = 0;
+		virtual void set_tile_dimensions(Vector tile_dimensions) = 0;
+		virtual void set_scale_x(float scale_x) = 0;
+		virtual void set_scale_y(float scale_y) = 0;
+		virtual void set_rotation(float rotation) = 0;
 	};
 }
 

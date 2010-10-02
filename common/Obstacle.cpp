@@ -25,6 +25,7 @@
 #include "Obstacle.hpp"
 #include "ClientMapObject.hpp"
 #include "MapReader.hpp"
+#include <cstring>
 
 using namespace LM;
 using namespace std;

@@ -59,6 +59,32 @@ void GraphicalMapObject::read(MapReader* reader, MapObject* owner) {
 	// TODO other properties
 }
 
+void GraphicalMapObject::set_position(Point position) {
+	m_graphic->set_x(position.x);
+	m_graphic->set_y(position.y);
+}
+
+void GraphicalMapObject::set_is_tiled(bool is_tiled) {
+	m_graphic->set_image_repeat(is_tiled);
+}
+
+void GraphicalMapObject::set_tile_dimensions(Vector tile_dimensions) {
+	m_graphic->set_width(tile_dimensions.x);
+	m_graphic->set_height(tile_dimensions.y);
+}
+
+void GraphicalMapObject::set_scale_x(float scale_x) {
+	m_graphic->set_scale_x(scale_x);
+}
+
+void GraphicalMapObject::set_scale_y(float scale_y) {
+	m_graphic->set_scale_y(scale_y);
+}
+
+void GraphicalMapObject::set_rotation(float rotation) {
+	m_graphic->set_rotation(rotation);
+}
+
 Graphic* GraphicalMapObject::get_graphic() {
 	return m_graphic;
 }
