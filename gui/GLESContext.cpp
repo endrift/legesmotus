@@ -28,8 +28,10 @@
 #include "common/Exception.hpp"
 
 #include "SDL.h"
+#include <string>
 
 using namespace LM;
+using namespace std;
 
 const GLint GLESContext::m_rect_tex_vertices[] = {
 	0, 0,
@@ -38,7 +40,7 @@ const GLint GLESContext::m_rect_tex_vertices[] = {
 	0, 1
 };
 
-GLESContext::GLESContext(int width, int height) {
+GLESContext::GLESContext(int width, int height, bool genfb) {
 	m_width = width;
 	m_height = height;
 
@@ -47,6 +49,32 @@ GLESContext::GLESContext(int width, int height) {
 
 	m_bound_img = 0;
 	m_img_bound = false;
+
+	m_color = Color::WHITE;
+
+	if (genfb) {
+		glGenFramebuffersEXT(1, &m_fbo);
+		glGenRenderbuffersEXT(1, &m_stencil_rbo);
+		glGenTextures(1, &m_fbo_tex);
+	
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fbo);
+
+		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, m_stencil_rbo);
+		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_STENCIL_INDEX8_EXT, width, height);
+
+		glBindTexture(GL_TEXTURE_2D, m_fbo_tex);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);	
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, m_fbo_tex, 0);
+	} else {
+		m_fbo = 0;
+		m_stencil_rbo = 0;
+		m_fbo_tex = 0;
+
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+	}
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -57,6 +85,18 @@ GLESContext::GLESContext(int width, int height) {
 }
 
 GLESContext::~GLESContext() {
+	if (m_fbo) {
+		glDeleteFramebuffersEXT(1, &m_fbo);
+		m_fbo = 0;
+	}
+	if (m_stencil_rbo) {
+		glDeleteRenderbuffersEXT(1, &m_stencil_rbo);
+		m_stencil_rbo = 0;
+	}
+	if (m_fbo_tex) {
+		glDeleteTextures(1, &m_fbo_tex);
+		m_fbo_tex = 0;
+	}
 }
 
 void GLESContext::update_stencil() {
@@ -155,9 +195,19 @@ unsigned char* GLESContext::setup_texture(PixelFormat fmt, const unsigned char* 
 }
 
 void GLESContext::make_active() {
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fbo);
+	glViewport(0, 0, m_width, m_height);
 	glBindTexture(GL_TEXTURE_2D, m_bound_img);
 	glColor4f(m_color.r, m_color.g, m_color.b, m_color.a);
 	set_blend_mode(m_mode);
+}
+
+Image GLESContext::get_image(const string& name, ResourceCache* cache) {
+	if (m_fbo_tex) {
+		return LM::Image(m_width, m_height, name, cache, m_fbo_tex);
+	} else {
+		return LM::Image();
+	}
 }
 
 int GLESContext::get_width() const {
@@ -355,8 +405,7 @@ DrawContext::Image GLESContext::gen_image(int* width, int* height, PixelFormat f
 
 	GLuint img;
 	glGenTextures(1, &img);
-	bind_image(img);glTexParameterf(GL_TEXTURE_2D,
-		GL_GENERATE_MIPMAP, GL_TRUE);
+	bind_image(img);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);	
 	glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);

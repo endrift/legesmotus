@@ -37,8 +37,21 @@ using namespace std;
 
 const char* Image::m_image_dir = "sprites";
 
+Image::Image() {
+	m_cache = NULL;
+	m_owns_handle = false;
+	m_handle = 0;
+	m_width = 0;
+	m_height = 0;
+	m_pitch = 0;
+	m_handle_width = 0;
+	m_handle_height = 0;
+	m_pixels = NULL;
+}
+
 Image::Image(const string& path, ResourceCache* cache, bool autogen) {
 	Image *self = cache->get<Image>(path);
+	m_owns_handle = true;
 	if (self != NULL) {
 		m_cache = NULL;
 		*this = *self;
@@ -50,17 +63,26 @@ Image::Image(const string& path, ResourceCache* cache, bool autogen) {
 	}
 }
 
-Image::Image(int width, int height, const string& name, ResourceCache* cache) {
+Image::Image(int width, int height, const string& name, ResourceCache* cache, DrawContext::Image handle) {
 	m_cache = cache;
 	m_width = width;
 	m_height = height;
+	m_handle_width = width;
+	m_handle_height = height;
 
 	m_pitch = m_width*4;
 
 	m_name = name;
 
-	m_pixels = new unsigned char[m_width*m_pitch];
-	m_handle = 0;
+	if (handle) {
+		m_pixels = NULL;
+		m_handle = handle;
+		m_owns_handle = false;
+	} else {
+		m_pixels = new unsigned char[m_width*m_pitch];
+		m_handle = 0;
+		m_owns_handle = true;
+	}
 }
 
 Image::Image(const Image& other) {
@@ -72,7 +94,7 @@ Image::~Image() {
 	int remaining = m_cache->decrement<Image>(m_name);
 	if (!remaining) {
 		delete[] m_pixels;
-		if (m_handle) {
+		if (m_handle && m_owns_handle) {
 			m_cache->get_context()->del_image(m_handle);
 		}
 	}
@@ -131,6 +153,7 @@ DrawContext::Image Image::gen_handle(bool autofree) {
 		m_handle_width = m_width;
 		m_handle_height = m_height;
 		m_handle = m_cache->get_context()->gen_image(&m_handle_width, &m_handle_height, DrawContext::RGBA, m_pixels);
+		m_owns_handle = true;
 	}
 
 	if (autofree) {

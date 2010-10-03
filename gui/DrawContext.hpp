@@ -30,6 +30,8 @@
 
 namespace LM {
 	class Widget;
+	class Image;
+	class ResourceCache;
 
 	class DrawContext {
 	public:
@@ -71,6 +73,7 @@ namespace LM {
 		bool	is_dirty();
 
 		virtual void	make_active() = 0;
+		virtual LM::Image get_image(const std::string& name, ResourceCache* cache) = 0;
 
 		virtual int		get_width() const = 0;
 		virtual int		get_height() const = 0;

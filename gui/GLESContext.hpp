@@ -26,7 +26,24 @@
 #define LM_GUI_GLESCONTEXT_HPP
 
 #include "DrawContext.hpp"
-#include "client/compat_gl.h"
+#include "Image.hpp"
+
+#ifdef __APPLE__
+#include <OpenGL/gl.h>
+#include <OpenGL/glext.h>
+#else
+#include "GL/gl.h"
+#include "GL/glu.h"
+#include "GL/glext.h"
+#ifdef __WIN32
+#define GL_SRC0_RGB GL_SOURCE0_RGB
+#define GL_SRC1_RGB GL_SOURCE1_RGB
+#define GL_SRC2_RGB GL_SOURCE2_RGB
+#define GL_SRC0_ALPHA GL_SOURCE0_ALPHA
+#define GL_SRC1_ALPHA GL_SOURCE1_ALPHA
+#define GL_SRC2_ALPHA GL_SOURCE2_ALPHA
+#endif
+#endif
 
 namespace LM {
 	class GLESContext : public DrawContext {
@@ -43,6 +60,12 @@ namespace LM {
 
 		GLfloat	m_arc_vertices[2*(MAX_ARC_FINE + 2)];
 		GLfloat	m_rect_vertices[8];
+
+		// Buffer objects
+		GLuint	m_fbo;
+		GLuint	m_stencil_rbo;
+		GLuint	m_fbo_tex;
+		LM::Image m_image;
 
 		// Current state
 		GLuint	m_bound_img;
@@ -68,10 +91,11 @@ namespace LM {
 									  GLenum* glfmt, GLenum* type);
 
 	public:
-		GLESContext(int width, int height);
+		GLESContext(int width, int height, bool genfb = false);
 		virtual ~GLESContext();
 
 		virtual void	make_active();
+		virtual LM::Image get_image(const std::string& name, ResourceCache* cache);
 
 		virtual int		get_width() const;
 		virtual int		get_height() const;

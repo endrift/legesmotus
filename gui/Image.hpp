@@ -51,14 +51,16 @@ namespace LM {
 
 		unsigned char*		m_pixels;
 		DrawContext::Image	m_handle;
+		bool				m_owns_handle;
 
 		void upconvert_8(SDL_Surface* image);
 		void upconvert_24(SDL_Surface* image);
 		void rearrange_32(SDL_Surface* image);
 
 	public:
+		Image();
 		Image(const std::string& path, ResourceCache* cache, bool autogen = false);
-		Image(int width, int height, const std::string& name, ResourceCache* cache);
+		Image(int width, int height, const std::string& name, ResourceCache* cache, DrawContext::Image handle = 0);
 		Image(const Image& other);
 		~Image();
 
