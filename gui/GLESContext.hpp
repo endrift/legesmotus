@@ -53,19 +53,26 @@ namespace LM {
 		static const int MAX_ARC_FINE = 64;
 
 	private:
-		static const GLint	m_rect_tex_vertices[8];
+		static GLuint m_vbo;
+		enum VBOOffset {
+			INVALID_VBO = 0,
+			RECT_VERTS = sizeof(GLfloat[4]),
+			RECT_TEXS = sizeof(GLfloat[12]),
+			IMG_VERTS = RECT_TEXS
+		};
 
 		GLint	m_width;
 		GLint	m_height;
 
 		GLfloat	m_arc_vertices[2*(MAX_ARC_FINE + 2)];
-		GLfloat	m_rect_vertices[8];
 
 		// Buffer objects
 		GLuint	m_fbo;
 		GLuint	m_stencil_rbo;
 		GLuint	m_fbo_tex;
-		LM::Image m_image;
+
+		VBOOffset m_active_vbo;
+		bool	m_using_vbo;
 
 		// Current state
 		GLuint	m_bound_img;
@@ -79,8 +86,13 @@ namespace LM {
 
 		void	update_stencil();
 
+		void	bind_vbo(VBOOffset offset);
+		void	unbind_vbo();
+		void	reset_vbo();
+
 		void	prepare_arc(float len, float xr, float yr, int fine);
-		void	prepare_rect(float w, float h);
+		void	bind_rect(float w, float h);
+		void	unbind_rect();
 
 		void	draw_subimage(int width, int height,
 							  float tex_x, float tex_y,

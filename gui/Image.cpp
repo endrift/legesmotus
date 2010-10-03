@@ -91,11 +91,13 @@ Image::Image(const Image& other) {
 }
 
 Image::~Image() {
-	int remaining = m_cache->decrement<Image>(m_name);
-	if (!remaining) {
-		delete[] m_pixels;
-		if (m_handle && m_owns_handle) {
-			m_cache->get_context()->del_image(m_handle);
+	if (m_cache != NULL) {
+		int remaining = m_cache->decrement<Image>(m_name);
+		if (!remaining) {
+			delete[] m_pixels;
+			if (m_handle && m_owns_handle) {
+				m_cache->get_context()->del_image(m_handle);
+			}
 		}
 	}
 }
