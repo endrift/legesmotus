@@ -30,7 +30,7 @@ using namespace std;
 GameView::GameView(Widget* parent) : Widget(parent) {
 	m_offset_x = 0;
 	m_offset_y = 0;
-	m_scale_base = 1024;
+	m_scale_base = 1200;
 }
 
 void GameView::recalc_scale() {
