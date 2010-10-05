@@ -12,7 +12,7 @@ int main(int argc, char *argv[]) {
 	SDLWindow* window = SDLWindow::get_instance(512, 512, 24, 0);
 	GLESContext* ctx = window->get_context();
 	ResourceCache cache("data", ctx);
-	Image tile("metal_bgtile64.png", &cache, true);
+	Image tile("metal_hazard64.png", &cache, true);
 	float c[] = { 4.0f, 4.0f, 0.5f, 1.0f };
 	GraphicRegion tile_s(&tile);
 	tile_s.set_width(512);
@@ -28,8 +28,8 @@ int main(int argc, char *argv[]) {
 
 	program->link();
 	ctx->bind_shader_set(program);
-	program->set_variable("arc", 0.4f);
-	program->set_variable("zoom", 2.0f);
+	program->set_variable("arc", 1.0f);
+	program->set_variable("zoom", 1.5f);
 	program->set_variable_2("center", 1, c);
 	program->set_variable("tex", 0);
 	while(running) {
@@ -43,15 +43,15 @@ int main(int argc, char *argv[]) {
 		}
 		glClear(GL_COLOR_BUFFER_BIT);
 		ctx->load_identity();
-		if (frame < 100) {
-			program->set_variable("time", frame / 100.0f);
-		} else if (frame < 150) {
+		if (frame < 200) {
+			program->set_variable("time", frame / 200.0f);
+		} else if (frame < 250) {
 			program->set_variable("time", 1.0f);
 		} else {
 			program->set_variable("time", 0);
 		}
 
-		frame = (frame + 1) % 200;
+		frame = (frame + 1) % 300;
 		ctx->bind_image(tile.get_handle());
 		ctx->draw_bound_image_tiled(512, 512, 0, 0, 64, 64);
 
