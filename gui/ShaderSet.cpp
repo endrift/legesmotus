@@ -1,5 +1,5 @@
 /*
- * gui/SDLWindow.hpp
+ * gui/ShaderSet.cpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,42 +22,8 @@
  * 
  */
 
-#ifndef LM_GUI_SDLWINDOW_HPP
-#define LM_GUI_SDLWINDOW_HPP
+#include "ShaderSet.hpp"
 
-#include "GLESContext.hpp"
-#include "Window.hpp"
+using namespace LM;
+using namespace std;
 
-#ifdef LM_FWBASED
-#include <SDL/SDL.h>
-#else
-#include "SDL.h"
-#endif
-
-namespace LM {
-	class Image;
-	class DrawContext;
-
-	class SDLWindow : public Window {
-	private:
-		GLESContext*	m_context;
-
-	protected:
-		SDLWindow(int width, int height, int depth, int flags);
-		virtual ~SDLWindow();
-
-		virtual bool	rebuild(int width, int height, int depth, int flags);
-
-		virtual void	set_icon_internal(Image* icon);
-
-	public:
-		static SDLWindow*	get_instance(int width, int height, int depth, int flags);
-		static SDLWindow*	get_optimal_instance(int flags = 0);
-
-		virtual GLESContext*	get_context();
-
-		virtual void redraw();
-	};
-}
-
-#endif

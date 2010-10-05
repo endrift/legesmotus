@@ -23,12 +23,16 @@
  */
 
 #include "GLESContext.hpp"
+#include "GLESProgram.hpp"
 #include "Widget.hpp"
 #include "common/math.hpp"
 #include "common/Exception.hpp"
 
 #include "SDL.h"
 #include <string>
+#include <vector>
+#include <fstream>
+#include <sstream>
 
 using namespace LM;
 using namespace std;
@@ -389,6 +393,47 @@ void GLESContext::set_blend_mode(BlendMode m) {
 	m_mode = m;
 }
 
+PixelShader GLESContext::load_pixel_shader(const std::string& filename) {
+	GLuint shader = glCreateShader(GL_FRAGMENT_SHADER);
+	string current;
+	stringstream code;
+	ifstream src(filename.c_str());
+	while (!src.eof()) {
+		getline(src, current);
+		code << current << "\n";
+	}
+
+	const char* codechars = code.str().c_str();
+	glShaderSource(shader, 1, &codechars, NULL);
+	glCompileShader(shader);
+
+	/*GLint compiled;
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+	if (!compiled) {
+		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &compiled);
+		char* log = new char[compiled];
+		glGetShaderInfoLog(shader, compiled, &compiled, log);
+		cout << log << endl;
+	}*/
+	return shader;
+}
+
+void GLESContext::delete_pixel_shader(PixelShader shader) {
+	glDeleteShader(shader);
+}
+	
+ShaderSet* GLESContext::create_shader_set() {
+	return new GLESProgram;
+}
+
+void GLESContext::bind_shader_set(ShaderSet* shaders) {
+	glUseProgram(((GLESProgram*) shaders)->program_number());
+}
+
+void GLESContext::unbind_shader_set() {
+	glUseProgram(0);
+}
+
 void GLESContext::draw_arc(float len, float xr, float yr, int fine) {
 	prepare_arc(len, xr, yr, fine);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, fine + 2);
@@ -559,6 +604,4 @@ void GLESContext::redraw() {
 	load_identity();
 
 	get_root_widget()->draw(this);
-
-	SDL_GL_SwapBuffers();
 }

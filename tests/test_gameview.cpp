@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
 
 		gv.set_width(wx);
 		gv.set_height(hy);
-		ctx->redraw();
+		window->redraw();
 
 		SDL_Delay(20);
 	}

@@ -138,6 +138,13 @@ namespace LM {
 		virtual void	set_draw_color(Color c);
 		virtual void	set_blend_mode(BlendMode m);
 
+		virtual PixelShader load_pixel_shader(const std::string& filename);
+		virtual void	delete_pixel_shader(PixelShader shader);
+
+		virtual ShaderSet* create_shader_set();
+		virtual void	bind_shader_set(ShaderSet* shaders);
+		virtual void	unbind_shader_set();
+
 		virtual void	draw_arc(float circumf, float xr, float yr, int fine);
 		virtual void	draw_arc_fill(float circumf, float xr, float yr, int fine);
 		virtual void	draw_arc_line(float circumf, float xr, float yr, int fine);

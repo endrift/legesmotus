@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
 		offscreen->redraw();
 
 		ctx->make_active();
-		ctx->redraw();
+		window->redraw();
 
 		SDL_Delay(20);
 	}

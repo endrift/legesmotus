@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
-		ctx->redraw();
+		window->redraw();
 
 		SDL_Delay(200);
 	}

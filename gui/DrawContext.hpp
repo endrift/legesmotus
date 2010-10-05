@@ -32,6 +32,9 @@ namespace LM {
 	class Widget;
 	class Image;
 	class ResourceCache;
+	class ShaderSet;
+
+	typedef unsigned int PixelShader;
 
 	class DrawContext {
 	public:
@@ -104,6 +107,13 @@ namespace LM {
 
 		virtual void	set_draw_color(Color c) = 0;
 		virtual void	set_blend_mode(BlendMode m) = 0;
+
+		virtual PixelShader load_pixel_shader(const std::string& filename) = 0;
+		virtual void	delete_pixel_shader(PixelShader shader) = 0;
+
+		virtual ShaderSet* create_shader_set() = 0;
+		virtual void	bind_shader_set(ShaderSet* shaders) = 0;
+		virtual void	unbind_shader_set() = 0;
 
 		virtual void	draw_arc(float circumf, float xr, float yr, int fine) = 0;
 		virtual void	draw_arc_fill(float circumf, float xr, float yr, int fine) = 0;

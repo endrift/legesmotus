@@ -115,3 +115,9 @@ SDLWindow* SDLWindow::get_optimal_instance(int flags) {
 GLESContext* SDLWindow::get_context() {
 	return m_context;
 }
+
+void SDLWindow::redraw() {
+	get_context()->redraw();
+
+	SDL_GL_SwapBuffers();
+}

@@ -78,7 +78,7 @@ namespace LM {
 		void set_root_widget(Widget* root);
 		Widget* get_root_widget();
 
-		void redraw();
+		virtual void redraw();
 	};
 
 	class VmodeNotSupportedException : public Exception {
