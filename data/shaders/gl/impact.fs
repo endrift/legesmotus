@@ -7,7 +7,7 @@ uniform float theta;
 uniform float life;
 
 void main() {
-	vec2 st = (gl_FragCoord.st/512.0)-center;
+	vec2 st = (gl_TexCoord[0].xy)-center;
 	float phase = cos(radians(time * 180.0));
 	float t = 1.0 - (phase * 0.5 + 0.25);
 	float r = length(st)/zoom; //+ t;
@@ -27,13 +27,14 @@ void main() {
 	scale = 1.0 + 1.0*scale;
 	scale = (scale - 1.0) * pow(ang, 8.0) + 1.0;
 	scale = (scale - 1.0) * 2.0/arc + 1.0;
-	//gl_FragColor = vec4(ang, ang, ang, 1);
-	//gl_FragColor = vec4(r, r, r, 1);
-	//gl_FragColor = vec4(scale-1.0, scale, scale+1.0, 1.0);
-	st = gl_TexCoord[0].st;
-	st = st - vec2(0.5, 0.5);
-	st *= scale;
-	st = st + vec2(0.5, 0.5);
-	//gl_FragColor = vec4(st.r, st.g, scale, 1.0);
+	gl_FragColor = vec4(ang, ang, ang, 1);
+	gl_FragColor = vec4(r, r, r, 1);
+	gl_FragColor = vec4(scale-1.0, scale, scale+1.0, 1.0);
+	//st = gl_TexCoord[0].st;
+	//st = st - center;
+	st = scale*st;
+	st = st + center;
+	gl_FragColor = vec4(st.y-0.5, st.y, st.y+0.5, 1.0);
+	//gl_FragColor = vec4(st.x-0.5, st.x, st.x+0.5, 1.0);
 	gl_FragColor = gl_Color*texture2D(tex, st)*vec4(scale, scale, scale, 1.0);
 }
