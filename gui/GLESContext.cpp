@@ -33,6 +33,7 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <iostream>
 
 using namespace LM;
 using namespace std;
@@ -50,6 +51,7 @@ GLESContext::GLESContext(int width, int height, bool genfb) {
 	m_img_bound = false;
 
 	m_using_vbo = false;
+	m_active_vbo = INVALID_VBO;
 
 	m_color = Color::WHITE;
 
@@ -402,19 +404,22 @@ PixelShader GLESContext::load_pixel_shader(const std::string& filename) {
 		getline(src, current);
 		code << current << "\n";
 	}
+	code << endl;
 
-	const char* codechars = code.str().c_str();
+	current = code.str();
+	const char* codechars = current.c_str();
+	cout << current << endl;
 	glShaderSource(shader, 1, &codechars, NULL);
 	glCompileShader(shader);
 
-	/*GLint compiled;
+	GLint compiled;
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
 	if (!compiled) {
 		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &compiled);
 		char* log = new char[compiled];
 		glGetShaderInfoLog(shader, compiled, &compiled, log);
 		cout << log << endl;
-	}*/
+	}
 	return shader;
 }
 

@@ -23,6 +23,7 @@
  */
 
 #include "GLESProgram.hpp"
+#include <iostream>
 
 using namespace LM;
 using namespace std;
@@ -53,6 +54,14 @@ void GLESProgram::detach_shader(PixelShader shader) {
 
 void GLESProgram::link() {
 	glLinkProgram(m_program);
+	GLint linked = 0;
+	glGetProgramiv(m_program, GL_COMPILE_STATUS, &linked);
+	if (!linked) {
+		glGetProgramiv(m_program, GL_INFO_LOG_LENGTH, &linked);
+		char* log = new char[linked];
+		glGetProgramInfoLog(m_program, linked, &linked, log);
+		cout << log << endl;
+	}
 }
 
 void GLESProgram::set_variable(const std::string& name, int x) {
