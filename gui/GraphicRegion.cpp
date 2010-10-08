@@ -110,6 +110,7 @@ void GraphicRegion::set_image_repeat(bool repeat) {
 void GraphicRegion::draw(DrawContext* ctx) const {
 	ctx->push_transform();
 	transform(ctx);
+	preprocess(ctx);
 	const Image* image = get_image();
 	ctx->bind_image(image->get_handle());
 	if (m_repeat) {
@@ -118,5 +119,6 @@ void GraphicRegion::draw(DrawContext* ctx) const {
 		ctx->draw_bound_image_region(m_width, m_height, m_img_x, m_img_y, m_img_width, m_img_height);
 	}
 	ctx->unbind_image();
+	postprocess(ctx);
 	ctx->pop_transform();
 }

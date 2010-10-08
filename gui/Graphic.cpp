@@ -29,10 +29,12 @@ using namespace std;
 
 Graphic::Graphic(Image* image) : m_image(*image), m_color(Color::WHITE) {
 	m_invisible = false;
+	m_shaders = NULL;
 
 	if (m_image.get_handle() == 0) {
 		m_image.gen_handle(true);
 	}
+
 }
 
 Graphic::Graphic(const Graphic& other) : m_image(other.m_image), m_color(other.m_color) {
@@ -50,6 +52,17 @@ const Image* Graphic::get_image() const {
 
 void Graphic::transform(DrawContext* ctx) const {
 	m_bone.transform(ctx);
+}
+
+void Graphic::preprocess(DrawContext* ctx) const {
+	ctx->set_draw_color(m_color);
+	if (m_shaders != NULL) {
+		ctx->bind_shader_set(m_shaders);
+	}
+}
+
+void Graphic::postprocess(DrawContext* ctx) const {
+	ctx->unbind_shader_set();
 }
 
 void Graphic::set_x(float x) {
@@ -122,4 +135,16 @@ void Graphic::set_invisible(bool invisible) {
 
 bool Graphic::is_invisible() const {
 	return m_invisible;
+}
+
+void Graphic::set_color(const Color& c) {
+	m_color = c;
+}
+
+const Color& Graphic::get_color() const {
+	return m_color;
+}
+
+void Graphic::set_shader_set(ShaderSet* shaders) {
+	m_shaders = shaders;
 }

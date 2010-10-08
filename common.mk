@@ -237,8 +237,8 @@ common-tidy:
 	@$(RM) *~
 
 common-clean: common-tidy
-	@$(RM) -r *.{a,dmg,app}
-	@$(RM) *.d
+	@$(RM) -r *.{a,dmg,app,.deps}
+	@$(RM) deps.mk
 
 tidy: common-tidy
 clean: common-clean

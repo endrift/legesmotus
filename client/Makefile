@@ -1,13 +1,8 @@
 BASEDIR = ..
-LIBSRCS := ClientNetwork.cpp ClientSDL.cpp GameController.cpp GameWindow.cpp Sprite.cpp GraphicalPlayer.cpp \
-	Graphic.cpp TiledGraphic.cpp GraphicGroup.cpp GraphicalMap.cpp Font.cpp TextManager.cpp Text.cpp Mask.cpp \
-	Radar.cpp TableBackground.cpp ScrollArea.cpp ScrollBar.cpp Transition.cpp Curve.cpp TransitionManager.cpp \
-	ClientConfiguration.cpp MapReceiver.cpp ServerBrowser.cpp ChatLog.cpp RadialBackground.cpp \
-	ConvolveKernel.cpp MapObjectParams.cpp BaseMapObject.cpp Obstacle.cpp Decoration.cpp ClientGate.cpp \
-	ClientMap.cpp RepulsionField.cpp Menu.cpp MenuItem.cpp TextMenuItem.cpp ArbitraryMenu.cpp ForceField.cpp \
-	Weapon.cpp StandardGun.cpp SpreadGun.cpp ImpactCannon.cpp Hazard.cpp Form.cpp FormItem.cpp ListMenuItem.cpp \
-	RadialMenu.cpp GraphicMenuItem.cpp TextInput.cpp GraphicsCache.cpp ThawGun.cpp AreaGun.cpp ChargeGun.cpp \
-	PenetrationGun.cpp
+LIBSRCS := ClientNetwork.cpp GraphicalPlayer.cpp GraphicalMap.cpp Transition.cpp Curve.cpp TransitionManager.cpp \
+	ClientConfiguration.cpp MapReceiver.cpp ConvolveKernel.cpp MapObjectParams.cpp BaseMapObject.cpp ClientGate.cpp \
+	ClientMap.cpp RepulsionField.cpp ForceField.cpp Weapon.cpp StandardGun.cpp SpreadGun.cpp ImpactCannon.cpp \
+	ThawGun.cpp AreaGun.cpp ChargeGun.cpp PenetrationGun.cpp
 BINSRCS := main.cpp
 
 include $(BASEDIR)/common.mk
@@ -34,7 +29,7 @@ ifeq ($(MACHINE),Darwin)
 BINSRCS += mac.m
 endif
 
-all: legesmotus
+all: $(LIBRARY)
 
 legesmotus: $(BINOBJS) $(LIBRARY) ../liblmcommon.a
 	$(CXX) $(LDFLAGS) -o legesmotus $^ $(CLIENTLIBS)

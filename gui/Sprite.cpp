@@ -42,7 +42,9 @@ Sprite* Sprite::clone() const {
 void Sprite::draw(DrawContext* ctx) const {
 	ctx->push_transform();
 	transform(ctx);
+	preprocess(ctx);
 	const Image* image = get_image();
 	ctx->draw_image(image->get_handle_width(), image->get_handle_height(), image->get_handle());
+	postprocess(ctx);
 	ctx->pop_transform();
 }

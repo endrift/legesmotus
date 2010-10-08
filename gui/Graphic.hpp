@@ -49,6 +49,8 @@ namespace LM {
 
 		Color	m_color;
 
+		ShaderSet* m_shaders;
+
 	protected:
 		Graphic(Image* image = NULL);
 		Graphic(const Graphic& other);
@@ -56,6 +58,8 @@ namespace LM {
 		const Image*	get_image() const;
 
 		void	transform(DrawContext* ctx) const;
+		void	preprocess(DrawContext* ctx) const;
+		void	postprocess(DrawContext* ctx) const;
 
 	public:
 		virtual	~Graphic();
@@ -87,6 +91,8 @@ namespace LM {
 
 		void	set_color(const Color& c);
 		const Color& get_color() const;
+
+		void	set_shader_set(ShaderSet* shaders);
 
 		virtual void draw(DrawContext* ctx) const = 0;
 	};
