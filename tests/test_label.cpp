@@ -1,4 +1,4 @@
-#include "client/GameWindow.hpp"
+#include "gui/SDLWindow.hpp"
 #include "gui/Font.hpp"
 #include "gui/Label.hpp"
 #include "gui/GLESContext.hpp"
@@ -14,15 +14,15 @@ using namespace LM;
 using namespace std;
 
 int main(int argc, char *argv[]) {
-	GameWindow *window = GameWindow::get_instance(500, 100, 24, GameWindow::VSYNC);
-	GLESContext ctx(500, 100);
+	SDLWindow* window = SDLWindow::get_instance(500, 100, 24, Window::FLAG_VSYNC);
+	GLESContext* ctx = window->get_context();
 	LinearCurve curve(1, 0);
 	ConstantCurve bcurve(1, 1);
 	ConvolveKernel kernel(&curve, 7, 2);
 	ConvolveKernel bkernel(&bcurve, 4, 1, 1);
 	
-	Font font(string("data/fonts/JuraMedium.ttf"), 30, &ctx, false, &bkernel);
-	Font cfont(string("data/fonts/JuraMedium.ttf"), 30, &ctx, false, &kernel);
+	Font font(string("data/fonts/JuraMedium.ttf"), 30, ctx, false, &bkernel);
+	Font cfont(string("data/fonts/JuraMedium.ttf"), 30, ctx, false, &kernel);
 	//Font icfont(string("data/fonts/JuraMedium.ttf"), 30, &ctx, true, &kernel);
 	Label l(string("I'm nauseous! I'm nauseous..."), &font);
 	Label sl(&cfont);
@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
 	bool running = true;
 	int phase = 0;
 
-	ctx.translate(250, 60);
+	ctx->translate(250, 60);
 
 	while(running) {
 		SDL_Event e;
@@ -60,17 +60,17 @@ int main(int argc, char *argv[]) {
 		l.set_color(Color(c, c, c, 1));
 		//l.set_tracking(4.0f*c);
 		l.set_skew(f);
-		l.draw(&ctx);
+		l.draw(ctx);
 		//ctx.scale(1, (c+0.8));
 
-		ctx.translate(245, 35);
-		ctx.scale(0.5f, 0.5f);
+		ctx->translate(245, 35);
+		ctx->scale(0.5f, 0.5f);
 		wstringstream s;
 		s << phase;
 		p.set_string(s.str());
-		p.draw(&ctx);
-		ctx.scale(2, 2);
-		ctx.translate(-245, -35);
+		p.draw(ctx);
+		ctx->scale(2, 2);
+		ctx->translate(-245, -35);
 
 		SDL_GL_SwapBuffers();
 		SDL_Delay(10);

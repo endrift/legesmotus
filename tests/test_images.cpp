@@ -1,4 +1,4 @@
-#include "client/GameWindow.hpp"
+#include "gui/SDLWindow.hpp"
 #include "gui/GLESContext.hpp"
 #include "gui/ResourceCache.hpp"
 #include "gui/Image.hpp"
@@ -9,17 +9,17 @@
 using namespace LM;
 
 int main(int argc, char *argv[]) {
-	GameWindow *window = GameWindow::get_instance(256, 256, 24, false);
-	GLESContext ctx(256, 256);
+	SDLWindow* window = SDLWindow::get_instance(256, 256, 24, 0);
+	GLESContext* ctx = window->get_context();
 	SDL_ShowCursor(SDL_TRUE);
 
 	bool running = true;
 	bool mousedown = false;
 	int wx = 64;
 	int hy = 64;
-	ResourceCache cache("data", &ctx);
+	ResourceCache cache("data", ctx);
 	Image img("metal_bgtile64.png", &cache, true);
-	ctx.bind_image(img.get_handle());
+	ctx->bind_image(img.get_handle());
 	while(running) {
 		SDL_Event e;
 		while(SDL_PollEvent(&e) != 0) {
@@ -33,10 +33,10 @@ int main(int argc, char *argv[]) {
 					running = 0;
 					break;
 				case SDLK_q:
-					ctx.unbind_image();
+					ctx->unbind_image();
 					break;
 				case SDLK_w:
-					ctx.bind_image(img.get_handle());
+					ctx->bind_image(img.get_handle());
 					break;
 				default:
 					break;
@@ -57,13 +57,13 @@ int main(int argc, char *argv[]) {
 		}
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		ctx.load_identity();
-		ctx.translate(96.0f, 64.0f);
-		ctx.draw_bound_image(64, 64);
-		ctx.translate(-32.0f, 128.0f);
-		ctx.draw_bound_image_region(wx, hy, 0, 0, 64, 64);
-		ctx.translate(128.0f, 0);
-		ctx.draw_bound_image_tiled(wx, hy, 0, 0, 64, 64);
+		ctx->load_identity();
+		ctx->translate(96.0f, 64.0f);
+		ctx->draw_bound_image(64, 64);
+		ctx->translate(-32.0f, 128.0f);
+		ctx->draw_bound_image_region(wx, hy, 0, 0, 64, 64);
+		ctx->translate(128.0f, 0);
+		ctx->draw_bound_image_tiled(wx, hy, 0, 0, 64, 64);
 
 		SDL_GL_SwapBuffers();
 		SDL_Delay(20);
