@@ -272,23 +272,26 @@ unsigned char* Image::get_pixels() {
 }
 
 Image& Image::operator=(const Image& other) {
-	if (m_cache != NULL) {
-		m_cache->decrement<Image>(m_name);
+	if (&other != this) {
+		if (m_cache != NULL) {
+			m_cache->decrement<Image>(m_name);
+		}
+	
+		m_cache = other.m_cache;
+		m_width = other.m_width;
+		m_height = other.m_height;
+		m_pitch = other.m_pitch;
+		m_pixels = other.m_pixels;
+		m_handle = other.m_handle;
+		m_name = other.m_name;
+	
+		m_handle = other.m_handle;
+		m_handle_width = other.m_handle_width;
+		m_handle_height = other.m_handle_height;
+		m_owns_handle = false;
+	
+		m_cache->increment<Image>(m_name);
 	}
-
-	m_cache = other.m_cache;
-	m_width = other.m_width;
-	m_height = other.m_height;
-	m_pitch = other.m_pitch;
-	m_pixels = other.m_pixels;
-	m_handle = other.m_handle;
-	m_name = other.m_name;
-
-	m_handle = other.m_handle;
-	m_handle_width = other.m_handle_width;
-	m_handle_height = other.m_handle_height;
-
-	m_cache->increment<Image>(m_name);
 
 	return *this;
 }

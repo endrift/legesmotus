@@ -35,6 +35,11 @@ using namespace std;
 MapObject::MapObject(Point position, ClientMapObject* clientpart) {
 	m_position = position;
 	m_clientpart = clientpart;
+
+	m_is_tiled = false;
+	m_scale_x = 1;
+	m_scale_y = 1;
+	m_rotation = 0;
 }
 
 MapObject::~MapObject() {

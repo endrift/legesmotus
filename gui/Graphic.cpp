@@ -34,12 +34,12 @@ Graphic::Graphic(Image* image) : m_image(*image), m_color(Color::WHITE) {
 	if (m_image.get_handle() == 0) {
 		m_image.gen_handle(true);
 	}
-
 }
 
 Graphic::Graphic(const Graphic& other) : m_image(other.m_image), m_color(other.m_color) {
 	m_bone = other.m_bone;
 	m_invisible = other.m_invisible;
+	m_shaders = other.m_shaders;
 }
 
 Graphic::~Graphic() {
