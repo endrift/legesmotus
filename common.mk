@@ -91,6 +91,8 @@ ifneq ($(filter $(ARCH),$(ARCHS)),$(ARCH))
  endif
 endif
 
+LIBS += -lBox2d
+
 ifeq ($(MACHINE)$(NOBUNDLE),Darwin)
  export MACOSX_DEPLOYMENT_TARGET=10.4
  FLAGS_SDL  = -I$(FRAMEWORKS)/SDL.framework/Headers
@@ -183,7 +185,7 @@ else
  endif
 endif
 
-LDFLAGS += $(CFLAGS)
+LDFLAGS += $(CFLAGS) $(LIBDIR)
 CFLAGS += $(FLAGS_GL) $(INCLUDES)
 
 # Windows needs Winsock2 for BSD sockets
