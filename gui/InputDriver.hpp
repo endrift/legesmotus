@@ -31,16 +31,21 @@
 #include <queue>
 
 namespace LM {
+	class InputSink;
+
 	class InputDriver {
 	private:
-		std::queue<KeyEvent> m_key_events;
+		/*std::queue<KeyEvent> m_key_events;
 		std::queue<MouseMotionEvent> m_motion_events;
-		std::queue<MouseButtonEvent> m_button_events;
+		std::queue<MouseButtonEvent> m_button_events;*/
+
+		InputSink* m_sink;
 
 	protected:
 		void register_event(const KeyEvent& event);
 		void register_event(const MouseMotionEvent& event);
 		void register_event(const MouseButtonEvent& event);
+		void register_event(const SystemEvent& event);
 
 	public:
 		virtual ~InputDriver();
@@ -50,9 +55,11 @@ namespace LM {
 		virtual void mouse_position(int* x, int* y) const = 0;
 		virtual int mouse_buttons() const = 0;
 
-		bool poll_keys(KeyEvent* event);
+		void set_sink(InputSink* sink);
+
+		/*bool poll_keys(KeyEvent* event);
 		bool poll_mouse_motion(MouseMotionEvent* event);
-		bool poll_mouse_buttons(MouseButtonEvent* event);
+		bool poll_mouse_buttons(MouseButtonEvent* event);*/
 	};
 }
 

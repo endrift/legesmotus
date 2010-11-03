@@ -50,6 +50,9 @@ void HumanController::mouse_moved(const MouseMotionEvent& event) {
 void HumanController::mouse_clicked(const MouseButtonEvent& event) {
 }
 
+void HumanController::system_event(const SystemEvent& event) {
+}
+
 void HumanController::update(uint64_t diff, const GameLogic& state) {
 	m_changes[m_changeset] = 0;
 	m_changeset ^= 1;

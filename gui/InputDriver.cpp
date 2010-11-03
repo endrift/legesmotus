@@ -23,27 +23,40 @@
  */
 
 #include "InputDriver.hpp"
+#include "InputSink.hpp"
 
 using namespace LM;
 using namespace std;
+
 
 InputDriver::~InputDriver() {
 	// Nothing to do
 }
 
+void InputDriver::set_sink(InputSink* sink) {
+	m_sink = sink;
+}
+
 void InputDriver::register_event(const KeyEvent& event) {
-	m_key_events.push(event);
+	//m_key_events.push(event);
+	m_sink->key_pressed(event);
 }
 
 void InputDriver::register_event(const MouseMotionEvent& event) {
-	m_motion_events.push(event);
+	//m_motion_events.push(event);
+	m_sink->mouse_moved(event);
 }
 
 void InputDriver::register_event(const MouseButtonEvent& event) {
-	m_button_events.push(event);
+	//m_button_events.push(event);
+	m_sink->mouse_clicked(event);
 }
 
-bool InputDriver::poll_keys(KeyEvent* event) {
+void InputDriver::register_event(const SystemEvent& event) {
+	m_sink->system_event(event);
+}
+
+/*bool InputDriver::poll_keys(KeyEvent* event) {
 	if (m_key_events.empty()) {
 		return false;
 	}
@@ -71,4 +84,4 @@ bool InputDriver::poll_mouse_buttons(MouseButtonEvent* event) {
 	*event = m_button_events.front();
 	m_button_events.pop();
 	return true;
-}
+}*/

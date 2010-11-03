@@ -89,6 +89,10 @@ namespace LM {
 		BUTTON_WHEEL_DOWN = 5
 	};
 
+	enum SystemEventType {
+		SYSTEM_QUIT = 1
+	};
+
 	struct KeyEvent {
 		wchar_t character;
 		KeyType type;
@@ -105,6 +109,10 @@ namespace LM {
 	struct MouseButtonEvent {
 		int button;
 		bool down;
+	};
+
+	struct SystemEvent {
+		SystemEventType type;
 	};
 
 	inline int mouse_button_bit(MouseButton button) {

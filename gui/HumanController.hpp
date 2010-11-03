@@ -50,6 +50,7 @@ namespace LM {
 		virtual void key_pressed(const KeyEvent& event);
 		virtual void mouse_moved(const MouseMotionEvent& event);
 		virtual void mouse_clicked(const MouseButtonEvent& event);
+		virtual void system_event(const SystemEvent& event);
 
 		virtual void update(uint64_t diff, const GameLogic& state);
 

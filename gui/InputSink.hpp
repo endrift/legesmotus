@@ -28,8 +28,6 @@
 #include "input.hpp"
 
 namespace LM {
-	class InputDriver;
-
 	class InputSink {
 
 	public:
@@ -38,6 +36,8 @@ namespace LM {
 		virtual void key_pressed(const KeyEvent& event) = 0;
 		virtual void mouse_moved(const MouseMotionEvent& event) = 0;
 		virtual void mouse_clicked(const MouseButtonEvent& event) = 0;
+
+		virtual void system_event(const SystemEvent& event) = 0;
 	};
 }
 

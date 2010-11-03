@@ -41,9 +41,10 @@ GuiClient::GuiClient() {
 	m_window = SDLWindow::get_instance(800, 600, 24, Window::FLAG_VSYNC);
 	m_cache = new ResourceCache(get_res_directory(), m_window->get_context());
 	m_input = new SDLInputDriver;
+	m_input->set_sink(this);
 	m_gcontrol = new HumanController; // XXX we don't necessarily want one
 	m_gcontrol->set_viewport_size(m_window->get_width(), m_window->get_height());
-	set_input_sink(m_gcontrol);
+	set_sink(m_gcontrol);
 	set_controller(m_gcontrol);
 
 	preload();
@@ -95,32 +96,7 @@ void GuiClient::cleanup() {
 	}
 }
 
-void GuiClient::read_input() {
-	if (m_input->update() == 0) {
-		return;
-	}
-
-	KeyEvent ke;
-	MouseMotionEvent mme;
-	MouseButtonEvent mbe;
-
-	while (m_input->poll_keys(&ke)) {
-		m_input_sink->key_pressed(ke);
-		if (ke.type == KEY_ESCAPE) {
-			set_running(false);
-		}
-	}
-
-	while (m_input->poll_mouse_motion(&mme)) {
-		m_input_sink->mouse_moved(mme);
-	}
-
-	while (m_input->poll_mouse_buttons(&mbe)) {
-		m_input_sink->mouse_clicked(mbe);
-	}
-}
-
-void GuiClient::set_input_sink(InputSink* input_sink) {
+void GuiClient::set_sink(InputSink* input_sink) {
 	m_input_sink = input_sink;
 }
 
@@ -196,7 +172,7 @@ void GuiClient::run() {
 		uint64_t current_time = get_ticks();
 		uint64_t diff = current_time - last_time;
 
-		read_input();
+		m_input->update();
 
 		step(diff);
 
@@ -221,4 +197,28 @@ void GuiClient::run() {
 	// XXX end testing code
 
 	cleanup();
+}
+
+void GuiClient::key_pressed(const KeyEvent& event) {
+	m_input_sink->key_pressed(event);
+
+	if (event.type == KEY_ESCAPE) {
+		set_running(false);
+	}
+}
+
+void GuiClient::mouse_moved(const MouseMotionEvent& event) {
+	m_input_sink->mouse_moved(event);
+}
+
+void GuiClient::mouse_clicked(const MouseButtonEvent& event) {
+	m_input_sink->mouse_clicked(event);
+}
+
+void GuiClient::system_event(const SystemEvent& event) {
+	m_input_sink->system_event(event);
+
+	if (event.type == SYSTEM_QUIT) {
+		set_running(false);
+	}
 }

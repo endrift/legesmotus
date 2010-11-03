@@ -45,6 +45,7 @@ int SDLInputDriver::update() {
 	KeyEvent ke;
 	MouseMotionEvent mme;
 	MouseButtonEvent mbe;
+	SystemEvent se;
 
 	while (SDL_PollEvent(&e)) {
 		switch (e.type) {
@@ -130,6 +131,11 @@ int SDLInputDriver::update() {
 			mbe.down = e.button.state == SDL_PRESSED;
 			mbe.button = e.button.button;
 			register_event(mbe);
+			++updates;
+			break;
+		case SDL_QUIT:
+			se.type = SYSTEM_QUIT;
+			register_event(se);
 			++updates;
 			break;
 		}

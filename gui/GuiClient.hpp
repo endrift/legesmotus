@@ -30,16 +30,16 @@
 #include "GraphicalPlayer.hpp"
 #include "GraphicalMap.hpp"
 #include "GameView.hpp"
+#include "InputSink.hpp"
 
 namespace LM {
 	class Window;
-	class InputSink;
 	class HumanController;
 	class Player;
 	class ResourceCache;
 	class InputDriver;
 
-	class GuiClient : public Client {
+	class GuiClient : public Client, public InputSink {
 	private:
 		Window* m_window;
 		HumanController* m_gcontrol;
@@ -60,7 +60,7 @@ namespace LM {
 		void cleanup();
 
 		void read_input();
-		void set_input_sink(InputSink* input_sink);
+		void set_sink(InputSink* input_sink);
 
 	protected:
 		virtual void add_player(Player* player);
@@ -77,6 +77,11 @@ namespace LM {
 		virtual GraphicalMap* make_map();
 
 		virtual void run();
+
+		virtual void key_pressed(const KeyEvent& event);
+		virtual void mouse_moved(const MouseMotionEvent& event);
+		virtual void mouse_clicked(const MouseButtonEvent& event);
+		virtual void system_event(const SystemEvent& event);
 	};
 }
 
