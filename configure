@@ -378,8 +378,8 @@ else
 	echo "NOBUNDLE =" >> config.mk
 fi
 
-LDFLAGS = "$LDFLAGS -L$prefix/lib"
-CFLAGS = "$CFLAGS -I$prefix/include"
+LDFLAGS="$LDFLAGS -L$prefix/lib"
+CFLAGS="$CFLAGS -I$prefix/include"
 
 echo "CC = $CC" >> config.mk
 echo "CXX = $CXX" >> config.mk
