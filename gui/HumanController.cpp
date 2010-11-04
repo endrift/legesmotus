@@ -45,6 +45,7 @@ void HumanController::process_control(const Bindings::ControlEvent& event) {
 		m_changes[m_changeset ^ 1] |= JUMPING;
 		break;
 	case Bindings::CONTROL_BEGIN_TYPING:
+		m_message.clear();
 		m_typing_message = true;
 		break;
 	default:
@@ -60,16 +61,13 @@ void HumanController::set_viewport_size(int w, int h) {
 
 void HumanController::key_pressed(const KeyEvent& event) {
 	if (m_typing_message) {
-		switch (event.type) {
-		case KEY_LETTER:
-			// TODO typing
-			break;
+		switch (event.type) {;
 		case KEY_ENTER:
 			m_changes[m_changeset ^ 1] |= SEND_MESSAGE;
 			m_typing_message = false;
 			break;
 		default:
-			// TODO
+			// TODO hand off to TextInput widget
 			break;
 		}
 	} else {

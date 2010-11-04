@@ -76,6 +76,11 @@ namespace LM {
 
 		MapObject* make_map_object(MapReader* reader);
 
+		// These really shouldn't be necessary (ticket #216)
+		void set_width(int width) { m_width = width; }
+		void set_height(int height) { m_height = height; }
+		void set_revision(int revision) { m_revision = revision; }
+
 		// Standard getters
 		const char*	get_name() const { return m_name.c_str(); }
 		int		get_revision() const { return m_revision; }

@@ -128,6 +128,7 @@ void GuiClient::remove_player(uint32_t id) {
 }
 
 void GuiClient::set_map(Map* map) {
+	Client::set_map(map);
 	if (m_map != NULL) {
 		m_view.remove_child(m_map->get_background());
 	}
@@ -161,8 +162,7 @@ void GuiClient::run() {
 	m_view.set_scale_base(1024);
 	crosshair_bone.set_scale_x(m_view.get_scale()/4.0f);
 	crosshair_bone.set_scale_y(m_view.get_scale()/4.0f);
-	m_map = make_map();
-	m_map->load_file((m_cache->get_root() + "/maps/alpha1-test.map").c_str());
+	new_round("alpha1-test", 0, 2048, 1024, false, 0);
 	begin_game(m_map);
 	welcome(0, "Foo", 'A');
 	m_player->set_rotational_vel(60);

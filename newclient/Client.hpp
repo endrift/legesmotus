@@ -66,9 +66,17 @@ namespace LM {
 		bool running() const;
 
 		// Packet callbacks
+		// TODO rename these packets
 		virtual void begin_game(Map* map = 0);
 		virtual void end_game();
-		virtual void new_round();
+
+		virtual void new_round(std::string map_name,
+		                       int map_revision,
+		                       int map_width,
+		                       int map_height,
+		                       bool round_started,
+		                       uint64_t time_until_start);
+
 		virtual void start_round();
 		virtual void end_round();
 
@@ -79,6 +87,7 @@ namespace LM {
 		virtual void announce(uint32_t player_id,
 		                      std::string player_name,
 		                      char team);
+		// End packet callbacks
 
 		// Main loop: override for subclass behaviors, but call step inside
 		virtual void run();

@@ -28,6 +28,7 @@
 #include "newclient/Controller.hpp"
 #include "InputSink.hpp"
 #include "Bindings.hpp"
+#include <string>
 
 namespace LM {
 	class HumanController : public InputSink, public Controller {
@@ -46,6 +47,7 @@ namespace LM {
 		Bindings m_bindings;
 
 		bool m_typing_message;
+		std::wstring m_message;
 
 		void process_control(const Bindings::ControlEvent& event);
 

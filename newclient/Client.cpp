@@ -82,8 +82,26 @@ void Client::end_game() {
 	m_logic = NULL;
 }
 
-void Client::new_round() {
-	// TODO
+void Client::new_round(std::string map_name, int map_revision, int map_width, int map_height, bool round_started, uint64_t time_until_start) {
+	Map* map = make_map();
+	// TODO use time_until_start, remove round_started from packet
+	// TODO preload and tell revision instead of loading the whole thing
+	if (map->load_file((string(get_res_directory()) + "/maps/" + map_name + ".map").c_str())) {
+		// TODO put back during real map loading
+		/*if (map->get_revision() != map_revision) {
+			// this is really lame
+			delete map;
+			map = make_map();
+			map->set_width(map_width);
+			map->set_height(map_height);
+			map->set_revision(map_revision);
+		}*/
+	} else {
+		map->set_width(map_width);
+		map->set_height(map_height);
+		map->set_revision(map_revision);
+	}
+	set_map(map);
 }
 
 void Client::start_round() {
