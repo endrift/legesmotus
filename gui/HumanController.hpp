@@ -27,6 +27,7 @@
 
 #include "newclient/Controller.hpp"
 #include "InputSink.hpp"
+#include "Bindings.hpp"
 
 namespace LM {
 	class HumanController : public InputSink, public Controller {
@@ -41,6 +42,12 @@ namespace LM {
 		int m_view_h;
 
 		int m_weapon;
+
+		Bindings m_bindings;
+
+		bool m_typing_message;
+
+		void process_control(const Bindings::ControlEvent& event);
 
 	public:
 		HumanController();

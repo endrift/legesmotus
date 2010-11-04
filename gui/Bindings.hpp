@@ -1,5 +1,5 @@
 /*
- * newclient/Controller.hpp
+ * gui/Bindings.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,41 +22,37 @@
  * 
  */
 
-#ifndef LM_NEWCLIENT_CONTROLLER_HPP
-#define LM_NEWCLIENT_CONTROLLER_HPP
+#ifndef LM_GUI_BINDINGS_HPP
+#define LM_GUI_BINDINGS_HPP
 
-#include <string>
-#include <stdint.h>
-
-#include "GameLogic.hpp"
+#include "input.hpp"
 
 namespace LM {
-	class Player;
-	class Map;
-
-	class Controller {
+	class Bindings {
 	public:
-		enum {
-			NO_CHANGE        = 0x00,
-			JUMPING          = 0x01,
-			CHANGE_AIM       = 0x02,
-			CHANGE_WEAPON    = 0x04,
-			FIRE_WEAPON      = 0x08,
-			STOP_FIRE_WEAPON = 0x10,
-			SEND_MESSAGE     = 0x20
+		enum ControlType {
+			CONTROL_NONE = 0,
+			CONTROL_JUMP,
+			CONTROL_SET_WEAPON,
+			CONTROL_INCREMENT_WEAPON,
+			CONTROL_DECREMENT_WEAPON,
+			CONTROL_FIRE,
+			CONTROL_STOP_FIRE,
+			CONTROL_BEGIN_TYPING
 		};
 
-		virtual ~Controller() {}
+		struct ControlEvent {
+			ControlType type;
+			// TODO data
+		};
 
-		virtual void update(uint64_t diff, const GameLogic& state) = 0;
+	private:
+		// TODO store bindings here
 
-		virtual int get_changes() const = 0;
-		virtual float get_aim() const = 0;
-		virtual float get_distance() const = 0;
-		virtual int get_weapon() const = 0;
-
-		virtual std::wstring get_message() const = 0;
-		virtual void received_message(const Player* p, const std::wstring& message) = 0;
+	public:
+		ControlEvent process_event(const KeyEvent& event);
+		ControlEvent process_event(const MouseMotionEvent& event);
+		ControlEvent process_event(const MouseButtonEvent& event);
 	};
 }
 

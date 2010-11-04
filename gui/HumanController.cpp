@@ -33,12 +33,49 @@ HumanController::HumanController() {
 	m_changeset = 0;
 }
 
+void HumanController::process_control(const Bindings::ControlEvent& event) {
+	switch (event.type) {
+	case Bindings::CONTROL_FIRE:
+		m_changes[m_changeset ^ 1] |= FIRE_WEAPON;
+		break;
+	case Bindings::CONTROL_STOP_FIRE:
+		m_changes[m_changeset ^ 1] |= STOP_FIRE_WEAPON;
+		break;
+	case Bindings::CONTROL_JUMP:
+		m_changes[m_changeset ^ 1] |= JUMPING;
+		break;
+	case Bindings::CONTROL_BEGIN_TYPING:
+		m_typing_message = true;
+		break;
+	default:
+		// No default action
+		break;
+	}
+}
+
 void HumanController::set_viewport_size(int w, int h) {
 	m_view_w = w;
 	m_view_h = h;
 }
 
 void HumanController::key_pressed(const KeyEvent& event) {
+	if (m_typing_message) {
+		switch (event.type) {
+		case KEY_LETTER:
+			// TODO typing
+			break;
+		case KEY_ENTER:
+			m_changes[m_changeset ^ 1] |= SEND_MESSAGE;
+			m_typing_message = false;
+			break;
+		default:
+			// TODO
+			break;
+		}
+	} else {
+		Bindings::ControlEvent e = m_bindings.process_event(event);
+		process_control(e);
+	}
 }
 
 void HumanController::mouse_moved(const MouseMotionEvent& event) {
@@ -48,6 +85,8 @@ void HumanController::mouse_moved(const MouseMotionEvent& event) {
 }
 
 void HumanController::mouse_clicked(const MouseButtonEvent& event) {
+	Bindings::ControlEvent e = m_bindings.process_event(event);
+	process_control(e);
 }
 
 void HumanController::system_event(const SystemEvent& event) {
