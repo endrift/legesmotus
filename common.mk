@@ -91,7 +91,7 @@ ifneq ($(filter $(ARCH),$(ARCHS)),$(ARCH))
  endif
 endif
 
-LIBS += -lBox2d
+LIBS += -lBox2D
 
 ifeq ($(MACHINE)$(NOBUNDLE),Darwin)
  export MACOSX_DEPLOYMENT_TARGET=10.4
