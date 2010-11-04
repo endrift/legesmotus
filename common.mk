@@ -17,7 +17,7 @@ DATADIR = data
 
 # Default targets if no targets are explicitly listed
 ifeq ($(TARGETS),)
-TARGETS = client server
+TARGETS = client server gui
 endif
 
 ifeq ($(SDL_CONFIG),)

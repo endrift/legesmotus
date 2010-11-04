@@ -51,6 +51,8 @@ namespace LM {
 		void set_offset_y(float y);
 		void set_scale_base(float s);
 
+		float get_scale() const;
+
 		virtual void draw(DrawContext* ctx) const;
 	};
 }

@@ -60,6 +60,10 @@ void GameView::set_scale_base(float s) {
 	m_scale_base = s;
 }
 
+float GameView::get_scale() const {
+	return m_scale;
+}
+
 void GameView::draw(DrawContext* ctx) const {
 	ctx->set_active_camera();
 	ctx->push_transform();

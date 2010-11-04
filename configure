@@ -159,7 +159,7 @@ done
 targets=""
 if [ $client -eq 1 ]
 then
-	targets="$targets client"
+	targets="$targets client gui"
 fi
 
 if [ $server -eq 1 ]
