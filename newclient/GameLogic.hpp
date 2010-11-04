@@ -28,13 +28,20 @@
 #include "common/Player.hpp"
 #include <map>
 
+class b2World;
+
 namespace LM {
 	class Map;
 
 	class GameLogic {
+	const static float PHYSICS_TIMESTEP = 1.0f / 60.0f;
+	const static int VEL_ITERATIONS = 10;
+	const static int POS_ITERATIONS = 10;
+	
 	private:
 		std::map<uint32_t, Player*> m_players;
 		Map* m_map;
+		b2World* m_physics;
 
 	public:
 		GameLogic(Map* map);
@@ -42,6 +49,11 @@ namespace LM {
 
 		void add_player(Player* player);
 		void remove_player(uint32_t id);
+		
+		void update_map(Map* map);
+		
+		// Run the next step of the game logic.
+		void step();
 
 		Player* get_player(uint32_t id);
 	};

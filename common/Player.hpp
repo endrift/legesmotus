@@ -37,6 +37,9 @@
  * The server should derive a ServerPlayer class that implements server-specific functionality.
  * The client should derive a GraphicalPlayer class that implements client-specific functionality.
  */
+class b2Body;
+class b2World;
+ 
 namespace LM {
 	class PacketReader;
 	class PacketWriter;
@@ -62,10 +65,11 @@ namespace LM {
 		bool		m_is_frozen;	// Is this player frozen? (should be true after the player gets shot)
 		bool		m_is_grabbing_obstacle;	// Is the player grabbing an obstacle?
 		std::string	m_current_weapon_id;	// ID of the current weapon
+		b2Body*		m_physics_body; // Box2D physics body for this player
 	
 	public:
-		Player();
-		Player(const char* name, uint32_t id, char team, double x = 0, double y = 0, double xvel = 0, double yvel = 0, double rotation = 0);
+		Player(b2World* physics_world = 0);
+		Player(const char* name, uint32_t id, char team, double x = 0, double y = 0, double xvel = 0, double yvel = 0, double rotation = 0, b2World* physics_world = 0);
 		virtual ~Player();
 		
 		// Simple getters
@@ -89,6 +93,7 @@ namespace LM {
 		double get_rotation_radians() const;
 		double get_gun_rotation_degrees() const { return m_gun_rotation; }
 		double get_gun_rotation_radians() const;
+		b2Body* get_physics_body() const { return m_physics_body; };
 		bool is_invisible() const { return m_is_invisible; }
 		bool is_visible() const { return !m_is_invisible; }
 		bool is_frozen() const { return m_is_frozen; }
@@ -125,6 +130,12 @@ namespace LM {
 		virtual void set_is_grabbing_obstacle(bool);
 		virtual void set_current_weapon_id(const char*);
 	
+		// Initialize the Box2D physics for this player
+		virtual void initialize_physics(b2World* world);
+		
+		// Update the player's position and rotation to match the physics body
+		virtual void update_physics();
+		
 		// Update the player's position as if the specified amount of time has elapsed
 		virtual void update_position(float timescale);
 		// Do the same, but with rotation

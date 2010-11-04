@@ -29,13 +29,15 @@
 #include "common/math.hpp"
 #include "common/PacketReader.hpp"
 #include "common/PacketWriter.hpp"
+#include <Box2D/Box2D.h>
 
 using namespace LM;
 using namespace std;
 
 // See .hpp file for extensive comments.
 
-Player::Player() {
+Player::Player(b2World* physics_world) {
+	m_physics_body = NULL;
 	m_id = 0;
 	m_team = 0;
 	m_score = 0;
@@ -50,9 +52,14 @@ Player::Player() {
 	m_is_invisible = true;
 	m_is_frozen = true;
 	m_is_grabbing_obstacle = false;
+	
+	if (physics_world != NULL) {
+		initialize_physics(physics_world);
+	}
 }
 
-Player::Player(const char* name, uint32_t id, char team, double x, double y, double xvel, double yvel, double rotation) : m_name(name) {
+Player::Player(const char* name, uint32_t id, char team, double x, double y, double xvel, double yvel, double rotation, b2World* physics_world) : m_name(name) {
+	m_physics_body = NULL;
 	m_id = id;
 	m_team = team;
 	m_score = 0;
@@ -67,9 +74,33 @@ Player::Player(const char* name, uint32_t id, char team, double x, double y, dou
 	m_is_invisible = true;
 	m_is_frozen = true;
 	m_is_grabbing_obstacle = false;
+	
+	if (physics_world != NULL) {
+		initialize_physics(physics_world);
+	}
 }
 
 Player::~Player() {
+}
+
+void Player::initialize_physics(b2World* world) {
+	// TODO: TESTING CODE for physics - might want to specify
+	// this initialization in a config file or something
+	b2BodyDef bodydef;
+	bodydef.type = b2_dynamicBody;
+	bodydef.position.Set(to_physics(m_x), to_physics(m_y));
+	m_physics_body = world->CreateBody(&bodydef);
+	
+	b2PolygonShape playerbox;
+	playerbox.SetAsBox(to_physics(48.0f), to_physics(64.0f));
+
+	b2FixtureDef fixturedef;
+	fixturedef.shape = &playerbox;
+	fixturedef.density = 1.0f;
+	fixturedef.friction = 0.0f;
+	fixturedef.restitution = 0.8f;
+
+	m_physics_body->CreateFixture(&fixturedef);
 }
 
 double Player::get_rotation_radians() const {
@@ -128,6 +159,14 @@ void Player::set_y(double y) {
 void Player::set_position(double x, double y) {
 	set_x(x);
 	set_y(y);
+}
+
+void Player::update_physics() {
+	if (m_physics_body != NULL) {
+		set_x(to_game(m_physics_body->GetPosition().x));
+		set_y(to_game(m_physics_body->GetPosition().y));
+		set_rotation_radians(m_physics_body->GetAngle());
+	}
 }
 
 void Player::update_position(float timescale) {

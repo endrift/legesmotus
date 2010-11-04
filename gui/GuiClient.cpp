@@ -161,8 +161,9 @@ void GuiClient::run() {
 	m_view.set_scale_base(1024);
 	crosshair_bone.set_scale_x(m_view.get_scale()/4.0f);
 	crosshair_bone.set_scale_y(m_view.get_scale()/4.0f);
-	begin_game();
+	m_map = make_map();
 	m_map->load_file((m_cache->get_root() + "/maps/alpha1-test.map").c_str());
+	begin_game(m_map);
 	welcome(0, "Foo", 'A');
 	m_player->set_rotational_vel(60);
 	// XXX end testing code
@@ -177,15 +178,14 @@ void GuiClient::run() {
 		step(diff);
 
 		// XXX move to client, game logic
-		m_player->update_rotation(diff/1000.0f);
 		m_player->set_gun_rotation_radians(m_gcontrol->get_aim());
 		crosshair_bone.set_rotation(m_gcontrol->get_aim() * RADIANS_TO_DEGREES);
 		// XXX end
 
 		// Recenter player
 		if (m_player != NULL) {
-			m_view.set_offset_x(m_player->get_x());
-			m_view.set_offset_y(m_player->get_y());
+			m_view.set_offset_x(m_player->get_x() * m_view.get_scale());
+			m_view.set_offset_y(m_player->get_y() * m_view.get_scale());
 		}
 
 		m_window->redraw();

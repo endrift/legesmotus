@@ -39,6 +39,8 @@ void Client::step(uint64_t diff) {
 	//m_network.receive_packets();
 	 
 	m_controller->update(diff, *m_logic);
+	
+	m_logic->step();
 }
 
 const char* Client::get_res_directory() const {
@@ -66,8 +68,10 @@ void Client::set_map(Map* map) {
 	// TODO
 }
 
-void Client::begin_game() {
-	Map* map = make_map();
+void Client::begin_game(Map* map) {
+	if (map == NULL) {
+		map = make_map();
+	}
 	set_map(map);
 	m_logic = new GameLogic(map);
 }

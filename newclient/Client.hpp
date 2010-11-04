@@ -66,7 +66,7 @@ namespace LM {
 		bool running() const;
 
 		// Packet callbacks
-		virtual void begin_game();
+		virtual void begin_game(Map* map = 0);
 		virtual void end_game();
 		virtual void new_round();
 		virtual void start_round();
