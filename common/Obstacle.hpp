@@ -31,17 +31,25 @@
 
 #define Obstacle NewObstacle
 
+class b2Body;
+class b2World;
+class b2Shape;
+
 namespace LM {
 	class Obstacle : public MapObject {
 	private:
-		std::auto_ptr<Shape>	m_bounding_shape;
+		b2Shape*		m_bounding_shape;
 		bool			m_is_slippery;
 		double			m_bounce_factor;
+		b2Body*			m_physics_body; // Box2D physics body for this map object
 
 	public:
 		explicit Obstacle(Point pos, ClientMapObject* clientpart = NULL);
 
-		virtual const Shape* get_bounding_shape () const { return m_bounding_shape.get(); }
+		// Tells this object to initialize a new physics body in a given world.
+		virtual void initialize_physics(b2World* world);
+
+		virtual const b2Shape* get_bounding_shape () const { return m_bounding_shape; }
 
 		virtual bool is_jumpable() const { return true; }
 		virtual bool is_shootable() const { return true; }

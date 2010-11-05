@@ -29,12 +29,18 @@
 
 #define Decoration NewDecoration
 
+class b2Shape;
+class b2World;
+
 namespace LM {
 	class Decoration : public MapObject {
 	public:
 		explicit Decoration(Point pos, ClientMapObject* clientpart = NULL);
 
-		virtual const Shape* get_bounding_shape() const { return NULL; }
+		virtual const b2Shape* get_bounding_shape() const { return NULL; }
+		
+		// Decorations have no physics of their own.
+		virtual void initialize_physics(b2World* world) {}
 	
 		virtual bool is_jumpable() const { return false; }
 		virtual bool is_shootable() const { return false; }

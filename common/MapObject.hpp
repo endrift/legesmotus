@@ -27,6 +27,9 @@
 
 #include "Point.hpp"
 
+class b2Shape;
+class b2World;
+
 namespace LM {
 	class Shape;
 	class Player;
@@ -34,11 +37,11 @@ namespace LM {
 	class MapReader;
 	class GameLogic;
 	class ClientMapObject;
-	class Shape;
 
 	class MapObject {
 	private:
 		Point m_position;
+		Point m_center_offset;
 		bool m_is_tiled;
 		Vector m_tile_dimensions;
 		float m_scale_x;
@@ -55,13 +58,15 @@ namespace LM {
 		virtual ~MapObject();
 
 		Point get_position() const { return m_position; }
+		Point get_center_offset() const { return m_center_offset; }
 		bool get_is_tiled() const { return m_is_tiled; }
 		Vector get_tile_dimensions() const { return m_tile_dimensions; }
 		float get_scale_x() const { return m_scale_x; }
 		float get_scale_y() const { return m_scale_y; }
 		float get_rotation() const { return m_rotation; }
 
-		void set_position(Point position); 
+		void set_position(Point position);
+		void set_center_offset(Point center_offset);
 		void set_is_tiled(bool is_tiled);
 		void set_tile_dimensions(Vector tile_dimensions);
 		void set_scale_x(float scale_x);
@@ -70,14 +75,17 @@ namespace LM {
 
 		ClientMapObject* get_client_part();
 
-		Shape* make_bounding_shape(const std::string& shape_string, Point position) const;
+		b2Shape* make_bounding_shape(const std::string& shape_string, Point position);
+		
+		// Initializes the physics for this object.
+		virtual void initialize_physics(b2World* world) = 0;
+		
 		// Returns the shape that bounds this map object
 		//  May return NULL if this map object has no bounding shape (i.e. it's decoration)
-		virtual const Shape* get_bounding_shape () const = 0;
+		virtual const b2Shape* get_bounding_shape () const = 0;
 
 		// Returns true if the object has a bounding shape, false otherwise
 		bool is_intersectable() const { return get_bounding_shape() != NULL; }
-
 		
 		// Returns true if the player can jump off of this obstacle, false otherwise
 		virtual bool is_jumpable() const = 0;

@@ -45,6 +45,8 @@ namespace LM {
 	class PacketWriter;
 
 	class Player {
+	const static float MAX_ANGULAR_VELOCITY = 3.0f;
+	
 	public:
 		enum { MAX_ENERGY = 100 };
 

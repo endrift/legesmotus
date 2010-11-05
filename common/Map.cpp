@@ -33,6 +33,7 @@
 #include <fstream>
 #include <string>
 #include <string.h>
+#include <Box2D/Box2D.h>
 
 using namespace LM;
 using namespace std;
@@ -46,6 +47,13 @@ Map::Map() {
 
 Map::~Map() {
 	Map::clear();
+}
+
+void Map::initialize_physics(b2World* world) {
+	list<MapObject*>::iterator it;
+	for (it = m_objects.begin(); it != m_objects.end(); it++) {
+		(*it)->initialize_physics(world);
+	}
 }
 
 MapObject* Map::make_map_object(MapReader* reader) {

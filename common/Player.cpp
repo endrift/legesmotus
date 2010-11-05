@@ -92,7 +92,7 @@ void Player::initialize_physics(b2World* world) {
 	m_physics_body = world->CreateBody(&bodydef);
 	
 	b2PolygonShape playerbox;
-	playerbox.SetAsBox(to_physics(48.0f), to_physics(64.0f));
+	playerbox.SetAsBox(to_physics(24.0f), to_physics(32.0f));
 
 	b2FixtureDef fixturedef;
 	fixturedef.shape = &playerbox;
@@ -166,6 +166,13 @@ void Player::update_physics() {
 		set_x(to_game(m_physics_body->GetPosition().x));
 		set_y(to_game(m_physics_body->GetPosition().y));
 		set_rotation_radians(m_physics_body->GetAngle());
+		
+		// Prevent rotational velocity from going too high.
+		if (m_physics_body->GetAngularVelocity() > MAX_ANGULAR_VELOCITY) {
+			m_physics_body->SetAngularVelocity(MAX_ANGULAR_VELOCITY);
+		} else if (m_physics_body->GetAngularVelocity() < -1.0 * MAX_ANGULAR_VELOCITY) {
+			m_physics_body->SetAngularVelocity(-1.0 * MAX_ANGULAR_VELOCITY);
+		}
 	}
 }
 

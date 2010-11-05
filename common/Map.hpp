@@ -30,6 +30,8 @@
 #include <list>
 #include "ConfigManager.hpp"
 
+class b2World;
+
 namespace LM {
 	class MapReader;
 	class StringTokenizer;
@@ -90,6 +92,9 @@ namespace LM {
 		const std::list<MapObject*>& get_objects() const { return m_objects; }
 
 		bool		is_loaded(const char* name, int revision) const;
+		
+		// Set up the physics for the map in a given world.
+		virtual void	initialize_physics(b2World* world);
 		
 		// Read and parse the given input stream and load into the current map
 		virtual bool	load(std::istream& in);

@@ -26,14 +26,19 @@
 #include "MapObject.hpp"
 #include "MapReader.hpp"
 #include "Polygon.hpp"
+#include "common/Point.hpp"
 #include <memory>
 #include <cstring>
+#include <Box2D/Box2D.h>
+#include <vector>
+#include "common/math.hpp"
 
 using namespace LM;
 using namespace std;
 
 MapObject::MapObject(Point position, ClientMapObject* clientpart) {
 	m_position = position;
+	m_center_offset = Point(0, 0);
 	m_clientpart = clientpart;
 
 	m_is_tiled = false;
@@ -69,6 +74,10 @@ void MapObject::set_position(Point position) {
 	if (m_clientpart != NULL) {
 		m_clientpart->set_position(position);
 	}
+}
+
+void MapObject::set_center_offset(Point center_offset) {
+	m_center_offset = center_offset;
 }
 
 void MapObject::set_is_tiled(bool is_tiled) {
@@ -110,27 +119,68 @@ ClientMapObject* MapObject::get_client_part() {
 	return m_clientpart;
 }
 
-Shape* MapObject::make_bounding_shape(const std::string& shape_string, Point position) const {
-	std::auto_ptr<Shape> shape;
+b2Shape* MapObject::make_bounding_shape(const std::string& shape_string, Point position) {
+	// TODO: Support scaling of shape!
+	const char* str = shape_string.c_str();
+
 
 	if (m_is_tiled) {
+		b2PolygonShape* shape = new b2PolygonShape();
+		
 		// If the object is being tiled, we ignore the specified bounding shape and
 		// use a rectangle of the tile dimensions instead.
-		Polygon* poly = new Polygon(position);
-		shape.reset(poly);
-		poly->make_rectangle(m_tile_dimensions.x, m_tile_dimensions.y);
+		shape->SetAsBox(to_physics(m_tile_dimensions.x/2 * m_scale_x), to_physics(m_tile_dimensions.y/2 * m_scale_y));
+		set_center_offset(Point(m_tile_dimensions.x/2 * m_scale_x, m_tile_dimensions.y/2 * m_scale_y));
+		return shape;
 	} else {
-		shape.reset(Shape::make_from_string(shape_string.c_str(), position));
+		if (strncmp(str, "poly:", 5) == 0) {
+			b2PolygonShape* shape = new b2PolygonShape();
 
-		if (!shape.get()) {
-			return NULL;
+			// Polygon - specified by a list of points.
+			// The points are converted into a list of lines for internal representation.
+			StringTokenizer		tokenizer(str + 5, ';');
+
+			Point			first_point;
+			tokenizer >> first_point;
+
+			int numpoints = 0;
+
+			std::vector<Point> points;
+			Point			previous_point(first_point);
+			while (tokenizer.has_more()) {
+				Point		next_point;
+				tokenizer >> next_point;
+				points.push_back(next_point);
+				
+				numpoints++;
+			}
+			
+			b2Vec2 vertices[numpoints];
+			for (unsigned int i = 0; i < points.size(); i++) {
+				vertices[i].Set(to_physics(points.at(i).x), to_physics(points.at(i).y));
+			}
+			shape->Set(vertices, numpoints);
+
+			return shape;
+		} else if (strncmp(str, "rect:", 5) == 0) {
+			Vector size(Vector::make_from_string(str + 5));
+			b2PolygonShape* shape = new b2PolygonShape();
+			
+			shape->SetAsBox(to_physics(size.x/2 * m_scale_x), to_physics(size.y/2 * m_scale_y));
+
+			set_center_offset(Point(size.x/2 * m_scale_x, size.y/2 * m_scale_y));
+
+			return shape;
+		} else if (strncmp(str, "circle:", 7) == 0) {
+			b2CircleShape* shape = new b2CircleShape();
+			// TODO: Support scaling in y?
+			shape->m_radius = to_physics(atof(str + 7) * m_scale_x);
+			
+			return shape;
 		}
 	}
 
-	shape->rotate(m_rotation);
-	shape->scale(m_scale_x); // TODO: support scaling of shapes in both x and y directions
-
-	return shape.release();
+	return NULL;
 }
 
 void MapObject::init(MapReader* reader) {

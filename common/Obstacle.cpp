@@ -26,6 +26,9 @@
 #include "ClientMapObject.hpp"
 #include "MapReader.hpp"
 #include <cstring>
+#include <Box2D/Box2D.h>
+#include <iostream>
+#include "math.hpp"
 
 using namespace LM;
 using namespace std;
@@ -34,10 +37,28 @@ Obstacle::Obstacle (Point position, ClientMapObject* clientpart) : MapObject(pos
 	// TODO
 	m_is_slippery = false;
 	m_bounce_factor = 0.9;
+	m_bounding_shape = NULL;
 }
 
 void	Obstacle::collide(GameLogic* logic, Player* player, Point old_position, float angle_of_incidence) {
 	// TODO
+}
+
+void 	Obstacle::initialize_physics(b2World* world) {
+	b2BodyDef mybodydef;
+	// TODO: Currently, all map objects are static; make this configured
+	mybodydef.type = b2_staticBody;
+	mybodydef.angle = to_radians(get_rotation());
+	mybodydef.position.Set(to_physics(get_position().x + get_center_offset().x), to_physics(get_position().y + get_center_offset().y)); // 
+	
+	m_physics_body = world->CreateBody(&mybodydef);
+	
+	if (m_bounding_shape == NULL) {
+		cerr << "No bounding shape for obstacle that should have physics." << endl;
+		return;
+	}
+	
+	m_physics_body->CreateFixture(m_bounding_shape, 0.0f);
 }
 
 void	Obstacle::init(MapReader* reader) {
@@ -62,5 +83,9 @@ void	Obstacle::init(MapReader* reader) {
 		}
 	}
 
-	m_bounding_shape.reset(make_bounding_shape(bounding_shape, get_position()));
+	if (m_bounding_shape != NULL) {
+		delete m_bounding_shape;
+	}
+
+	m_bounding_shape = make_bounding_shape(bounding_shape, get_position());
 }

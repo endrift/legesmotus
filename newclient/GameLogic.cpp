@@ -66,7 +66,7 @@ void GameLogic::update_map(Map* map) {
 	
 	// Bottom edge
 	b2BodyDef bedgebodydef;
-	bedgebodydef.position.Set(to_physics(m_map->get_width()/2.0f), to_physics(m_map->get_height()) + 1.5f); // 
+	bedgebodydef.position.Set(to_physics(m_map->get_width()/2.0f), to_physics(m_map->get_height()) + 1.0f); // 
 	b2Body* bedgebody = m_physics->CreateBody(&bedgebodydef);
 	b2PolygonShape bedgebox;
 	bedgebox.SetAsBox(to_physics(m_map->get_width()/2), 1.0f);
@@ -74,7 +74,7 @@ void GameLogic::update_map(Map* map) {
 	
 	// Top edge
 	b2BodyDef tedgebodydef;
-	tedgebodydef.position.Set(to_physics(m_map->get_width()/2.0f), -1.5f); // 
+	tedgebodydef.position.Set(to_physics(m_map->get_width()/2.0f), -1.0f); // 
 	b2Body* tedgebody = m_physics->CreateBody(&tedgebodydef);
 	b2PolygonShape tedgebox;
 	tedgebox.SetAsBox(to_physics(m_map->get_width()/2), 1.0f);
@@ -82,7 +82,7 @@ void GameLogic::update_map(Map* map) {
 	
 	// Left edge
 	b2BodyDef ledgebodydef;
-	ledgebodydef.position.Set(-1.5f, to_physics(m_map->get_height()/2.0f)); // 
+	ledgebodydef.position.Set(-1.0f, to_physics(m_map->get_height()/2.0f)); // 
 	b2Body* ledgebody = m_physics->CreateBody(&ledgebodydef);
 	b2PolygonShape ledgebox;
 	ledgebox.SetAsBox(1.0f, to_physics(m_map->get_height()/2));
@@ -90,18 +90,22 @@ void GameLogic::update_map(Map* map) {
 	
 	// Right edge
 	b2BodyDef redgebodydef;
-	redgebodydef.position.Set(to_physics(m_map->get_width())+1.5f, to_physics(m_map->get_height()/2.0f)); // 
+	redgebodydef.position.Set(to_physics(m_map->get_width())+1.0f, to_physics(m_map->get_height()/2.0f)); // 
 	b2Body* redgebody = m_physics->CreateBody(&redgebodydef);
 	b2PolygonShape redgebox;
 	redgebox.SetAsBox(1.0f, to_physics(m_map->get_height()/2));
 	redgebody->CreateFixture(&redgebox, 0.0f);
+	
+	m_map->initialize_physics(m_physics);
 }
 
 void GameLogic::add_player(Player* player) {
+	// TODO: Put them at their proper spawn location.
+	player->set_position(50, 50);
 	player->initialize_physics(m_physics);
 	
 	// TODO: Testing code for physics - remove later.
-	player->get_physics_body()->ApplyForce(b2Vec2(500.0f, 500.0f), player->get_physics_body()->GetWorldCenter());
+	player->get_physics_body()->ApplyForce(b2Vec2(400.0f, 30.0f), player->get_physics_body()->GetWorldCenter());
 	
 	m_players[player->get_id()] = player;
 }
