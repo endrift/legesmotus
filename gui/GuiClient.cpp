@@ -38,7 +38,7 @@ using namespace std;
 
 GuiClient::GuiClient() {
 	// TODO move elsewhere
-	m_window = SDLWindow::get_instance(800, 600, 24, Window::FLAG_VSYNC);
+	m_window = SDLWindow::get_instance(1280, 800, 24, Window::FLAG_VSYNC);
 	m_cache = new ResourceCache(get_res_directory(), m_window->get_context());
 	m_input = new SDLInputDriver;
 	m_input->set_sink(this);

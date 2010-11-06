@@ -485,10 +485,23 @@ void GLESContext::draw_line(float x1, float y1, float x2, float y2) {
 	glDrawArrays(GL_LINE_STRIP, 0, 2);
 }
 
-void GLESContext::draw_lines(float vertices[], int n, bool loop) {
+void GLESContext::draw_lines(const float vertices[], int n, bool loop) {
 	unbind_vbo();
 	glVertexPointer(2, GL_FLOAT, 0, vertices);
 	glDrawArrays(loop?GL_LINE_LOOP:GL_LINE_STRIP, 0, n);
+}
+
+void GLESContext::draw_polygon(const float vertices[], int n) {
+	unbind_vbo();
+	glVertexPointer(2, GL_FLOAT, 0, vertices);
+	glDrawArrays(GL_POLYGON, 0, n);
+	glDrawArrays(GL_LINE_LOOP, 0, n);
+}
+
+void GLESContext::draw_polygon_fill(const float vertices[], int n) {
+	unbind_vbo();
+	glVertexPointer(2, GL_FLOAT, 0, vertices);
+	glDrawArrays(GL_POLYGON, 0, n);
 }
 
 DrawContext::Image GLESContext::gen_image(int* width, int* height, PixelFormat format, const unsigned char* data) {

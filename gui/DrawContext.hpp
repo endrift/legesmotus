@@ -128,7 +128,9 @@ namespace LM {
 		virtual void	draw_roundrect_line(float w, float h, float r, int fine);
 
 		virtual void	draw_line(float x1, float y1, float x2, float y2) = 0;
-		virtual void	draw_lines(float vertices[], int n, bool loop) = 0;
+		virtual void	draw_lines(const float vertices[], int n, bool loop) = 0;
+		virtual void	draw_polygon(const float vertices[], int n) = 0;
+		virtual void	draw_polygon_fill(const float vertices[], int n) = 0;
 
 		virtual Image	gen_image(int* width, int* height, PixelFormat format, const unsigned char* data) = 0;
 		virtual void	add_mipmap(Image handle, int level, int* width, int* height, PixelFormat format, const unsigned char* data) = 0;
