@@ -34,6 +34,7 @@
 #include <string>
 #include <string.h>
 #include <Box2D/Box2D.h>
+#include "math.hpp"
 
 using namespace LM;
 using namespace std;
@@ -50,6 +51,42 @@ Map::~Map() {
 }
 
 void Map::initialize_physics(b2World* world) {
+	// Set up barriers around the map edges
+	// The extents of box shapes are the half-widths of the box.
+	
+	// Bottom edge
+	b2BodyDef bedgebodydef;
+	bedgebodydef.position.Set(to_physics(get_width()/2.0f), to_physics(get_height() + EDGE_WIDTH)); // 
+	b2Body* bedgebody = world->CreateBody(&bedgebodydef);
+	b2PolygonShape bedgebox;
+	bedgebox.SetAsBox(to_physics(get_width()/2 + 2 * EDGE_WIDTH), to_physics(EDGE_WIDTH));
+	bedgebody->CreateFixture(&bedgebox, 0.0f);
+	
+	// Top edge
+	b2BodyDef tedgebodydef;
+	tedgebodydef.position.Set(to_physics(get_width()/2.0f), to_physics(-1 * EDGE_WIDTH)); // 
+	b2Body* tedgebody = world->CreateBody(&tedgebodydef);
+	b2PolygonShape tedgebox;
+	tedgebox.SetAsBox(to_physics(get_width()/2 + 2 * EDGE_WIDTH), to_physics(EDGE_WIDTH));
+	tedgebody->CreateFixture(&tedgebox, 0.0f);
+	
+	// Left edge
+	b2BodyDef ledgebodydef;
+	ledgebodydef.position.Set(to_physics(-1 * EDGE_WIDTH), to_physics(get_height()/2.0f)); // 
+	b2Body* ledgebody = world->CreateBody(&ledgebodydef);
+	b2PolygonShape ledgebox;
+	ledgebox.SetAsBox(to_physics(EDGE_WIDTH), to_physics(get_height()/2 + 2 * EDGE_WIDTH));
+	ledgebody->CreateFixture(&ledgebox, 0.0f);
+	
+	// Right edge
+	b2BodyDef redgebodydef;
+	redgebodydef.position.Set(to_physics(get_width() + EDGE_WIDTH), to_physics(get_height()/2.0f)); // 
+	b2Body* redgebody = world->CreateBody(&redgebodydef);
+	b2PolygonShape redgebox;
+	redgebox.SetAsBox(to_physics(EDGE_WIDTH), to_physics(get_height()/2 + 2 * EDGE_WIDTH));
+	redgebody->CreateFixture(&redgebox, 0.0f);
+
+	// Now, set up the physics for each map object.
 	list<MapObject*>::iterator it;
 	for (it = m_objects.begin(); it != m_objects.end(); it++) {
 		(*it)->initialize_physics(world);

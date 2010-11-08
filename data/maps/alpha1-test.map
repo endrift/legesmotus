@@ -54,7 +54,7 @@ OBSTACLE	1728,256	metal_obstacle128	rect:128,128
 OBSTACLE	1728,640	metal_obstacle128	rect:128,128
 
 # Upper wall by red gate
-#OBSTACLE	1472,0	metal_obstacle64	rect:64,64	tile=64,256	rotate=15
+OBSTACLE	1472,0	metal_obstacle64	rect:64,64	tile=64,256	rotate=15
 
 # Lower wall by red gate
 OBSTACLE	1472,768	metal_obstacle64	rect:64,64	tile=64,256

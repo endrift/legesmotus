@@ -92,7 +92,7 @@ void Player::initialize_physics(b2World* world) {
 	m_physics_body = world->CreateBody(&bodydef);
 	
 	b2PolygonShape playerbox;
-	playerbox.SetAsBox(to_physics(24.0f), to_physics(32.0f));
+	playerbox.SetAsBox(to_physics(18.0f), to_physics(40.0f));
 
 	b2FixtureDef fixturedef;
 	fixturedef.shape = &playerbox;

@@ -51,50 +51,18 @@ GameLogic::~GameLogic() {
 void GameLogic::update_map(Map* map) {
 	m_map = map;
 	
+	//////// PHYSICS INIT
+	// TODO: Do we want to have this here, or somewhere else?
+	
 	if (m_physics != NULL) {
 		delete m_physics;
 	}
-	
-	// TODO: Do we want to have this here, or somewhere else?
 	
 	b2Vec2 gravity(0.0f, 0.0f);
 	bool doSleep = true;
 	m_physics = new b2World(gravity, doSleep);
 	
-	// Set up barriers around the map edges
-	// The extents of box shapes are the half-widths of the box.
-	
-	// Bottom edge
-	b2BodyDef bedgebodydef;
-	bedgebodydef.position.Set(to_physics(m_map->get_width()/2.0f), to_physics(m_map->get_height()) + 1.0f); // 
-	b2Body* bedgebody = m_physics->CreateBody(&bedgebodydef);
-	b2PolygonShape bedgebox;
-	bedgebox.SetAsBox(to_physics(m_map->get_width()/2), 1.0f);
-	bedgebody->CreateFixture(&bedgebox, 0.0f);
-	
-	// Top edge
-	b2BodyDef tedgebodydef;
-	tedgebodydef.position.Set(to_physics(m_map->get_width()/2.0f), -1.0f); // 
-	b2Body* tedgebody = m_physics->CreateBody(&tedgebodydef);
-	b2PolygonShape tedgebox;
-	tedgebox.SetAsBox(to_physics(m_map->get_width()/2), 1.0f);
-	tedgebody->CreateFixture(&tedgebox, 0.0f);
-	
-	// Left edge
-	b2BodyDef ledgebodydef;
-	ledgebodydef.position.Set(-1.0f, to_physics(m_map->get_height()/2.0f)); // 
-	b2Body* ledgebody = m_physics->CreateBody(&ledgebodydef);
-	b2PolygonShape ledgebox;
-	ledgebox.SetAsBox(1.0f, to_physics(m_map->get_height()/2));
-	ledgebody->CreateFixture(&ledgebox, 0.0f);
-	
-	// Right edge
-	b2BodyDef redgebodydef;
-	redgebodydef.position.Set(to_physics(m_map->get_width())+1.0f, to_physics(m_map->get_height()/2.0f)); // 
-	b2Body* redgebody = m_physics->CreateBody(&redgebodydef);
-	b2PolygonShape redgebox;
-	redgebox.SetAsBox(1.0f, to_physics(m_map->get_height()/2));
-	redgebody->CreateFixture(&redgebox, 0.0f);
+	////////
 	
 	m_map->initialize_physics(m_physics);
 }

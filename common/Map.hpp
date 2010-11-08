@@ -46,6 +46,8 @@ namespace LM {
 	 * The server should derive a class called ServerMap which handles spawning
 	 */
 	class Map {
+	const static float EDGE_WIDTH = 32.0f;
+	
 	public:
 		enum ObjectType {
 			INVALID_OBJECT_TYPE = 0,
