@@ -45,13 +45,13 @@ void	Obstacle::collide(GameLogic* logic, Player* player, Point old_position, flo
 }
 
 void 	Obstacle::initialize_physics(b2World* world) {
-	b2BodyDef mybodydef;
+	b2BodyDef body_def;
 	// TODO: Currently, all map objects are static; make this configured
-	mybodydef.type = b2_staticBody;
-	mybodydef.angle = to_radians(get_rotation());
-	mybodydef.position.Set(to_physics(get_position().x + get_center_offset().x), to_physics(get_position().y + get_center_offset().y)); // 
+	body_def.type = b2_staticBody;
+	body_def.angle = to_radians(get_rotation());
+	body_def.position.Set(to_physics(get_position().x), to_physics(get_position().y)); // 
 	
-	m_physics_body = world->CreateBody(&mybodydef);
+	m_physics_body = world->CreateBody(&body_def);
 	
 	if (m_bounding_shape == NULL) {
 		cerr << "No bounding shape for obstacle that should have physics." << endl;

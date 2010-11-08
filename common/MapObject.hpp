@@ -41,7 +41,6 @@ namespace LM {
 	class MapObject {
 	private:
 		Point m_position;
-		Point m_center_offset;
 		bool m_is_tiled;
 		Vector m_tile_dimensions;
 		float m_scale_x;
@@ -58,7 +57,6 @@ namespace LM {
 		virtual ~MapObject();
 
 		Point get_position() const { return m_position; }
-		Point get_center_offset() const { return m_center_offset; }
 		bool get_is_tiled() const { return m_is_tiled; }
 		Vector get_tile_dimensions() const { return m_tile_dimensions; }
 		float get_scale_x() const { return m_scale_x; }
@@ -66,7 +64,6 @@ namespace LM {
 		float get_rotation() const { return m_rotation; }
 
 		void set_position(Point position);
-		void set_center_offset(Point center_offset);
 		void set_is_tiled(bool is_tiled);
 		void set_tile_dimensions(Vector tile_dimensions);
 		void set_scale_x(float scale_x);

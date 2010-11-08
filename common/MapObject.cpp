@@ -38,7 +38,6 @@ using namespace std;
 
 MapObject::MapObject(Point position, ClientMapObject* clientpart) {
 	m_position = position;
-	m_center_offset = Point(0, 0);
 	m_clientpart = clientpart;
 
 	m_is_tiled = false;
@@ -74,10 +73,6 @@ void MapObject::set_position(Point position) {
 	if (m_clientpart != NULL) {
 		m_clientpart->set_position(position);
 	}
-}
-
-void MapObject::set_center_offset(Point center_offset) {
-	m_center_offset = center_offset;
 }
 
 void MapObject::set_is_tiled(bool is_tiled) {
@@ -129,8 +124,8 @@ b2Shape* MapObject::make_bounding_shape(const std::string& shape_string, Point p
 		
 		// If the object is being tiled, we ignore the specified bounding shape and
 		// use a rectangle of the tile dimensions instead.
-		shape->SetAsBox(to_physics(m_tile_dimensions.x/2 * m_scale_x), to_physics(m_tile_dimensions.y/2 * m_scale_y));
-		set_center_offset(Point(m_tile_dimensions.x/2 * m_scale_x, m_tile_dimensions.y/2 * m_scale_y));
+		shape->SetAsBox(to_physics(m_tile_dimensions.x/2 * m_scale_x), to_physics(m_tile_dimensions.y/2 * m_scale_y),
+		                b2Vec2(to_physics(m_tile_dimensions.x/2 * m_scale_x), to_physics(m_tile_dimensions.y/2 * m_scale_y)), 0);
 		return shape;
 	} else {
 		if (strncmp(str, "poly:", 5) == 0) {
@@ -166,9 +161,8 @@ b2Shape* MapObject::make_bounding_shape(const std::string& shape_string, Point p
 			Vector size(Vector::make_from_string(str + 5));
 			b2PolygonShape* shape = new b2PolygonShape();
 			
-			shape->SetAsBox(to_physics(size.x/2 * m_scale_x), to_physics(size.y/2 * m_scale_y));
-
-			set_center_offset(Point(size.x/2 * m_scale_x, size.y/2 * m_scale_y));
+			shape->SetAsBox(to_physics(size.x/2 * m_scale_x), to_physics(size.y/2 * m_scale_y),
+			                b2Vec2(to_physics(size.x/2 * m_scale_x), to_physics(size.y/2 * m_scale_y)), 0);
 
 			return shape;
 		} else if (strncmp(str, "circle:", 7) == 0) {
