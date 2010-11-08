@@ -25,7 +25,7 @@
 #ifndef LM_GUI_PHYSICSDRAW_HPP
 #define LM_GUI_PHYSICSDRAW_HPP
 
-#include "widget.hpp"
+#include "Widget.hpp"
 #include "common/misc.hpp"
 #include <Box2D/Box2D.h>
 
