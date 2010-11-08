@@ -42,7 +42,9 @@ namespace LM {
 
 		enum Layer {
 			BACKGROUND = -1,
-			PLAYERS = 0
+			PLAYERS = 0,
+			FOREGROUND = 1,
+			OVERLAY = 2,
 		};
 
 		virtual void set_width(float w);

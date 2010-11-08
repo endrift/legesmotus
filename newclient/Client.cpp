@@ -31,6 +31,10 @@
 using namespace LM;
 using namespace std;
 
+Client::Client() {
+	m_logic = NULL;
+}
+
 Client::~Client() {
 	// TODO
 }
@@ -64,6 +68,10 @@ Player* Client::get_player(uint32_t id) {
 	return m_logic->get_player(id);
 }
 
+GameLogic* Client::get_game() {
+	return m_logic;
+}
+
 void Client::set_map(Map* map) {
 	// TODO
 }
@@ -72,8 +80,8 @@ void Client::begin_game(Map* map) {
 	if (map == NULL) {
 		map = make_map();
 	}
-	set_map(map);
 	m_logic = new GameLogic(map);
+	set_map(map);
 }
 
 void Client::end_game() {

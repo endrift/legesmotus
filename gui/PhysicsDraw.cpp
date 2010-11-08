@@ -23,12 +23,18 @@
  */
 
 #include "PhysicsDraw.hpp"
+#include "common/math.hpp"
 
 using namespace LM;
 using namespace std;
 
+PhysicsDraw::Impl::Impl(DrawContext* ctx) {
+	SetFlags(0xFF);
+	m_ctx = ctx;
+}
+
 Color PhysicsDraw::Impl::colorConv(const b2Color& color) {
-	return Color(color.r, color.g, color.b);
+	return Color(color.r, color.g, color.b, 0.5f);
 }
 
 void PhysicsDraw::Impl::DrawPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color) {
@@ -37,8 +43,8 @@ void PhysicsDraw::Impl::DrawPolygon(const b2Vec2* vertices, int32 vertexCount, c
 		verts[i*2] = vertices[i].x;
 		verts[i*2+1] = vertices[i].y;
 	}
-	ctx->set_draw_color(colorConv(color));
-	ctx->draw_lines(verts, vertexCount, true);
+	m_ctx->set_draw_color(colorConv(color));
+	m_ctx->draw_lines(verts, vertexCount, true);
 }
 
 void PhysicsDraw::Impl::DrawSolidPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color) {
@@ -47,28 +53,28 @@ void PhysicsDraw::Impl::DrawSolidPolygon(const b2Vec2* vertices, int32 vertexCou
 		verts[i*2] = vertices[i].x;
 		verts[i*2+1] = vertices[i].y;
 	}
-	ctx->set_draw_color(colorConv(color));
-	ctx->draw_polygon(verts, vertexCount);
+	m_ctx->set_draw_color(colorConv(color));
+	m_ctx->draw_polygon(verts, vertexCount);
 }
 
 void PhysicsDraw::Impl::DrawCircle(const b2Vec2& center, float32 radius, const b2Color& color) {
-	ctx->set_draw_color(colorConv(color));
-	ctx->translate(center.x, center.y);
-	ctx->draw_arc_line(1, radius, radius, 32);
-	ctx->translate(-center.x, -center.y);
+	m_ctx->set_draw_color(colorConv(color));
+	m_ctx->translate(center.x, center.y);
+	m_ctx->draw_arc_line(1, radius, radius, 32);
+	m_ctx->translate(-center.x, -center.y);
 }
 
 void PhysicsDraw::Impl::DrawSolidCircle(const b2Vec2& center, float32 radius, const b2Vec2& axis, const b2Color& color) {
-	ctx->set_draw_color(colorConv(color));
-	ctx->translate(center.x, center.y);
-	ctx->draw_arc(1, radius, radius, 32);
-	ctx->draw_line(0.0f, 0.0f, axis.x, axis.y);
-	ctx->translate(-center.x, -center.y);
+	m_ctx->set_draw_color(colorConv(color));
+	m_ctx->translate(center.x, center.y);
+	m_ctx->draw_arc(1, radius, radius, 32);
+	m_ctx->draw_line(0.0f, 0.0f, axis.x, axis.y);
+	m_ctx->translate(-center.x, -center.y);
 }
 
 void PhysicsDraw::Impl::DrawSegment(const b2Vec2& p1, const b2Vec2& p2, const b2Color& color) {
-	ctx->set_draw_color(colorConv(color));
-	ctx->draw_line(p1.x, p1.y, p2.x, p2.y);
+	m_ctx->set_draw_color(colorConv(color));
+	m_ctx->draw_line(p1.x, p1.y, p2.x, p2.y);
 }
 
 void PhysicsDraw::Impl::DrawTransform(const b2Transform& xf) {
@@ -76,19 +82,22 @@ void PhysicsDraw::Impl::DrawTransform(const b2Transform& xf) {
 }
 
 PhysicsDraw::PhysicsDraw(b2World* world) {
-	m_impl.SetFlags(0xFF);
 	m_world = world;
 }
 
-void PhysicsDraw::setWorld(b2World* world) {
+void PhysicsDraw::set_world(b2World* world) {
 	m_world = world;
 }
 
 void PhysicsDraw::draw(DrawContext* ctx) const {
-	// Messy but necessary
-	Impl* impl = const_cast<Impl*>(&m_impl);
-	impl->ctx = ctx;
-	m_world->SetDebugDraw(impl);
+	if (m_world == NULL) {
+		return;
+	}
+	Impl impl(ctx);
+	m_world->SetDebugDraw(&impl);
+	ctx->push_transform();
+	ctx->scale(PHYSICS_TO_GAME, PHYSICS_TO_GAME);
 	m_world->DrawDebugData();
+	ctx->pop_transform();
 	m_world->SetDebugDraw(NULL);
 }

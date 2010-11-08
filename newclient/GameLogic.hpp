@@ -56,6 +56,7 @@ namespace LM {
 		void step();
 
 		Player* get_player(uint32_t id);
+		b2World* get_world();
 	};
 }
 

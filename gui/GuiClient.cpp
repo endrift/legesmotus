@@ -54,6 +54,9 @@ GuiClient::GuiClient() {
 	m_view.set_width(m_window->get_width());
 	m_view.set_height(m_window->get_height());
 
+	m_debugdraw = new PhysicsDraw;
+	m_view.add_child(m_debugdraw, GameView::OVERLAY);
+
 	m_map = NULL;
 }
 
@@ -131,10 +134,14 @@ void GuiClient::set_map(Map* map) {
 	Client::set_map(map);
 	if (m_map != NULL) {
 		m_view.remove_child(m_map->get_background());
+		m_debugdraw->set_world(NULL);
 	}
 	if (map != NULL) {
 		m_map = static_cast<GraphicalMap*>(map);
 		m_view.add_child(m_map->get_background(), GameView::BACKGROUND);
+		if (get_game() != NULL) {
+			m_debugdraw->set_world(get_game()->get_world());
+		}
 	}
 }
 

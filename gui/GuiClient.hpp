@@ -31,6 +31,7 @@
 #include "GraphicalMap.hpp"
 #include "GameView.hpp"
 #include "InputSink.hpp"
+#include "PhysicsDraw.hpp"
 
 namespace LM {
 	class Window;
@@ -47,6 +48,7 @@ namespace LM {
 		InputDriver* m_input;
 		GameView m_view;
 		Widget m_root;
+		PhysicsDraw *m_debugdraw;
 
 		GraphicalPlayer* m_player;
 		GraphicalMap* m_map;

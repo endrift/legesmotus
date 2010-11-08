@@ -137,3 +137,7 @@ void GameLogic::step() {
 Player* GameLogic::get_player(uint32_t id) {
 	return m_players[id];
 }
+
+b2World* GameLogic::get_world() {
+	return m_physics;
+}

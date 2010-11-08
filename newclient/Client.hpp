@@ -52,10 +52,12 @@ namespace LM {
 		virtual void remove_player(uint32_t id);
 
 		Player* get_player(uint32_t id);
+		GameLogic* get_game();
 
 		virtual void set_map(Map* map);
 
 	public:
+		Client();
 		virtual ~Client();
 		virtual Player* make_player(const char* name, uint32_t id, char team);
 		virtual Map* make_map();
