@@ -39,6 +39,7 @@ namespace LM {
 	class PacketWriter;
 	class MapObject;
 	class ClientMapObject;
+	class PhysicsObject;
 	
 	/*
 	 * A Map keeps track of things like the map name, dimensions, and spawn points
@@ -71,6 +72,7 @@ namespace LM {
 		int		m_width;
 		int		m_height;
 		ConfigManager	m_options;
+		PhysicsObject*	m_edges[4];
 
 		virtual ClientMapObject* make_client_map_object(MapReader* reader) { return NULL; }
 

@@ -44,10 +44,17 @@ using namespace std;
 Map::Map() {
 	m_revision = 0;
 	m_width = m_height = 0;
+	for (int i = 0; i < 4; i++) {
+		m_edges[i] = new PhysicsObject;
+	};
 }
 
 Map::~Map() {
 	Map::clear();
+	
+	for (int i = 0; i < 4; i++) {
+		delete m_edges[i];
+	}
 }
 
 void Map::initialize_physics(b2World* world) {
@@ -58,6 +65,7 @@ void Map::initialize_physics(b2World* world) {
 	b2BodyDef bedgebodydef;
 	bedgebodydef.position.Set(to_physics(get_width()/2.0f), to_physics(get_height() + EDGE_WIDTH)); // 
 	b2Body* bedgebody = world->CreateBody(&bedgebodydef);
+	bedgebody->SetUserData(m_edges[0]);
 	b2PolygonShape bedgebox;
 	bedgebox.SetAsBox(to_physics(get_width()/2 + 2 * EDGE_WIDTH), to_physics(EDGE_WIDTH));
 	bedgebody->CreateFixture(&bedgebox, 0.0f);
@@ -66,6 +74,7 @@ void Map::initialize_physics(b2World* world) {
 	b2BodyDef tedgebodydef;
 	tedgebodydef.position.Set(to_physics(get_width()/2.0f), to_physics(-1 * EDGE_WIDTH)); // 
 	b2Body* tedgebody = world->CreateBody(&tedgebodydef);
+	tedgebody->SetUserData(m_edges[1]);
 	b2PolygonShape tedgebox;
 	tedgebox.SetAsBox(to_physics(get_width()/2 + 2 * EDGE_WIDTH), to_physics(EDGE_WIDTH));
 	tedgebody->CreateFixture(&tedgebox, 0.0f);
@@ -74,6 +83,7 @@ void Map::initialize_physics(b2World* world) {
 	b2BodyDef ledgebodydef;
 	ledgebodydef.position.Set(to_physics(-1 * EDGE_WIDTH), to_physics(get_height()/2.0f)); // 
 	b2Body* ledgebody = world->CreateBody(&ledgebodydef);
+	ledgebody->SetUserData(m_edges[2]);
 	b2PolygonShape ledgebox;
 	ledgebox.SetAsBox(to_physics(EDGE_WIDTH), to_physics(get_height()/2 + 2 * EDGE_WIDTH));
 	ledgebody->CreateFixture(&ledgebox, 0.0f);
@@ -82,6 +92,7 @@ void Map::initialize_physics(b2World* world) {
 	b2BodyDef redgebodydef;
 	redgebodydef.position.Set(to_physics(get_width() + EDGE_WIDTH), to_physics(get_height()/2.0f)); // 
 	b2Body* redgebody = world->CreateBody(&redgebodydef);
+	redgebody->SetUserData(m_edges[3]);
 	b2PolygonShape redgebox;
 	redgebox.SetAsBox(to_physics(EDGE_WIDTH), to_physics(get_height()/2 + 2 * EDGE_WIDTH));
 	redgebody->CreateFixture(&redgebox, 0.0f);

@@ -30,6 +30,7 @@
 #include "common/PacketReader.hpp"
 #include "common/PacketWriter.hpp"
 #include <Box2D/Box2D.h>
+#include <iostream>
 
 using namespace LM;
 using namespace std;
@@ -52,8 +53,11 @@ Player::Player(b2World* physics_world) {
 	m_is_invisible = true;
 	m_is_frozen = true;
 	m_is_grabbing_obstacle = false;
+	m_attach_joint = NULL;
+	m_physics = NULL;
 	
 	if (physics_world != NULL) {
+		m_physics = physics_world;
 		initialize_physics(physics_world);
 	}
 }
@@ -74,22 +78,34 @@ Player::Player(const char* name, uint32_t id, char team, double x, double y, dou
 	m_is_invisible = true;
 	m_is_frozen = true;
 	m_is_grabbing_obstacle = false;
+	m_attach_joint = NULL;
+	m_physics = NULL;
 	
 	if (physics_world != NULL) {
+		m_physics = physics_world;
 		initialize_physics(physics_world);
 	}
 }
 
 Player::~Player() {
+	if (m_attach_joint != NULL && m_physics != NULL) {
+		m_physics->DestroyJoint(m_attach_joint);
+		m_attach_joint = NULL;
+	}
 }
 
 void Player::initialize_physics(b2World* world) {
+	if (world != NULL) {
+		m_physics = world;
+	}
+
 	// TODO: TESTING CODE for physics - might want to specify
 	// this initialization in a config file or something
 	b2BodyDef bodydef;
 	bodydef.type = b2_dynamicBody;
 	bodydef.position.Set(to_physics(m_x), to_physics(m_y));
 	m_physics_body = world->CreateBody(&bodydef);
+	m_physics_body->SetUserData((void*)this);
 	
 	b2PolygonShape playerbox;
 	playerbox.SetAsBox(to_physics(18.0f), to_physics(40.0f));
@@ -243,6 +259,15 @@ void Player::set_current_weapon_id(const char* current_weapon_id) {
 	m_current_weapon_id = current_weapon_id;
 }
 
+void Player::set_attach_joint(b2Joint* joint) {
+	if (m_attach_joint != NULL && m_physics != NULL) {
+		m_physics->DestroyJoint(m_attach_joint);
+	}
+
+	m_attach_joint = joint;
+	
+	m_is_grabbing_obstacle = true;
+}
 
 void Player::write_update_packet (PacketWriter& packet) const {
 	string	flags;
@@ -279,5 +304,10 @@ void Player::read_update_packet (PacketReader& packet) {
 
 void Player::set_is_grabbing_obstacle(bool x) {
 	m_is_grabbing_obstacle = x;
+	
+	if (!m_is_grabbing_obstacle && m_attach_joint != NULL && m_physics != NULL) {
+		m_physics->DestroyJoint(m_attach_joint);
+		m_attach_joint = NULL;
+	}
 }
 

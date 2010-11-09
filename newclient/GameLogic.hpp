@@ -26,14 +26,16 @@
 #define LM_NEWCLIENT_GAMELOGIC_HPP
 
 #include "common/Player.hpp"
+#include <Box2D/Box2D.h>
 #include <map>
+#include <vector>
 
 class b2World;
 
 namespace LM {
 	class Map;
 
-	class GameLogic {
+	class GameLogic : public b2ContactListener {
 	const static float PHYSICS_TIMESTEP = 1.0f / 60.0f;
 	const static int VEL_ITERATIONS = 10;
 	const static int POS_ITERATIONS = 10;
@@ -42,6 +44,8 @@ namespace LM {
 		std::map<uint32_t, Player*> m_players;
 		Map* m_map;
 		b2World* m_physics;
+		
+		std::vector< std::pair<b2Body*, b2JointDef*> > m_joints_to_create;
 
 	public:
 		GameLogic(Map* map);
@@ -57,6 +61,15 @@ namespace LM {
 
 		Player* get_player(uint32_t id);
 		b2World* get_world();
+		
+		// Physics helper methods
+		virtual void create_contact_joint(b2Body* body1, b2JointDef* joint_def);
+		
+		// Physics contact listener methods.
+		virtual void BeginContact(b2Contact* contact);
+		virtual void EndContact(b2Contact* contact);
+		virtual void PreSolve(b2Contact* contact, const b2Manifold* old_manifold);
+		virtual void PostSolve(b2Contact* contact, const b2ContactImpulse* impulse);
 	};
 }
 

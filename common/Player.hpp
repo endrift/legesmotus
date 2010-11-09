@@ -25,11 +25,12 @@
 #ifndef LM_COMMON_PLAYER_HPP
 #define LM_COMMON_PLAYER_HPP
 
+#include "common/Point.hpp"
+#include "PhysicsObject.hpp"
 #include <cmath>
 #include <string>
 #include <string.h>
 #include <stdint.h>
-#include "common/Point.hpp"
 
 /*
  * A Player represents a player in the game.
@@ -39,12 +40,13 @@
  */
 class b2Body;
 class b2World;
+class b2Joint;
  
 namespace LM {
 	class PacketReader;
 	class PacketWriter;
 
-	class Player {
+	class Player : public PhysicsObject {
 	const static float MAX_ANGULAR_VELOCITY = 3.0f;
 	
 	public:
@@ -68,6 +70,8 @@ namespace LM {
 		bool		m_is_grabbing_obstacle;	// Is the player grabbing an obstacle?
 		std::string	m_current_weapon_id;	// ID of the current weapon
 		b2Body*		m_physics_body; // Box2D physics body for this player
+		b2Joint*	m_attach_joint; // Box2D joint that attaches this player to a surface
+		b2World*	m_physics; // Box2D physics world pointer
 	
 	public:
 		Player(b2World* physics_world = 0);
@@ -75,6 +79,7 @@ namespace LM {
 		virtual ~Player();
 		
 		// Simple getters
+		virtual Type get_type() const { return PLAYER; }
 		const char* get_name() const { return m_name.c_str(); }
 		uint32_t get_id() const { return m_id; }
 		char get_team() const { return m_team; }
@@ -131,6 +136,7 @@ namespace LM {
 		virtual void set_is_frozen(bool is_frozen);
 		virtual void set_is_grabbing_obstacle(bool);
 		virtual void set_current_weapon_id(const char*);
+		virtual void set_attach_joint(b2Joint* joint);
 	
 		// Initialize the Box2D physics for this player
 		virtual void initialize_physics(b2World* world);

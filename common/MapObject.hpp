@@ -26,6 +26,7 @@
 #define LM_COMMON_MAPOBJECT_HPP
 
 #include "Point.hpp"
+#include "PhysicsObject.hpp"
 
 class b2Shape;
 class b2World;
@@ -38,7 +39,7 @@ namespace LM {
 	class GameLogic;
 	class ClientMapObject;
 
-	class MapObject {
+	class MapObject : public PhysicsObject {
 	private:
 		Point m_position;
 		bool m_is_tiled;
@@ -55,6 +56,8 @@ namespace LM {
 	public:
 		explicit MapObject(Point position, ClientMapObject* clientpart = NULL);
 		virtual ~MapObject();
+
+		virtual Type get_type() const { return MAP_OBJECT; }
 
 		Point get_position() const { return m_position; }
 		bool get_is_tiled() const { return m_is_tiled; }

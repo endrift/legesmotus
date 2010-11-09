@@ -53,6 +53,8 @@ void 	Obstacle::initialize_physics(b2World* world) {
 	
 	m_physics_body = world->CreateBody(&body_def);
 	
+	m_physics_body->SetUserData((void*)this);
+	
 	if (m_bounding_shape == NULL) {
 		cerr << "No bounding shape for obstacle that should have physics." << endl;
 		return;
