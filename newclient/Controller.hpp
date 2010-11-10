@@ -56,6 +56,7 @@ namespace LM {
 		virtual int get_weapon() const = 0;
 
 		virtual std::wstring get_message() const = 0;
+		virtual bool message_is_team_only() const = 0;
 		virtual void received_message(const Player* p, const std::wstring& message) = 0;
 	};
 }

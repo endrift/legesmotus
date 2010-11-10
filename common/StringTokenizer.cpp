@@ -233,14 +233,14 @@ StringTokenizer&	StringTokenizer::operator>> (unsigned long long& i) {
 
 StringTokenizer&	StringTokenizer::operator>> (float& i) {
 	const char* p = get_next();
-	i = p ? strtof(p, NULL) : 0.0;
+	i = p ? strtof(p, NULL) : 0.0f;
 	return *this;
 }
 
 
 StringTokenizer&	StringTokenizer::operator>> (double& i) {
 	const char* p = get_next();
-	i = p ? atof(p) : 0;
+	i = p ? atof(p) : 0.0;
 	return *this;
 }
 

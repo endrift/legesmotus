@@ -27,6 +27,7 @@
 #include "common/Map.hpp"
 #include "common/Player.hpp"
 #include "common/timer.hpp"
+#include "common/packets.hpp"
 #include <iostream>
 
 using namespace LM;
