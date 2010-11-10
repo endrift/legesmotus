@@ -23,18 +23,22 @@
  */
 
 #include "Bindings.hpp"
+#include <cstring>
 
 using namespace LM;
 using namespace std;
 
-
 Bindings::ControlEvent Bindings::process_event(const KeyEvent& event) {
 	// TODO unhardcode
 	ControlEvent e;
+	memset(&e, 0, sizeof(e));
 	e.type = CONTROL_NONE;
 	switch (event.type) {
 	case KEY_LETTER:
 		switch (event.character) {
+		case L'T':
+		case L't':
+			e.typing.is_team_only = true;
 		case L'Y':
 		case L'y':
 		case L'/':

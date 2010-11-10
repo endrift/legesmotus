@@ -31,6 +31,7 @@ using namespace std;
 
 HumanController::HumanController() {
 	m_changeset = 0;
+	m_typing_message = false;
 }
 
 void HumanController::process_control(const Bindings::ControlEvent& event) {
@@ -47,6 +48,7 @@ void HumanController::process_control(const Bindings::ControlEvent& event) {
 	case Bindings::CONTROL_BEGIN_TYPING:
 		m_message.clear();
 		m_typing_message = true;
+		m_changes[m_changeset ^ 1] = event.typing.is_team_only;
 		break;
 	default:
 		// No default action
@@ -119,6 +121,10 @@ int HumanController::get_weapon() const {
 
 wstring HumanController::get_message() const {
 	return L"";
+}
+
+bool HumanController::message_is_team_only() const {
+	return m_message_is_team_only[m_changeset];
 }
 
 void HumanController::received_message(const Player* p, const wstring& message) {

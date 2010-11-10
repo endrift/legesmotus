@@ -48,6 +48,7 @@ namespace LM {
 
 		bool m_typing_message;
 		std::wstring m_message;
+		bool m_message_is_team_only[2];
 
 		void process_control(const Bindings::ControlEvent& event);
 
@@ -69,6 +70,7 @@ namespace LM {
 		virtual int get_weapon() const;
 
 		virtual std::wstring get_message() const;
+		virtual bool message_is_team_only() const;
 		virtual void received_message(const Player* p, const std::wstring& message);
 	};
 }

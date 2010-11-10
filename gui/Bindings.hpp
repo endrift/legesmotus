@@ -43,7 +43,11 @@ namespace LM {
 
 		struct ControlEvent {
 			ControlType type;
-			// TODO data
+			union {
+				struct {
+					bool is_team_only;
+				} typing;
+			};
 		};
 
 	private:
