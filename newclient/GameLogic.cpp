@@ -75,7 +75,7 @@ void GameLogic::add_player(Player* player) {
 	player->initialize_physics(m_physics);
 	
 	// TODO: Testing code for physics - remove later.
-	player->get_physics_body()->ApplyForce(b2Vec2(300.0f, 210.0f), player->get_physics_body()->GetWorldCenter());
+	player->apply_force(b2Vec2(300.0f, 210.0f));
 	
 	m_players[player->get_id()] = player;
 }
@@ -119,6 +119,14 @@ b2World* GameLogic::get_world() {
 	return m_physics;
 }
 
+void GameLogic::attempt_jump(uint32_t player_id, float angle) {
+	if (m_players[player_id]->is_grabbing_obstacle()) {
+		m_players[player_id]->set_is_grabbing_obstacle(false);
+	
+		m_players[player_id]->apply_force(b2Vec2(JUMP_STRENGTH * cos(angle), JUMP_STRENGTH  * sin(angle)));
+	}
+}
+
 void GameLogic::BeginContact(b2Contact* contact) {
 	b2Fixture* fixture1 = contact->GetFixtureA();
 	b2Fixture* fixture2 = contact->GetFixtureB();
@@ -139,7 +147,7 @@ void GameLogic::BeginContact(b2Contact* contact) {
 	PhysicsObject* userdata1 = static_cast<PhysicsObject*>(body1->GetUserData());
 	PhysicsObject* userdata2 = static_cast<PhysicsObject*>(body2->GetUserData());
 	
-	if (userdata1->get_type() == PhysicsObject::PLAYER && userdata2->get_type() == PhysicsObject::MAP_OBJECT) {
+	if (userdata1->get_type() == PhysicsObject::PLAYER && (userdata2->get_type() == PhysicsObject::MAP_OBJECT || userdata2->get_type() == PhysicsObject::MAP_EDGE)) {
 		Player* player = static_cast<Player*>(userdata1);
 		if (!player->is_grabbing_obstacle()) {
 			b2RevoluteJointDef* joint_def = new b2RevoluteJointDef;
@@ -153,7 +161,7 @@ void GameLogic::BeginContact(b2Contact* contact) {
 		
 			contact->SetEnabled(true);
 		}
-	} else if (userdata1->get_type() == PhysicsObject::MAP_OBJECT && userdata2->get_type() == PhysicsObject::PLAYER) {
+	} else if ((userdata1->get_type() == PhysicsObject::MAP_OBJECT || userdata1->get_type() == PhysicsObject::MAP_EDGE) && userdata2->get_type() == PhysicsObject::PLAYER) {
 		Player* player = static_cast<Player*>(userdata1);
 		if (!player->is_grabbing_obstacle()) {
 			b2RevoluteJointDef* joint_def = new b2RevoluteJointDef;

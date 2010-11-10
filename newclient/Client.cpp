@@ -27,6 +27,7 @@
 #include "common/Map.hpp"
 #include "common/Player.hpp"
 #include "common/timer.hpp"
+#include <iostream>
 
 using namespace LM;
 using namespace std;
@@ -44,6 +45,12 @@ void Client::step(uint64_t diff) {
 	 
 	m_controller->update(diff, *m_logic);
 	
+	int changes = m_controller->get_changes();
+	
+	if (changes & Controller::JUMPING) {
+		m_logic->attempt_jump(m_player_id, m_controller->get_aim());
+	}
+	
 	m_logic->step();
 }
 
@@ -57,7 +64,7 @@ void Client::add_player(Player* player) {
 }
 
 void Client::set_own_player(uint32_t id) {
-	// TODO figure out if GameLogic needs to know this
+	m_player_id = id;
 }
 
 void Client::remove_player(uint32_t id) {

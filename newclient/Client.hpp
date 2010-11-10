@@ -37,6 +37,7 @@ namespace LM {
 	private:
 		Controller* m_controller;
 		GameLogic* m_logic;
+		uint32_t m_player_id;
 		//ClientNetwork m_network;
 
 		bool m_running;

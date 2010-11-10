@@ -39,6 +39,7 @@ namespace LM {
 	const static float PHYSICS_TIMESTEP = 1.0f / 60.0f;
 	const static int VEL_ITERATIONS = 10;
 	const static int POS_ITERATIONS = 10;
+	const static float JUMP_STRENGTH = 150.0f;
 	
 	private:
 		std::map<uint32_t, Player*> m_players;
@@ -61,6 +62,9 @@ namespace LM {
 
 		Player* get_player(uint32_t id);
 		b2World* get_world();
+		
+		// Attempt to jump off an obstacle
+		virtual void attempt_jump(uint32_t player_id, float angle);
 		
 		// Physics helper methods
 		virtual void create_contact_joint(b2Body* body1, b2JointDef* joint_def);

@@ -41,6 +41,7 @@
 class b2Body;
 class b2World;
 class b2Joint;
+class b2Vec2;
  
 namespace LM {
 	class PacketReader;
@@ -140,6 +141,11 @@ namespace LM {
 	
 		// Initialize the Box2D physics for this player
 		virtual void initialize_physics(b2World* world);
+		
+		// Apply a force to the player
+		// UNITS SHOULD BE IN PHYSICS TERMS
+		virtual void apply_force(b2Vec2 force_vec);
+		virtual void apply_force(b2Vec2 force_vec, b2Vec2 world_point);
 		
 		// Update the player's position and rotation to match the physics body
 		virtual void update_physics();
