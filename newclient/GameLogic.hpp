@@ -39,7 +39,7 @@ namespace LM {
 	const static float PHYSICS_TIMESTEP = 1.0f / 60.0f;
 	const static int VEL_ITERATIONS = 10;
 	const static int POS_ITERATIONS = 10;
-	const static float JUMP_STRENGTH = 150.0f;
+	const static float JUMP_STRENGTH = 250.0f;
 	
 	private:
 		std::map<uint32_t, Player*> m_players;

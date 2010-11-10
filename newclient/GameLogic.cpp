@@ -75,7 +75,7 @@ void GameLogic::add_player(Player* player) {
 	player->initialize_physics(m_physics);
 	
 	// TODO: Testing code for physics - remove later.
-	player->apply_force(b2Vec2(300.0f, 210.0f));
+	player->apply_force(b2Vec2(200.0f, 50.0f));
 	
 	m_players[player->get_id()] = player;
 }
