@@ -101,13 +101,14 @@ namespace LM {
 		double get_rotation_radians() const;
 		double get_gun_rotation_degrees() const { return m_gun_rotation; }
 		double get_gun_rotation_radians() const;
-		b2Body* get_physics_body() const { return m_physics_body; };
+		b2Body* get_physics_body() const { return m_physics_body; }
 		bool is_invisible() const { return m_is_invisible; }
 		bool is_visible() const { return !m_is_invisible; }
 		bool is_frozen() const { return m_is_frozen; }
 		bool is_unfrozen() const { return !m_is_frozen; }
 		bool is_grabbing_obstacle() const { return m_is_grabbing_obstacle; }
 		const char* get_current_weapon_id() const { return m_current_weapon_id.c_str(); }
+		b2Joint* get_attach_joint() const { return m_attach_joint; }
 	
 		// Return true if this player has the same canonical name as the specified string.
 		// Name comparisons are case-insensitive.

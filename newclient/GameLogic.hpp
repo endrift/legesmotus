@@ -47,6 +47,8 @@ namespace LM {
 		b2World* m_physics;
 		
 		std::vector< std::pair<b2Body*, b2JointDef*> > m_joints_to_create;
+		
+		float get_dist(b2Vec2 point1, b2Vec2 point2);
 
 	public:
 		GameLogic(Map* map);

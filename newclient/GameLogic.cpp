@@ -137,7 +137,7 @@ void GameLogic::BeginContact(b2Contact* contact) {
 	b2WorldManifold manifold;
 	contact->GetWorldManifold(&manifold);
 	
-	b2Manifold* local_manifold = contact->GetManifold();
+	//b2Manifold* local_manifold = contact->GetManifold();
 	
 	if (body1->GetUserData() == NULL || body2->GetUserData() == NULL) {
 		cerr << "Body has no user data!" << endl;
@@ -147,6 +147,7 @@ void GameLogic::BeginContact(b2Contact* contact) {
 	PhysicsObject* userdata1 = static_cast<PhysicsObject*>(body1->GetUserData());
 	PhysicsObject* userdata2 = static_cast<PhysicsObject*>(body2->GetUserData());
 	
+	// If we have a collision between a player and a map object, we need to create a joint to revolve around
 	if (userdata1->get_type() == PhysicsObject::PLAYER && (userdata2->get_type() == PhysicsObject::MAP_OBJECT || userdata2->get_type() == PhysicsObject::MAP_EDGE)) {
 		Player* player = static_cast<Player*>(userdata1);
 		if (!player->is_grabbing_obstacle()) {
@@ -155,24 +156,24 @@ void GameLogic::BeginContact(b2Contact* contact) {
 			joint_def->collideConnected = true;
 			joint_def->maxMotorTorque = 5.0f;
 			joint_def->motorSpeed = 0.0f;
-			joint_def->enableMotor = true;
-		
+			joint_def->enableMotor = false;
+	
 			m_joints_to_create.push_back(pair<b2Body*, b2JointDef*>(body1, joint_def));
-		
+	
 			contact->SetEnabled(true);
 		}
 	} else if ((userdata1->get_type() == PhysicsObject::MAP_OBJECT || userdata1->get_type() == PhysicsObject::MAP_EDGE) && userdata2->get_type() == PhysicsObject::PLAYER) {
-		Player* player = static_cast<Player*>(userdata1);
+		Player* player = static_cast<Player*>(userdata2);
 		if (!player->is_grabbing_obstacle()) {
 			b2RevoluteJointDef* joint_def = new b2RevoluteJointDef;
 			joint_def->Initialize(body1, body2, manifold.points[0]); // body2->GetWorldPoint(local_manifold->localPoint)
 			joint_def->collideConnected = true;
 			joint_def->maxMotorTorque = 5.0f;
 			joint_def->motorSpeed = 0.0f;
-			joint_def->enableMotor = true;
-			
-			m_joints_to_create.push_back(pair<b2Body*, b2JointDef*>(body2, joint_def));
+			joint_def->enableMotor = false;
 		
+			m_joints_to_create.push_back(pair<b2Body*, b2JointDef*>(body2, joint_def));
+	
 			contact->SetEnabled(true);
 		}
 	}
@@ -195,5 +196,60 @@ void GameLogic::EndContact(b2Contact* contact) {
 void GameLogic::PreSolve(b2Contact* contact, const b2Manifold* old_manifold) {
 }
 
+float GameLogic::get_dist(b2Vec2 point1, b2Vec2 point2) {
+	return sqrt((point2.y - point1.y)*(point2.y-point1.y) + (point2.x - point1.x));
+}
+
 void GameLogic::PostSolve(b2Contact* contact, const b2ContactImpulse* impulse) {
+b2Fixture* fixture1 = contact->GetFixtureA();
+	b2Fixture* fixture2 = contact->GetFixtureB();
+	
+	b2Body* body1 = fixture1->GetBody();
+	b2Body* body2 = fixture2->GetBody();
+	
+	b2WorldManifold manifold;
+	contact->GetWorldManifold(&manifold);
+	
+	if (body1->GetUserData() == NULL || body2->GetUserData() == NULL) {
+		cerr << "Body has no user data!" << endl;
+		return;
+	}
+	
+	PhysicsObject* userdata1 = static_cast<PhysicsObject*>(body1->GetUserData());
+	PhysicsObject* userdata2 = static_cast<PhysicsObject*>(body2->GetUserData());
+
+	// If the impulse is non-zero on the second point in the collision, then we have hit
+	// the wall with two corners. This means we should weld to it.
+	b2Manifold* localmanifold = contact->GetManifold();
+	if (localmanifold->pointCount > 1 && impulse->normalImpulses[1] > 0) {
+		if (contact->IsEnabled() && userdata1->get_type() == PhysicsObject::PLAYER && 
+				(userdata2->get_type() == PhysicsObject::MAP_OBJECT || 
+				userdata2->get_type() == PhysicsObject::MAP_EDGE)) {
+			Player* player = static_cast<Player*>(userdata1);
+			if (!player->is_grabbing_obstacle() || (player->get_attach_joint() != NULL &&
+					player->get_attach_joint()->GetType() != e_weldJoint)) {
+				b2WeldJointDef* joint_def = new b2WeldJointDef;
+				joint_def->Initialize(body1, body2, manifold.points[0]);
+				joint_def->collideConnected = true;
+		
+				m_joints_to_create.insert(m_joints_to_create.begin(), pair<b2Body*, b2JointDef*>(body1, joint_def));
+		
+				contact->SetEnabled(false);
+			}
+		} else if (contact->IsEnabled() && (userdata1->get_type() == PhysicsObject::MAP_OBJECT || 
+				userdata1->get_type() == PhysicsObject::MAP_EDGE) && 
+				userdata2->get_type() == PhysicsObject::PLAYER) {
+			Player* player = static_cast<Player*>(userdata2);
+			if (!player->is_grabbing_obstacle() || (player->get_attach_joint() != NULL &&
+					player->get_attach_joint()->GetType() != e_weldJoint)) {
+				b2WeldJointDef* joint_def = new b2WeldJointDef;
+				joint_def->Initialize(body1, body2, manifold.points[0]);
+				joint_def->collideConnected = true;
+		
+				m_joints_to_create.insert(m_joints_to_create.begin(), pair<b2Body*, b2JointDef*>(body2, joint_def));
+		
+				contact->SetEnabled(false);
+			}
+		}
+	}
 }
