@@ -40,6 +40,7 @@ namespace LM {
 	const static int VEL_ITERATIONS = 10;
 	const static int POS_ITERATIONS = 10;
 	const static float JUMP_STRENGTH = 250.0f;
+	const static float JUMP_ROTATION = 15.0f;
 	
 	private:
 		std::map<uint32_t, Player*> m_players;

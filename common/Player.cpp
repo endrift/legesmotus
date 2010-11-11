@@ -180,8 +180,13 @@ void Player::set_position(double x, double y) {
 void Player::apply_force(b2Vec2 force_vec) {
 	m_physics_body->ApplyForce(force_vec, m_physics_body->GetWorldCenter());
 }
+
 void Player::apply_force(b2Vec2 force_vec, b2Vec2 world_point) {
 	m_physics_body->ApplyForce(force_vec, world_point);
+}
+
+void Player::apply_torque(float torque) {
+ 	m_physics_body->ApplyTorque(torque);
 }
 
 void Player::update_physics() {

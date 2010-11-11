@@ -32,6 +32,7 @@ using namespace LM;
 using namespace std;
 
 GameLogic::GameLogic(Map* map) {
+	srand(time(NULL));
 	m_map = map;
 	m_physics = NULL;
 
@@ -124,6 +125,7 @@ void GameLogic::attempt_jump(uint32_t player_id, float angle) {
 		m_players[player_id]->set_is_grabbing_obstacle(false);
 	
 		m_players[player_id]->apply_force(b2Vec2(JUMP_STRENGTH * cos(angle), JUMP_STRENGTH  * sin(angle)));
+		m_players[player_id]->apply_torque(-1*(JUMP_ROTATION/2.0f) + (float)rand()/(float)RAND_MAX * JUMP_ROTATION);
 	}
 }
 

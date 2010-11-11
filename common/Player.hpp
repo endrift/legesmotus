@@ -148,6 +148,10 @@ namespace LM {
 		virtual void apply_force(b2Vec2 force_vec);
 		virtual void apply_force(b2Vec2 force_vec, b2Vec2 world_point);
 		
+		// Apply a torque to the player
+		// UNITS SHOULD BE IN PHYSICS TERMS
+		virtual void apply_torque(float torque);
+		
 		// Update the player's position and rotation to match the physics body
 		virtual void update_physics();
 		
