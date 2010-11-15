@@ -48,7 +48,7 @@ namespace LM {
 	const int PROTOCOL_VERSION = 6;
 
 	// Packet types:
-	enum {
+	enum PacketType {
 		ACK_PACKET = 0,
 		PLAYER_UPDATE_PACKET = 1,
 		WEAPON_DISCHARGED_PACKET = 2,

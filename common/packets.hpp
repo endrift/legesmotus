@@ -28,11 +28,32 @@
 #include "PacketReader.hpp"
 #include "PacketWriter.hpp"
 #include "Version.hpp"
+#include "Point.hpp"
 #include "IPAddress.hpp"
+#include "UDPPacket.hpp"
 #include <string>
 
 namespace LM {
-	struct Packet_ACK {
+	class PacketReceiver;
+
+	struct BasePacket {
+		UDPPacket packet;
+
+		virtual ~BasePacket() {}
+		virtual PacketType type() = 0;
+		virtual void marshal(PacketWriter& w) = 0;
+		virtual void unmarshal(PacketReader& r) = 0;
+
+		void marshal();
+		void unmarshal();
+
+		virtual void dispatch(PacketReceiver* r) = 0;
+	};
+
+	struct Packet_ACK : public BasePacket {
+		virtual ~Packet_ACK() {}
+		PacketType type() { return ACK_PACKET; }
+
 		uint32_t packet_type;
 		uint64_t sequence_no;
 
@@ -45,9 +66,13 @@ namespace LM {
 			r >> packet_type;
 			r >> sequence_no;
 		}
+		void dispatch(PacketReceiver* r);
 	};
 
-	struct Packet_PLAYER_UPDATE {
+	struct Packet_PLAYER_UPDATE : public BasePacket {
+		virtual ~Packet_PLAYER_UPDATE() {}
+		PacketType type() { return PLAYER_UPDATE_PACKET; }
+
 		uint32_t player_id;
 		float x;
 		float y;
@@ -81,9 +106,13 @@ namespace LM {
 			r >> current_weapon_id;
 			r >> flags;
 		}
+		void dispatch(PacketReceiver* r);
 	};
 
-	struct Packet_WEAPON_DISCHARGED {
+	struct Packet_WEAPON_DISCHARGED : public BasePacket {
+		virtual ~Packet_WEAPON_DISCHARGED() {}
+		PacketType type() { return WEAPON_DISCHARGED_PACKET; }
+
 		uint32_t player_id;
 		std::string weapon_id;
 		std::string extradata;
@@ -99,9 +128,13 @@ namespace LM {
 			r >> weapon_id;
 			r >> extradata;
 		}
+		void dispatch(PacketReceiver* r);
 	};
 
-	struct Packet_PLAYER_HIT {
+	struct Packet_PLAYER_HIT : public BasePacket {
+		virtual ~Packet_PLAYER_HIT() {}
+		PacketType type() { return PLAYER_HIT_PACKET; }
+
 		uint32_t shooter_id;
 		std::string weapon_id;
 		uint32_t shot_player_id;
@@ -123,9 +156,13 @@ namespace LM {
 			r >> has_effect;
 			r >> extradata;
 		}
+		void dispatch(PacketReceiver* r);
 	};
 
-	struct Packet_MESSAGE {
+	struct Packet_MESSAGE : public BasePacket {
+		virtual ~Packet_MESSAGE() {}
+		PacketType type() { return MESSAGE_PACKET; }
+
 		uint32_t sender_id;
 		std::string recipient;
 		std::string message_text;
@@ -141,9 +178,13 @@ namespace LM {
 			r >> recipient;
 			r >> message_text;
 		}
+		void dispatch(PacketReceiver* r);
 	};
 
-	struct Packet_NEW_ROUND {
+	struct Packet_NEW_ROUND : public BasePacket {
+		virtual ~Packet_NEW_ROUND() {}
+		PacketType type() { return NEW_ROUND_PACKET; }
+
 		std::string map_name;
 		int map_revision;
 		int map_width;
@@ -168,9 +209,13 @@ namespace LM {
 			r >> game_started;
 			r >> time_until_start;
 		}
+		void dispatch(PacketReceiver* r);
 	};
 
-	struct Packet_ROUND_OVER {
+	struct Packet_ROUND_OVER : public BasePacket {
+		virtual ~Packet_ROUND_OVER() {}
+		PacketType type() { return ROUND_OVER_PACKET; }
+
 		char winning_team;
 		int team_a_score;
 		int team_b_score;
@@ -186,9 +231,13 @@ namespace LM {
 			r >> team_a_score;
 			r >> team_b_score;
 		}
+		void dispatch(PacketReceiver* r);
 	};
 
-	struct Packet_SCORE_UPDATE {
+	struct Packet_SCORE_UPDATE : public BasePacket {
+		virtual ~Packet_SCORE_UPDATE() {}
+		PacketType type() { return SCORE_UPDATE_PACKET; }
+
 		std::string subject;
 		int score;
 
@@ -201,9 +250,13 @@ namespace LM {
 			r >> subject;
 			r >> score;
 		}
+		void dispatch(PacketReceiver* r);
 	};
 
-	struct Packet_WELCOME {
+	struct Packet_WELCOME : public BasePacket {
+		virtual ~Packet_WELCOME() {}
+		PacketType type() { return WELCOME_PACKET; }
+
 		int server_version;
 		int player_id;
 		std::string player_name;
@@ -222,9 +275,13 @@ namespace LM {
 			r >> player_name;
 			r >> team;
 		}
+		void dispatch(PacketReceiver* r);
 	};
 
-	struct Packet_ANNOUNCE {
+	struct Packet_ANNOUNCE : public BasePacket {
+		virtual ~Packet_ANNOUNCE() {}
+		PacketType type() { return ANNOUNCE_PACKET; }
+
 		uint32_t player_id;
 		std::string player_name;
 		char team;
@@ -240,9 +297,13 @@ namespace LM {
 			r >> player_name;
 			r >> team;
 		}
+		void dispatch(PacketReceiver* r);
 	};
 
-	struct Packet_GATE_UPDATE {
+	struct Packet_GATE_UPDATE : public BasePacket {
+		virtual ~Packet_GATE_UPDATE() {}
+		PacketType type() { return GATE_UPDATE_PACKET; }
+
 		uint32_t acting_player_id;
 		char team;
 		float progress;
@@ -267,9 +328,13 @@ namespace LM {
 			r >> new_nbr_players;
 			r >> sequence_no;
 		}
+		void dispatch(PacketReceiver* r);
 	};
 
-	struct Packet_JOIN {
+	struct Packet_JOIN : public BasePacket {
+		virtual ~Packet_JOIN() {}
+		PacketType type() { return JOIN_PACKET; }
+
 		int protocol_number;
 		Version compat_version;
 		std::string name;
@@ -288,11 +353,15 @@ namespace LM {
 			r >> name;
 			r >> team;
 		}
+		void dispatch(PacketReceiver* r);
 	};
 
 	// TODO fill in the rest
 
-	struct Packet_INFO_server {
+	struct Packet_INFO_server : public BasePacket {
+		virtual ~Packet_INFO_server() {}
+		PacketType type() { return INFO_PACKET; }
+
 		uint32_t request_packet_id;
 		uint64_t scan_start_time;
 		IPAddress server_address;
@@ -309,9 +378,13 @@ namespace LM {
 		void marshal(PacketWriter& w) {}
 
 		void unmarshal(PacketReader& r) {}
+		void dispatch(PacketReceiver* r);
 	};
 
-	struct Packet_INFO_client {
+	struct Packet_INFO_client : public BasePacket {
+		virtual ~Packet_INFO_client() {}
+		PacketType type() { return INFO_PACKET; }
+
 		int client_proto_version;
 		uint32_t scan_id;
 		uint64_t scan_start_time;
@@ -319,17 +392,25 @@ namespace LM {
 
 		void marshal(PacketWriter& w) {}
 		void unmarshal(PacketReader& r) {}
+		void dispatch(PacketReceiver* r);
 	};
 
-	struct Packet_LEAVE {
+	struct Packet_LEAVE : public BasePacket {
+		virtual ~Packet_LEAVE() {}
+		PacketType type() { return LEAVE_PACKET; }
+
 		uint32_t player_id;
 		std::string message;
 
 		void marshal(PacketWriter& w) {}
 		void unmarshal(PacketReader& r) {}
+		void dispatch(PacketReceiver* r);
 	};
 
-	struct Packet_PLAYER_ANIMATION {
+	struct Packet_PLAYER_ANIMATION : public BasePacket {
+		virtual ~Packet_PLAYER_ANIMATION() {}
+		PacketType type() { return PLAYER_ANIMATION_PACKET; }
+
 		uint32_t player_id;
 		std::string sprite_list;
 		std::string field;
@@ -337,121 +418,181 @@ namespace LM {
 
 		void marshal(PacketWriter& w) {}
 		void unmarshal(PacketReader& r) {}
+		void dispatch(PacketReceiver* r);
 	};
 
-	struct Packet_REQUEST_DENIED {
+	struct Packet_REQUEST_DENIED : public BasePacket {
+		virtual ~Packet_REQUEST_DENIED() {}
+		PacketType type() { return REQUEST_DENIED_PACKET; }
+
 		int packet_type;
 		std::string message;
 
 		void marshal(PacketWriter& w) {}
 		void unmarshal(PacketReader& r) {}
+		void dispatch(PacketReceiver* r);
 	};
 
-	struct Packet_NAME_CHANGE {
+	struct Packet_NAME_CHANGE : public BasePacket {
+		virtual ~Packet_NAME_CHANGE() {}
+		PacketType type() { return NAME_CHANGE_PACKET; }
+
 		uint32_t player_id;
 		std::string name;
 
 		void marshal(PacketWriter& w) {}
 		void unmarshal(PacketReader& r) {}
+		void dispatch(PacketReceiver* r);
 	};
 
-	struct Packet_TEAM_CHANGE {
+	struct Packet_TEAM_CHANGE : public BasePacket {
+		virtual ~Packet_TEAM_CHANGE() {}
+		PacketType type() { return TEAM_CHANGE_PACKET; }
+
 		uint32_t player_id;
 		char name;
 
 		void marshal(PacketWriter& w) {}
 		void unmarshal(PacketReader& r) {}
+		void dispatch(PacketReceiver* r);
 	};
 
-	struct Packet_REGISTER_SERVER_server {
+	struct Packet_REGISTER_SERVER_server : public BasePacket {
+		virtual ~Packet_REGISTER_SERVER_server() {}
+		PacketType type() { return REGISTER_SERVER_PACKET; }
+
 		int server_protocol_version;
 		Version server_version;
 		IPAddress server_listen_address;
 
 		void marshal(PacketWriter& w) {}
 		void unmarshal(PacketReader& r) {}
+		void dispatch(PacketReceiver* r);
 	};
 
-	struct Packet_REGISTER_SERVER_metaserver {
+	struct Packet_REGISTER_SERVER_metaserver : public BasePacket {
+		virtual ~Packet_REGISTER_SERVER_metaserver() {}
+		PacketType type() { return REGISTER_SERVER_PACKET; }
+
 		uint32_t metaserver_token;
 		uint32_t metaserver_contact_frequency;
 
 		void marshal(PacketWriter& w) {}
 		void unmarshal(PacketReader& r) {}
+		void dispatch(PacketReceiver* r);
 	};	
 
-	struct Packet_UNREGISTER_SERVER {
+	struct Packet_UNREGISTER_SERVER : public BasePacket {
+		virtual ~Packet_UNREGISTER_SERVER() {}
+		PacketType type() { return UNREGISTER_SERVER_PACKET; }
+
 		IPAddress server_listen_address;
 		uint32_t metaserver_token;
 
 		void marshal(PacketWriter& w) {}
 		void unmarshal(PacketReader& r) {}
+		void dispatch(PacketReceiver* r);
 	};
 
-	struct Packet_UPGRADE_AVAILABLE {
+	struct Packet_UPGRADE_AVAILABLE : public BasePacket {
+		virtual ~Packet_UPGRADE_AVAILABLE() {}
+		PacketType type() { return UPGRADE_AVAILABLE_PACKET; }
+
 		std::string latest_version;
 
 		void marshal(PacketWriter& w) {}
 		void unmarshal(PacketReader& r) {}
+		void dispatch(PacketReceiver* r);
 	};
 
-	struct Packet_MAP_INFO {
+	struct Packet_MAP_INFO : public BasePacket {
+		virtual ~Packet_MAP_INFO() {}
+		PacketType type() { return MAP_INFO_PACKET; }
+
 		uint32_t transmission_id;
-		Map map;
+		//Map map;
 		size_t num_expected_objects;
 
 		void marshal(PacketWriter& w) {}
 		void unmarshal(PacketReader& r) {}
+		void dispatch(PacketReceiver* r);
 	};
 
-	struct Packet_MAP_OBJECT {
+	struct Packet_MAP_OBJECT : public BasePacket {
+		virtual ~Packet_MAP_OBJECT() {}
+		PacketType type() { return MAP_OBJECT_PACKET; }
+
 		uint32_t transmission_id;
 		//MapReceiver object;
 
 		void marshal(PacketWriter& w) {}
 		void unmarshal(PacketReader& r) {}
+		void dispatch(PacketReceiver* r);
 	};
 
-	struct Packet_GAME_PARAM {
+	struct Packet_GAME_PARAM : public BasePacket {
+		virtual ~Packet_GAME_PARAM() {}
+		PacketType type() { return GAME_PARAM_PACKET; }
+
 		std::string param_name;
 		//extra data;
 
 		void marshal(PacketWriter& w) {}
 		void unmarshal(PacketReader& r) {}
+		void dispatch(PacketReceiver* r);
 	};
 
-	struct Packet_HOLE_PUNCH {
+	struct Packet_HOLE_PUNCH : public BasePacket {
+		virtual ~Packet_HOLE_PUNCH() {}
+		PacketType type() { return HOLE_PUNCH_PACKET; }
+
 		IPAddress client_address;
 		uint32_t scan_id;
 
 		void marshal(PacketWriter& w) {}
 		void unmarshal(PacketReader& r) {}
+		void dispatch(PacketReceiver* r);
 	};
 
-	struct Packet_PLAYER_DIED {
+	struct Packet_PLAYER_DIED : public BasePacket {
+		virtual ~Packet_PLAYER_DIED() {}
+		PacketType type() { return PLAYER_DIED_PACKET; }
+
 		uint32_t killed_player_id;
 		uint32_t scan_id;
 
 		void marshal(PacketWriter& w) {}
 		void unmarshal(PacketReader& r) {}
+		void dispatch(PacketReceiver* r);
 	};
 
-	struct Packet_WEAPON_INFO {
+	struct Packet_WEAPON_INFO : public BasePacket {
+		virtual ~Packet_WEAPON_INFO() {}
+		PacketType type() { return WEAPON_INFO_PACKET; }
+
 		size_t index;
 		//WeaponReader weapon_data;
 
 		void marshal(PacketWriter& w) {}
 		void unmarshal(PacketReader& r) {}
+		void dispatch(PacketReceiver* r);
 	};
 
-	struct Packet_ROUND_START {
+	struct Packet_ROUND_START : public BasePacket {
+		virtual ~Packet_ROUND_START() {}
+		PacketType type() { return ROUND_START_PACKET; }
+
 		uint64_t time_left_in_round;
 
 		void marshal(PacketWriter& w) {}
 		void unmarshal(PacketReader& r) {}
+		void dispatch(PacketReceiver* r);
 	};
 
-	struct Packet_SPAWN {
+	struct Packet_SPAWN : public BasePacket {
+		virtual ~Packet_SPAWN() {}
+		PacketType type() { return SPAWN_PACKET; }
+
 		Point position;
 		Vector velocity;
 		bool is_grabbing_obstacle;
@@ -460,6 +601,7 @@ namespace LM {
 
 		void marshal(PacketWriter& w) {}
 		void unmarshal(PacketReader& r) {}
+		void dispatch(PacketReceiver* r);
 	};
 }
 

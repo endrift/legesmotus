@@ -25,7 +25,9 @@
 #ifndef LM_NEWCLIENT_CLIENT_HPP
 #define LM_NEWCLIENT_CLIENT_HPP
 
-#include "client/ClientNetwork.hpp"
+#include "ClientNetwork.hpp"
+#include "common/PacketReceiver.hpp"
+#include "common/packets.hpp"
 
 namespace LM {
 	class Player;
@@ -33,12 +35,12 @@ namespace LM {
 	class Controller;
 	class GameLogic;
 
-	class Client {
+	class Client : public PacketReceiver {
 	private:
 		Controller* m_controller;
 		GameLogic* m_logic;
 		uint32_t m_player_id;
-		//ClientNetwork m_network;
+		ClientNetwork m_network;
 
 		bool m_running;
 
@@ -72,24 +74,11 @@ namespace LM {
 		// TODO rename these packets
 		virtual void begin_game(Map* map = 0);
 		virtual void end_game();
-
-		virtual void new_round(std::string map_name,
-		                       int map_revision,
-		                       int map_width,
-		                       int map_height,
-		                       bool round_started,
-		                       uint64_t time_until_start);
-
+		virtual void packet_new_round(const Packet_NEW_ROUND& p);
 		virtual void start_round();
 		virtual void end_round();
-
-		virtual void welcome(uint32_t player_id,
-		                     std::string player_name,
-		                     char team);
-
-		virtual void announce(uint32_t player_id,
-		                      std::string player_name,
-		                      char team);
+		virtual void packet_welcome(const Packet_WELCOME& p);
+		virtual void packet_announce(const Packet_ANNOUNCE& p);
 		// End packet callbacks
 
 		// Main loop: override for subclass behaviors, but call step inside

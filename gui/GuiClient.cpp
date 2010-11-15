@@ -156,6 +156,18 @@ GraphicalMap* GuiClient::make_map() {
 void GuiClient::run() {
 	set_running(true);
 	// XXX testing code
+	Packet_NEW_ROUND pnr;
+	Packet_WELCOME pw;
+	pnr.map_name = "alpha1-test";
+	pnr.map_revision = 0;
+	pnr.map_width = 2048;
+	pnr.map_height = 1024;
+	pnr.game_started = false;
+	pnr.time_until_start = 0;
+	pw.player_id = 0;
+	pw.player_name = "Foo";
+	pw.team = 'A';
+
 	Bone crosshair_bone;
 	GraphicContainer aim(&m_root);
 	Sprite crosshair(m_cache->get<Image>("aim.png"));
@@ -169,9 +181,9 @@ void GuiClient::run() {
 	m_view.set_scale_base(1024);
 	crosshair_bone.set_scale_x(m_view.get_scale()/4.0f);
 	crosshair_bone.set_scale_y(m_view.get_scale()/4.0f);
-	new_round("alpha1-test", 0, 2048, 1024, false, 0);
+	packet_new_round(pnr);
 	begin_game(m_map);
-	welcome(0, "Foo", 'A');
+	packet_welcome(pw);
 	m_player->set_rotational_vel(60);
 	// XXX end testing code
 

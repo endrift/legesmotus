@@ -27,7 +27,6 @@
 #include "common/Map.hpp"
 #include "common/Player.hpp"
 #include "common/timer.hpp"
-#include "common/packets.hpp"
 #include <iostream>
 
 using namespace LM;
@@ -98,11 +97,11 @@ void Client::end_game() {
 	m_logic = NULL;
 }
 
-void Client::new_round(std::string map_name, int map_revision, int map_width, int map_height, bool round_started, uint64_t time_until_start) {
+void Client::packet_new_round(const Packet_NEW_ROUND& p) {
 	Map* map = make_map();
 	// TODO use time_until_start, remove round_started from packet
 	// TODO preload and tell revision instead of loading the whole thing
-	if (map->load_file((string(get_res_directory()) + "/maps/" + map_name + ".map").c_str())) {
+	if (map->load_file((string(get_res_directory()) + "/maps/" + p.map_name + ".map").c_str())) {
 		// TODO put back during real map loading
 		/*if (map->get_revision() != map_revision) {
 			// this is really lame
@@ -113,9 +112,9 @@ void Client::new_round(std::string map_name, int map_revision, int map_width, in
 			map->set_revision(map_revision);
 		}*/
 	} else {
-		map->set_width(map_width);
-		map->set_height(map_height);
-		map->set_revision(map_revision);
+		map->set_width(p.map_width);
+		map->set_height(p.map_height);
+		map->set_revision(p.map_revision);
 	}
 	set_map(map);
 }
@@ -128,13 +127,14 @@ void Client::end_round() {
 	// TODO
 }
 
-void Client::welcome(uint32_t player_id, string player_name, char team) {
-	announce(player_id, player_name, team);
-	set_own_player(player_id);
+void Client::packet_welcome(const Packet_WELCOME& p) {
+	Player* player = make_player(p.player_name.c_str(), p.player_id, p.team);
+	add_player(player);
+	set_own_player(p.player_id);
 }
 
-void Client::announce(uint32_t player_id, string player_name, char team) {
-	Player* player = make_player(player_name.c_str(), player_id, team);
+void Client::packet_announce(const Packet_ANNOUNCE& p) {
+	Player* player = make_player(p.player_name.c_str(), p.player_id, p.team);
 	add_player(player);
 }
 

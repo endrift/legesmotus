@@ -32,9 +32,6 @@
 
 #include <map>
 
-// XXX remove this later
-#define Graphic NewGraphic
-
 namespace LM {
 	class Graphic {
 	private:

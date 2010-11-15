@@ -25,7 +25,8 @@
 #ifndef LM_COMMON_UDPPACKET_HPP
 #define LM_COMMON_UDPPACKET_HPP
 
-#include "common/IPAddress.hpp"
+#include "IPAddress.hpp"
+#include "network.hpp"
 #include <string>
 
 namespace LM {
@@ -38,7 +39,7 @@ namespace LM {
 	
 		friend class UDPSocket;
 	public:
-		explicit UDPPacket(size_t max_length);
+		explicit UDPPacket(size_t max_length = MAX_PACKET_LENGTH);
 		UDPPacket(const UDPPacket& other);
 		~UDPPacket();
 	

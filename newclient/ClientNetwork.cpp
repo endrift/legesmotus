@@ -1,5 +1,5 @@
 /*
- * gui/Sprite.hpp
+ * newclient/ClientNetwork.cpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,20 +22,8 @@
  * 
  */
 
-#ifndef LM_GUI_SPRITE_HPP
-#define LM_GUI_SPRITE_HPP
+#include "ClientNetwork.hpp"
 
-#include "Graphic.hpp"
+using namespace LM;
+using namespace std;
 
-namespace LM {
-	class Sprite : public Graphic {
-	public:
-		explicit Sprite(Image* image);
-		Sprite(const Sprite& other);
-		virtual Sprite* clone() const;
-
-		virtual void draw(DrawContext* ctx) const;
-	};
-}
-
-#endif
