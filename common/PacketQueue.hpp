@@ -27,13 +27,15 @@
 
 #include <list>
 #include "PacketReader.hpp"
+#include "Packet.hpp"
 
 namespace LM {
 	class PacketQueue {
 	private:
 		size_t			m_max_size;
 		uint64_t		m_next_expected_sequence_no;
-		std::list<PacketReader>	m_queued_packets;
+		std::list<PacketReader>	m_queued_packets_r;
+		std::list<Packet>	m_queued_packets;
 
 	public:
 		explicit PacketQueue(uint64_t next_expected_sequence_no =1, size_t max_size =256);
@@ -42,15 +44,19 @@ namespace LM {
 		void			set_max_size(size_t max_size) { m_max_size = max_size; }
 
 		// Returns true if the given packet is ready to be processed NOW:
-		bool			push(const PacketReader& packet);
+		bool			push_r(const PacketReader& packet);
+		bool			push(const Packet& packet);
 
 		// Returns true if there is a packet ready to be processed:
-		bool			has_packet() const { return !m_queued_packets.empty() && m_queued_packets.front().sequence_no() == m_next_expected_sequence_no; }
+		bool			has_packet_r() const { return !m_queued_packets_r.empty() && m_queued_packets_r.front().sequence_no() == m_next_expected_sequence_no; }
+		bool			has_packet() const { return !m_queued_packets.empty() && m_queued_packets.front().header.sequence_no == m_next_expected_sequence_no; }
 
 		// Return the next packet that is ready to be processed (ONLY CALL if has_packet() returns TRUE!)
-		PacketReader&		peek();
+		PacketReader&		peek_r();
+		Packet&				peek();
 
 		// Pop the next packet that was ready to be processed (ONLY CALL if has_packet() returns TRUE!)
+		void			pop_r();
 		void			pop();
 
 		class EmptyQueueException { };

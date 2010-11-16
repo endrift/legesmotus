@@ -27,6 +27,7 @@
 #include <string>
 #include <cmath>
 #include "common/math.hpp"
+#include "common/Packet.hpp"
 #include "common/PacketReader.hpp"
 #include "common/PacketWriter.hpp"
 #include <Box2D/Box2D.h>
@@ -323,3 +324,23 @@ void Player::set_is_grabbing_obstacle(bool x) {
 	}
 }
 
+void Player::generate_player_update(Packet::PlayerUpdate* p) {
+	p->player_id = get_id();
+	p->x = get_x();
+	p->y = get_y();
+	p->x_vel = get_x_vel();
+	p->y_vel = get_y_vel();
+	p->rotation = get_rotation_degrees();
+	p->energy = get_energy();
+	p->current_weapon_id = get_current_weapon_id();
+	p->flags = "";
+	if (is_invisible()) {
+		p->flags->append(1, 'I');
+	}
+	if (is_frozen()) {
+		p->flags->append(1, 'F');
+	}
+	if (is_grabbing_obstacle()) {
+		p->flags->append(1, 'G');
+	}
+}

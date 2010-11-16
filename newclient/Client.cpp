@@ -32,7 +32,7 @@
 using namespace LM;
 using namespace std;
 
-Client::Client() {
+Client::Client() : m_network(this) {
 	m_logic = NULL;
 }
 
@@ -52,6 +52,10 @@ void Client::step(uint64_t diff) {
 	}
 	
 	m_logic->step();
+
+	Packet p;
+	generate_player_update(m_player_id, &p);
+	m_network.send_packet(&p);
 }
 
 const char* Client::get_res_directory() const {
@@ -73,6 +77,16 @@ void Client::remove_player(uint32_t id) {
 
 Player* Client::get_player(uint32_t id) {
 	return m_logic->get_player(id);
+}
+
+void Client::generate_player_update(uint32_t id, Packet* p) {
+	p->type = PLAYER_UPDATE_PACKET;
+	Player* player = get_player(id);
+	if (player == NULL || p == NULL) {
+		return;
+	}
+
+	player->generate_player_update(&p->player_update);
 }
 
 GameLogic* Client::get_game() {
@@ -97,11 +111,11 @@ void Client::end_game() {
 	m_logic = NULL;
 }
 
-void Client::packet_new_round(const Packet_NEW_ROUND& p) {
+void Client::packet_new_round(const Packet& p) {
 	Map* map = make_map();
 	// TODO use time_until_start, remove round_started from packet
 	// TODO preload and tell revision instead of loading the whole thing
-	if (map->load_file((string(get_res_directory()) + "/maps/" + p.map_name + ".map").c_str())) {
+	if (map->load_file((string(get_res_directory()) + "/maps/" + *p.new_round.map_name + ".map").c_str())) {
 		// TODO put back during real map loading
 		/*if (map->get_revision() != map_revision) {
 			// this is really lame
@@ -112,9 +126,9 @@ void Client::packet_new_round(const Packet_NEW_ROUND& p) {
 			map->set_revision(map_revision);
 		}*/
 	} else {
-		map->set_width(p.map_width);
-		map->set_height(p.map_height);
-		map->set_revision(p.map_revision);
+		map->set_width(p.new_round.map_width);
+		map->set_height(p.new_round.map_height);
+		map->set_revision(p.new_round.map_revision);
 	}
 	set_map(map);
 }
@@ -127,14 +141,14 @@ void Client::end_round() {
 	// TODO
 }
 
-void Client::packet_welcome(const Packet_WELCOME& p) {
-	Player* player = make_player(p.player_name.c_str(), p.player_id, p.team);
+void Client::packet_welcome(const Packet& p) {
+	Player* player = make_player(p.welcome.player_name->c_str(), p.welcome.player_id, p.welcome.team);
 	add_player(player);
-	set_own_player(p.player_id);
+	set_own_player(p.welcome.player_id);
 }
 
-void Client::packet_announce(const Packet_ANNOUNCE& p) {
-	Player* player = make_player(p.player_name.c_str(), p.player_id, p.team);
+void Client::packet_announce(const Packet& p) {
+	Player* player = make_player(p.announce.player_name->c_str(), p.announce.player_id, p.announce.team);
 	add_player(player);
 }
 

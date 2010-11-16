@@ -28,6 +28,7 @@
 #include "PacketReader.hpp"
 #include "PacketWriter.hpp"
 #include "network.hpp"
+#include "Packet.hpp"
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -86,12 +87,24 @@ void	CommonNetwork::send_ack(const IPAddress& peer, const PacketReader& packet_t
 	send_packet(peer, ack_packet);
 }
 
+void	CommonNetwork::send_ack(const IPAddress& peer, const Packet& packet_to_ack) {
+	Packet ack_packet(ACK_PACKET);
+	ack_packet.ack.packet_type = packet_to_ack.header.packet_type;
+	ack_packet.ack.sequence_no = packet_to_ack.header.sequence_no;
+	send_packet(peer, &ack_packet);
+}
+
 void	CommonNetwork::process_ack(const IPAddress& peer, PacketReader& ack_packet) {
 	uint32_t	packet_type;
 	uint64_t	sequence_no;
 	ack_packet >> packet_type >> sequence_no;
 
 	m_ack_manager.ack(peer, sequence_no);
+}
+
+void	CommonNetwork::send_packet(const IPAddress& dest, Packet* packet) {
+	packet->marshal();
+	send_raw_packet(packet->raw);
 }
 
 void	CommonNetwork::send_packet(const IPAddress& dest, const PacketWriter& packet) {

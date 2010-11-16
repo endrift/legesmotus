@@ -35,6 +35,7 @@ namespace LM {
 	class IPAddress;
 	class PacketReader;
 	class PacketWriter;
+	class Packet;
 
 	class CommonNetwork {
 	public:
@@ -59,6 +60,7 @@ namespace LM {
 
 		// Send an ACK packet for the given packet
 		void		send_ack(const IPAddress& peer, const PacketReader& packet_to_ack);
+		void		send_ack(const IPAddress& peer, const Packet& packet_to_ack);
 		// Process an ACK packet
 		void		process_ack(const IPAddress& peer, PacketReader& ack_packet);
 
@@ -66,6 +68,7 @@ namespace LM {
 		virtual ~CommonNetwork() { }
 
 		// Send a packet
+		void		send_packet(const IPAddress& dest, Packet* packet);
 		void		send_packet(const IPAddress& dest, const PacketWriter& packet);
 		void		send_packet(const IPAddress& dest, const PacketHeader& header, const std::string& data);
 

@@ -25,14 +25,73 @@
 #ifndef LM_NEWCLIENT_CLIENTNETWORK_HPP
 #define LM_NEWCLIENT_CLIENTNETWORK_HPP
 
+#include "common/IPAddress.hpp"
 #include "common/CommonNetwork.hpp"
+#include "common/Packet.hpp"
+#include <stdint.h>
 
 namespace LM {
+	class PacketHeader;
+	class UDPPacket;
+	
 	class ClientNetwork : public CommonNetwork {
 	private:
+		static uint32_t	next_connection_id;
+
+		PacketReceiver*	m_client;       // Our owning client, which we inform of packet receipts
+		IPAddress	m_server_address;   // The resolved address of the server (host & port)
+		Peer		m_server_peer;      // Details about the server connection
+		bool		m_is_connected;     // Are we currently connected to the server?
+		uint64_t	m_last_packet_time; // The time we last received a packet from the server
+	
+		virtual void	excessive_packet_drop(const IPAddress& peer);
 
 	public:
-
+		explicit ClientNetwork(PacketReceiver* client);
+	
+		/*
+		 * Connection functions - for connecting and disconnecting with the server
+		 */
+	
+		// Connect to given hostname on given port
+		//  Returns true if successfully connected, false otherwise
+		//  Does not send join packet
+		bool		connect(const char* hostname, unsigned int portno);
+		bool		connect(const IPAddress& address);
+	
+		// Disconnect from server (Does not send leave packet)
+		void		disconnect();
+	
+		// Are we currently connected with a server?
+		bool		is_connected() const { return m_is_connected; }
+	
+		const IPAddress& get_server_address() const { return m_server_address; }
+	
+		// Return the last tick on which a packet was received from the server.
+		uint64_t	get_last_packet_time();
+	
+	
+		/*
+		 * Receiving packets
+		 */
+	
+		// Process all the pending packets and notify the game controller of their receipt
+		void		receive_packets();
+	
+	
+		/*
+		 * Sending packets
+		 */
+	
+		// Send the given packet to the server
+		void		send_reliable_packet(Packet* packet);
+		void		send_packet(Packet* packet);
+	
+		// Send the given packet to the specific address
+		void		send_packet_to(const IPAddress& dest, Packet* packet) { CommonNetwork::send_packet(dest, packet); }
+	
+		// Send the given packet to all systems on the LAN
+		void		broadcast_packet(unsigned int portno, Packet* packet);
 	};
 }
 

@@ -35,3 +35,8 @@ PacketWriter::PacketWriter(uint32_t packet_type) {
 	m_header.packet_type = packet_type;
 }
 
+PacketWriter::PacketWriter(uint32_t packet_type, const PacketHeader& header) : m_header(header) {
+	m_out.setf(ios::boolalpha);		// use true/false when outputting bools
+	m_header.packet_type = packet_type;
+}
+

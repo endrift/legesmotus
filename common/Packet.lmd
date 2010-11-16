@@ -1,0 +1,213 @@
+// Leges Motus IDL file for all packets
+// Parse with tools/parse_idl.py
+
+#require Version
+#require Point
+#require IPAddress
+#require WeaponReader
+#require Map
+
+#name Packet
+
+ACK = 0 {
+	packet_type : uint32_t ; The type of packet being ACKed
+	sequence_no : uint64_t ; The sequence number of the packet being ACKed
+}
+
+PLAYER_UPDATE = 1 {
+	player_id : uint32_t ; ID of the player being updated
+	x : double ; x coordinate
+	y : double ; y coordinate
+	x_vel : double ; x velocity
+	y_vel : double ; y velocity
+	rotation : double ; current rotation (in degrees)
+	energy : int ; current energy
+	current_weapon_id : string ; current weapon ID
+	flags : string ; flags specifying the state of the current player. Present if set, not set if not present
+	               ; * I - Invisible
+                   ; * F - Frozen
+                   ; * G - Grabbing obstacle
+}
+
+WEAPON_DISCHARGED = 2 {
+	player_id : uint32_t ; ID of the player who fired the weapon
+	weapon_id : string ; The ID of the weapon that was fired
+	extradata : string ; Additional data that should be passed to the specific weapon class
+}
+
+PLAYER_HIT = 3 {
+	shooter_id : uint32_t ; ID of the player who fired the weapon
+	weapon_id : string ; The ID of the weapon that was fired
+	shot_player_id : uint32_t ; ID of the player who was hit by the weapon
+	has_effect : bool ; True if the weapon has its full effect (usually if the hit player is unfrozen)
+	extradata : string ; Additional data that should be passed to the specific weapon class
+}
+
+MESSAGE = 4 {
+	sender_id : uint32_t ; ID of the player who sent the message (if 0, it's from the server)
+	recipient : string ; If this is a team ID, display it as a team message. Otherwise, it's a general message.
+	message_text : string ; The text of the message itself
+}
+
+NEW_ROUND = 5 {
+	map_name : string ; The name of the current map
+	map_revision : int ; Which version number of the map the server is running
+	map_width : int ; The width in pixels of the map
+	map_height : int ; The height in pixels of the map
+	game_started : bool ; Is the round already in progress?
+	time_until_start : uint64_t ; How long until the round starts (milliseconds)?
+}
+
+ROUND_OVER = 6 {
+	winning_team : char ; The ID of the team that won the round
+	team_a_score : int ; The score of team A
+	team_b_score : int ; The score of team B
+}
+
+SCORE_UPDATE = 7 {
+	subject : string ; The ID of the team or player this update applies to
+	score : int ; The new score for this ID
+}
+
+WELCOME = 8 {
+	server_version : int ; Version number of the server
+	player_id : int ; The connecting player's new player ID
+	player_name : string ; The new name of the connecting player
+	team : char ; The identifier of the connecting player's team
+}
+
+ANNOUNCE = 9 {
+	player_id : uint32_t ; The new player's ID
+	player_name : string ; The new name of the new player
+	team : char ; The identifier of the new player's team
+}
+
+GATE_UPDATE = 10 {
+	acting_player_id : uint32_t ; The ID of the player who triggered the change
+	team : char ; The team for which the gate is being updated
+	progress : double ; Amount gate is open from 0 (fully closed) to 1 (fully open)
+	change_in_players : int ; Change in number of players on the gate (-1, 0, or 1).
+	new_nbr_players : size_t ; How many players are now engaging the gate.
+	sequence_no : uint64_t ; The unique ID of this gate update packet (should be greater than the last received gate update packet).
+}
+
+JOIN = 11 {
+	protocol_number : int ; The client's protocol number, to determine server compatibility
+	compat_version : Version ; The earliest version of Leges Motus with which this client is compatible
+	name : string ; The name requested by the client
+	team : char ; The team the client would like to join (optional)
+}
+
+INFO_server = 12 {
+	request_packet_id : uint32_t ; The ID of the packet that requested this information
+	scan_start_time : uint64_t ; The timestamp that was sent with the requesting packet
+	server_address : IPAddress ; The address of a server to try contacting (only in the packet if this comes from the metaserver)
+	server_protocol_version : int ; The protocol version of the server (this and following data only included if this packet is not from the metaserver)
+	server_compat_version : Version ; The earliest version of Leges Motus with which this server is compatible (only in the packet if this comes from a server)
+	current_map_name : string ; The name of the current map the server is running
+    team_count_a : int ; The number of players currently playing on team A 
+	team_count_b : int ; The number of players currently playing on team B 
+	max_players : int ; The maximum number of players the server can support
+	uptime : uint64_t ; The amount of time (in milliseconds) the server has been running
+	time_left_in_game : uint64_t ; The amount of time (in milliseconds) left in the current game on the server
+	server_name : string ; The name of the server
+	server_location : string ; A human-readable location of the server
+}
+
+INFO_client = 13 { // TODO rejoin packets
+	client_proto_version : int ; The client's protocol version
+	scan_id : uint32_t ; The ID of this scan
+	scan_start_time : uint64_t ; The timestamp that was sent with the requesting packet
+	client_version : Version ; The version of the client
+}
+
+LEAVE = 14 {
+	player_id : uint32_t ; The ID of the player leaving the server
+	message : string ; The message about why the leave is taking place (optional)
+}
+
+PLAYER_ANIMATION = 15 {
+	player_id : uint32_t ; The ID of the player whose animation changed
+	sprite_list : string ; The slash-separated path to the sprite that changed, starting at the root player sprite group.
+	field : string ; The field to change within that sprite
+	value : int ; The new value for that field
+}
+
+REQUEST_DENIED = 16 {
+	packet_type : int ; The packet type (as per the list above) of the request this relates to
+	message : string ; The message about why the request was denied
+}
+
+NAME_CHANGE = 17 {
+	player_id : uint32_t ; The ID of the player who has changed names
+	name : string ; The new name for that player
+}
+
+TEAM_CHANGE = 18 {
+	player_id : uint32_t ; The ID of the player who has changed teams
+	name : char ; The new team for that player
+}
+
+REGISTER_SERVER_server = 27 {
+	server_protocol_version : int ; The protocol version of the server that is being registered
+	server_version : Version ; The human-readable version string for the server being registered
+	server_listen_address : IPAddress ; The IP address of the server being registered
+}
+
+REGISTER_SERVER_metaserver = 19 {
+	metaserver_token : uint32_t ; A unique token for identifying this server with the metaserver
+	metaserver_contact_frequency : uint32_t ; How often to contact the metaserver
+}
+
+UNREGISTER_SERVER = 20 {
+	server_listen_address : IPAddress ; The IP address of the server being unregistered
+	metaserver_token : uint32_t ; The token that identifies the unregistered server to the metaserver
+}
+
+UPGRADE_AVAILABLE = 21 {
+	latest_version : string ; The human-readable latest version number
+}
+
+MAP_INFO = 22 {
+	transmission_id : uint32_t ; The ID of this packet, to keep map transmissions tied together
+	map : Map ; The name, revision, width, height, etc. of the map. The map object can unpack these when initialized with the >> operator.
+	num_expected_objects : size_t ; The number of object information packets expected to follow
+}
+
+MAP_OBJECT = 23 {
+	transmission_id : uint32_t ; The ID of this packet, to keep map transmissions tied together
+	//object : MapReceiver ; The data about the object, in a form that can be packed/unpacked by the MapReceiver class (type of object, ID of object, extra data)
+}
+
+GAME_PARAM = 24 {
+	param_name : string ; The name of the parameter that has changed
+	//value : (unrepresentable) ; New value - depends on the parameter that changed (this packet is unpacked by the GameParameters class) 
+}
+
+HOLE_PUNCH = 25 {
+	client_address : IPAddress ; The IP address of the client to forward this to (only present if packet comes from the metaserver)
+	scan_id : uint32_t ; The unique ID for this scan.
+}
+
+PLAYER_DIED = 26 {
+	killed_player_id : uint32_t ; The ID of the player who died.
+	scan_id : uint32_t ; The ID of the player who killed that player.
+}
+
+WEAPON_INFO = 28 {
+	index : size_t ; This weapon's index in the list of weapons.
+	weapon_data : WeaponReader ; The new data for the weapon.
+}
+
+ROUND_START = 29 {
+	time_left_in_round : uint64_t ; The time left until the round ends.
+}
+
+// TODO add name aliasing
+SPAWN = 30 {
+	position : Point ; The position at which the player spawned.
+	velocity : Point ; The velocity of the player who spawned.
+	is_grabbing_obstacle : bool ; Did the player spawn grabbing an obstacle?
+	is_alive : bool ; Was the player alive when he spawned?
+	freeze_time : uint64_t ; For how long (if at all) will the player be frozen?
+}

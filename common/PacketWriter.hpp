@@ -55,9 +55,10 @@ namespace LM {
 
 	public:
 		explicit PacketWriter(uint32_t packet_type);
+		explicit PacketWriter(uint32_t packet_type, const PacketHeader& header);
 	
 		// Getters
-		const PacketHeader&	get_header () const { return m_header; }
+		const PacketHeader&	get_header() const { return m_header; }
 		uint32_t		packet_type() const { return m_header.packet_type; }
 		uint64_t		sequence_no() const { return m_header.sequence_no; }
 		uint32_t		connection_id() const { return m_header.connection_id; }

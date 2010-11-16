@@ -156,17 +156,17 @@ GraphicalMap* GuiClient::make_map() {
 void GuiClient::run() {
 	set_running(true);
 	// XXX testing code
-	Packet_NEW_ROUND pnr;
-	Packet_WELCOME pw;
-	pnr.map_name = "alpha1-test";
-	pnr.map_revision = 0;
-	pnr.map_width = 2048;
-	pnr.map_height = 1024;
-	pnr.game_started = false;
-	pnr.time_until_start = 0;
-	pw.player_id = 0;
-	pw.player_name = "Foo";
-	pw.team = 'A';
+	Packet pnr(NEW_ROUND_PACKET);
+	Packet pw(WELCOME_PACKET);
+	pnr.new_round.map_name = "alpha1-test";
+	pnr.new_round.map_revision = 0;
+	pnr.new_round.map_width = 2048;
+	pnr.new_round.map_height = 1024;
+	pnr.new_round.game_started = false;
+	pnr.new_round.time_until_start = 0;
+	pw.welcome.player_id = 0;
+	pw.welcome.player_name = "Foo";
+	pw.welcome.team = 'A';
 
 	Bone crosshair_bone;
 	GraphicContainer aim(&m_root);

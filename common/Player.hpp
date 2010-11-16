@@ -26,6 +26,7 @@
 #define LM_COMMON_PLAYER_HPP
 
 #include "common/Point.hpp"
+#include "common/Packet.hpp"
 #include "PhysicsObject.hpp"
 #include <cmath>
 #include <string>
@@ -44,9 +45,6 @@ class b2Joint;
 class b2Vec2;
  
 namespace LM {
-	class PacketReader;
-	class PacketWriter;
-
 	class Player : public PhysicsObject {
 	const static float MAX_ANGULAR_VELOCITY = 3.0f;
 	
@@ -139,6 +137,9 @@ namespace LM {
 		virtual void set_is_grabbing_obstacle(bool);
 		virtual void set_current_weapon_id(const char*);
 		virtual void set_attach_joint(b2Joint* joint);
+
+		void generate_player_update(Packet::PlayerUpdate* p);
+		void read_player_update(Packet::PlayerUpdate* p);
 	
 		// Initialize the Box2D physics for this player
 		virtual void initialize_physics(b2World* world);

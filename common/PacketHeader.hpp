@@ -37,8 +37,8 @@ namespace LM {
 		uint64_t	sequence_no;
 		uint32_t	connection_id;
 
-		PacketHeader (uint32_t type, uint64_t seqno, uint32_t cid) { packet_type = type; sequence_no = seqno; connection_id = cid; }
-		PacketHeader () { packet_type = 0; sequence_no = 0; connection_id = 0; }
+		PacketHeader(uint32_t type, uint64_t seqno, uint32_t cid) { packet_type = type; sequence_no = seqno; connection_id = cid; }
+		PacketHeader() { packet_type = 0; sequence_no = 0; connection_id = 0; }
 
 		std::string	make_string() const;
 		void		read(StringTokenizer&);

@@ -65,6 +65,7 @@ namespace LM {
 		explicit PacketReader(const char* packet_data, char separator =PACKET_FIELD_SEPARATOR);
 		explicit PacketReader(const UDPPacket& packet);
 	
+		const PacketHeader& get_header() const { return m_header; }
 		// Get the packet type and sequence NO at any time:
 		uint32_t	packet_type() const { return m_header.packet_type; }
 		uint64_t	sequence_no() const { return m_header.sequence_no; }

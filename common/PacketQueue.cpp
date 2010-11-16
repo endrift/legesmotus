@@ -33,7 +33,7 @@ PacketQueue::PacketQueue(uint64_t next_expected_sequence_no, size_t max_size) {
 	m_max_size = max_size;
 }
 
-bool	PacketQueue::push(const PacketReader& packet) {
+bool PacketQueue::push_r(const PacketReader& packet) {
 	if (packet.sequence_no() < m_next_expected_sequence_no) {
 		// This packet is a dupe of one that already arrived
 		return false;
@@ -44,14 +44,45 @@ bool	PacketQueue::push(const PacketReader& packet) {
 	}
 
 	// This packet arrived out of order -- Add it to the queue!
-	list<PacketReader>::reverse_iterator	it(m_queued_packets.rbegin());
+	list<PacketReader>::reverse_iterator	it(m_queued_packets_r.rbegin());
 
-	while (it != m_queued_packets.rend() && it->sequence_no() > packet.sequence_no()) {
+	while (it != m_queued_packets_r.rend() && it->sequence_no() > packet.sequence_no()) {
 		++it;
 	}
 
 	// Make sure we don't add a packet that's already in the queue
-	if (it != m_queued_packets.rend() && it->sequence_no() == packet.sequence_no()) {
+	if (it != m_queued_packets_r.rend() && it->sequence_no() == packet.sequence_no()) {
+		return false;
+	}
+
+	// Make sure there's room in the queue for another packet
+	if (m_queued_packets_r.size() >= m_max_size) {
+		throw FullQueueException();
+	}
+
+	m_queued_packets_r.insert(it.base(), packet);
+	return false;
+}
+
+bool PacketQueue::push(const Packet& packet) {
+	if (packet.header.sequence_no < m_next_expected_sequence_no) {
+		// This packet is a dupe of one that already arrived
+		return false;
+	} else if (packet.header.sequence_no == m_next_expected_sequence_no) {
+		// This packet arrived in its expected order -- It's ready to be processed NOW
+		++m_next_expected_sequence_no;
+		return true;
+	}
+
+	// This packet arrived out of order -- Add it to the queue!
+	list<Packet>::reverse_iterator it(m_queued_packets.rbegin());
+
+	while (it != m_queued_packets.rend() && it->header.sequence_no > packet.header.sequence_no) {
+		++it;
+	}
+
+	// Make sure we don't add a packet that's already in the queue
+	if (it != m_queued_packets.rend() && it->header.sequence_no == packet.header.sequence_no) {
 		return false;
 	}
 
@@ -64,14 +95,29 @@ bool	PacketQueue::push(const PacketReader& packet) {
 	return false;
 }
 
-PacketReader&	PacketQueue::peek() {
+PacketReader& PacketQueue::peek_r() {
+	if (!has_packet()) {
+		throw EmptyQueueException();
+	}
+	return m_queued_packets_r.front();
+}
+
+Packet& PacketQueue::peek() {
 	if (!has_packet()) {
 		throw EmptyQueueException();
 	}
 	return m_queued_packets.front();
 }
 
-void	PacketQueue::pop() {
+void	PacketQueue::pop_r() {
+	if (!has_packet()) {
+		throw EmptyQueueException();
+	}
+	m_queued_packets_r.pop_front();
+	++m_next_expected_sequence_no;
+}
+
+void PacketQueue::pop() {
 	if (!has_packet()) {
 		throw EmptyQueueException();
 	}
@@ -79,7 +125,7 @@ void	PacketQueue::pop() {
 	++m_next_expected_sequence_no;
 }
 
-void	PacketQueue::init(uint64_t next_expected_sequence_no, size_t max_size) {
+void PacketQueue::init(uint64_t next_expected_sequence_no, size_t max_size) {
 	m_next_expected_sequence_no = next_expected_sequence_no;
 	m_max_size = max_size;
 	m_queued_packets.clear();

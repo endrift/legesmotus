@@ -119,14 +119,14 @@ bool	ServerNetwork::receive_packets(uint32_t timeout) {
 				send_ack(raw_packet.get_address(), packet);
 
 				if (Peer* peer = get_peer(raw_packet.get_address())) {
-					if (packet.connection_id() == peer->connection_id && peer->packet_queue.push(packet)) {
+					if (packet.connection_id() == peer->connection_id && peer->packet_queue.push_r(packet)) {
 						// Ready to be processed now.
 						process_packet(raw_packet.get_address(), packet);
 
 						// Process any other packets that might be waiting in the queue from this peer.
-						while (peer->packet_queue.has_packet()) {
-							process_packet(raw_packet.get_address(), peer->packet_queue.peek());
-							peer->packet_queue.pop();
+						while (peer->packet_queue.has_packet_r()) {
+							process_packet(raw_packet.get_address(), peer->packet_queue.peek_r());
+							peer->packet_queue.pop_r();
 						}
 					} else if (packet.connection_id() > peer->connection_id) {
 						// From a newer connection than is currently registered
@@ -180,7 +180,7 @@ void	ServerNetwork::process_packet(const IPAddress& address, PacketReader& reade
 		m_server.join(address, reader);
 		break;
 
-	case INFO_PACKET:
+	case INFO_client_PACKET:
 		m_server.info(address, reader);
 		break;
 
@@ -200,7 +200,7 @@ void	ServerNetwork::process_packet(const IPAddress& address, PacketReader& reade
 		m_server.team_change(address, reader);
 		break;
 
-	case REGISTER_SERVER_PACKET:
+	case REGISTER_SERVER_metaserver_PACKET:
 		m_server.register_server_packet(address, reader);
 		break;
 

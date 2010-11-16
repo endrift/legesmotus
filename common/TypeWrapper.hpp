@@ -1,5 +1,5 @@
 /*
- * common/PacketReceiver.cpp
+ * common/TypeWrapper.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,8 +22,57 @@
  * 
  */
 
-#include "PacketReceiver.hpp"
+#ifndef LM_COMMON_TYPEWRAPPER_HPP
+#define LM_COMMON_TYPEWRAPPER_HPP
 
-using namespace LM;
-using namespace std;
+#include "PacketReader.hpp"
+#include "PacketWriter.hpp"
 
+namespace LM {
+	template<typename T>
+	struct TypeWrapper {
+		T* item;
+
+		TypeWrapper<T>& operator=(const T& other) {
+			if (item != NULL) {
+				delete item;
+			}
+			item = new T(other);
+			return *this;
+		}
+
+		T& operator*() {
+			return *item;
+		}
+
+		const T& operator*() const {
+			return *item;
+		}
+
+		T* operator->() {
+			return item;
+		}
+
+		const T* operator->() const {
+			return item;
+		}
+	};
+	
+	template<typename T>
+	PacketReader& operator>>(PacketReader& r, TypeWrapper<T>& t) {
+		T i;
+		r >> i;
+		t.item = new T(i);
+		return r;
+	}
+	
+	template<typename T>
+	PacketWriter& operator<<(PacketWriter& w, TypeWrapper<T>& t) {
+		T i;
+		w << i;
+		t.item = new T(i);
+		return w;
+	}
+}
+
+#endif

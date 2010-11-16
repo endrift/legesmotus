@@ -32,6 +32,7 @@
 #include <stdint.h>
 #include "IPAddress.hpp"
 #include "PacketHeader.hpp"
+#include "Packet.hpp"
 
 namespace LM {
 	class PacketWriter;
@@ -99,6 +100,7 @@ namespace LM {
 
 		// add_packet adds a unicast packet to the AckManager
 		void		add_packet(const IPAddress& peer_addr, const PacketHeader& header, const std::string& data);
+		void		add_packet(const IPAddress& peer_addr, const Packet& packet);
 
 		// Add_broadcast_packet adds a broadcast packet to the AckManager
 		// It returns an opaque PacketHandle object.

@@ -1,8 +1,7 @@
 BASEDIR = ..
 LIBSRCS := GraphicalPlayer.cpp GraphicalMap.cpp Transition.cpp Curve.cpp TransitionManager.cpp \
 	ClientConfiguration.cpp MapReceiver.cpp ConvolveKernel.cpp MapObjectParams.cpp BaseMapObject.cpp ClientGate.cpp \
-	ClientMap.cpp RepulsionField.cpp ForceField.cpp Weapon.cpp StandardGun.cpp SpreadGun.cpp ImpactCannon.cpp \
-	ThawGun.cpp AreaGun.cpp ChargeGun.cpp PenetrationGun.cpp
+	ClientMap.cpp RepulsionField.cpp ForceField.cpp
 BINSRCS := main.cpp
 
 include $(BASEDIR)/common.mk

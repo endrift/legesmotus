@@ -75,6 +75,9 @@ void	AckManager::add_packet(const IPAddress& peer_addr, const PacketHeader& pack
 	m_packets_by_id.insert(make_pair(make_pair(peer_addr, packet_header.sequence_no), --m_packets.end()));
 }
 
+void	AckManager::add_packet(const IPAddress& peer_addr, const Packet& packet) {
+	add_packet(peer_addr, packet.header, packet.raw.get_data());
+}
 
 AckManager::PacketHandle AckManager::add_broadcast_packet(const std::string& packet_data) {
 	m_packets.push_back(SentPacket(packet_data));

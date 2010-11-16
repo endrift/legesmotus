@@ -597,7 +597,7 @@ void	Server::info(const IPAddress& address, PacketReader& request_packet) {
 	uint64_t	scan_start_time;
 	request_packet >> client_protocol_version >> scan_id >> scan_start_time;
 
-	PacketWriter	response_packet(INFO_PACKET);
+	PacketWriter	response_packet(INFO_server_PACKET);
 	response_packet << scan_id << scan_start_time << PROTOCOL_VERSION << COMPAT_VERSION << m_current_map.get_name() << m_team_count[0] << m_team_count[1] << m_params.max_players << get_ticks() << gametime_left() << m_server_name << m_server_location;
 	m_network.send_packet(address, response_packet);
 }
@@ -1100,7 +1100,7 @@ void	Server::send_spawn_packet(ServerPlayer& player, const Spawnpoint* spawnpoin
 void	Server::register_with_metaserver() {
 	m_last_metaserver_contact_time = get_ticks();
 
-	PacketWriter	packet(REGISTER_SERVER_PACKET);
+	PacketWriter	packet(REGISTER_SERVER_server_PACKET);
 	packet << PROTOCOL_VERSION << SERVER_VERSION << m_listen_address;
 	m_network.send_packet(m_metaserver_address, packet);
 }
