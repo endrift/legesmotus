@@ -83,6 +83,9 @@ void Client::remove_player(uint32_t id) {
 }
 
 Player* Client::get_player(uint32_t id) {
+	if (m_logic == NULL) {
+		return NULL;
+	}
 	return m_logic->get_player(id);
 }
 
@@ -146,8 +149,11 @@ void Client::end_round(const Packet& p) {
 }
 
 void Client::welcome(const Packet& p) {
-	Player* player = make_player(p.welcome.player_name->c_str(), p.welcome.player_id, p.welcome.team);
-	add_player(player);
+	INFO("Received welcome: " << p.welcome.player_id);
+	if (get_player(p.welcome.player_id) == NULL) {
+		Player* player = make_player(p.welcome.player_name->c_str(), p.welcome.player_id, p.welcome.team);
+		add_player(player);
+	}
 	set_own_player(p.welcome.player_id);
 }
 
@@ -155,7 +161,7 @@ void Client::announce(const Packet& p) {
 	if (get_player(p.announce.player_id) != NULL) {
 		return;
 	}
-	cerr << "Received announce for " << p.announce.player_id << ": " << *p.announce.player_name << endl;
+	INFO("Received announce for " << p.announce.player_id << ": " << *p.announce.player_name);
 	Player* player = make_player(p.announce.player_name->c_str(), p.announce.player_id, p.announce.team);
 	add_player(player);
 }

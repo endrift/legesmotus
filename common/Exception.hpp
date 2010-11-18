@@ -38,17 +38,20 @@
  */
 namespace LM {
 	class Exception : std::exception {
-		std::string		m_message;
+		std::string m_message;
 	
 	public:
-		explicit Exception (const char* message);
-		explicit Exception (const std::string& message);
-		virtual ~Exception () throw() { }
+		explicit Exception(const char* message);
+		explicit Exception(const std::string& message);
+		virtual ~Exception() throw() { }
 	
 		virtual const char* what () const throw();
 	};
 	
-	
+	class AssertionFailure : public Exception {
+	public:
+		explicit AssertionFailure(const char* message);
+	};
 }
 
 #endif

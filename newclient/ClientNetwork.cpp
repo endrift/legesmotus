@@ -23,6 +23,8 @@
  */
 
 #include "ClientNetwork.hpp"
+#include "common/misc.hpp"
+#include "common/Packet.hpp"
 
 using namespace LM;
 using namespace std;
@@ -95,6 +97,10 @@ void	ClientNetwork::receive_packets() {
 	while (receive_raw_packet(packet.raw)) {
 		if (is_connected() && packet.raw.get_address() == m_server_address) {
 			packet.unmarshal();
+			if (packet.type != PLAYER_UPDATE_PACKET) {
+				// Too many packets will get alerted if we leave this for PLAYER_UPDATE
+				DEBUG("Received packet of type " << packet.type);
+			}
 			if (packet.header.sequence_no) {
 				try {
 					// High reliability packet

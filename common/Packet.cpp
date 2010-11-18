@@ -406,6 +406,8 @@ Packet::Packet(PacketEnum type) {
 
 Packet::Packet(const Packet& other) {
 	clear();
+	raw = other.raw;
+	header = other.header;
 	type = other.type;
 	switch(type) {
 	case ACK_PACKET:

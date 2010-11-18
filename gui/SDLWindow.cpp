@@ -23,6 +23,7 @@
  */
 
 #include "SDLWindow.hpp"
+#include "common/misc.hpp"
 
 using namespace LM;
 using namespace std;
@@ -95,11 +96,11 @@ SDLWindow::~SDLWindow() {
 }
 
 bool SDLWindow::rebuild(int width, int height, int depth, int flags) {
-	// TODO
+	return false;
 }
 
 void SDLWindow::set_icon_internal(Image* icon) {
-	// TODO
+	STUB(SDLWindow::set_icon_internal);
 }
 
 SDLWindow* SDLWindow::get_instance(int width, int height, int depth, int flags) {
@@ -109,7 +110,8 @@ SDLWindow* SDLWindow::get_instance(int width, int height, int depth, int flags) 
 }
 
 SDLWindow* SDLWindow::get_optimal_instance(int flags) {
-	// TODO
+	STUB(SDLWindow::get_optimal_instance);
+	return NULL;
 }
 
 GLESContext* SDLWindow::get_context() {

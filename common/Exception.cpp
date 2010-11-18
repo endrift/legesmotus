@@ -29,11 +29,17 @@ using namespace LM;
 // See .hpp file for comments.
 
 Exception::Exception(const char* message) : m_message(message) {
+	// Nothing to do
 }
 
 Exception::Exception(const std::string& message) : m_message(message) {
+	// Nothing to do
 }
 
 const char* Exception::what() const throw() {
 	return m_message.c_str();
+}
+
+AssertionFailure::AssertionFailure(const char* message) : Exception(message) {
+	// Nothing to do
 }

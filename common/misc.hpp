@@ -29,6 +29,42 @@
 #include <list>
 #include <ctype.h>
 
+#define _S(x) #x
+#define STRING(x) _S(x)
+
+#ifdef LM_DEBUG
+#include "Exception.hpp"
+#include "timer.hpp"
+#include <iostream>
+
+#define ASSERT(x)   \
+	do {            \
+		if (!(x)) { \
+			throw new AssertionFailure("Assertion failed at " __FILE__ ":" STRING(__LINE__) ": " #x; \
+		}           \
+	} while (0)
+
+#define UNUSED(x)
+#define MESSAGE(type, msg) std::cerr << "[" << get_ticks() << "] [" #type "] " __FILE__ ":" STRING(__LINE__) ": " msg << std::endl
+#define WARN(x) MESSAGE(WARN, x)
+#define INFO(x) MESSAGE(INFO, x)
+#define DEBUG(x) MESSAGE(DEBUG, x)
+#define STUB(x) MESSAGE(STUB, #x)
+
+#else
+
+#define ASSERT(x) (void)(x)
+#define UNUSED(x) (void)(x)
+#define WARN(x) (void)(x)
+#define INFO(x) (void)(x)
+#define DEBUG(x) (void)(x)
+#define STUB(x) (void)(x)
+
+
+#endif
+
+#define FATAL(x) throw new Exception("FATAL: " __FILE__ ":" STRING(__LINE__) ": " #x)
+
 // Signals to the program that it should clean up and exit; implemented elsewhere
 extern "C" void clean_exit();
 

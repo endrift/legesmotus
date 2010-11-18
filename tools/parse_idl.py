@@ -247,6 +247,8 @@ def outputCpp(interface):
     # This is necessary to ensure that copying happens properly
     code.append('{0}::{0}(const {0}& other) {{'.format(interface.name))
     code.append('\tclear();');
+    code.append('\traw = other.raw;');
+    code.append('\theader = other.header;');
     code.append('\ttype = other.type;');
     code.append('\tswitch(type) {')
     for item in interface.definitions:

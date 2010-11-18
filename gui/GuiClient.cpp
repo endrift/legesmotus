@@ -156,6 +156,7 @@ GraphicalMap* GuiClient::make_map() {
 }
 
 void GuiClient::run() {
+	INFO("Beginning running GuiClient...");
 	set_running(true);
 	// XXX testing code
 	Bone crosshair_bone;
