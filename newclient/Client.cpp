@@ -27,6 +27,7 @@
 #include "common/Map.hpp"
 #include "common/Player.hpp"
 #include "common/timer.hpp"
+#include "common/misc.hpp"
 #include <iostream>
 
 using namespace LM;
@@ -37,25 +38,28 @@ Client::Client() : m_network(this) {
 }
 
 Client::~Client() {
-	// TODO
+	delete m_logic;
 }
 
 void Client::step(uint64_t diff) {
-	//m_network.receive_packets();
-	 
-	m_controller->update(diff, *m_logic);
-	
-	int changes = m_controller->get_changes();
-	
-	if (changes & Controller::JUMPING) {
-		m_logic->attempt_jump(m_player_id, m_controller->get_aim());
-	}
-	
-	m_logic->step();
+	m_network.receive_packets();
 
-	Packet p;
-	generate_player_update(m_player_id, &p);
-	m_network.send_packet(&p);
+	if (m_logic != NULL) {
+		m_controller->update(diff, *m_logic);
+		
+		int changes = m_controller->get_changes();
+		get_player(m_player_id)->set_gun_rotation_radians(m_controller->get_aim());
+		
+		if (changes & Controller::JUMPING) {
+			m_logic->attempt_jump(m_player_id, m_controller->get_aim());
+		}
+		
+		m_logic->step();
+	
+		Packet p;
+		generate_player_update(m_player_id, &p);
+		m_network.send_packet(&p);
+	}
 }
 
 const char* Client::get_res_directory() const {
@@ -64,6 +68,9 @@ const char* Client::get_res_directory() const {
 }
 
 void Client::add_player(Player* player) {
+	if (m_logic == NULL) {
+		set_map(make_map());
+	}
 	m_logic->add_player(player);
 }
 
@@ -94,25 +101,21 @@ GameLogic* Client::get_game() {
 }
 
 void Client::set_map(Map* map) {
-	// TODO
-}
-
-void Client::begin_game(Map* map) {
+	// XXX move this somewhere better
 	if (map == NULL) {
-		map = make_map();
+		delete m_logic;
+		m_logic = NULL;
+	} else if (m_logic == NULL) {
+		m_logic = new GameLogic(map);
 	}
-	m_logic = new GameLogic(map);
-	set_map(map);
 }
 
-void Client::end_game() {
-	set_map(NULL);
-	delete m_logic;
-	m_logic = NULL;
-}
-
-void Client::packet_new_round(const Packet& p) {
-	Map* map = make_map();
+void Client::new_round(const Packet& p) {
+	Map* map;
+	if (m_logic == NULL) {
+		set_map(make_map());
+	}
+	map = m_logic->get_map();
 	// TODO use time_until_start, remove round_started from packet
 	// TODO preload and tell revision instead of loading the whole thing
 	if (map->load_file((string(get_res_directory()) + "/maps/" + *p.new_round.map_name + ".map").c_str())) {
@@ -125,29 +128,34 @@ void Client::packet_new_round(const Packet& p) {
 			map->set_height(map_height);
 			map->set_revision(map_revision);
 		}*/
+		// XXX move
 	} else {
 		map->set_width(p.new_round.map_width);
 		map->set_height(p.new_round.map_height);
 		map->set_revision(p.new_round.map_revision);
 	}
-	set_map(map);
+	m_logic->update_map();
 }
 
-void Client::start_round() {
+void Client::round_start(const Packet& p) {
 	// TODO
 }
 
-void Client::end_round() {
+void Client::end_round(const Packet& p) {
 	// TODO
 }
 
-void Client::packet_welcome(const Packet& p) {
+void Client::welcome(const Packet& p) {
 	Player* player = make_player(p.welcome.player_name->c_str(), p.welcome.player_id, p.welcome.team);
 	add_player(player);
 	set_own_player(p.welcome.player_id);
 }
 
-void Client::packet_announce(const Packet& p) {
+void Client::announce(const Packet& p) {
+	if (get_player(p.announce.player_id) != NULL) {
+		return;
+	}
+	cerr << "Received announce for " << p.announce.player_id << ": " << *p.announce.player_name << endl;
 	Player* player = make_player(p.announce.player_name->c_str(), p.announce.player_id, p.announce.team);
 	add_player(player);
 }
@@ -166,6 +174,18 @@ void Client::set_controller(Controller* controller) {
 
 void Client::set_running(bool running) {
 	m_running = running;
+}
+
+void Client::connect(const IPAddress& server_address) {
+	if (m_network.connect(server_address)) {
+		Packet join(JOIN_PACKET);
+		join.join.protocol_number = PROTOCOL_VERSION;
+		join.join.compat_version = COMPAT_VERSION;
+		join.join.name = "Foo";
+		join.join.team = 'A';
+
+		m_network.send_reliable_packet(&join);
+	}
 }
 
 bool Client::running() const {

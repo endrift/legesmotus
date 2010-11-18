@@ -36,8 +36,10 @@ GameLogic::GameLogic(Map* map) {
 	m_map = map;
 	m_physics = NULL;
 
-	update_map(map);
-
+	b2Vec2 gravity(0.0f, 0.0f);
+	m_physics = new b2World(gravity, true);
+	
+	m_physics->SetContactListener(this);
 }
 
 GameLogic::~GameLogic() {
@@ -49,25 +51,12 @@ GameLogic::~GameLogic() {
 	delete m_physics;
 }
 
-void GameLogic::update_map(Map* map) {
-	m_map = map;
-	
-	//////// PHYSICS INIT
-	// TODO: Do we want to have this here, or somewhere else?
-	
-	if (m_physics != NULL) {
-		delete m_physics;
-	}
-	
-	b2Vec2 gravity(0.0f, 0.0f);
-	bool doSleep = true;
-	m_physics = new b2World(gravity, doSleep);
-	
-	m_physics->SetContactListener(this);
-	
-	////////
-	
+void GameLogic::update_map() {
 	m_map->initialize_physics(m_physics);
+}
+
+Map* GameLogic::get_map() {
+	return m_map;
 }
 
 void GameLogic::add_player(Player* player) {

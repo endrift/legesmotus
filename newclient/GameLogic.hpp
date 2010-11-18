@@ -58,7 +58,8 @@ namespace LM {
 		void add_player(Player* player);
 		void remove_player(uint32_t id);
 		
-		void update_map(Map* map);
+		void update_map();
+		Map* get_map();
 		
 		// Run the next step of the game logic.
 		void step();

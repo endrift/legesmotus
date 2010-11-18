@@ -102,8 +102,13 @@ void	CommonNetwork::process_ack(const IPAddress& peer, PacketReader& ack_packet)
 	m_ack_manager.ack(peer, sequence_no);
 }
 
+void	CommonNetwork::process_ack(const Packet& ack_packet) {
+	m_ack_manager.ack(ack_packet.raw.get_address(), ack_packet.ack.sequence_no);
+}
+
 void	CommonNetwork::send_packet(const IPAddress& dest, Packet* packet) {
 	packet->marshal();
+	packet->raw.set_address(dest);
 	send_raw_packet(packet->raw);
 }
 

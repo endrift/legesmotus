@@ -68,9 +68,7 @@ namespace LM {
 	
 	template<typename T>
 	PacketWriter& operator<<(PacketWriter& w, TypeWrapper<T>& t) {
-		T i;
-		w << i;
-		t.item = new T(i);
+		w << *t.item;
 		return w;
 	}
 }

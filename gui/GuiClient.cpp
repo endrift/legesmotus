@@ -94,6 +94,8 @@ void GuiClient::preload_image(const char* filename) {
 }
 
 void GuiClient::cleanup() {
+	set_map(NULL);
+
 	for (vector<string>::iterator iter = m_preloaded_images.begin(); iter != m_preloaded_images.end(); ++iter) {
 		m_cache->decrement<Image>(*iter);
 	}
@@ -156,18 +158,6 @@ GraphicalMap* GuiClient::make_map() {
 void GuiClient::run() {
 	set_running(true);
 	// XXX testing code
-	Packet pnr(NEW_ROUND_PACKET);
-	Packet pw(WELCOME_PACKET);
-	pnr.new_round.map_name = "alpha1-test";
-	pnr.new_round.map_revision = 0;
-	pnr.new_round.map_width = 2048;
-	pnr.new_round.map_height = 1024;
-	pnr.new_round.game_started = false;
-	pnr.new_round.time_until_start = 0;
-	pw.welcome.player_id = 0;
-	pw.welcome.player_name = "Foo";
-	pw.welcome.team = 'A';
-
 	Bone crosshair_bone;
 	GraphicContainer aim(&m_root);
 	Sprite crosshair(m_cache->get<Image>("aim.png"));
@@ -181,10 +171,10 @@ void GuiClient::run() {
 	m_view.set_scale_base(1024);
 	crosshair_bone.set_scale_x(m_view.get_scale()/4.0f);
 	crosshair_bone.set_scale_y(m_view.get_scale()/4.0f);
-	packet_new_round(pnr);
-	begin_game(m_map);
-	packet_welcome(pw);
-	m_player->set_rotational_vel(60);
+
+	IPAddress host;
+	resolve_hostname(host, "endrift.com", 16876);
+	connect(host);
 	// XXX end testing code
 
 	uint64_t last_time = get_ticks();
@@ -197,7 +187,6 @@ void GuiClient::run() {
 		step(diff);
 
 		// XXX move to client, game logic
-		m_player->set_gun_rotation_radians(m_gcontrol->get_aim());
 		crosshair_bone.set_rotation(m_gcontrol->get_aim() * RADIANS_TO_DEGREES);
 		// XXX end
 
@@ -210,10 +199,6 @@ void GuiClient::run() {
 		m_window->redraw();
 		last_time = current_time;
 	}
-	
-	// XXX testing code
-	end_game();
-	// XXX end testing code
 
 	cleanup();
 }

@@ -272,8 +272,8 @@ def outputCpp(interface):
     code.append('}\n')
 
     code.append('void {0}::clear() {{'.format(interface.name))
-    code.append('\tvoid* base = &type;')
-    code.append('\tmemset(base, 0, sizeof(*this) - offsetof({0}, type));'.format(interface.name))
+    code.append('\tvoid* base = &header;')
+    code.append('\tmemset(base, 0, sizeof(*this) - offsetof({0}, header));'.format(interface.name))
     code.append('}')
 
     code.append('void {0}::marshal() {{'.format(interface.name))

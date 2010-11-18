@@ -115,7 +115,11 @@ void	ClientNetwork::receive_packets() {
 				}
 			} else {
 				// Low reliability packet - we don't care if, when, or how often it arrives
-				packet.dispatch(m_client);
+				if (packet.type == ACK_PACKET) {
+					process_ack(packet);
+				} else {
+					packet.dispatch(m_client);
+				}
 			}
 		} else {
 			// TODO handle unbound dispatches differently from bound ones

@@ -25,6 +25,7 @@
 #include "ResourceCache.hpp"
 #include "Image.hpp"
 #include "common/Exception.hpp"
+#include <iostream>
 
 using namespace LM;
 using namespace std;
@@ -39,6 +40,9 @@ ResourceCache::~ResourceCache() {
 
 	#ifdef LM_DEBUG
 	if (!m_instances_image.empty() || !m_instances_font.empty()) {
+		for (instance_map<Image>::const_iterator iter = m_instances_image.begin(); iter != m_instances_image.end(); ++iter) {
+			cout << iter->first << " still live" << endl;
+		}
 		throw new Exception("Resources still in use while freeing cache");
 	}
 	#endif

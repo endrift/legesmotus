@@ -63,6 +63,7 @@ namespace LM {
 		void		send_ack(const IPAddress& peer, const Packet& packet_to_ack);
 		// Process an ACK packet
 		void		process_ack(const IPAddress& peer, PacketReader& ack_packet);
+		void		process_ack(const Packet& ack_packet);
 
 	public:
 		virtual ~CommonNetwork() { }

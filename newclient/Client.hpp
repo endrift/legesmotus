@@ -71,15 +71,15 @@ namespace LM {
 		void set_running(bool running);
 		bool running() const;
 
+		void connect(const IPAddress& server_address);
+
 		// Packet callbacks
 		// TODO rename these packets
-		virtual void begin_game(Map* map = 0);
-		virtual void end_game();
-		virtual void packet_new_round(const Packet& p);
-		virtual void start_round();
-		virtual void end_round();
-		virtual void packet_welcome(const Packet& p);
-		virtual void packet_announce(const Packet& p);
+		virtual void new_round(const Packet& p);
+		virtual void round_start(const Packet& p);
+		virtual void end_round(const Packet& p);
+		virtual void welcome(const Packet& p);
+		virtual void announce(const Packet& p);
 		// End packet callbacks
 
 		// Main loop: override for subclass behaviors, but call step inside
