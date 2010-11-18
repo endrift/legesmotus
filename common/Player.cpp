@@ -356,7 +356,7 @@ void Player::read_player_update(const Packet::PlayerUpdate& p) {
 	set_is_grabbing_obstacle(p.flags->find_first_of('G') != string::npos);
 	m_physics_body->SetTransform(b2Vec2(to_physics(p.x), to_physics(p.y)), to_radians(p.rotation));
 	if (is_grabbing_obstacle()) {
-		// Let the other client say how we're rotating
-		m_physics_body->SetAngularVelocity(0);
+		// Let the other client say how we're moving on the wall
+		m_physics_body->SetAwake(false);
 	}
 }
