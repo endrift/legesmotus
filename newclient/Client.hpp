@@ -75,6 +75,7 @@ namespace LM {
 
 		// Packet callbacks
 		// TODO rename these packets
+		virtual void player_update(const Packet& p);
 		virtual void new_round(const Packet& p);
 		virtual void round_start(const Packet& p);
 		virtual void end_round(const Packet& p);

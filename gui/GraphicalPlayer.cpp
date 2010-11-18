@@ -92,22 +92,22 @@ Bone* GraphicalPlayer::get_bone() {
 	return &m_root_bone;
 }
 
-void GraphicalPlayer::set_x(double x) {
+void GraphicalPlayer::set_x(float x) {
 	Player::set_x(x);
 	m_graphic_root.set_x(x);
 }
 
-void GraphicalPlayer::set_y(double y) {
+void GraphicalPlayer::set_y(float y) {
 	Player::set_y(y);
 	m_graphic_root.set_y(y);
 }
 
-void GraphicalPlayer::set_rotation_degrees(double rotation) {
+void GraphicalPlayer::set_rotation_degrees(float rotation) {
 	Player::set_rotation_degrees(rotation);
 	m_root_bone.set_rotation(rotation);
 }
 
-void GraphicalPlayer::set_gun_rotation_degrees(double rotation) {
+void GraphicalPlayer::set_gun_rotation_degrees(float rotation) {
 	// TODO un-hardcode angle
 	// Red team is right-handed, blue team is left-handed
 	bool handedness = true;

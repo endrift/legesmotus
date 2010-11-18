@@ -97,7 +97,7 @@ void	ClientNetwork::receive_packets() {
 	while (receive_raw_packet(packet.raw)) {
 		if (is_connected() && packet.raw.get_address() == m_server_address) {
 			packet.unmarshal();
-			if (packet.type != PLAYER_UPDATE_PACKET) {
+			if (packet.type != PLAYER_UPDATE_PACKET && packet.type != PLAYER_ANIMATION_PACKET) {
 				// Too many packets will get alerted if we leave this for PLAYER_UPDATE
 				DEBUG("Received packet of type " << packet.type);
 			}
@@ -129,6 +129,7 @@ void	ClientNetwork::receive_packets() {
 			}
 		} else {
 			// TODO handle unbound dispatches differently from bound ones
+			INFO("Received unbound packet");
 			packet.dispatch(m_client);
 		}
 	}

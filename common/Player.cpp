@@ -63,7 +63,7 @@ Player::Player(b2World* physics_world) {
 	}
 }
 
-Player::Player(const char* name, uint32_t id, char team, double x, double y, double xvel, double yvel, double rotation, b2World* physics_world) : m_name(name) {
+Player::Player(const char* name, uint32_t id, char team, float x, float y, float xvel, float yvel, float rotation, b2World* physics_world) : m_name(name) {
 	m_physics_body = NULL;
 	m_id = id;
 	m_team = team;
@@ -120,15 +120,15 @@ void Player::initialize_physics(b2World* world) {
 	m_physics_body->CreateFixture(&fixturedef);
 }
 
-double Player::get_rotation_radians() const {
+float Player::get_rotation_radians() const {
 	return m_rotation * DEGREES_TO_RADIANS;
 }
 
-double Player::get_rotational_vel_radians() const {
+float Player::get_rotational_vel_radians() const {
 	return m_rotational_vel * DEGREES_TO_RADIANS;
 }
 
-double Player::get_gun_rotation_radians() const {
+float Player::get_gun_rotation_radians() const {
 	return m_gun_rotation * DEGREES_TO_RADIANS;
 }
 
@@ -165,15 +165,15 @@ void Player::change_energy(int energy_change) {
 	set_energy(m_energy + energy_change);
 }
 
-void Player::set_x(double x) {
+void Player::set_x(float x) {
 	m_x = x;
 }
 
-void Player::set_y(double y) {
+void Player::set_y(float y) {
 	m_y = y;
 }
 
-void Player::set_position(double x, double y) {
+void Player::set_position(float x, float y) {
 	set_x(x);
 	set_y(y);
 }
@@ -219,10 +219,10 @@ void Player::stop() {
 	set_rotational_vel(0);
 }
 
-void Player::bounce(double angle_of_incidence, double velocity_scale) {
-	double		curr_magnitude = get_velocity().get_magnitude();
-	double		curr_angle = to_degrees(get_velocity().get_angle());
-	double		new_angle = get_normalized_angle(angle_of_incidence + (angle_of_incidence - curr_angle) - 180);
+void Player::bounce(float angle_of_incidence, float velocity_scale) {
+	float		curr_magnitude = get_velocity().get_magnitude();
+	float		curr_angle = to_degrees(get_velocity().get_angle());
+	float		new_angle = get_normalized_angle(angle_of_incidence + (angle_of_incidence - curr_angle) - 180);
 
 	set_velocity(Vector::make_from_magnitude(curr_magnitude * velocity_scale, to_radians(new_angle)));
 }
@@ -236,27 +236,27 @@ void Player::set_velocity(Vector vel) {
 	}
 }
 
-void Player::set_rotation_degrees(double rotation) {
+void Player::set_rotation_degrees(float rotation) {
 	m_rotation = get_normalized_angle(rotation);
 }
 
-void Player::set_rotation_radians(double rotation) {
+void Player::set_rotation_radians(float rotation) {
 	set_rotation_degrees(rotation * RADIANS_TO_DEGREES);
 }
 
-void Player::set_rotational_vel(double rotation) {
+void Player::set_rotational_vel(float rotation) {
 	m_rotational_vel = rotation;
 }
 
-void Player::set_rotational_vel_radians(double rotation) {
+void Player::set_rotational_vel_radians(float rotation) {
 	set_rotational_vel(rotation * RADIANS_TO_DEGREES);
 }
 
-void Player::set_gun_rotation_degrees(double gun_rotation) {
+void Player::set_gun_rotation_degrees(float gun_rotation) {
 	m_gun_rotation = get_normalized_angle(gun_rotation);
 }
 
-void Player::set_gun_rotation_radians(double gun_rotation) {
+void Player::set_gun_rotation_radians(float gun_rotation) {
 	set_gun_rotation_degrees(gun_rotation * RADIANS_TO_DEGREES);
 }
 
@@ -293,11 +293,11 @@ void Player::write_update_packet (PacketWriter& packet) const {
 }
 
 void Player::read_update_packet (PacketReader& packet) {
-	double	x;
-	double	y;
-	double	x_vel;
-	double	y_vel;
-	double	rotation;
+	float	x;
+	float	y;
+	float	x_vel;
+	float	y_vel;
+	float	rotation;
 	int	energy;
 	string	current_weapon_id;
 	string	flags;
@@ -342,5 +342,21 @@ void Player::generate_player_update(Packet::PlayerUpdate* p) {
 	}
 	if (is_grabbing_obstacle()) {
 		p->flags->append(1, 'G');
+	}
+}
+
+void Player::read_player_update(const Packet::PlayerUpdate& p) {
+	set_position(p.x, p.y);
+	set_velocity(p.x_vel, p.y_vel);
+	set_rotation_degrees(p.rotation);
+	set_energy(p.energy);
+	set_current_weapon_id(p.current_weapon_id->c_str());
+	//set_is_invisible(p.flags->find_first_of('I') != string::npos);
+	set_is_frozen(p.flags->find_first_of('F') != string::npos);
+	set_is_grabbing_obstacle(p.flags->find_first_of('G') != string::npos);
+	m_physics_body->SetTransform(b2Vec2(to_physics(p.x), to_physics(p.y)), to_radians(p.rotation));
+	if (is_grabbing_obstacle()) {
+		// Let the other client say how we're rotating
+		m_physics_body->SetAngularVelocity(0);
 	}
 }

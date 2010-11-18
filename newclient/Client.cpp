@@ -113,6 +113,14 @@ void Client::set_map(Map* map) {
 	}
 }
 
+void Client::player_update(const Packet& p) {
+	Player* player = get_player(p.player_update.player_id);
+	if (player == NULL) {
+		return;
+	}
+	player->read_player_update(p.player_update);
+}
+
 void Client::new_round(const Packet& p) {
 	Map* map;
 	if (m_logic == NULL) {
@@ -141,11 +149,11 @@ void Client::new_round(const Packet& p) {
 }
 
 void Client::round_start(const Packet& p) {
-	// TODO
+	STUB(Client::round_start);
 }
 
 void Client::end_round(const Packet& p) {
-	// TODO
+	STUB(Client::end_round);
 }
 
 void Client::welcome(const Packet& p) {

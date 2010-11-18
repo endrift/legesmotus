@@ -46,10 +46,10 @@ namespace LM {
 		GraphicContainer* get_graphic();
 		Bone* get_bone();
 
-		virtual void set_x(double x);
-		virtual void set_y(double y);
-		virtual void set_rotation_degrees(double rotation);
-		virtual void set_gun_rotation_degrees(double rotation);
+		virtual void set_x(float x);
+		virtual void set_y(float y);
+		virtual void set_rotation_degrees(float rotation);
+		virtual void set_gun_rotation_degrees(float rotation);
 	};
 }
 

@@ -57,13 +57,13 @@ namespace LM {
 		char		m_team;		// Should be 'A' or 'B'
 		int		m_score;	// How many times has this player shot someone else?
 		int		m_energy;	// From 0 to 100, inclusive (where 0 is dead)
-		double		m_x;		// The x-coordinate of the upper left point of this player, relative to upper-left of arena
-		double		m_y;		// The y-coordinate of the upper left point of this player, relative to upper-left of arena
-		double		m_x_vel;	// The x-component of the player's velocity
-		double		m_y_vel;	// The y-component of the player's velocity
-		double		m_rotation;	// The rotation of the player (Always in degrees)
-		double		m_gun_rotation;	// The rotation of the player's gun (Always in degrees)
-		double		m_rotational_vel; // How fast the player is spinning (Always in degrees)
+		float		m_x;		// The x-coordinate of the upper left point of this player, relative to upper-left of arena
+		float		m_y;		// The y-coordinate of the upper left point of this player, relative to upper-left of arena
+		float		m_x_vel;	// The x-component of the player's velocity
+		float		m_y_vel;	// The y-component of the player's velocity
+		float		m_rotation;	// The rotation of the player (Always in degrees)
+		float		m_gun_rotation;	// The rotation of the player's gun (Always in degrees)
+		float		m_rotational_vel; // How fast the player is spinning (Always in degrees)
 		bool		m_is_invisible;	// Is this player inivisible? (should be true while player is waiting to spawn)
 		bool		m_is_frozen;	// Is this player frozen? (should be true after the player gets shot)
 		bool		m_is_grabbing_obstacle;	// Is the player grabbing an obstacle?
@@ -74,7 +74,7 @@ namespace LM {
 	
 	public:
 		Player(b2World* physics_world = 0);
-		Player(const char* name, uint32_t id, char team, double x = 0, double y = 0, double xvel = 0, double yvel = 0, double rotation = 0, b2World* physics_world = 0);
+		Player(const char* name, uint32_t id, char team, float x = 0, float y = 0, float xvel = 0, float yvel = 0, float rotation = 0, b2World* physics_world = 0);
 		virtual ~Player();
 		
 		// Simple getters
@@ -87,18 +87,18 @@ namespace LM {
 		bool is_alive() const { return get_energy() != 0; }
 		bool is_dead() const { return get_energy() == 0; }
 		bool is_damaged() const { return get_energy() != MAX_ENERGY; }
-		double get_x() const { return m_x; }
-		double get_y() const { return m_y; }
+		float get_x() const { return m_x; }
+		float get_y() const { return m_y; }
 		Point get_position() const { return Point(m_x, m_y); }
-		double get_x_vel() const { return m_x_vel; }
-		double get_y_vel() const { return m_y_vel; }
+		float get_x_vel() const { return m_x_vel; }
+		float get_y_vel() const { return m_y_vel; }
 		Vector get_velocity() const { return Point(m_x_vel, m_y_vel); }
-		double get_rotational_vel() const { return m_rotational_vel; }
-		double get_rotational_vel_radians() const;
-		double get_rotation_degrees() const { return m_rotation; }
-		double get_rotation_radians() const;
-		double get_gun_rotation_degrees() const { return m_gun_rotation; }
-		double get_gun_rotation_radians() const;
+		float get_rotational_vel() const { return m_rotational_vel; }
+		float get_rotational_vel_radians() const;
+		float get_rotation_degrees() const { return m_rotation; }
+		float get_rotation_radians() const;
+		float get_gun_rotation_degrees() const { return m_gun_rotation; }
+		float get_gun_rotation_radians() const;
 		b2Body* get_physics_body() const { return m_physics_body; }
 		bool is_invisible() const { return m_is_invisible; }
 		bool is_visible() const { return !m_is_invisible; }
@@ -120,18 +120,18 @@ namespace LM {
 		virtual void add_score(int score_increase);	// Increase the player's score by the given amount
 		virtual void set_energy(int energy);
 		virtual void change_energy(int energy_increase);// Increase the player's energy by the given amount
-		virtual void set_x(double x);
-		virtual void set_y(double y);
-		virtual void set_position(double x, double y);
+		virtual void set_x(float x);
+		virtual void set_y(float y);
+		virtual void set_position(float x, float y);
 		void set_position(Point p) { set_position(p.x, p.y); }
-		void set_velocity(double xvel, double yvel) { set_velocity(Vector(xvel, yvel)); }
+		void set_velocity(float xvel, float yvel) { set_velocity(Vector(xvel, yvel)); }
 		virtual void set_velocity(Vector v);
-		virtual void set_rotation_degrees(double rotation);
-		void set_rotation_radians(double rotation);
-		virtual void set_rotational_vel(double rotation);
-		void set_rotational_vel_radians(double rotation);
-		virtual void set_gun_rotation_degrees(double gun_rotation);
-		void set_gun_rotation_radians(double gun_rotation);
+		virtual void set_rotation_degrees(float rotation);
+		void set_rotation_radians(float rotation);
+		virtual void set_rotational_vel(float rotation);
+		void set_rotational_vel_radians(float rotation);
+		virtual void set_gun_rotation_degrees(float gun_rotation);
+		void set_gun_rotation_radians(float gun_rotation);
 		virtual void set_is_invisible(bool is_invisible);
 		virtual void set_is_frozen(bool is_frozen);
 		virtual void set_is_grabbing_obstacle(bool);
@@ -139,7 +139,7 @@ namespace LM {
 		virtual void set_attach_joint(b2Joint* joint);
 
 		void generate_player_update(Packet::PlayerUpdate* p);
-		void read_player_update(Packet::PlayerUpdate* p);
+		void read_player_update(const Packet::PlayerUpdate& p);
 	
 		// Initialize the Box2D physics for this player
 		virtual void initialize_physics(b2World* world);
@@ -163,7 +163,7 @@ namespace LM {
 		// Set the player's velocity to 0
 		virtual void stop();
 		// Update the player's velocity as if it were bouncing off a wall with given angle of incidence (90 == horizontal wall, 180 == vertical wall)
-		virtual void bounce(double angle_of_incidence, double velocity_scale);
+		virtual void bounce(float angle_of_incidence, float velocity_scale);
 
 		bool is_moving() const { return get_velocity() != Vector(0, 0); }
 	
