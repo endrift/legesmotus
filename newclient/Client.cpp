@@ -79,6 +79,10 @@ void Client::set_own_player(uint32_t id) {
 }
 
 void Client::remove_player(uint32_t id) {
+	remove_player(id, string());
+}
+
+void Client::remove_player(uint32_t id, const string& reason) {
 	m_logic->remove_player(id);
 }
 
@@ -172,6 +176,27 @@ void Client::announce(const Packet& p) {
 	INFO("Received announce for " << p.announce.player_id << ": " << *p.announce.player_name);
 	Player* player = make_player(p.announce.player_name->c_str(), p.announce.player_id, p.announce.team);
 	add_player(player);
+}
+
+void Client::leave(const Packet& p) {
+	if (p.leave.player_id != m_player_id) {
+		remove_player(p.leave.player_id, *p.leave.message);
+	} else {
+		WARN("We've left the game, according to the server.");
+	}
+}
+
+void Client::spawn(const Packet& p) {
+	Player* player = get_player(m_player_id);
+	if (player == NULL) {
+		WARN("We don't exist, so we can't spawn");
+		return;
+	}
+	player->set_position(*p.spawn.position);
+	player->set_velocity(*p.spawn.velocity);
+	player->set_rotation_degrees(0);
+	player->set_is_grabbing_obstacle(p.spawn.is_grabbing_obstacle);
+	// TODO implement the rest
 }
 
 Player* Client::make_player(const char* name, uint32_t id, char team) {

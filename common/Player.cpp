@@ -93,6 +93,7 @@ Player::~Player() {
 		m_physics->DestroyJoint(m_attach_joint);
 		m_attach_joint = NULL;
 	}
+	m_physics->DestroyBody(m_physics_body);
 }
 
 void Player::initialize_physics(b2World* world) {
@@ -166,16 +167,18 @@ void Player::change_energy(int energy_change) {
 }
 
 void Player::set_x(float x) {
-	m_x = x;
+	set_position(x, m_y);
 }
 
 void Player::set_y(float y) {
-	m_y = y;
+	set_position(m_x, y);
 }
 
 void Player::set_position(float x, float y) {
-	set_x(x);
-	set_y(y);
+	m_physics_body->SetTransform(b2Vec2(to_physics(x), to_physics(y)), get_rotation_radians());
+	m_x = x;
+	m_y = y;
+	update_location();
 }
 
 void Player::apply_force(b2Vec2 force_vec) {
@@ -192,10 +195,12 @@ void Player::apply_torque(float torque) {
 
 void Player::update_physics() {
 	if (m_physics_body != NULL) {
-		set_x(to_game(m_physics_body->GetPosition().x));
-		set_y(to_game(m_physics_body->GetPosition().y));
-		set_rotation_radians(m_physics_body->GetAngle());
-		
+		m_x = to_game(m_physics_body->GetPosition().x);
+		m_y = to_game(m_physics_body->GetPosition().y);
+		m_rotation = to_degrees(m_physics_body->GetAngle());
+
+		update_location();
+
 		// Prevent rotational velocity from going too high.
 		if (m_physics_body->GetAngularVelocity() > MAX_ANGULAR_VELOCITY) {
 			m_physics_body->SetAngularVelocity(MAX_ANGULAR_VELOCITY);
@@ -206,8 +211,7 @@ void Player::update_physics() {
 }
 
 void Player::update_position(float timescale) {
-	set_x(m_x + m_x_vel * timescale);
-	set_y(m_y + m_y_vel * timescale);
+	set_position(m_x + m_x_vel * timescale, m_y + m_y_vel * timescale);
 }
 
 void Player::update_rotation(float timescale) {
@@ -230,6 +234,7 @@ void Player::bounce(float angle_of_incidence, float velocity_scale) {
 void Player::set_velocity(Vector vel) {
 	m_x_vel = vel.x;
 	m_y_vel = vel.y;
+	m_physics_body->SetLinearVelocity(b2Vec2(to_physics(vel.x), to_physics(vel.y)));
 	if (is_moving()) {
 		// Moving players cannot be grabbing obstacles
 		set_is_grabbing_obstacle(false);
@@ -238,14 +243,16 @@ void Player::set_velocity(Vector vel) {
 
 void Player::set_rotation_degrees(float rotation) {
 	m_rotation = get_normalized_angle(rotation);
+	m_physics_body->SetTransform(b2Vec2(to_physics(m_x), to_physics(m_y)), to_radians(m_rotation));
 }
 
 void Player::set_rotation_radians(float rotation) {
-	set_rotation_degrees(rotation * RADIANS_TO_DEGREES);
+	set_rotation_degrees(to_degrees(rotation));
 }
 
 void Player::set_rotational_vel(float rotation) {
 	m_rotational_vel = rotation;
+	update_location();
 }
 
 void Player::set_rotational_vel_radians(float rotation) {
@@ -354,7 +361,6 @@ void Player::read_player_update(const Packet::PlayerUpdate& p) {
 	//set_is_invisible(p.flags->find_first_of('I') != string::npos);
 	set_is_frozen(p.flags->find_first_of('F') != string::npos);
 	set_is_grabbing_obstacle(p.flags->find_first_of('G') != string::npos);
-	m_physics_body->SetTransform(b2Vec2(to_physics(p.x), to_physics(p.y)), to_radians(p.rotation));
 	if (is_grabbing_obstacle()) {
 		// Let the other client say how we're moving on the wall
 		m_physics_body->SetAwake(false);

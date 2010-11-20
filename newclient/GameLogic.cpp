@@ -61,18 +61,18 @@ Map* GameLogic::get_map() {
 
 void GameLogic::add_player(Player* player) {
 	// TODO: Put them at their proper spawn location.
-	player->set_position(50, 50);
+	//player->set_position(50, 50);
 	player->initialize_physics(m_physics);
 	
 	// TODO: Testing code for physics - remove later.
-	player->apply_force(b2Vec2(200.0f, 50.0f));
+	//player->apply_force(b2Vec2(200.0f, 50.0f));
 	
 	m_players[player->get_id()] = player;
 }
 
 void GameLogic::remove_player(uint32_t id) {
 	Player* player = m_players[id];
-	m_players[id] = NULL;
+	m_players.erase(id);
 	delete player;
 }
 

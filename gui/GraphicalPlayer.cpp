@@ -84,6 +84,12 @@ GraphicalPlayer::GraphicalPlayer(const char* name, uint32_t id, char team, Resou
 GraphicalPlayer::~GraphicalPlayer() {
 }
 
+void GraphicalPlayer::update_location() {
+	m_graphic_root.set_x(get_x());
+	m_graphic_root.set_y(get_y());
+	m_root_bone.set_rotation(get_rotation_degrees());
+}
+
 GraphicContainer* GraphicalPlayer::get_graphic() {
 	return &m_graphic_root;
 }
@@ -92,19 +98,12 @@ Bone* GraphicalPlayer::get_bone() {
 	return &m_root_bone;
 }
 
-void GraphicalPlayer::set_x(float x) {
-	Player::set_x(x);
-	m_graphic_root.set_x(x);
-}
-
-void GraphicalPlayer::set_y(float y) {
-	Player::set_y(y);
-	m_graphic_root.set_y(y);
+void GraphicalPlayer::set_position(float x, float y) {
+	Player::set_position(x, y);
 }
 
 void GraphicalPlayer::set_rotation_degrees(float rotation) {
 	Player::set_rotation_degrees(rotation);
-	m_root_bone.set_rotation(rotation);
 }
 
 void GraphicalPlayer::set_gun_rotation_degrees(float rotation) {

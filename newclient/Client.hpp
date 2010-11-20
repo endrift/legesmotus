@@ -51,7 +51,8 @@ namespace LM {
 
 		virtual void add_player(Player* player);
 		virtual void set_own_player(uint32_t id);
-		virtual void remove_player(uint32_t id);
+		void remove_player(uint32_t id);
+		virtual void remove_player(uint32_t id, const std::string& reason);
 
 		Player* get_player(uint32_t id);
 		void generate_player_update(uint32_t id, Packet* p);
@@ -81,6 +82,8 @@ namespace LM {
 		virtual void end_round(const Packet& p);
 		virtual void welcome(const Packet& p);
 		virtual void announce(const Packet& p);
+		virtual void leave(const Packet& p);
+		virtual void spawn(const Packet& p);
 		// End packet callbacks
 
 		// Main loop: override for subclass behaviors, but call step inside

@@ -39,6 +39,9 @@ namespace LM {
 		GraphicContainer m_graphic_root;
 		Bone m_root_bone;
 
+	protected:
+		virtual void update_location();
+
 	public:
 		GraphicalPlayer(const char* name, uint32_t id, char team, ResourceCache* cache);
 		~GraphicalPlayer();
@@ -46,8 +49,7 @@ namespace LM {
 		GraphicContainer* get_graphic();
 		Bone* get_bone();
 
-		virtual void set_x(float x);
-		virtual void set_y(float y);
+		virtual void set_position(float x, float y);
 		virtual void set_rotation_degrees(float rotation);
 		virtual void set_gun_rotation_degrees(float rotation);
 	};

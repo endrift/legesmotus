@@ -72,6 +72,8 @@ namespace LM {
 		b2Joint*	m_attach_joint; // Box2D joint that attaches this player to a surface
 		b2World*	m_physics; // Box2D physics world pointer
 	
+		virtual void update_location() { }
+
 	public:
 		Player(b2World* physics_world = 0);
 		Player(const char* name, uint32_t id, char team, float x = 0, float y = 0, float xvel = 0, float yvel = 0, float rotation = 0, b2World* physics_world = 0);
@@ -120,8 +122,8 @@ namespace LM {
 		virtual void add_score(int score_increase);	// Increase the player's score by the given amount
 		virtual void set_energy(int energy);
 		virtual void change_energy(int energy_increase);// Increase the player's energy by the given amount
-		virtual void set_x(float x);
-		virtual void set_y(float y);
+		void set_x(float x);
+		void set_y(float y);
 		virtual void set_position(float x, float y);
 		void set_position(Point p) { set_position(p.x, p.y); }
 		void set_velocity(float xvel, float yvel) { set_velocity(Vector(xvel, yvel)); }
