@@ -79,10 +79,12 @@ namespace LM {
 		virtual void player_update(const Packet& p);
 		virtual void new_round(const Packet& p);
 		virtual void round_start(const Packet& p);
-		virtual void end_round(const Packet& p);
+		virtual void round_over(const Packet& p);
 		virtual void welcome(const Packet& p);
 		virtual void announce(const Packet& p);
 		virtual void leave(const Packet& p);
+		virtual void name_change(const Packet& p);
+		virtual void team_change(const Packet& p);
 		virtual void spawn(const Packet& p);
 		// End packet callbacks
 

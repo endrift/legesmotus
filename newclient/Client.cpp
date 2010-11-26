@@ -156,7 +156,7 @@ void Client::round_start(const Packet& p) {
 	STUB(Client::round_start);
 }
 
-void Client::end_round(const Packet& p) {
+void Client::round_over(const Packet& p) {
 	STUB(Client::end_round);
 }
 
@@ -184,6 +184,22 @@ void Client::leave(const Packet& p) {
 	} else {
 		WARN("We've left the game, according to the server.");
 	}
+}
+
+void Client::name_change(const Packet& p) {
+	Player* player = get_player(p.name_change.player_id);
+	if (player == NULL) {
+		return;
+	}
+	player->set_name(p.name_change.name->c_str());
+}
+
+void Client::team_change(const Packet& p) {
+	Player* player = get_player(p.team_change.player_id);
+	if (player == NULL) {
+		return;
+	}
+	player->set_team(p.team_change.name);
 }
 
 void Client::spawn(const Packet& p) {
