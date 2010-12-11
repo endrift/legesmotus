@@ -28,6 +28,7 @@
 #include "common/Player.hpp"
 #include "common/timer.hpp"
 #include "common/misc.hpp"
+#include "common/Weapon.hpp"
 #include <iostream>
 
 using namespace LM;
@@ -35,6 +36,7 @@ using namespace std;
 
 Client::Client() : m_network(this) {
 	m_logic = NULL;
+	m_curr_weapon = "";
 }
 
 Client::~Client() {
@@ -50,8 +52,27 @@ void Client::step(uint64_t diff) {
 		int changes = m_controller->get_changes();
 		get_player(m_player_id)->set_gun_rotation_radians(m_controller->get_aim());
 		
+		// Handle jumping
 		if (changes & Controller::JUMPING) {
 			m_logic->attempt_jump(m_player_id, m_controller->get_aim());
+		}
+		
+		// Handle firing
+		if (changes & Controller::FIRE_WEAPON) {
+			bool fired_successfully = m_logic->attempt_fire(m_player_id, m_curr_weapon, m_controller->get_aim());
+			if (fired_successfully) {
+				generate_weapon_fired(m_curr_weapon, m_player_id);
+			
+				Weapon* weapon = m_logic->get_weapon(m_curr_weapon);
+				Packet p(PLAYER_HIT_PACKET);
+				Packet::PlayerHit* player_hit = weapon->generate_next_hit_packet(&p.player_hit, m_logic->get_player(m_player_id));
+				while (player_hit != NULL) {
+					p.type = PLAYER_HIT_PACKET;
+					cerr << "When sent: " << *p.player_hit.extradata << endl;
+					m_network.send_reliable_packet(&p);
+					player_hit = weapon->generate_next_hit_packet(&p.player_hit, m_logic->get_player(m_player_id));
+				}
+			}
 		}
 		
 		m_logic->step();
@@ -103,8 +124,21 @@ void Client::generate_player_update(uint32_t id, Packet* p) {
 	player->generate_player_update(&p->player_update);
 }
 
+void Client::generate_weapon_fired(string weapon_id, uint32_t player_id) {
+	Packet weapon_discharged(WEAPON_DISCHARGED_PACKET);
+	//weapon_discharged.type = WEAPON_DISCHARGED_PACKET;
+	weapon_discharged.weapon_discharged.weapon_id = m_curr_weapon;
+	weapon_discharged.weapon_discharged.player_id = m_player_id;
+	weapon_discharged.weapon_discharged.extradata = "";
+	m_network.send_packet(&weapon_discharged);
+}
+
 GameLogic* Client::get_game() {
 	return m_logic;
+}
+
+Weapon* Client::get_curr_weapon() {
+	return m_logic->get_weapon(m_curr_weapon);
 }
 
 void Client::set_map(Map* map) {
@@ -213,6 +247,40 @@ void Client::spawn(const Packet& p) {
 	player->set_rotation_degrees(0);
 	player->set_is_grabbing_obstacle(p.spawn.is_grabbing_obstacle);
 	// TODO implement the rest
+}
+
+void Client::weapon_info(const Packet& p) {
+	Packet pcopy(p);
+	cerr << "Weapon: " << pcopy.weapon_info.index << endl;
+	Weapon* weapon = Weapon::new_weapon(*pcopy.weapon_info.weapon_data);
+	
+	if (weapon != NULL) {
+		if (m_curr_weapon == "") {
+			m_curr_weapon = weapon->get_id();
+		}
+		cerr << weapon->get_name() << ", " << weapon->get_id() << endl;
+		m_logic->add_weapon(pcopy.weapon_info.index, weapon);
+	}
+}
+
+void Client::weapon_discharged(const Packet& p) {
+	// TODO: Make this do something???
+	cerr << "A weapon was fired." << endl;
+}
+
+void Client::player_hit(const Packet& p) {
+	// TODO: Make this do something???
+	cerr << "Player " << p.player_hit.shot_player_id << " was hit." << endl;
+	
+	Player* hit_player = m_logic->get_player(p.player_hit.shot_player_id);
+	if (hit_player == NULL) {
+		cerr << "Shot hit player that doesn't exist: " << p.player_hit.shot_player_id << endl;
+		return;
+	}
+	
+	cerr << "When received: " << *(p.player_hit.extradata) << endl;
+	
+	m_logic->get_weapon(m_curr_weapon)->hit(hit_player, &p.player_hit);
 }
 
 Player* Client::make_player(const char* name, uint32_t id, char team) {

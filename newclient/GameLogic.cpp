@@ -27,6 +27,7 @@
 #include <Box2D/Box2D.h>
 #include <iostream>
 #include "common/math.hpp"
+#include "common/Weapon.hpp"
 
 using namespace LM;
 using namespace std;
@@ -40,6 +41,8 @@ GameLogic::GameLogic(Map* map) {
 	m_physics = new b2World(gravity, true);
 	
 	m_physics->SetContactListener(this);
+	
+	m_weapons.clear();
 }
 
 GameLogic::~GameLogic() {
@@ -47,6 +50,8 @@ GameLogic::~GameLogic() {
 		delete iter->second;
 	}
 	delete m_map;
+	
+	clear_weapons();
 	
 	delete m_physics;
 }
@@ -76,6 +81,17 @@ void GameLogic::remove_player(uint32_t id) {
 	delete player;
 }
 
+void GameLogic::add_weapon(size_t index, Weapon* weapon) {
+	m_weapons.insert(std::make_pair(weapon->get_id(), weapon));
+}
+
+void GameLogic::clear_weapons() {
+	for (map<string, Weapon*>::iterator it(m_weapons.begin()); it != m_weapons.end(); ++it) {
+		delete it->second;
+	}
+	m_weapons.clear();
+}
+
 void GameLogic::step() {
 	m_physics->Step(PHYSICS_TIMESTEP, VEL_ITERATIONS, POS_ITERATIONS);
 	
@@ -101,8 +117,13 @@ void GameLogic::step() {
 	}
 }
 
-Player* GameLogic::get_player(uint32_t id) {
+Player* GameLogic::get_player(const uint32_t id) {
 	return m_players[id];
+}
+
+Weapon*	GameLogic::get_weapon(const string& name) {
+	map<string, Weapon*>::iterator it(m_weapons.find(name));
+	return it == m_weapons.end() ? NULL : it->second;
 }
 
 b2World* GameLogic::get_world() {
@@ -115,6 +136,22 @@ void GameLogic::attempt_jump(uint32_t player_id, float angle) {
 	
 		m_players[player_id]->apply_force(b2Vec2(JUMP_STRENGTH * cos(angle), JUMP_STRENGTH  * sin(angle)));
 		m_players[player_id]->apply_torque(-1*(JUMP_ROTATION/2.0f) + (float)rand()/(float)RAND_MAX * JUMP_ROTATION);
+	}
+}
+
+bool GameLogic::attempt_fire(uint32_t player_id, std::string weapon_id, float angle) {
+	Weapon* weapon = get_weapon(weapon_id);
+	Player* player = get_player(player_id);
+	
+	if (weapon == NULL) {
+		return false;
+	}
+	
+	if (weapon->get_remaining_cooldown() <= 0) {
+		weapon->fire(m_physics, *player, player->get_position(), angle);
+		return true;
+	} else {
+		return false;
 	}
 }
 

@@ -1,5 +1,5 @@
 /*
- * client/StandardGun.hpp
+ * common/StandardGun.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -25,13 +25,21 @@
 #ifndef LM_COMMON_STANDARDGUN_HPP
 #define LM_COMMON_STANDARDGUN_HPP
 
-#include "client/Weapon.hpp"
+#include "common/Weapon.hpp"
+#include "common/StringTokenizer.hpp"
+#include "common/Packet.hpp"
 #include <stdint.h>
+#include <Box2D/Box2D.h>
+
+#define StandardGun NewStandardGun
+
+class b2World;
 
 namespace LM {
-	class StandardGun : public Weapon {
+	class StandardGun : public Weapon, public b2RayCastCallback {
 	private:
 		// Weapon settings
+		float			m_max_range;
 		uint64_t		m_freeze_time;
 		int 			m_damage;
 		uint64_t		m_cooldown;
@@ -44,6 +52,13 @@ namespace LM {
 		// Weapon state
 		uint64_t		m_last_fired_time;	// Time that this gun was last fired (to enforce cooldown)
 		int			m_current_ammo;
+		
+		// Data for firing/rays:
+		b2Fixture*		m_hit_fixture;
+		b2Vec2			m_hit_point;
+		b2Vec2			m_hit_normal;
+		float32			m_hit_fraction;
+		float			m_last_fired_dir;
 
 	protected:
 		virtual bool		parse_param(const char* param_string);
@@ -51,10 +66,12 @@ namespace LM {
 	public:
 		StandardGun(const char* id, StringTokenizer& gun_data);
 
-		virtual void		fire(Player& player, GameController& gc, Point start, double direction);
-		virtual void		discharged(Player& player, GameController& gc, StringTokenizer& data);
-		virtual void		hit(Player& player, Player& shooting_player, bool has_effect, GameController& gc, StringTokenizer& data);
+		// TODO: Do we want these in the common gun, or just the client one?
+		virtual void		fire(b2World* physics, Player& player, Point start, double direction);
+		//virtual void		discharged(Player& player, GameController& gc, StringTokenizer& data);
+		virtual void		hit(Player* hit_player, const Packet::PlayerHit* p);
 		//virtual void		select(Player& player, GameController& gc);
+		
 		virtual void		reset();
 		virtual bool		is_continuous() { return m_is_continuous; }
 		virtual uint64_t	get_remaining_cooldown() const;
@@ -62,6 +79,12 @@ namespace LM {
 
 		virtual int		get_total_ammo () const { return m_total_ammo; }
 		virtual int		get_current_ammo () const;
+		
+		// Call this until it returns NULL after every call to fire(), to get the results
+		Packet::PlayerHit* generate_next_hit_packet(Packet::PlayerHit* p, Player* shooter);
+		
+		// Box2D Physics Callbacks
+		float32 ReportFixture(b2Fixture* fixture, const b2Vec2& point, const b2Vec2& normal, float32 fraction);
 	};
 }
 

@@ -34,6 +34,7 @@ class b2World;
 
 namespace LM {
 	class Map;
+	class Weapon;
 
 	class GameLogic : public b2ContactListener {
 	const static float PHYSICS_TIMESTEP = 1.0f / 60.0f;
@@ -46,6 +47,7 @@ namespace LM {
 		std::map<uint32_t, Player*> m_players;
 		Map* m_map;
 		b2World* m_physics;
+		std::map<std::string, Weapon*> m_weapons;
 		
 		std::vector< std::pair<b2Body*, b2JointDef*> > m_joints_to_create;
 		
@@ -58,17 +60,24 @@ namespace LM {
 		void add_player(Player* player);
 		void remove_player(uint32_t id);
 		
+		void add_weapon(size_t index, Weapon* weapon);
+		void clear_weapons();
+		
 		void update_map();
 		Map* get_map();
 		
 		// Run the next step of the game logic.
 		void step();
 
-		Player* get_player(uint32_t id);
+		Player* get_player(const uint32_t id);
+		Weapon* get_weapon(const std::string& name);
 		b2World* get_world();
 		
 		// Attempt to jump off an obstacle
 		virtual void attempt_jump(uint32_t player_id, float angle);
+		
+		// Attempt to fire a weapon
+		virtual bool attempt_fire(uint32_t player_id, std::string weapon_id, float angle);
 		
 		// Physics helper methods
 		virtual void create_contact_joint(b2Body* body1, b2JointDef* joint_def);

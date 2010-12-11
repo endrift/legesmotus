@@ -26,7 +26,7 @@
 #include "GameController.hpp"
 #include "BaseMapObject.hpp"
 #include "common/Player.hpp"
-#include "common/StringTokenizer.hpp"
+#include "common/WeaponReader.hpp"
 #include "common/PacketWriter.hpp"
 #include "common/timer.hpp"
 #include "common/math.hpp"
@@ -36,7 +36,7 @@
 using namespace LM;
 using namespace std;
 
-StandardGun::StandardGun(const char* id, StringTokenizer& gun_data) : Weapon(id) {
+StandardGun::StandardGun(const char* id, WeaponReader& gun_data) : Weapon(id) {
 	m_last_fired_time = 0;
 
 	m_freeze_time = 0;
