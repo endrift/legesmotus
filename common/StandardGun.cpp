@@ -40,7 +40,7 @@ using namespace std;
 StandardGun::StandardGun(const char* id, StringTokenizer& gun_data) : Weapon(id) {
 	m_last_fired_time = 0;
 
-	m_freeze_time = 0;
+	m_freeze_time = 10000;
 	m_damage = 100;
 	m_cooldown = 700;
 	m_recoil = 1.5;
@@ -116,11 +116,20 @@ void StandardGun::hit(Player* hit_player, const Packet::PlayerHit* p) {
 	float hit_point_y;
 	
 	s >> direction >> hit_point_x >> hit_point_y;
-	
-	cerr << "Direction: " << direction << " x: " << hit_point_x << " y: " << hit_point_y << endl;
 
-	// Apply force to the item that was hit.
+	// Apply force to the player.
 	hit_player->apply_force(b2Vec2(m_recoil * 100 * cos(direction), m_recoil * 100 * sin(direction)), b2Vec2(hit_point_x, hit_point_y));
+
+	// Do damage if the gun has effect and they're not frozen.
+	if (p->has_effect && !hit_player->is_frozen()) {
+		// Apply damage to the player.
+		hit_player->change_energy(-m_damage);
+		
+		// If player is damaged sufficiently, freeze them.
+		if (hit_player->get_energy() <= 0) {
+			hit_player->set_is_frozen(true, m_freeze_time);
+		}
+	}
 }
 
 void StandardGun::reset() {
@@ -162,10 +171,11 @@ Packet::PlayerHit* StandardGun::generate_next_hit_packet(Packet::PlayerHit* p, P
 	p->shooter_id = shooter->get_id();
 	p->weapon_id = get_id();
 	
-	p->shot_player_id = static_cast<Player*>(userdata)->get_id();
-	p->has_effect = shooter->is_frozen() ? false : true;
+	Player* hit_player = static_cast<Player*>(userdata);
+	
+	p->shot_player_id = hit_player->get_id();
+	p->has_effect = hit_player->is_frozen() ? false : true;
 	std::stringstream out;
-	cerr << "Should be: " << m_last_fired_dir << " x: " << m_hit_point.x << " y: " << m_hit_point.y << endl;
 	out << m_last_fired_dir << " " << m_hit_point.x << " " << m_hit_point.y;
 	p->extradata = out.str();
 

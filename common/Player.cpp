@@ -30,6 +30,7 @@
 #include "common/Packet.hpp"
 #include "common/PacketReader.hpp"
 #include "common/PacketWriter.hpp"
+#include "common/timer.hpp"
 #include <Box2D/Box2D.h>
 #include <iostream>
 
@@ -51,6 +52,7 @@ Player::Player(b2World* physics_world) {
 	m_rotation = 0;
 	m_rotational_vel = 0;
 	m_gun_rotation = 0;
+	m_freeze_time = -1;
 	m_is_invisible = true;
 	m_is_frozen = true;
 	m_is_grabbing_obstacle = false;
@@ -76,6 +78,7 @@ Player::Player(const char* name, uint32_t id, char team, float x, float y, float
 	m_rotation = rotation;
 	m_rotational_vel = 0;
 	m_gun_rotation = 0;
+	m_freeze_time = -1;
 	m_is_invisible = true;
 	m_is_frozen = true;
 	m_is_grabbing_obstacle = false;
@@ -208,6 +211,13 @@ void Player::update_physics() {
 			m_physics_body->SetAngularVelocity(-1.0 * MAX_ANGULAR_VELOCITY);
 		}
 	}
+	
+	if (m_is_frozen) {
+		if (m_freeze_time != -1 && m_freeze_time < get_ticks() - m_frozen_at) {
+			set_is_frozen(false);
+			set_energy(MAX_ENERGY);
+		}
+	}
 }
 
 void Player::update_position(float timescale) {
@@ -273,6 +283,20 @@ void Player::set_is_invisible(bool is_invisible) {
 
 void Player::set_is_frozen(bool is_frozen) {
 	m_is_frozen = is_frozen;
+	
+	if (is_frozen) {
+		set_is_grabbing_obstacle(false);
+	}
+}
+
+void Player::set_is_frozen(bool is_frozen, uint64_t freeze_time) {
+	m_is_frozen = is_frozen;
+	
+	if (is_frozen) {
+		m_freeze_time = freeze_time;
+		m_frozen_at = get_ticks();
+		set_is_grabbing_obstacle(false);
+	}
 }
 
 void Player::set_current_weapon_id(const char* current_weapon_id) {

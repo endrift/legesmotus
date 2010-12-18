@@ -131,7 +131,7 @@ b2World* GameLogic::get_world() {
 }
 
 void GameLogic::attempt_jump(uint32_t player_id, float angle) {
-	if (m_players[player_id]->is_grabbing_obstacle()) {
+	if (m_players[player_id]->is_grabbing_obstacle() && !m_players[player_id]->is_frozen()) {
 		m_players[player_id]->set_is_grabbing_obstacle(false);
 	
 		m_players[player_id]->apply_force(b2Vec2(JUMP_STRENGTH * cos(angle), JUMP_STRENGTH  * sin(angle)));
@@ -147,12 +147,12 @@ bool GameLogic::attempt_fire(uint32_t player_id, std::string weapon_id, float an
 		return false;
 	}
 	
-	if (weapon->get_remaining_cooldown() <= 0) {
-		weapon->fire(m_physics, *player, player->get_position(), angle);
-		return true;
-	} else {
+	if (player->is_frozen() || weapon->get_remaining_cooldown() > 0) {
 		return false;
 	}
+	
+	weapon->fire(m_physics, *player, player->get_position(), angle);
+	return true;
 }
 
 void GameLogic::BeginContact(b2Contact* contact) {
@@ -178,7 +178,7 @@ void GameLogic::BeginContact(b2Contact* contact) {
 	// If we have a collision between a player and a map object, we need to create a joint to revolve around
 	if (userdata1->get_type() == PhysicsObject::PLAYER && (userdata2->get_type() == PhysicsObject::MAP_OBJECT || userdata2->get_type() == PhysicsObject::MAP_EDGE)) {
 		Player* player = static_cast<Player*>(userdata1);
-		if (!player->is_grabbing_obstacle()) {
+		if (!player->is_grabbing_obstacle() && !player->is_frozen()) {
 			b2RevoluteJointDef* joint_def = new b2RevoluteJointDef;
 			joint_def->Initialize(body1, body2, manifold.points[0]); // body1->GetWorldPoint(local_manifold->localPoint)
 			joint_def->collideConnected = true;
@@ -192,7 +192,7 @@ void GameLogic::BeginContact(b2Contact* contact) {
 		}
 	} else if ((userdata1->get_type() == PhysicsObject::MAP_OBJECT || userdata1->get_type() == PhysicsObject::MAP_EDGE) && userdata2->get_type() == PhysicsObject::PLAYER) {
 		Player* player = static_cast<Player*>(userdata2);
-		if (!player->is_grabbing_obstacle()) {
+		if (!player->is_grabbing_obstacle() && !player->is_frozen()) {
 			b2RevoluteJointDef* joint_def = new b2RevoluteJointDef;
 			joint_def->Initialize(body1, body2, manifold.points[0]); // body2->GetWorldPoint(local_manifold->localPoint)
 			joint_def->collideConnected = true;
@@ -254,8 +254,8 @@ b2Fixture* fixture1 = contact->GetFixtureA();
 				(userdata2->get_type() == PhysicsObject::MAP_OBJECT || 
 				userdata2->get_type() == PhysicsObject::MAP_EDGE)) {
 			Player* player = static_cast<Player*>(userdata1);
-			if (!player->is_grabbing_obstacle() || (player->get_attach_joint() != NULL &&
-					player->get_attach_joint()->GetType() != e_weldJoint)) {
+			if (!player->is_frozen() && (!player->is_grabbing_obstacle() || (player->get_attach_joint() != NULL &&
+					player->get_attach_joint()->GetType() != e_weldJoint))) {
 				b2WeldJointDef* joint_def = new b2WeldJointDef;
 				joint_def->Initialize(body1, body2, manifold.points[0]);
 				joint_def->collideConnected = true;
@@ -268,8 +268,8 @@ b2Fixture* fixture1 = contact->GetFixtureA();
 				userdata1->get_type() == PhysicsObject::MAP_EDGE) && 
 				userdata2->get_type() == PhysicsObject::PLAYER) {
 			Player* player = static_cast<Player*>(userdata2);
-			if (!player->is_grabbing_obstacle() || (player->get_attach_joint() != NULL &&
-					player->get_attach_joint()->GetType() != e_weldJoint)) {
+			if (!player->is_frozen() && (!player->is_grabbing_obstacle() || (player->get_attach_joint() != NULL &&
+					player->get_attach_joint()->GetType() != e_weldJoint))) {
 				b2WeldJointDef* joint_def = new b2WeldJointDef;
 				joint_def->Initialize(body1, body2, manifold.points[0]);
 				joint_def->collideConnected = true;

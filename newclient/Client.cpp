@@ -68,7 +68,6 @@ void Client::step(uint64_t diff) {
 				Packet::PlayerHit* player_hit = weapon->generate_next_hit_packet(&p.player_hit, m_logic->get_player(m_player_id));
 				while (player_hit != NULL) {
 					p.type = PLAYER_HIT_PACKET;
-					cerr << "When sent: " << *p.player_hit.extradata << endl;
 					m_network.send_reliable_packet(&p);
 					player_hit = weapon->generate_next_hit_packet(&p.player_hit, m_logic->get_player(m_player_id));
 				}
@@ -246,6 +245,12 @@ void Client::spawn(const Packet& p) {
 	player->set_velocity(*p.spawn.velocity);
 	player->set_rotation_degrees(0);
 	player->set_is_grabbing_obstacle(p.spawn.is_grabbing_obstacle);
+	
+	if (p.spawn.freeze_time <= 0) {
+		player->set_is_frozen(false);
+	} else {
+		player->set_is_frozen(true, p.spawn.freeze_time);
+	}
 	// TODO implement the rest
 }
 
@@ -265,20 +270,14 @@ void Client::weapon_info(const Packet& p) {
 
 void Client::weapon_discharged(const Packet& p) {
 	// TODO: Make this do something???
-	cerr << "A weapon was fired." << endl;
 }
 
 void Client::player_hit(const Packet& p) {
-	// TODO: Make this do something???
-	cerr << "Player " << p.player_hit.shot_player_id << " was hit." << endl;
-	
 	Player* hit_player = m_logic->get_player(p.player_hit.shot_player_id);
 	if (hit_player == NULL) {
 		cerr << "Shot hit player that doesn't exist: " << p.player_hit.shot_player_id << endl;
 		return;
 	}
-	
-	cerr << "When received: " << *(p.player_hit.extradata) << endl;
 	
 	m_logic->get_weapon(m_curr_weapon)->hit(hit_player, &p.player_hit);
 }
