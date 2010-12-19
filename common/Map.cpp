@@ -118,6 +118,9 @@ MapObject* Map::make_map_object(MapReader* reader) {
 	case Map::DECORATION:
 		object = new Decoration(position, clientpart);
 		break;
+	case Map::GATE:
+		object = new Gate(position, clientpart);
+		break;
 	default:
 		return NULL;
 	}

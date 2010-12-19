@@ -1,5 +1,5 @@
 /*
- * common/Decoration.hpp
+ * common/Gate.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,31 +22,50 @@
  * 
  */
 
-#ifndef LM_COMMON_DECORATION_HPP
-#define LM_COMMON_DECORATION_HPP
+#ifndef LM_COMMON_GATE_HPP
+#define LM_COMMON_GATE_HPP
 
 #include "MapObject.hpp"
 
-#define Decoration NewDecoration
-
-class b2Shape;
+class b2Body;
 class b2World;
+class b2Shape;
+class b2Contact;
 
 namespace LM {
-	class Decoration : public MapObject {
-	public:
-		explicit Decoration(Point pos, ClientMapObject* clientpart = NULL);
+	class ClientMap;
+	class PhysicsObject;
 
-		virtual const b2Shape* get_bounding_shape() const { return NULL; }
+	class Gate : public MapObject {
+	private:
+		char			m_team;
+		float			m_width;
+		float			m_length;
+		float			m_extent;
+		float			m_rotation;
+
+		float			m_progress;
+
+		bool			m_is_engaged;
+		b2Shape*		m_bounding_shape;
+		
+		b2Body*			m_physics_body; // Box2D physics body for this map object
+
+	public:
+		Gate(Point pos, ClientMapObject* clientpart = NULL);
+	
+		virtual const b2Shape* get_bounding_shape() const { return m_bounding_shape; }
+		
+		virtual Type get_type() const { return MAP_OBJECT; }
 		
 		// Decorations have no physics of their own.
-		virtual void initialize_physics(b2World* world) {}
+		virtual void initialize_physics(b2World* world);
 	
 		virtual bool is_jumpable() const { return false; }
 		virtual bool is_shootable() const { return false; }
 		virtual bool is_collidable() const { return false; }
-		virtual bool is_interactive() const { return false; }
-		virtual bool is_engaged() const { return false; }
+		virtual bool is_interactive() const { return true; }
+		virtual bool is_engaged() const { return m_is_engaged; };
 		virtual bool shot(GameLogic* logic, Player* shooter, Point point_hit, float direction) { return false; }
 		// Called when an object starts colliding with the obstacle
 		//  contact is the Box2D contact manifold
@@ -65,5 +84,4 @@ namespace LM {
 		virtual void init(MapReader* reader);
 	};
 }
-
 #endif

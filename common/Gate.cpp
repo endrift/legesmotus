@@ -1,5 +1,5 @@
 /*
- * common/Obstacle.cpp
+ * common/Gate.cpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,33 +22,31 @@
  * 
  */
 
-#include "Obstacle.hpp"
-#include "ClientMapObject.hpp"
 #include "MapReader.hpp"
+#include "Gate.hpp"
+#include "common/team.hpp"
+#include <string>
 #include <cstring>
+#include <cstdlib>
 #include <Box2D/Box2D.h>
-#include <iostream>
-#include "math.hpp"
+#include "common/math.hpp"
+#include "common/misc.hpp"
+#include "common/ClientMapObject.hpp"
 
 using namespace LM;
 using namespace std;
 
-Obstacle::Obstacle(Point position, ClientMapObject* clientpart) : MapObject(position, clientpart) {
-	// TODO
-	m_is_slippery = false;
-	m_bounce_factor = 0.9;
+Gate::Gate(Point position, ClientMapObject* clientpart) : MapObject(position, clientpart) {
+	m_team = 0;
+	m_width = 8;
+	m_length = 109;
+	m_extent = 24;
+	m_progress = 0.0;
+
 	m_bounding_shape = NULL;
 }
 
-MapObject::CollisionResult Obstacle::collide(GameLogic* logic, PhysicsObject* other, b2Contact* contact) {
-	if (m_is_slippery) {
-		return BOUNCE;
-	} else {
-		return GRAB;
-	}
-}
-
-void Obstacle::initialize_physics(b2World* world) {
+void Gate::initialize_physics(b2World* world) {
 	b2BodyDef body_def;
 	// TODO: Currently, all map objects are static; make this configured
 	body_def.type = b2_staticBody;
@@ -60,38 +58,47 @@ void Obstacle::initialize_physics(b2World* world) {
 	m_physics_body->SetUserData((void*)this);
 	
 	if (m_bounding_shape == NULL) {
-		cerr << "No bounding shape for obstacle that should have physics." << endl;
+		WARN("No bounding shape for obstacle that should have physics.");
 		return;
 	}
 	
 	m_physics_body->CreateFixture(m_bounding_shape, 0.0f);
 }
 
-void Obstacle::init(MapReader* reader) {
+void Gate::init(MapReader* reader) {
 	MapObject::init(reader);
 
-	string bounding_shape;
-
-	(*reader) >> bounding_shape;
+	get_client_part()->set_is_tiled(true);
 
 	while (reader->has_more()) {
 		string param_string;
 		(*reader) >> param_string;
 
-		if (param_string == "slippery") {
-			m_is_slippery = true;
-		} else if (param_string == "sticky") {
-			m_is_slippery = false;
-		} else if (strncmp(param_string.c_str(), "bounce=", 7) == 0) {
-			m_bounce_factor = atof(param_string.c_str() + 7);
-		} else {
-			parse_param(param_string.c_str());
-		}
+		if (strncmp(param_string.c_str(), "team=", 5) == 0) {
+			m_team = parse_team_string(param_string.c_str() + 5);
+		} else if (strncmp(param_string.c_str(), "width=", 6) == 0) {
+			m_width = atof(param_string.c_str() + 6);
+			get_client_part()->set_scale_x(m_width);
+		} else if (strncmp(param_string.c_str(), "length=", 7) == 0) {
+			m_length = atof(param_string.c_str() + 7);
+			get_client_part()->set_scale_y(m_length);
+		} else if (strncmp(param_string.c_str(), "extent=", 7) == 0) {
+			m_extent = atof(param_string.c_str() + 7);
+		} else if (strncmp(param_string.c_str(), "rotate=", 7) == 0) {
+			m_rotation = atof(param_string.c_str() + 7);
+		} 
 	}
+	
+	DEBUG("Gate: " << get_client_part() << endl);
 
 	if (m_bounding_shape != NULL) {
 		delete m_bounding_shape;
 	}
+	
+	b2Vec2 size(m_width + m_extent * 2.0, m_length);
+	b2PolygonShape* shape = new b2PolygonShape();
+	shape->SetAsBox(to_physics(size.x/2 * get_scale_x()), to_physics(size.y/2 * get_scale_y()),
+		b2Vec2(to_physics(size.x/2 * get_scale_x()), to_physics(size.y/2 * get_scale_y())), 0);
 
-	m_bounding_shape = make_bounding_shape(bounding_shape, get_position());
+	m_bounding_shape = shape;
 }

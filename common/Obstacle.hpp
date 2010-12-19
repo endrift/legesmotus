@@ -34,8 +34,11 @@
 class b2Body;
 class b2World;
 class b2Shape;
+class b2Contact;
 
 namespace LM {
+	class PhysicsObject;
+
 	class Obstacle : public MapObject {
 	private:
 		b2Shape*		m_bounding_shape;
@@ -57,9 +60,20 @@ namespace LM {
 		virtual bool is_interactive() const { return false; }
 		virtual bool is_engaged() const { return false; }
 		virtual bool shot(GameLogic* logic, Player* shooter, Point point_hit, float direction) { return true; }
-		virtual void collide(GameLogic* logic, Player* player, Point old_position, float angle_of_incidence);
-		virtual void interact(GameLogic* logic, Player* player) { }
-		virtual void disengage(GameLogic* logic, Player* player) { }
+		// Called when an object starts colliding with the obstacle
+		//  contact is the Box2D contact manifold
+		virtual CollisionResult collide(GameLogic* logic, PhysicsObject* other, b2Contact* contact);
+
+		// Called every frame during which an object is _within_ this obstacle's bounds
+		//  (Only called if is_interactive() returns true)
+		//  is_engaged() should return true after this function returns
+		virtual void interact(GameLogic* logic, PhysicsObject* other) {}
+
+		// Called the first frame that the object is no longer within the obstacle's bounds
+		//  (as determined by the result of calling is_engaged above)
+		//  (Only called if is_interactive() returns true)
+		//  is_engaged() should returns false after this function returns
+		virtual void disengage(GameLogic* logic, PhysicsObject* other) {}
 		virtual void init(MapReader* reader);
 	};
 }

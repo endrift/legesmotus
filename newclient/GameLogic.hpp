@@ -29,6 +29,8 @@
 #include <Box2D/Box2D.h>
 #include <map>
 #include <vector>
+#include <utility>
+#include "common/MapObject.hpp"
 
 class b2World;
 
@@ -81,6 +83,8 @@ namespace LM {
 		
 		// Physics helper methods
 		virtual void create_contact_joint(b2Body* body1, b2JointDef* joint_def);
+		virtual MapObject::CollisionResult collide(PhysicsObject* userdata1, PhysicsObject* userdata2, b2Contact* contact, bool disengage);
+		virtual void create_grab(Player* player, b2Body* body2, b2WorldManifold* manifold, bool weld);
 		
 		// Physics contact listener methods.
 		virtual void BeginContact(b2Contact* contact);
