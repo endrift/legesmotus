@@ -235,11 +235,11 @@ endif
 common-deps: deps.mk
 
 common-tidy:
-	@$(RM) -r *.{o,dSYM}
+	@$(RM) -r *.{o,d,dSYM}
 	@$(RM) *~
 
 common-clean: common-tidy
-	@$(RM) -r *.{a,dmg,app,.deps}
+	@$(RM) -r *.{a,dmg,app,deps}
 	@$(RM) deps.mk
 
 tidy: common-tidy
