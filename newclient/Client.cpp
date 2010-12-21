@@ -48,31 +48,40 @@ Client::~Client() {
 void Client::step(uint64_t diff) {
 	m_network.receive_packets();
 
-	if (m_logic != NULL) {
-		m_controller->update(diff, *m_logic);
-		
-		int changes = m_controller->get_changes();
-		get_player(m_player_id)->set_gun_rotation_radians(m_controller->get_aim());
-		
-		// Handle jumping
-		if (changes & Controller::JUMPING) {
-			m_logic->attempt_jump(m_player_id, m_controller->get_aim());
-		}
-		
-		// Handle firing
-		if (changes & Controller::FIRE_WEAPON) {
-			attempt_firing();
-		}
-		
-		m_logic->step();
-	
-		Packet p;
-		generate_player_update(m_player_id, &p);
-		m_network.send_packet(&p);
-		
-		// Check gates for any updates/changes.
-		update_gates();
+	if (m_logic == NULL) {
+		return;
 	}
+		
+	Player* player = get_player(m_player_id);
+		
+	if (player == NULL) {
+		return;
+	}
+	
+	m_controller->update(diff, *m_logic);
+	
+	int changes = m_controller->get_changes();
+	
+	player->set_gun_rotation_radians(m_controller->get_aim());
+	
+	// Handle jumping
+	if (changes & Controller::JUMPING) {
+		m_logic->attempt_jump(m_player_id, m_controller->get_aim());
+	}
+	
+	// Handle firing
+	if (changes & Controller::FIRE_WEAPON) {
+		attempt_firing();
+	}
+	
+	m_logic->step();
+
+	Packet p;
+	generate_player_update(m_player_id, &p);
+	m_network.send_packet(&p);
+	
+	// Check gates for any updates/changes.
+	update_gates();
 }
 
 const char* Client::get_res_directory() const {
@@ -236,7 +245,13 @@ void Client::round_start(const Packet& p) {
 }
 
 void Client::round_over(const Packet& p) {
-	STUB(Client::end_round);
+	// TODO: We may need to do other things here, like update scores, etc.
+
+	if (m_logic != NULL) {
+		delete m_logic;
+	}
+	
+	m_logic = NULL;
 }
 
 void Client::welcome(const Packet& p) {
