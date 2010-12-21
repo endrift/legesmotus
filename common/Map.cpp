@@ -57,6 +57,14 @@ Map::~Map() {
 	}
 }
 
+Gate* Map::get_gate(char team) {
+	if (m_gates.find(team) == m_gates.end()) {
+		return NULL;
+	}
+	
+	return m_gates[team];
+}
+
 void Map::initialize_physics(b2World* world) {
 	// Set up barriers around the map edges
 	// The extents of box shapes are the half-widths of the box.
@@ -126,6 +134,12 @@ MapObject* Map::make_map_object(MapReader* reader) {
 	}
 
 	object->init(reader);
+	
+	// If we are adding a gate, add it to the gates map.
+	if (reader->get_type() == Map::GATE) {
+		m_gates.insert(pair<char, Gate*>(object->get_team(), static_cast<Gate*>(object)));
+	}
+	
 	return object;
 }
 

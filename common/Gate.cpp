@@ -32,6 +32,7 @@
 #include "common/math.hpp"
 #include "common/misc.hpp"
 #include "common/ClientMapObject.hpp"
+#include "common/Player.hpp"
 
 using namespace LM;
 using namespace std;
@@ -42,6 +43,7 @@ Gate::Gate(Point position, ClientMapObject* clientpart) : MapObject(position, cl
 	m_length = 109;
 	m_extent = 24;
 	m_progress = 0.0;
+	m_engaging_players.clear();
 
 	m_bounding_shape = NULL;
 }
@@ -63,6 +65,52 @@ void Gate::initialize_physics(b2World* world) {
 	}
 	
 	m_physics_body->CreateFixture(m_bounding_shape, 0.0f);
+}
+
+MapObject::CollisionResult Gate::collide(GameLogic* logic, PhysicsObject* other, b2Contact* contact) {
+	if (other->get_type() != PhysicsObject::PLAYER) {
+		// Nothing special. Return.
+		return IGNORE;
+	}
+	
+	Player* player = static_cast<Player*>(other);
+	if (player->get_team() != m_team && m_engaging_players.find(player) == m_engaging_players.end()) {
+		m_engaging_players.insert(pair<Player*, uint64_t>(player, get_ticks()));
+		// Gate engaged.
+		m_is_engaged = true;
+	}
+	
+	return IGNORE;
+}
+
+void Gate::disengage(GameLogic* logic, PhysicsObject* other) {
+	if (other->get_type() != PhysicsObject::PLAYER) {
+		// Nothing special. Return.
+		return;
+	}
+	
+	Player* player = static_cast<Player*>(other);
+	if (player->get_team() != m_team && m_engaging_players.find(player) != m_engaging_players.end()) {
+		m_engaging_players.erase(player);
+		if (m_engaging_players.size() == 0) {
+			// Gate disengaged.
+			m_is_engaged = false;
+		}
+	}
+}
+
+void Gate::set_progress(float progress) {
+	if (progress < 0.0f) {
+		progress = 0.0f;
+	}
+	
+	if (progress > 1.0f) {
+		progress = 1.0f;
+	}
+	
+	m_progress = progress;
+	
+	m_curr_length = m_length * (1.0f - progress);
 }
 
 void Gate::init(MapReader* reader) {
@@ -88,12 +136,12 @@ void Gate::init(MapReader* reader) {
 			m_rotation = atof(param_string.c_str() + 7);
 		} 
 	}
-	
-	DEBUG("Gate: " << get_client_part() << endl);
 
 	if (m_bounding_shape != NULL) {
 		delete m_bounding_shape;
 	}
+	
+	set_progress(0.0f);
 	
 	b2Vec2 size(m_width + m_extent * 2.0, m_length);
 	b2PolygonShape* shape = new b2PolygonShape();
@@ -101,4 +149,6 @@ void Gate::init(MapReader* reader) {
 		b2Vec2(to_physics(size.x/2 * get_scale_x()), to_physics(size.y/2 * get_scale_y())), 0);
 
 	m_bounding_shape = shape;
+	
+	set_position(get_position() - Point(size.x/2, 0));
 }

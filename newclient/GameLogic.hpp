@@ -81,6 +81,12 @@ namespace LM {
 		// Attempt to fire a weapon
 		virtual bool attempt_fire(uint32_t player_id, std::string weapon_id, float angle);
 		
+		// Update the states of the gates
+		virtual void update_gate_progress(char team, float progress);
+		
+		// Check if a player is engaging a gate
+		virtual bool is_engaging_gate(uint32_t player_id, char team);
+		
 		// Physics helper methods
 		virtual void create_contact_joint(b2Body* body1, b2JointDef* joint_def);
 		virtual MapObject::CollisionResult collide(PhysicsObject* userdata1, PhysicsObject* userdata2, b2Contact* contact, bool disengage);

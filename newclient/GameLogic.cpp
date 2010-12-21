@@ -29,6 +29,7 @@
 #include "common/math.hpp"
 #include "common/Weapon.hpp"
 #include "common/MapObject.hpp"
+#include "common/misc.hpp"
 
 using namespace LM;
 using namespace std;
@@ -113,6 +114,11 @@ void GameLogic::step() {
 }
 
 Player* GameLogic::get_player(const uint32_t id) {
+	if (m_players.find(id) == m_players.end()) {
+		WARN("No player found for id: " << id);
+		return NULL;
+	}
+
 	return m_players[id];
 }
 
@@ -148,6 +154,37 @@ bool GameLogic::attempt_fire(uint32_t player_id, std::string weapon_id, float an
 	
 	weapon->fire(m_physics, *player, player->get_position(), angle);
 	return true;
+}
+
+void GameLogic::update_gate_progress(char team, float progress) {
+	Map* map = get_map();
+	
+	if (map == NULL) {
+		return;
+	}
+	
+	Gate* gate = map->get_gate(team);
+	if (gate == NULL) {
+		return;
+	}
+	
+	gate->set_progress(progress);
+}
+
+bool GameLogic::is_engaging_gate(uint32_t player_id, char team) {
+	Map* map = get_map();
+	Player* player = get_player(player_id);
+	
+	if (map == NULL || player == NULL) {
+		return false;
+	}
+	
+	Gate* gate = map->get_gate(team);
+	if (gate == NULL) {
+		return false;
+	}
+	
+	return gate->is_engaged_by(player);
 }
 
 void GameLogic::create_contact_joint(b2Body* body1, b2JointDef* joint_def) {

@@ -74,6 +74,9 @@ namespace LM {
 		float get_scale_x() const { return m_scale_x; }
 		float get_scale_y() const { return m_scale_y; }
 		float get_rotation() const { return m_rotation; }
+		
+		// Returns the team that owns this object, or 0 if none.
+		virtual char get_team() const { return 0; }
 
 		void set_position(Point position);
 		void set_is_tiled(bool is_tiled);

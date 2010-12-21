@@ -28,6 +28,7 @@
 #include "common/Player.hpp"
 #include "common/timer.hpp"
 #include "common/misc.hpp"
+#include "common/team.hpp"
 #include "common/Weapon.hpp"
 #include <iostream>
 
@@ -37,6 +38,7 @@ using namespace std;
 Client::Client() : m_network(this) {
 	m_logic = NULL;
 	m_curr_weapon = "";
+	m_engaging_gate = false;
 }
 
 Client::~Client() {
@@ -59,19 +61,7 @@ void Client::step(uint64_t diff) {
 		
 		// Handle firing
 		if (changes & Controller::FIRE_WEAPON) {
-			bool fired_successfully = m_logic->attempt_fire(m_player_id, m_curr_weapon, m_controller->get_aim());
-			if (fired_successfully) {
-				generate_weapon_fired(m_curr_weapon, m_player_id);
-			
-				Weapon* weapon = m_logic->get_weapon(m_curr_weapon);
-				Packet p(PLAYER_HIT_PACKET);
-				Packet::PlayerHit* player_hit = weapon->generate_next_hit_packet(&p.player_hit, m_logic->get_player(m_player_id));
-				while (player_hit != NULL) {
-					p.type = PLAYER_HIT_PACKET;
-					m_network.send_reliable_packet(&p);
-					player_hit = weapon->generate_next_hit_packet(&p.player_hit, m_logic->get_player(m_player_id));
-				}
-			}
+			attempt_firing();
 		}
 		
 		m_logic->step();
@@ -79,6 +69,9 @@ void Client::step(uint64_t diff) {
 		Packet p;
 		generate_player_update(m_player_id, &p);
 		m_network.send_packet(&p);
+		
+		// Check gates for any updates/changes.
+		update_gates();
 	}
 }
 
@@ -113,6 +106,47 @@ Player* Client::get_player(uint32_t id) {
 	return m_logic->get_player(id);
 }
 
+void Client::update_gates() {
+	if (m_logic == NULL) {
+		return;
+	}
+	
+	Player* player = m_logic->get_player(m_player_id);
+	if (player == NULL) {
+		return;
+	}
+	
+	char team = get_other_team(player->get_team());
+
+	if (m_logic->is_engaging_gate(m_player_id, team)) {
+		if (!m_engaging_gate) {
+			generate_gate_update(m_player_id, team, true);
+		}
+		m_engaging_gate = true;
+	} else {
+		if (m_engaging_gate) {
+			generate_gate_update(m_player_id, team, false);
+		}
+		m_engaging_gate = false;
+	}
+}
+
+void Client::attempt_firing() {
+	bool fired_successfully = m_logic->attempt_fire(m_player_id, m_curr_weapon, m_controller->get_aim());
+	if (fired_successfully) {
+		generate_weapon_fired(m_curr_weapon, m_player_id);
+	
+		Weapon* weapon = m_logic->get_weapon(m_curr_weapon);
+		Packet p(PLAYER_HIT_PACKET);
+		Packet::PlayerHit* player_hit = weapon->generate_next_hit_packet(&p.player_hit, m_logic->get_player(m_player_id));
+		while (player_hit != NULL) {
+			p.type = PLAYER_HIT_PACKET;
+			m_network.send_reliable_packet(&p);
+			player_hit = weapon->generate_next_hit_packet(&p.player_hit, m_logic->get_player(m_player_id));
+		}
+	}
+}
+
 void Client::generate_player_update(uint32_t id, Packet* p) {
 	p->type = PLAYER_UPDATE_PACKET;
 	Player* player = get_player(id);
@@ -130,6 +164,18 @@ void Client::generate_weapon_fired(string weapon_id, uint32_t player_id) {
 	weapon_discharged.weapon_discharged.player_id = m_player_id;
 	weapon_discharged.weapon_discharged.extradata = "";
 	m_network.send_packet(&weapon_discharged);
+}
+
+void Client::generate_gate_update(uint32_t player_id, char team, bool holding) {
+	Packet gate_update(GATE_UPDATE_PACKET);
+	
+	gate_update.gate_update.acting_player_id = player_id;
+	gate_update.gate_update.team = team;
+	
+	// TODO: Fix this packet's construction to add the rest of the values, once the server is changed.
+	gate_update.gate_update.progress = (holding ? 1:0);
+	
+	m_network.send_reliable_packet(&gate_update);
 }
 
 GameLogic* Client::get_game() {
@@ -280,6 +326,14 @@ void Client::player_hit(const Packet& p) {
 	}
 	
 	m_logic->get_weapon(m_curr_weapon)->hit(hit_player, &p.player_hit);
+}
+
+void Client::gate_update(const Packet& p) {
+	char team = p.gate_update.team;
+	float progress = p.gate_update.progress;
+	m_logic->update_gate_progress(team, progress);
+	
+	// TODO: In graphical client, this will need to update many other things, probably (graphics, etc.).
 }
 
 Player* Client::make_player(const char* name, uint32_t id, char team) {

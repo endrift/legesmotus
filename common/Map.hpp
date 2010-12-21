@@ -40,6 +40,7 @@ namespace LM {
 	class MapObject;
 	class ClientMapObject;
 	class PhysicsObject;
+	class Gate;
 	
 	/*
 	 * A Map keeps track of things like the map name, dimensions, and spawn points
@@ -65,6 +66,7 @@ namespace LM {
 
 	private:
 		std::list<MapObject*> m_objects;
+		std::map<char, Gate*> m_gates;
 
 	protected:
 		std::string	m_name;		// Should be unique
@@ -94,6 +96,7 @@ namespace LM {
 		int		get_height() const { return m_height; }
 		const ConfigManager&	get_options() const { return m_options; }
 		const std::list<MapObject*>& get_objects() const { return m_objects; }
+		Gate*	get_gate(char team);
 
 		bool		is_loaded(const char* name, int revision) const;
 		

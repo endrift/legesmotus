@@ -44,6 +44,8 @@ namespace LM {
 		std::string m_curr_weapon;
 
 		bool m_running;
+		
+		bool m_engaging_gate;
 
 	protected:
 		// Networking, GameLogic calls, and base client updates are handled here
@@ -57,8 +59,13 @@ namespace LM {
 		virtual void remove_player(uint32_t id, const std::string& reason);
 
 		Player* get_player(uint32_t id);
+		
+		void update_gates();
+		void attempt_firing();
+		
 		void generate_player_update(uint32_t id, Packet* p);
 		void generate_weapon_fired(std::string weapon_id, uint32_t player_id);
+		void generate_gate_update(uint32_t player_id, char team, bool holding);
 
 		GameLogic* get_game();
 		Weapon* get_curr_weapon();
@@ -93,6 +100,7 @@ namespace LM {
 		virtual void weapon_info(const Packet& p);
 		virtual void weapon_discharged(const Packet& p);
 		virtual void player_hit(const Packet& p);
+		virtual void gate_update(const Packet& p);
 		// End packet callbacks
 
 		// Main loop: override for subclass behaviors, but call step inside
