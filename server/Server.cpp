@@ -369,25 +369,26 @@ void	Server::command_server(uint32_t player_id, const char* command) {
 
 void	Server::player_hit(const IPAddress& address, PacketReader& inbound_packet)
 {
-	uint32_t		shooter_id;
-	string			weapon_name;
-	uint32_t		shot_player_id;
+	uint32_t shooter_id;
+	string weapon_name;
+	uint32_t shot_player_id;
+	bool has_effect;
 
-	inbound_packet >> shooter_id >> weapon_name >> shot_player_id;
+	inbound_packet >> shooter_id >> weapon_name >> shot_player_id >> has_effect;
 
 	if (!is_authorized(address, shooter_id)) {
 		return;
 	}
 
-	ServerPlayer*		shooter = get_player(shooter_id);
-	ServerPlayer*		shot_player = get_player(shot_player_id);
+	ServerPlayer* shooter = get_player(shooter_id);
+	ServerPlayer* shot_player = get_player(shot_player_id);
 
 	if (!shooter || !shot_player) {
 		return;
 	}
 
 	// Tell the current game mode that this player was shot
-	bool			has_effect = m_game_mode->player_shot(*shooter, *shot_player);
+	has_effect = m_game_mode->player_shot(*shooter, *shot_player);
 
 	// Inform the victim that he has been hit
 	PacketWriter		outbound_packet(PLAYER_HIT_PACKET);
@@ -396,20 +397,20 @@ void	Server::player_hit(const IPAddress& address, PacketReader& inbound_packet)
 }
 
 void	Server::player_died(const IPAddress& address, PacketReader& packet)
-{
-	uint32_t		killed_player_id;
-	uint32_t		killer_id;
+{            
+	uint32_t killed_player_id;
+	uint32_t killer_id;
 	packet >> killed_player_id >> killer_id;
 
 	if (!is_authorized(address, killed_player_id)) {
 		return;
 	}
 
-	ServerPlayer&		killed_player = *get_player(killed_player_id);
-	ServerPlayer*		killer = killer_id ? get_player(killer_id) : NULL;
+	ServerPlayer& killed_player = *get_player(killed_player_id);
+	ServerPlayer* killer = killer_id ? get_player(killer_id) : NULL;
 
 	// Tell the current game mode that this player died
-	uint64_t		freeze_time = m_game_mode->player_died(killer, killed_player);
+	uint64_t freeze_time = m_game_mode->player_died(killer, killed_player);
 
 	// Inform all players that this player died, and include the freeze time
 	PacketWriter		outbound_packet(PLAYER_DIED_PACKET);

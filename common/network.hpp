@@ -45,7 +45,7 @@ namespace LM {
 	enum { METASERVER_PORTNO = 16878 };
 	extern const char METASERVER_HOSTNAME[];
 
-	const int PROTOCOL_VERSION = 6;
+	const int PROTOCOL_VERSION = 7;
 
 	bool		resolve_hostname(IPAddress& resolved_addr, const char* hostname_port_string); // hostname_port_string should be in form "hostname:portno" (i.e. colon separator)
 	bool		resolve_hostname(IPAddress& resolved_addr, const char* hostname_to_resolve, uint16_t portno); // portno must be in host-byte order

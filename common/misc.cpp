@@ -36,7 +36,7 @@
 using namespace LM;
 using namespace std;
 
-const Version LM::COMPAT_VERSION(0, 4, 0);
+const Version LM::COMPAT_VERSION(0, 5, 0);
 
 #ifdef __WIN32
 

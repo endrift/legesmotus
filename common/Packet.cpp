@@ -65,17 +65,7 @@ static void unmarshal_PLAYER_HIT(PacketReader& r, Packet* p) {
 	r >> p->player_hit.weapon_id;
 	r >> p->player_hit.shot_player_id;
 	r >> p->player_hit.has_effect;
-	
-	p->player_hit.extradata = TypeWrapper<std::string>();
-	
-	p->player_hit.extradata = r.get_rest();
-
-	// We need to make sure we don't put the has_effect in twice, so if the extradata contains a
-	// a packet field separator, remove it.
-	int splitpos = (*p->player_hit.extradata).find(PACKET_FIELD_SEPARATOR);
-	if (splitpos != -1) {
-		p->player_hit.extradata = (*p->player_hit.extradata).substr(splitpos+1);
-	}
+	r >> p->player_hit.extradata;
 }
 
 static void marshal_MESSAGE(PacketWriter& w, Packet* p) {
