@@ -92,11 +92,13 @@ Player::Player(const char* name, uint32_t id, char team, float x, float y, float
 }
 
 Player::~Player() {
-	if (m_attach_joint != NULL && m_physics != NULL) {
-		m_physics->DestroyJoint(m_attach_joint);
-		m_attach_joint = NULL;
+	if (m_physics != NULL) {
+		if (m_attach_joint != NULL) {
+			m_physics->DestroyJoint(m_attach_joint);
+			m_attach_joint = NULL;
+		}
+		m_physics->DestroyBody(m_physics_body);
 	}
-	m_physics->DestroyBody(m_physics_body);
 }
 
 void Player::initialize_physics(b2World* world) {
@@ -178,7 +180,9 @@ void Player::set_y(float y) {
 }
 
 void Player::set_position(float x, float y) {
-	m_physics_body->SetTransform(b2Vec2(to_physics(x), to_physics(y)), get_rotation_radians());
+	if (m_physics_body != NULL) {
+		m_physics_body->SetTransform(b2Vec2(to_physics(x), to_physics(y)), get_rotation_radians());
+	}
 	m_x = x;
 	m_y = y;
 	update_location();
@@ -244,7 +248,9 @@ void Player::bounce(float angle_of_incidence, float velocity_scale) {
 void Player::set_velocity(Vector vel) {
 	m_x_vel = vel.x;
 	m_y_vel = vel.y;
-	m_physics_body->SetLinearVelocity(b2Vec2(to_physics(vel.x), to_physics(vel.y)));
+	if (m_physics_body != NULL) {
+		m_physics_body->SetLinearVelocity(b2Vec2(to_physics(vel.x), to_physics(vel.y)));
+	}
 	if (is_moving()) {
 		// Moving players cannot be grabbing obstacles
 		set_is_grabbing_obstacle(false);
@@ -253,7 +259,9 @@ void Player::set_velocity(Vector vel) {
 
 void Player::set_rotation_degrees(float rotation) {
 	m_rotation = get_normalized_angle(rotation);
-	m_physics_body->SetTransform(b2Vec2(to_physics(m_x), to_physics(m_y)), to_radians(m_rotation));
+	if (m_physics_body != NULL) {
+		m_physics_body->SetTransform(b2Vec2(to_physics(m_x), to_physics(m_y)), to_radians(m_rotation));
+	}
 }
 
 void Player::set_rotation_radians(float rotation) {
@@ -385,7 +393,7 @@ void Player::read_player_update(const Packet::PlayerUpdate& p) {
 	//set_is_invisible(p.flags->find_first_of('I') != string::npos);
 	set_is_frozen(p.flags->find_first_of('F') != string::npos);
 	set_is_grabbing_obstacle(p.flags->find_first_of('G') != string::npos);
-	if (is_grabbing_obstacle()) {
+	if (is_grabbing_obstacle() && m_physics_body != NULL) {
 		// Let the other client say how we're moving on the wall
 		m_physics_body->SetAwake(false);
 	}

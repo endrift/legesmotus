@@ -28,6 +28,7 @@
 #include "MapObject.hpp"
 #include <map>
 #include <stdint.h>
+#include "timer.hpp"
 
 class b2Body;
 class b2World;
