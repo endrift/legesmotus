@@ -74,7 +74,7 @@ void Client::step(uint64_t diff) {
 		attempt_firing();
 	}
 	
-	m_logic->step();
+	m_logic->step(diff);
 
 	Packet p;
 	generate_player_update(m_player_id, &p);

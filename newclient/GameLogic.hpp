@@ -69,7 +69,7 @@ namespace LM {
 		Map* get_map();
 		
 		// Run the next step of the game logic.
-		void step();
+		void step(uint64_t diff);
 
 		Player* get_player(const uint32_t id);
 		Weapon* get_weapon(const std::string& name);
