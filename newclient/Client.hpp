@@ -49,7 +49,7 @@ namespace LM {
 
 	protected:
 		// Networking, GameLogic calls, and base client updates are handled here
-		void step(uint64_t diff);
+		uint64_t step(uint64_t diff);
 
 		virtual const char* get_res_directory() const;
 

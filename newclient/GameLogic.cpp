@@ -94,26 +94,32 @@ void GameLogic::clear_weapons() {
 	m_weapons.clear();
 }
 
-void GameLogic::step(uint64_t diff) {
-	int steps = ceilf(diff/(1000.0f*PHYSICS_TIMESTEP));
-	while (steps--) {
-		m_physics->Step(PHYSICS_TIMESTEP, VEL_ITERATIONS, POS_ITERATIONS);
-		
-		// Remove any forces we applied for this timestep.
-		m_physics->ClearForces();
+void GameLogic::step() {
+	m_physics->Step(PHYSICS_TIMESTEP, VEL_ITERATIONS, POS_ITERATIONS);
 	
-		for (map<uint32_t, Player*>::iterator iter = m_players.begin(); iter != m_players.end(); ++iter) {
-			Player* player = iter->second;
-			player->update_physics();
-			
-			// Create any contact joints we need to have.		
-			while (m_joints_to_create.size() > 0) {
-				pair<b2Body*, b2JointDef*> this_joint_pair = m_joints_to_create.back();
-				create_contact_joint(this_joint_pair.first, this_joint_pair.second);
-				m_joints_to_create.pop_back();
-			}
+	// Remove any forces we applied for this timestep.
+	m_physics->ClearForces();
+
+	for (map<uint32_t, Player*>::iterator iter = m_players.begin(); iter != m_players.end(); ++iter) {
+		Player* player = iter->second;
+		player->update_physics();
+		
+		// Create any contact joints we need to have.		
+		while (m_joints_to_create.size() > 0) {
+			pair<b2Body*, b2JointDef*> this_joint_pair = m_joints_to_create.back();
+			create_contact_joint(this_joint_pair.first, this_joint_pair.second);
+			m_joints_to_create.pop_back();
 		}
 	}
+}
+
+uint64_t GameLogic::steps(uint64_t ticks) {
+	float nsteps = ticks/(1000.0f*PHYSICS_TIMESTEP);
+	float dummy;
+	for (int i = nsteps; i > 0; --i) {
+		step();
+	}
+	return modf(nsteps, &dummy)*(1000.0f*PHYSICS_TIMESTEP);
 }
 
 Player* GameLogic::get_player(const uint32_t id) {

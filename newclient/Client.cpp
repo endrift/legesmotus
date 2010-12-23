@@ -45,19 +45,20 @@ Client::~Client() {
 	delete m_logic;
 }
 
-void Client::step(uint64_t diff) {
+uint64_t Client::step(uint64_t diff) {
 	m_network.receive_packets();
 
 	if (m_logic == NULL) {
-		return;
+		return 0;
 	}
 		
 	Player* player = get_player(m_player_id);
 		
 	if (player == NULL) {
-		return;
+		return 0;
 	}
-	
+
+	// FIXME: the client sees too many steps if diff is not a multiple of PHYSICS_TIMESTEP
 	m_controller->update(diff, *m_logic);
 	
 	int changes = m_controller->get_changes();
@@ -74,7 +75,7 @@ void Client::step(uint64_t diff) {
 		attempt_firing();
 	}
 	
-	m_logic->step(diff);
+	diff = m_logic->steps(diff);
 
 	Packet p;
 	generate_player_update(m_player_id, &p);
@@ -82,6 +83,8 @@ void Client::step(uint64_t diff) {
 	
 	// Check gates for any updates/changes.
 	update_gates();
+
+	return diff;
 }
 
 const char* Client::get_res_directory() const {

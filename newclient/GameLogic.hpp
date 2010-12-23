@@ -69,7 +69,10 @@ namespace LM {
 		Map* get_map();
 		
 		// Run the next step of the game logic.
-		void step(uint64_t diff);
+		void step();
+
+		// Run the number of steps for a period of time, and return the number of unused ticks
+		uint64_t steps(uint64_t ticks);
 
 		Player* get_player(const uint32_t id);
 		Weapon* get_weapon(const std::string& name);
