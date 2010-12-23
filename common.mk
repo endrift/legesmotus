@@ -111,7 +111,7 @@ else
  endif
 
  # Grab SDL if we need it
- ifneq ($(findstring client,$(TARGETS)),)
+ ifneq ($(findstring gui,$(TARGETS)),)
   FLAGS_SDL := $(shell $(SDL_CONFIG) --cflags)
   LIBS_SDL := $(shell $(SDL_CONFIG) --libs) -lSDL_image -lSDL_ttf
   ifeq ($(NOSOUND),)
@@ -142,7 +142,7 @@ ifeq ($(MACHINE),Darwin)
  FLAGS_GL = -FOpenGL
  LIBS_GL = -framework OpenGL
 else
- ifneq ($(findstring client,$(TARGETS)),)
+ ifneq ($(findstring gui,$(TARGETS)),)
   # We're bulding the client
   # We need graphics libraries
   ifeq ($(MACHINE),Windows)
