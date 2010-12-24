@@ -26,10 +26,19 @@
 #define LM_GUI_GAMEVIEW_HPP
 
 #include "Widget.hpp"
+#include <string>
 
 namespace LM {
+	class DrawContext;
+	class GraphicRegion;
+	class ResourceCache;
+
 	class GameView : public Widget {
 	private:
+		DrawContext* m_ctx;
+		GraphicRegion* m_ctxi;
+		int m_overscan;
+
 		float m_scale;
 		float m_offset_x;
 		float m_offset_y;
@@ -38,7 +47,7 @@ namespace LM {
 		void recalc_scale();
 
 	public:
-		GameView(Widget* parent = NULL);
+		GameView(const std::string& name, ResourceCache* cache, int width, int height, int overscan, Widget* parent = NULL);
 
 		enum Layer {
 			BACKGROUND = -1,

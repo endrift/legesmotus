@@ -110,72 +110,71 @@ namespace LM {
 		virtual void	make_active();
 		virtual LM::Image get_image(const std::string& name, ResourceCache* cache);
 
-		virtual int		get_width() const;
-		virtual int		get_height() const;
+		virtual int get_width() const;
+		virtual int get_height() const;
 
-		virtual void	set_active_camera();
-		virtual void	set_active_graphics();
+		virtual void set_active_camera();
+		virtual void set_active_graphics();
 
-		virtual void	load_identity();
-		virtual void	push_transform();
-		virtual void	pop_transform();
+		virtual void load_identity();
+		virtual void push_transform();
+		virtual void pop_transform();
+                     
+		virtual void start_clip();
+		virtual void clip_add();
+		virtual void clip_sub();
+		virtual void finish_clip();
+		virtual void invert_clip();
+		virtual void push_clip();
+		virtual void pop_clip();
+		virtual int clip_depth();
 
-		virtual void	start_clip();
-		virtual void	clip_add();
-		virtual void	clip_sub();
-		virtual void	finish_clip();
-		virtual void	invert_clip();
-		virtual void	push_clip();
-		virtual void	pop_clip();
-		virtual int		clip_depth();
+		virtual void translate(float x, float y);
+		virtual void scale(float x, float y);
+		virtual void rotate(float degrees);
+		virtual void skew_x(float amount);
+		virtual void skew_y(float amount);
 
-		virtual void	translate(float x, float y);
-		virtual void	scale(float x, float y);
-		virtual void	rotate(float degrees);
-		virtual void	skew_x(float amount);
-		virtual void	skew_y(float amount);
-
-		virtual void	set_draw_color(Color c);
-		virtual void	set_blend_mode(BlendMode m);
+		virtual void set_draw_color(Color c);
+		virtual void set_blend_mode(BlendMode m);
 
 		virtual PixelShader load_pixel_shader(const std::string& filename);
-		virtual void	delete_pixel_shader(PixelShader shader);
+		virtual void delete_pixel_shader(PixelShader shader);
 
 		virtual ShaderSet* create_shader_set();
-		virtual void	bind_shader_set(ShaderSet* shaders);
-		virtual void	unbind_shader_set();
+		virtual void bind_shader_set(ShaderSet* shaders);
+		virtual void unbind_shader_set();
 
-		virtual void	draw_arc(float circumf, float xr, float yr, int fine);
-		virtual void	draw_arc_fill(float circumf, float xr, float yr, int fine);
-		virtual void	draw_arc_line(float circumf, float xr, float yr, int fine);
+		virtual void draw_arc(float circumf, float xr, float yr, int fine);
+		virtual void draw_arc_fill(float circumf, float xr, float yr, int fine);
+		virtual void draw_arc_line(float circumf, float xr, float yr, int fine);
 
-		virtual void	draw_rect(float w, float h);
-		virtual void	draw_rect_fill(float w, float h);
-		virtual void	draw_rect_line(float w, float h);
+		virtual void draw_rect(float w, float h);
+		virtual void draw_rect_fill(float w, float h);
+		virtual void draw_rect_line(float w, float h);
 
-		virtual void	draw_line(float x1, float y1, float x2, float y2);
-		virtual void	draw_lines(const float vertices[], int n, bool loop);
-		virtual void	draw_polygon(const float vertices[], int n);
-		virtual void	draw_polygon_fill(const float vertices[], int n);
+		virtual void draw_line(float x1, float y1, float x2, float y2);
+		virtual void draw_lines(const float vertices[], int n, bool loop);
+		virtual void draw_polygon(const float vertices[], int n);
+		virtual void draw_polygon_fill(const float vertices[], int n);
 
-		virtual Image	gen_image(int* width, int* height, PixelFormat format, const unsigned char* data);
-		virtual void	add_mipmap(Image handle, int level, int* width, int* height, PixelFormat format, const unsigned char* data);
-		virtual void	del_image(Image img);
+		virtual Image gen_image(int* width, int* height, PixelFormat format, const unsigned char* data);
+		virtual void add_mipmap(Image handle, int level, int* width, int* height, PixelFormat format, const unsigned char* data);
+		virtual void del_image(Image img);
 
-		virtual void	bind_image(Image img);
-		virtual void	unbind_image();
-		virtual void	draw_image(int width, int height, Image img);
-		virtual void	draw_bound_image(int width, int height);
-		virtual void	draw_bound_image_region(int width, int height,
+		virtual void bind_image(Image img);
+		virtual void unbind_image();
+		virtual void draw_image(int width, int height, Image img);
+		virtual void draw_bound_image(int width, int height);
+		virtual void draw_bound_image_region(int width, int height,
 												float tex_x, float tex_y,
 												float tex_width, float tex_height);
-		virtual void	draw_bound_image_tiled(int width, int height,
+		virtual void draw_bound_image_tiled(int width, int height,
 											   float tex_x, float tex_y,
 											   float tex_width, float tex_height);
 
-		// TODO more GL properties (framebuffers?)
-
-		virtual void	redraw();
+		virtual void clear();
+		virtual void redraw();
 	};
 }
 

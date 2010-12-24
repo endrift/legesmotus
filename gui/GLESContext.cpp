@@ -617,8 +617,12 @@ void GLESContext::draw_bound_image_tiled(int width, int height,
 	glPopMatrix();
 }
 
-void GLESContext::redraw() {
+void GLESContext::clear() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+}
+
+void GLESContext::redraw() {
+	clear();
 	load_identity();
 
 	get_root_widget()->draw(this);

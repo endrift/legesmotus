@@ -23,14 +23,31 @@
  */
 
 #include "GameView.hpp"
+#include "GLESContext.hpp"
+#include "GraphicRegion.hpp"
 
 using namespace LM;
 using namespace std;
 
-GameView::GameView(Widget* parent) : Widget(parent) {
+GameView::GameView(const string& name, ResourceCache* cache, int width, int height, int overscan, Widget* parent) : Widget(parent) {
 	m_offset_x = 0;
 	m_offset_y = 0;
-	m_scale_base = 1200;
+	m_scale_base = 1536;
+
+	// TODO find a way to pass down the context type
+	m_ctx = new GLESContext(width + 2*overscan, height + 2*overscan, true);
+	m_overscan = overscan;
+	Image img = m_ctx->get_image(name, cache);
+	m_ctxi = new GraphicRegion(&img);
+	m_ctxi->set_image_x(-overscan);
+	m_ctxi->set_image_y(-overscan);
+	m_ctxi->set_width(width);
+	m_ctxi->set_height(height);
+	m_ctxi->set_scale_y(-1.0f);
+	m_ctxi->set_y(m_ctxi->get_height());
+
+	set_width(width);
+	set_height(height);
 }
 
 void GameView::recalc_scale() {
@@ -65,15 +82,22 @@ float GameView::get_scale() const {
 }
 
 void GameView::draw(DrawContext* ctx) const {
-	ctx->set_active_camera();
-	ctx->push_transform();
-	ctx->translate(get_width()/2 - m_offset_x, get_height()/2 - m_offset_y);
-	ctx->scale(m_scale, m_scale);
-	ctx->set_active_graphics();
+	m_ctx->make_active();
+	m_ctx->clear();
+	m_ctx->set_active_camera();
+	m_ctx->push_transform();
+	m_ctx->translate(get_width()/2 - m_offset_x, get_height()/2 - m_offset_y);
+	m_ctx->scale(m_scale, m_scale);
+	m_ctx->set_active_graphics();
+	m_ctx->push_transform();
 
-	Widget::draw(ctx);
+	Widget::draw(m_ctx);
 
-	ctx->set_active_camera();
-	ctx->pop_transform();
-	ctx->set_active_graphics();
+	m_ctx->set_active_camera();
+	m_ctx->pop_transform();
+	m_ctx->set_active_graphics();
+	m_ctx->pop_transform();
+	
+	ctx->make_active();
+	m_ctxi->draw(ctx);
 }

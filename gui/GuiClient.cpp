@@ -50,12 +50,10 @@ GuiClient::GuiClient() {
 	preload();
 
 	m_window->set_root_widget(&m_root);
-	m_view.set_parent(&m_root);
-	m_view.set_width(m_window->get_width());
-	m_view.set_height(m_window->get_height());
+	m_view = new GameView("gv", m_cache, m_window->get_width(), m_window->get_height(), 128, &m_root);
 
 	m_debugdraw = new PhysicsDraw;
-	m_view.add_child(m_debugdraw, GameView::OVERLAY);
+	m_view->add_child(m_debugdraw, GameView::OVERLAY);
 
 	m_map = NULL;
 }
@@ -63,10 +61,10 @@ GuiClient::GuiClient() {
 GuiClient::~GuiClient() {
 	delete m_cache;
 	delete m_input;
+	delete m_view;
 
 	// Clean up associations to prevent deletion failures
 	m_root.set_parent(NULL);
-	m_view.set_parent(NULL);
 
 	// TODO destroy window
 }
@@ -108,7 +106,7 @@ void GuiClient::set_sink(InputSink* input_sink) {
 void GuiClient::add_player(Player* player) {
 	Client::add_player(player);
 	GraphicalPlayer *gp = static_cast<GraphicalPlayer*>(player);
-	m_view.add_child(gp->get_graphic(), GameView::PLAYERS);
+	m_view->add_child(gp->get_graphic(), GameView::PLAYERS);
 }
 
 void GuiClient::set_own_player(uint32_t id) {
@@ -123,7 +121,7 @@ void GuiClient::remove_player(uint32_t id) {
 	}
 
 	GraphicalPlayer *gp = static_cast<GraphicalPlayer*>(p);
-	m_view.remove_child(gp->get_graphic());
+	m_view->remove_child(gp->get_graphic());
 
 	if (m_player != NULL && m_player->get_id() == id) {
 		m_player = NULL;
@@ -135,12 +133,12 @@ void GuiClient::remove_player(uint32_t id) {
 void GuiClient::set_map(Map* map) {
 	Client::set_map(map);
 	if (m_map != NULL) {
-		m_view.remove_child(m_map->get_background());
+		m_view->remove_child(m_map->get_background());
 		m_debugdraw->set_world(NULL);
 	}
 	if (map != NULL) {
 		m_map = static_cast<GraphicalMap*>(map);
-		m_view.add_child(m_map->get_background(), GameView::BACKGROUND);
+		m_view->add_child(m_map->get_background(), GameView::BACKGROUND);
 		if (get_game() != NULL) {
 			m_debugdraw->set_world(get_game()->get_world());
 		}
@@ -169,9 +167,9 @@ void GuiClient::run() {
 	aim.add_graphic(&crosshair);
 	aim.set_x(m_window->get_width()/2);
 	aim.set_y(m_window->get_height()/2);
-	m_view.set_scale_base(1024);
-	crosshair_bone.set_scale_x(m_view.get_scale()/4.0f);
-	crosshair_bone.set_scale_y(m_view.get_scale()/4.0f);
+	m_view->set_scale_base(1024);
+	crosshair_bone.set_scale_x(m_view->get_scale()/4.0f);
+	crosshair_bone.set_scale_y(m_view->get_scale()/4.0f);
 
 	IPAddress host;
 	resolve_hostname(host, "endrift.com", 16876);
@@ -194,8 +192,8 @@ void GuiClient::run() {
 
 		// Recenter player
 		if (m_player != NULL) {
-			m_view.set_offset_x(m_player->get_x() * m_view.get_scale());
-			m_view.set_offset_y(m_player->get_y() * m_view.get_scale());
+			m_view->set_offset_x(m_player->get_x() * m_view->get_scale());
+			m_view->set_offset_y(m_player->get_y() * m_view->get_scale());
 		}
 
 		m_window->redraw();

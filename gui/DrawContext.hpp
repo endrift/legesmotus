@@ -147,6 +147,7 @@ namespace LM {
 											   float tex_x, float tex_y,
 											   float tex_width, float tex_height) = 0;
 
+		virtual void	clear() = 0;
 		virtual void	redraw() = 0;
 	};
 }

@@ -46,7 +46,7 @@ namespace LM {
 		HumanController* m_gcontrol;
 		InputSink* m_input_sink;
 		InputDriver* m_input;
-		GameView m_view;
+		GameView* m_view;
 		Widget m_root;
 		PhysicsDraw *m_debugdraw;
 
