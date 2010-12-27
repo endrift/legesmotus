@@ -25,7 +25,6 @@
 #include "Weapon.hpp"
 #include "common/WeaponReader.hpp"
 #include "common/StandardGun.hpp"
-#include "common/PenetrationGun.hpp"
 #include <cstring>
 
 #include <iostream>
@@ -48,6 +47,7 @@ Weapon*	Weapon::new_weapon (WeaponReader& data) {
 		return new StandardGun(weapon_id, data);
 	} else if (strcasecmp(weapon_type, "spread") == 0) {
 		cerr << "Spread." << endl;
+		return new StandardGun(weapon_id, data);
 	} else if (strcasecmp(weapon_type, "impact") == 0) {
 		cerr << "Impact." << endl;
 	} else if (strcasecmp(weapon_type, "thaw") == 0) {
@@ -57,7 +57,7 @@ Weapon*	Weapon::new_weapon (WeaponReader& data) {
 	//} else if (strcasecmp(weapon_type, "charge") == 0) { 
 	} else if (strcasecmp(weapon_type, "penetration") == 0)	{
 		cerr << "Penetration." << endl;
-		return new PenetrationGun(weapon_id, data);
+		return new StandardGun(weapon_id, data);
 	} else {
 		cerr << "Error: unknown weapon type: " << weapon_type << endl;
 	}

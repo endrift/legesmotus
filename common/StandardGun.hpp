@@ -22,43 +22,58 @@
  * 
  */
 
-#ifndef LM_COMMON_STANDARDGUN_HPP
-#define LM_COMMON_STANDARDGUN_HPP
+#ifndef LM_COMMON_StandardGun_HPP
+#define LM_COMMON_StandardGun_HPP
 
 #include "common/Weapon.hpp"
 #include "common/StringTokenizer.hpp"
 #include "common/Packet.hpp"
 #include <stdint.h>
 #include <Box2D/Box2D.h>
+#include <vector>
 
 #define StandardGun NewStandardGun
 
 class b2World;
 
 namespace LM {
+	struct HitData {
+		b2Fixture*		fixture;
+		b2Vec2			point;
+		b2Vec2			normal;
+		float32			fraction;
+	};
+	
+	static bool compare_hit_data(HitData first, HitData second) { return first.fraction > second.fraction; }
+
 	class StandardGun : public Weapon, public b2RayCastCallback {
 	private:
 		// Weapon settings
-		float			m_max_range;
-		uint64_t		m_freeze_time;
-		int 			m_damage;
-		uint64_t		m_cooldown;
-		double			m_recoil;
-		double			m_inaccuracy;		// The angle by which firing may deviate randomly
-		bool			m_is_continuous;
-		int			m_total_ammo;		// 0 == unlimited
+		float			m_max_range;		// What is the maximum range at which the gun is effective?
+		uint64_t		m_freeze_time;		// If the gun freezes someone, for how long?
+		int 			m_damage;		// How much damage does the gun do?
+		uint64_t		m_cooldown;		// How much time must the gun cool down between shots?
+		float			m_recoil;		// How much recoil does this gun create?
+		float			m_inaccuracy;		// The angle by which firing may deviate randomly
+		bool			m_is_continuous;	// Is this gun able to be fired repeatedly by holding down the trigger?
+		int			m_total_ammo;		// Ammo the gun can hold, 0 == unlimited
 		uint64_t		m_ammo_recharge;	// Give back one unit of ammo this often
+		float			m_penetrates_players;	// At what strength does this gun penetrate players (0-1).
+		float			m_penetrates_walls; 	// At what strength does this gun penetrate walls (0-1).
+		int			m_max_penetration;	// Max number of objects that can be penetrated.
+		float			m_damage_degradation;	// Damage decreases by this much per unit distance
+		int			m_nbr_projectiles;	// How many projectiles to fire (default, 1)
+		float			m_angle;		// Total angle spanned by this weapon (in RADIANS)
 
 		// Weapon state
 		uint64_t		m_last_fired_time;	// Time that this gun was last fired (to enforce cooldown)
-		int			m_current_ammo;
+		int			m_current_ammo;		// How much ammo does the gun have left?
+		float			m_current_damage;	// How much damage is the gun currently doing on this shot?
+		int			m_objects_penetrated;	// How many objects has the current shot gone through?
 		
 		// Data for firing/rays:
-		b2Fixture*		m_hit_fixture;
-		b2Vec2			m_hit_point;
-		b2Vec2			m_hit_normal;
-		float32			m_hit_fraction;
-		float			m_last_fired_dir;
+		std::vector<std::vector<HitData> > m_hit_data;	// Holds the information about each hit.
+		float			m_last_fired_dir;	// Holds the last angle at which the gun was fired.
 
 	protected:
 		virtual bool		parse_param(const char* param_string);
@@ -66,11 +81,8 @@ namespace LM {
 	public:
 		StandardGun(const char* id, StringTokenizer& gun_data);
 
-		// TODO: Do we want these in the common gun, or just the client one?
-		virtual void		fire(b2World* physics, Player& player, Point start, double direction);
-		//virtual void		discharged(Player& player, GameController& gc, StringTokenizer& data);
+		virtual void		fire(b2World* physics, Player& player, Point start, float direction);
 		virtual void		hit(Player* hit_player, const Packet::PlayerHit* p);
-		//virtual void		select(Player& player, GameController& gc);
 		
 		virtual void		reset();
 		virtual bool		is_continuous() { return m_is_continuous; }
@@ -80,7 +92,6 @@ namespace LM {
 		virtual int		get_total_ammo () const { return m_total_ammo; }
 		virtual int		get_current_ammo () const;
 		
-		// Call this until it returns NULL after every call to fire(), to get the results
 		Packet::PlayerHit* generate_next_hit_packet(Packet::PlayerHit* p, Player* shooter);
 		
 		// Box2D Physics Callbacks
