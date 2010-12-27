@@ -227,7 +227,7 @@ Packet::PlayerHit* StandardGun::generate_next_hit_packet(Packet::PlayerHit* p, P
 			
 			float actualdamage = m_current_damage - m_damage_degradation * (m_max_range * nextdata.fraction);
 			if (actualdamage <= 0) {
-				continue;
+				actualdamage = 0;
 			}
 
 			p->shooter_id = shooter->get_id();
@@ -239,7 +239,7 @@ Packet::PlayerHit* StandardGun::generate_next_hit_packet(Packet::PlayerHit* p, P
 			p->has_effect = hit_player->is_frozen() ? false : true;
 			std::stringstream out;
 			
-			out << m_last_fired_dir << " " << nextdata.point.x << " " << nextdata.point.y << " " << m_current_damage;
+			out << m_last_fired_dir << " " << nextdata.point.x << " " << nextdata.point.y << " " << actualdamage;
 			p->extradata = out.str();
 
 			hit(static_cast<Player*>(userdata), p);
