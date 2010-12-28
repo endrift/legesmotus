@@ -22,7 +22,7 @@ PLAYER_UPDATE = 1 {
 	y_vel : double ; y velocity
 	rotation : double ; current rotation (in degrees)
 	energy : int ; current energy
-	current_weapon_id : string ; current weapon ID
+	current_weapon_id : uint32_t ; current weapon ID
 	flags : string ; flags specifying the state of the current player. Present if set, not set if not present
 	               ; * I - Invisible
                    ; * F - Frozen
@@ -31,13 +31,13 @@ PLAYER_UPDATE = 1 {
 
 WEAPON_DISCHARGED = 2 {
 	player_id : uint32_t ; ID of the player who fired the weapon
-	weapon_id : string ; The ID of the weapon that was fired
+	weapon_id : uint32_t ; The ID of the weapon that was fired
 	extradata : string ; Additional data that should be passed to the specific weapon class
 }
 
 PLAYER_HIT = 3 {
 	shooter_id : uint32_t ; ID of the player who fired the weapon
-	weapon_id : string ; The ID of the weapon that was fired
+	weapon_id : uint32_t ; The ID of the weapon that was fired
 	shot_player_id : uint32_t ; ID of the player who was hit by the weapon
 	has_effect : bool ; True if the weapon has its full effect (usually if the hit player is unfrozen)
 	extradata : string ; Additional data that should be passed to the specific weapon class

@@ -39,7 +39,7 @@ namespace LM {
 
 	class Weapon {
 	private:
-		std::string		m_id;			// Internal name
+		uint32_t		m_id;			// Internal name
 
 	protected:
 		std::string		m_name;			// Friendly name - presented to user
@@ -48,10 +48,10 @@ namespace LM {
 
 	public:
 		Weapon();
-		explicit Weapon(const char* id);
+		explicit Weapon(uint32_t id);
 		virtual ~Weapon() { }
 
-		const char*		get_id() const { return m_id.c_str(); }
+		const uint32_t		get_id() const { return m_id; }
 		const char*		get_name() const { return m_name.c_str(); }
 
 		// TODO: Do we want these to be in the common Weapon, or just the client one?

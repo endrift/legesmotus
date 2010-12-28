@@ -35,12 +35,12 @@ using namespace std;
 Weapon::Weapon() {
 }
 
-Weapon::Weapon(const char* id) : m_id(id) {
+Weapon::Weapon(uint32_t id) : m_id(id) {
 }
 
 Weapon*	Weapon::new_weapon (WeaponReader& data) {
 	const char* weapon_type = data.get_type().c_str();
-	const char* weapon_id = data.get_id().c_str();
+	const uint32_t weapon_id = data.get_id();
 
 	if (strcasecmp(weapon_type, "standard") == 0) {
 		cerr << "Standard." << endl;

@@ -41,7 +41,7 @@ namespace LM {
 		GameLogic* m_logic;
 		uint32_t m_player_id;
 		ClientNetwork m_network;
-		std::string m_curr_weapon;
+		uint32_t m_curr_weapon;
 
 		bool m_running;
 		
@@ -64,11 +64,12 @@ namespace LM {
 		void attempt_firing();
 		
 		void generate_player_update(uint32_t id, Packet* p);
-		void generate_weapon_fired(std::string weapon_id, uint32_t player_id);
+		void generate_weapon_fired(uint32_t weapon_id, uint32_t player_id);
 		void generate_gate_update(uint32_t player_id, char team, bool holding);
 
 		GameLogic* get_game();
 		Weapon* get_curr_weapon();
+		uint32_t get_curr_weapon_id() const { return m_curr_weapon; };
 
 		virtual void set_map(Map* map);
 
@@ -79,6 +80,7 @@ namespace LM {
 		virtual Map* make_map();
 
 		void set_controller(Controller* controller);
+		virtual void set_curr_weapon(uint32_t id);
 
 		void set_running(bool running);
 		bool running() const;

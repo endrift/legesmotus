@@ -307,7 +307,7 @@ void Player::set_is_frozen(bool is_frozen, uint64_t freeze_time) {
 	}
 }
 
-void Player::set_current_weapon_id(const char* current_weapon_id) {
+void Player::set_current_weapon_id(uint32_t current_weapon_id) {
 	m_current_weapon_id = current_weapon_id;
 }
 
@@ -338,7 +338,7 @@ void Player::read_update_packet (PacketReader& packet) {
 	float	y_vel;
 	float	rotation;
 	int	energy;
-	string	current_weapon_id;
+	uint32_t current_weapon_id;
 	string	flags;
 
 	packet >> x >> y >> x_vel >> y_vel >> rotation >> energy >> current_weapon_id >> flags;
@@ -348,7 +348,7 @@ void Player::read_update_packet (PacketReader& packet) {
 	set_velocity(x_vel, y_vel);
 	set_rotation_degrees(rotation);
 	set_energy(energy);
-	set_current_weapon_id(current_weapon_id.c_str());
+	set_current_weapon_id(current_weapon_id);
 	set_is_invisible(flags.find_first_of('I') != string::npos);
 	set_is_frozen(flags.find_first_of('F') != string::npos);
 	set_is_grabbing_obstacle(flags.find_first_of('G') != string::npos);
@@ -389,7 +389,7 @@ void Player::read_player_update(const Packet::PlayerUpdate& p) {
 	set_velocity(p.x_vel, p.y_vel);
 	set_rotation_degrees(p.rotation);
 	set_energy(p.energy);
-	set_current_weapon_id(p.current_weapon_id->c_str());
+	set_current_weapon_id(p.current_weapon_id);
 	//set_is_invisible(p.flags->find_first_of('I') != string::npos);
 	set_is_frozen(p.flags->find_first_of('F') != string::npos);
 	set_is_grabbing_obstacle(p.flags->find_first_of('G') != string::npos);

@@ -37,7 +37,7 @@ namespace LM {
 	class WeaponReader : public StringTokenizer {
 	private:
 		std::string		m_type;
-		std::string		m_id;
+		uint32_t		m_id;
 	
 	public:
 		WeaponReader();
@@ -46,7 +46,7 @@ namespace LM {
 		void			init(const char* data);
 	
 		const std::string&	get_type() const { return m_type; }
-		const std::string&	get_id() const { return m_id; }
+		const uint32_t		get_id() const { return m_id; }
 
 		void			swap(WeaponReader& other);
 

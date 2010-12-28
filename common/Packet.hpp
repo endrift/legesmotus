@@ -74,19 +74,19 @@ namespace LM {
 			double y_vel;
 			double rotation;
 			int energy;
-			TypeWrapper<std::string> current_weapon_id;
+			uint32_t current_weapon_id;
 			TypeWrapper<std::string> flags;
 		};
 
 		struct WeaponDischarged {
 			uint32_t player_id;
-			TypeWrapper<std::string> weapon_id;
+			uint32_t weapon_id;
 			TypeWrapper<std::string> extradata;
 		};
 
 		struct PlayerHit {
 			uint32_t shooter_id;
-			TypeWrapper<std::string> weapon_id;
+			uint32_t weapon_id;
 			uint32_t shot_player_id;
 			bool has_effect;
 			TypeWrapper<std::string> extradata;

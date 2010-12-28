@@ -424,19 +424,19 @@ Packet::Packet(const Packet& other) {
 		player_update.y_vel = other.player_update.y_vel;
 		player_update.rotation = other.player_update.rotation;
 		player_update.energy = other.player_update.energy;
-		player_update.current_weapon_id = *other.player_update.current_weapon_id;
+		player_update.current_weapon_id = other.player_update.current_weapon_id;
 		player_update.flags = *other.player_update.flags;
 		break;
 
 	case WEAPON_DISCHARGED_PACKET:
 		weapon_discharged.player_id = other.weapon_discharged.player_id;
-		weapon_discharged.weapon_id = *other.weapon_discharged.weapon_id;
+		weapon_discharged.weapon_id = other.weapon_discharged.weapon_id;
 		weapon_discharged.extradata = *other.weapon_discharged.extradata;
 		break;
 
 	case PLAYER_HIT_PACKET:
 		player_hit.shooter_id = other.player_hit.shooter_id;
-		player_hit.weapon_id = *other.player_hit.weapon_id;
+		player_hit.weapon_id = other.player_hit.weapon_id;
 		player_hit.shot_player_id = other.player_hit.shot_player_id;
 		player_hit.has_effect = other.player_hit.has_effect;
 		player_hit.extradata = *other.player_hit.extradata;
@@ -617,17 +617,14 @@ Packet::~Packet() {
 		break;
 
 	case PLAYER_UPDATE_PACKET:
-		delete player_update.current_weapon_id.item;
 		delete player_update.flags.item;
 		break;
 
 	case WEAPON_DISCHARGED_PACKET:
-		delete weapon_discharged.weapon_id.item;
 		delete weapon_discharged.extradata.item;
 		break;
 
 	case PLAYER_HIT_PACKET:
-		delete player_hit.weapon_id.item;
 		delete player_hit.extradata.item;
 		break;
 

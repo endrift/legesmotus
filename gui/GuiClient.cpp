@@ -172,7 +172,7 @@ void GuiClient::run() {
 	crosshair_bone.set_scale_y(m_view->get_scale()/4.0f);
 
 	IPAddress host;
-	resolve_hostname(host, "endrift.com", 16876);
+	resolve_hostname(host, "localhost", 16877);
 	connect(host);
 	// XXX end testing code
 

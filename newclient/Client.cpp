@@ -37,7 +37,7 @@ using namespace std;
 
 Client::Client() : m_network(this) {
 	m_logic = NULL;
-	m_curr_weapon = "";
+	m_curr_weapon = -1;
 	m_engaging_gate = false;
 }
 
@@ -169,7 +169,7 @@ void Client::generate_player_update(uint32_t id, Packet* p) {
 	player->generate_player_update(&p->player_update);
 }
 
-void Client::generate_weapon_fired(string weapon_id, uint32_t player_id) {
+void Client::generate_weapon_fired(uint32_t weapon_id, uint32_t player_id) {
 	Packet weapon_discharged(WEAPON_DISCHARGED_PACKET);
 	//weapon_discharged.type = WEAPON_DISCHARGED_PACKET;
 	weapon_discharged.weapon_discharged.weapon_id = m_curr_weapon;
@@ -324,7 +324,7 @@ void Client::weapon_info(const Packet& p) {
 	Weapon* weapon = Weapon::new_weapon(*pcopy.weapon_info.weapon_data);
 	
 	if (weapon != NULL) {
-		if (m_curr_weapon == "") {
+		if (m_curr_weapon == -1) {
 			m_curr_weapon = weapon->get_id();
 		}
 		cerr << weapon->get_name() << ", " << weapon->get_id() << endl;
@@ -364,6 +364,10 @@ Map* Client::make_map() {
 
 void Client::set_controller(Controller* controller) {
 	m_controller = controller;
+}
+
+void Client::set_curr_weapon(uint32_t id) {
+	m_curr_weapon = id;
 }
 
 void Client::set_running(bool running) {

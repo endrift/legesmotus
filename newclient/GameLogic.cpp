@@ -88,7 +88,7 @@ void GameLogic::add_weapon(size_t index, Weapon* weapon) {
 }
 
 void GameLogic::clear_weapons() {
-	for (map<string, Weapon*>::iterator it(m_weapons.begin()); it != m_weapons.end(); ++it) {
+	for (map<uint32_t, Weapon*>::iterator it(m_weapons.begin()); it != m_weapons.end(); ++it) {
 		delete it->second;
 	}
 	m_weapons.clear();
@@ -131,8 +131,8 @@ Player* GameLogic::get_player(const uint32_t id) {
 	return m_players[id];
 }
 
-Weapon*	GameLogic::get_weapon(const string& name) {
-	map<string, Weapon*>::iterator it(m_weapons.find(name));
+Weapon*	GameLogic::get_weapon(const uint32_t id) {
+	map<uint32_t, Weapon*>::iterator it(m_weapons.find(id));
 	return it == m_weapons.end() ? NULL : it->second;
 }
 
@@ -149,7 +149,7 @@ void GameLogic::attempt_jump(uint32_t player_id, float angle) {
 	}
 }
 
-bool GameLogic::attempt_fire(uint32_t player_id, std::string weapon_id, float angle) {
+bool GameLogic::attempt_fire(uint32_t player_id, uint32_t weapon_id, float angle) {
 	Weapon* weapon = get_weapon(weapon_id);
 	Player* player = get_player(player_id);
 	

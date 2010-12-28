@@ -38,7 +38,7 @@
 using namespace LM;
 using namespace std;
 
-StandardGun::StandardGun(const char* id, StringTokenizer& gun_data) : Weapon(id) {
+StandardGun::StandardGun(uint32_t id, StringTokenizer& gun_data) : Weapon(id) {
 	m_last_fired_time = 0;
 
 	m_freeze_time = 10000;

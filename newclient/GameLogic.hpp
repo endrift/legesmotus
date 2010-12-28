@@ -49,7 +49,7 @@ namespace LM {
 		std::map<uint32_t, Player*> m_players;
 		Map* m_map;
 		b2World* m_physics;
-		std::map<std::string, Weapon*> m_weapons;
+		std::map<uint32_t, Weapon*> m_weapons;
 		
 		std::vector< std::pair<b2Body*, b2JointDef*> > m_joints_to_create;
 		
@@ -75,14 +75,14 @@ namespace LM {
 		uint64_t steps(uint64_t ticks);
 
 		Player* get_player(const uint32_t id);
-		Weapon* get_weapon(const std::string& name);
+		Weapon* get_weapon(const uint32_t id);
 		b2World* get_world();
 		
 		// Attempt to jump off an obstacle
 		virtual void attempt_jump(uint32_t player_id, float angle);
 		
 		// Attempt to fire a weapon
-		virtual bool attempt_fire(uint32_t player_id, std::string weapon_id, float angle);
+		virtual bool attempt_fire(uint32_t player_id, uint32_t weapon_id, float angle);
 		
 		// Update the states of the gates
 		virtual void update_gate_progress(char team, float progress);
