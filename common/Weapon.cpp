@@ -52,6 +52,7 @@ Weapon*	Weapon::new_weapon (WeaponReader& data) {
 		cerr << "Impact." << endl;
 	} else if (strcasecmp(weapon_type, "thaw") == 0) {
 		cerr << "Thaw." << endl;
+		return new StandardGun(weapon_id, data);
 	} else if (strcasecmp(weapon_type, "area") == 0) {
 		cerr << "Area." << endl;
 	//} else if (strcasecmp(weapon_type, "charge") == 0) { 

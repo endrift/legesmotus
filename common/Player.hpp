@@ -111,6 +111,7 @@ namespace LM {
 		bool is_grabbing_obstacle() const { return m_is_grabbing_obstacle; }
 		uint32_t get_current_weapon_id() const { return m_current_weapon_id; }
 		b2Joint* get_attach_joint() const { return m_attach_joint; }
+		uint64_t get_freeze_time() const { return m_freeze_time; }
 	
 		// Return true if this player has the same canonical name as the specified string.
 		// Name comparisons are case-insensitive.
@@ -139,6 +140,7 @@ namespace LM {
 		virtual void set_is_invisible(bool is_invisible);
 		virtual void set_is_frozen(bool is_frozen);
 		virtual void set_is_frozen(bool is_frozen, uint64_t freeze_time);
+		virtual void set_freeze_time(uint64_t freeze_time);
 		virtual void set_is_grabbing_obstacle(bool);
 		virtual void set_current_weapon_id(uint32_t id);
 		virtual void set_attach_joint(b2Joint* joint);

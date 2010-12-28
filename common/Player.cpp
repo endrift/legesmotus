@@ -307,6 +307,10 @@ void Player::set_is_frozen(bool is_frozen, uint64_t freeze_time) {
 	}
 }
 
+void Player::set_freeze_time(uint64_t freeze_time) {
+	m_freeze_time = freeze_time;
+}
+
 void Player::set_current_weapon_id(uint32_t current_weapon_id) {
 	m_current_weapon_id = current_weapon_id;
 }

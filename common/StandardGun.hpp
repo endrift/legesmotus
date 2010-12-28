@@ -64,6 +64,8 @@ namespace LM {
 		float			m_damage_degradation;	// Damage decreases by this much per unit distance
 		int			m_nbr_projectiles;	// How many projectiles to fire (default, 1)
 		float			m_angle;		// Total angle spanned by this weapon (in RADIANS)
+		uint64_t		m_freeze_reduction; 	// Time by which this gun reduces the hit player's freeze time.
+		unsigned int		m_energy_cost;		// Amount of energy this gun takes from the player when fired.
 
 		// Weapon state
 		uint64_t		m_last_fired_time;	// Time that this gun was last fired (to enforce cooldown)

@@ -56,6 +56,8 @@ StandardGun::StandardGun(uint32_t id, StringTokenizer& gun_data) : Weapon(id) {
 	m_damage_degradation = 0;
 	m_nbr_projectiles = 1;
 	m_angle = 0;
+	m_freeze_reduction = 0;
+	m_energy_cost = 0;
 	// TODO: FOR NOW, HARDCODE MAX RANGE.
 	m_max_range = 10000;
 
@@ -99,6 +101,10 @@ bool StandardGun::parse_param(const char* param_string) {
 		m_nbr_projectiles = atoi(param_string + 12);
 	} else if (strncmp(param_string, "angle=", 6) == 0) {
 		m_angle = to_radians(atof(param_string + 6));
+	} else if (strncmp(param_string, "reduction=", 10) == 0) {
+		m_freeze_reduction = atol(param_string + 10);
+	} else if (strncmp(param_string, "cost=", 5) == 0) {
+		m_energy_cost = atoi(param_string + 5);
 	} else {
 		return Weapon::parse_param(param_string);
 	}
@@ -121,8 +127,13 @@ void StandardGun::fire(b2World* physics, Player& player, Point start, float dire
 		--m_current_ammo;
 	}
 	
+	// Apply recoil and energy cost if necessary.
 	player.apply_force(b2Vec2(m_recoil * 100 * cos(M_PI + direction), m_recoil * 100 * sin(M_PI + direction)));
-	
+	player.change_energy(-1 * m_energy_cost);
+	if (player.get_energy() <= 0) {
+		player.set_is_frozen(true, m_freeze_time);
+	}
+		
 	float currdirection = direction - m_angle/2.0f;
 	
 	for (int i = 0; i < m_nbr_projectiles; i++) {
@@ -158,6 +169,16 @@ void StandardGun::hit(Player* hit_player, const Packet::PlayerHit* p) {
 
 	// Apply force to the player.
 	hit_player->apply_force(b2Vec2(recoil * 100 * cos(direction), recoil * 100 * sin(direction)), b2Vec2(hit_point_x, hit_point_y));
+
+	// Change the freeze time on the hit player.
+	uint64_t curr_freeze_time = hit_player->get_freeze_time();
+	if (curr_freeze_time > 0) {
+		if (m_freeze_reduction > curr_freeze_time) {
+			hit_player->set_freeze_time(0);
+		} else {
+			hit_player->set_freeze_time(curr_freeze_time - m_freeze_reduction);
+		}
+	}
 
 	// Do damage if the gun has effect and they're not frozen.
 	if (p->has_effect && !hit_player->is_frozen()) {
