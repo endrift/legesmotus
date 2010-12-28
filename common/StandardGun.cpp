@@ -110,6 +110,17 @@ void StandardGun::fire(b2World* physics, Player& player, Point start, float dire
 	m_last_fired_dir = direction;
 	m_hit_data.clear();
 	
+	// Recharge ammo, if applicable
+	if (m_total_ammo) {
+		m_current_ammo = get_current_ammo();
+	
+		if (m_current_ammo == 0) {
+			// Out of ammo
+			return;
+		}
+		--m_current_ammo;
+	}
+	
 	player.apply_force(b2Vec2(m_recoil * 100 * cos(M_PI + direction), m_recoil * 100 * sin(M_PI + direction)));
 	
 	float currdirection = direction - m_angle/2.0f;
