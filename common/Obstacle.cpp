@@ -40,7 +40,7 @@ Obstacle::Obstacle(Point position, ClientMapObject* clientpart) : MapObject(posi
 	m_bounding_shape = NULL;
 }
 
-MapObject::CollisionResult Obstacle::collide(GameLogic* logic, PhysicsObject* other, b2Contact* contact) {
+MapObject::CollisionResult Obstacle::collide(PhysicsObject* other, b2Contact* contact) {
 	if (m_is_slippery) {
 		return BOUNCE;
 	} else {

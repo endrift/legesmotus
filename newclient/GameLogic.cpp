@@ -237,13 +237,13 @@ MapObject::CollisionResult GameLogic::collide(PhysicsObject* userdata1, PhysicsO
 	MapObject::CollisionResult result1 = MapObject::GRAB;
 	if (userdata1->get_type() == PhysicsObject::MAP_OBJECT) {
 		MapObject* object = static_cast<MapObject*>(userdata1);
-		result1 = object->collide(this, userdata2, contact);
+		result1 = object->collide(userdata2, contact);
 		
 		if (object->is_interactive()) {
 			if (disengage) {
-				object->disengage(this, userdata2);
+				object->disengage(userdata2);
 			} else {
-				object->interact(this, userdata2);
+				object->interact(userdata2);
 			}
 		}
 	}
@@ -251,13 +251,13 @@ MapObject::CollisionResult GameLogic::collide(PhysicsObject* userdata1, PhysicsO
 	MapObject::CollisionResult result2 = MapObject::GRAB;
 	if (userdata2->get_type() == PhysicsObject::MAP_OBJECT) {
 		MapObject* object = static_cast<MapObject*>(userdata2);
-		result2 = object->collide(this, userdata1, contact);
+		result2 = object->collide(userdata1, contact);
 		
 		if (object->is_interactive()) {
 			if (disengage) {
-				object->disengage(this, userdata1);
+				object->disengage(userdata1);
 			} else {
-				object->interact(this, userdata1);
+				object->interact(userdata1);
 			}
 		}
 	}

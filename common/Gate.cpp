@@ -67,7 +67,7 @@ void Gate::initialize_physics(b2World* world) {
 	m_physics_body->CreateFixture(m_bounding_shape, 0.0f);
 }
 
-MapObject::CollisionResult Gate::collide(GameLogic* logic, PhysicsObject* other, b2Contact* contact) {
+MapObject::CollisionResult Gate::collide(PhysicsObject* other, b2Contact* contact) {
 	if (other->get_type() != PhysicsObject::PLAYER) {
 		// Nothing special. Return.
 		return IGNORE;
@@ -83,7 +83,7 @@ MapObject::CollisionResult Gate::collide(GameLogic* logic, PhysicsObject* other,
 	return IGNORE;
 }
 
-void Gate::disengage(GameLogic* logic, PhysicsObject* other) {
+void Gate::disengage(PhysicsObject* other) {
 	if (other->get_type() != PhysicsObject::PLAYER) {
 		// Nothing special. Return.
 		return;

@@ -30,6 +30,7 @@
 #include "common/math.hpp"
 #include "common/TypeWrapper.hpp"
 #include "common/misc.hpp"
+#include "common/MapObject.hpp"
 #include <algorithm>
 #include <stdlib.h>
 #include <iostream>
@@ -239,8 +240,6 @@ Packet::PlayerHit* StandardGun::generate_next_hit_packet(Packet::PlayerHit* p, P
 			if (m_objects_penetrated > m_max_penetration) {
 				return NULL;
 			}
-		
-			m_objects_penetrated++;
 	
 			if (m_current_damage <= 0) {
 				return NULL;
@@ -252,6 +251,17 @@ Packet::PlayerHit* StandardGun::generate_next_hit_packet(Packet::PlayerHit* p, P
 			b2Body* body = nextdata.fixture->GetBody();
 	
 			PhysicsObject* userdata = static_cast<PhysicsObject*>(body->GetUserData());
+			
+			if (userdata->get_type() == PhysicsObject::MAP_OBJECT) {
+				MapObject* mapobj = static_cast<MapObject*>(userdata);
+				if (!mapobj->is_shootable()) {
+					// Just ignore this object and keep going - it's not actually hitting it.
+					continue;
+				}
+			}
+			
+			m_objects_penetrated++;
+			
 			if (userdata->get_type() != PhysicsObject::PLAYER) {
 				m_current_damage = m_current_damage * m_penetrates_walls;
 				continue;

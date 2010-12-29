@@ -76,21 +76,21 @@ namespace LM {
 		virtual bool is_interactive() const { return true; }
 		virtual bool is_engaged() const { return m_is_engaged; };
 		virtual bool is_engaged_by(Player* player) const { return m_engaging_players.find(player) != m_engaging_players.end(); };
-		virtual bool shot(GameLogic* logic, Player* shooter, Point point_hit, float direction) { return false; }
+		virtual bool shot(Player* shooter, Point point_hit, float direction) { return false; }
 		// Called when an object starts colliding with the obstacle
 		//  contact is the Box2D contact manifold
-		virtual CollisionResult collide(GameLogic* logic, PhysicsObject* other, b2Contact* contact);
+		virtual CollisionResult collide(PhysicsObject* other, b2Contact* contact);
 
 		// Called every frame during which an object is _within_ this obstacle's bounds
 		//  (Only called if is_interactive() returns true)
 		//  is_engaged() should return true after this function returns
-		virtual void interact(GameLogic* logic, PhysicsObject* other) {}
+		virtual void interact(PhysicsObject* other) {}
 
 		// Called the first frame that the object is no longer within the obstacle's bounds
 		//  (as determined by the result of calling is_engaged above)
 		//  (Only called if is_interactive() returns true)
 		//  is_engaged() should returns false after this function returns
-		virtual void disengage(GameLogic* logic, PhysicsObject* other);
+		virtual void disengage(PhysicsObject* other);
 		virtual void init(MapReader* reader);
 	};
 }

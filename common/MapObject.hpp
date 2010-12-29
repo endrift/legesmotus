@@ -37,7 +37,6 @@ namespace LM {
 	class Player;
 	class Map;
 	class MapReader;
-	class GameLogic;
 	class ClientMapObject;
 	class PhysicsObject;
 
@@ -119,22 +118,22 @@ namespace LM {
 		// Called when this obstacle was shot by the given player, at the given point.
 		//  (Only called if is_shootable() returns true)
 		//  Returns true if the obstacle took the hit, false if the shot was redirected.
-		virtual bool shot(GameLogic* logic, Player* shooter, Point point_hit, float direction) = 0;
+		virtual bool shot(Player* shooter, Point point_hit, float direction) = 0;
 
 		// Called when an object starts colliding with the obstacle
 		//  contact is the Box2D contact manifold
-		virtual CollisionResult collide(GameLogic* logic, PhysicsObject* other, b2Contact* contact) = 0;
+		virtual CollisionResult collide(PhysicsObject* other, b2Contact* contact) = 0;
 
 		// Called every frame during which an object is _within_ this obstacle's bounds
 		//  (Only called if is_interactive() returns true)
 		//  is_engaged() should return true after this function returns
-		virtual void interact(GameLogic* logic, PhysicsObject* other) = 0;
+		virtual void interact(PhysicsObject* other) = 0;
 
 		// Called the first frame that the object is no longer within the obstacle's bounds
 		//  (as determined by the result of calling is_engaged above)
 		//  (Only called if is_interactive() returns true)
 		//  is_engaged() should returns false after this function returns
-		virtual void disengage(GameLogic* logic, PhysicsObject* other) = 0;
+		virtual void disengage(PhysicsObject* other) = 0;
 
 		virtual void init(MapReader* reader);
 	};

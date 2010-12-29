@@ -28,6 +28,7 @@
 #include "MapObject.hpp"
 #include "common/Shape.hpp"
 #include <memory>
+#include <stdint.h>
 
 #define Obstacle NewObstacle
 
@@ -44,7 +45,16 @@ namespace LM {
 		b2Shape*		m_bounding_shape;
 		bool			m_is_slippery;
 		double			m_bounce_factor;
-		b2Body*			m_physics_body; // Box2D physics body for this map object
+		b2Body*			m_physics_body; 	// Box2D physics body for this map object
+		
+		char			m_team;			// What team this affects (0 for all players)
+		int			m_damage;		// Damage when player interacts with object
+		uint64_t		m_damage_rate;		// How often damage is applied (when interacting)
+		bool			m_is_collidable;	// Can player collide with this hazard?  If false, then it's a hazard *area*
+		int			m_collision_damage;	// Damage when player collides with obstacle
+		uint64_t		m_freeze_time;		// How long you're frozen for (only when colliding)
+		double			m_repel_velocity;	// The magnitude of velocity at which killed player should be pushed away
+		uint64_t		m_last_damage_time;	// 0 if not engaged
 
 	public:
 		explicit Obstacle(Point pos, ClientMapObject* clientpart = NULL);
@@ -59,21 +69,21 @@ namespace LM {
 		virtual bool is_collidable() const { return true; }
 		virtual bool is_interactive() const { return false; }
 		virtual bool is_engaged() const { return false; }
-		virtual bool shot(GameLogic* logic, Player* shooter, Point point_hit, float direction) { return true; }
+		virtual bool shot(Player* shooter, Point point_hit, float direction) { return true; }
 		// Called when an object starts colliding with the obstacle
 		//  contact is the Box2D contact manifold
-		virtual CollisionResult collide(GameLogic* logic, PhysicsObject* other, b2Contact* contact);
+		virtual CollisionResult collide(PhysicsObject* other, b2Contact* contact);
 
 		// Called every frame during which an object is _within_ this obstacle's bounds
 		//  (Only called if is_interactive() returns true)
 		//  is_engaged() should return true after this function returns
-		virtual void interact(GameLogic* logic, PhysicsObject* other) {}
+		virtual void interact(PhysicsObject* other) {}
 
 		// Called the first frame that the object is no longer within the obstacle's bounds
 		//  (as determined by the result of calling is_engaged above)
 		//  (Only called if is_interactive() returns true)
 		//  is_engaged() should returns false after this function returns
-		virtual void disengage(GameLogic* logic, PhysicsObject* other) {}
+		virtual void disengage(PhysicsObject* other) {}
 		virtual void init(MapReader* reader);
 	};
 }
