@@ -26,6 +26,7 @@
 #define LM_GUI_GAMEVIEW_HPP
 
 #include "Widget.hpp"
+#include "common/Point.hpp"
 #include <string>
 
 namespace LM {
@@ -63,6 +64,8 @@ namespace LM {
 		void set_scale_base(float s);
 
 		float get_scale() const;
+
+		Point world_to_view(Point world) const;
 
 		virtual void draw(DrawContext* ctx) const;
 	};

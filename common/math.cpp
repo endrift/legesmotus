@@ -23,6 +23,7 @@
  */
 
 #include "math.hpp"
+#include "misc.hpp"
 #include "Point.hpp"
 #include <iostream>
 
@@ -42,7 +43,7 @@ const float LM::GAME_TO_PHYSICS = 1.0f/LM::PHYSICS_TO_GAME;
 vector<double> LM::closest_point_on_line(double x1, double y1, double x2, double y2, double x3, double y3) {
 	double distp2p1 = Point::distance(Point(x1, y1), Point(x2, y2));
 	if (distp2p1 == 0) {
-		cerr << "Error: Distance between start and end of line is 0.";
+		WARN("Error: Distance between start and end of line is 0.");
 		return vector<double>();
 	}
 	double utop = ((x3 - x1) * (x2 - x1) + (y3 - y1) * (y2 - y1));

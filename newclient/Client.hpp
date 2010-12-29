@@ -89,20 +89,33 @@ namespace LM {
 
 		// Packet callbacks
 		// TODO rename these packets
+		// Please try and keep these in packet order
 		virtual void player_update(const Packet& p);
-		virtual void new_round(const Packet& p);
-		virtual void round_start(const Packet& p);
-		virtual void round_over(const Packet& p);
-		virtual void welcome(const Packet& p);
-		virtual void announce(const Packet& p);
-		virtual void leave(const Packet& p);
-		virtual void name_change(const Packet& p);
-		virtual void team_change(const Packet& p);
-		virtual void spawn(const Packet& p);
-		virtual void weapon_info(const Packet& p);
 		virtual void weapon_discharged(const Packet& p);
 		virtual void player_hit(const Packet& p);
+		//virtual void message(const Packet& p);
+		virtual void new_round(const Packet& p);
+		virtual void round_over(const Packet& p);
+		//virtual void score_update(const Packet& p);
+		virtual void welcome(const Packet& p);
+		virtual void announce(const Packet& p);
 		virtual void gate_update(const Packet& p);
+		//virtual void info(const Packet& p); // FIXME this packet is asymmetrical
+		virtual void leave(const Packet& p);
+		//virtual void player_animation(const Packet& p); // TODO revamp this packet
+		//virtual void request_denied(const Packet& p);
+		virtual void name_change(const Packet& p);
+		virtual void team_change(const Packet& p);
+		//virtual void register_server(const Packet& p);
+		//virtual void unregiser_server(const Packet& p);
+		//virtual void upgrade_available(const Packet& p);
+		//virtual void map_info(const Packet& p);
+		//virtual void map_object(const Packet& p);
+		//virtual void game_param(const Packet& p);
+		//virtual void player_died(const Packet& p);
+		virtual void weapon_info(const Packet& p);
+		virtual void round_start(const Packet& p);
+		virtual void spawn(const Packet& p);
 		// End packet callbacks
 
 		// Main loop: override for subclass behaviors, but call step inside

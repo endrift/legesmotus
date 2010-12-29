@@ -33,19 +33,40 @@
 #define STRING(x) _S(x)
 
 #ifdef LM_DEBUG
+
+#ifdef LM_HARDBKPT
+
+// x86/GCC
+#if defined(__i386__) || defined(__x86_64__)
+#define BREAK() __asm__ __volatile__("int3")
+
+// x86/MSVC
+#elif defined(_M_IX86) || defined(_M_X64)
+#define BREAK() __asm { int3 }
+
+// ARM/GCC
+#elif defined(__arm__)
+#define BREAK() __asm__ __volatile__("BKPT")
+#endif
+
+#else
+#define BREAK()
+#endif
+
 #include "Exception.hpp"
 #include "timer.hpp"
 #include <iostream>
 
-#define ASSERT(x)   \
-	do {            \
-		if (!(x)) { \
-			throw new AssertionFailure("Assertion failed at " __FILE__ ":" STRING(__LINE__) ": " #x; \
-		}           \
+#define ASSERT(x)    \
+	do {             \
+		if (!(x)) {  \
+			BREAK(); \
+			throw new AssertionFailure("Assertion failed at " __FILE__ ":" STRING(__LINE__) ": " #x); \
+		}            \
 	} while (0)
 
 #define UNUSED(x)
-#define MESSAGE(type, msg) std::cerr << "[" << get_ticks() << "] [" #type "] " __FILE__ ":" STRING(__LINE__) ": " msg << std::endl
+#define MESSAGE(type, msg) std::cerr << "[" << get_ticks() << "] [" #type "] " __FILE__ ":" STRING(__LINE__) ": " << msg << std::endl
 #define WARN(x) MESSAGE(WARN, x)
 #define INFO(x) MESSAGE(INFO, x)
 #define DEBUG(x) MESSAGE(DEBUG, x)

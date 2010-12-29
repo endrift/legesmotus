@@ -81,6 +81,10 @@ float GameView::get_scale() const {
 	return m_scale;
 }
 
+Point GameView::world_to_view(Point world) const {
+	return (world + Point(get_width()/2 - m_offset_x, get_height()/2 - m_offset_y))*m_scale;
+}
+
 void GameView::draw(DrawContext* ctx) const {
 	m_ctx->make_active();
 	m_ctx->clear();

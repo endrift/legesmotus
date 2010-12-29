@@ -286,7 +286,7 @@ void GameLogic::BeginContact(b2Contact* contact) {
 	//b2Manifold* local_manifold = contact->GetManifold();
 	
 	if (body1->GetUserData() == NULL || body2->GetUserData() == NULL) {
-		cerr << "Body has no user data!" << endl;
+		WARN("Body has no user data!");
 		return;
 	}
 	
@@ -323,7 +323,7 @@ void GameLogic::EndContact(b2Contact* contact) {
 	//b2Manifold* local_manifold = contact->GetManifold();
 	
 	if (body1->GetUserData() == NULL || body2->GetUserData() == NULL) {
-		cerr << "Body has no user data!" << endl;
+		WARN("Body has no user data!");
 		return;
 	}
 	
@@ -348,7 +348,7 @@ void GameLogic::PreSolve(b2Contact* contact, const b2Manifold* old_manifold) {
 	contact->GetWorldManifold(&manifold);
 	
 	if (body1->GetUserData() == NULL || body2->GetUserData() == NULL) {
-		cerr << "Body has no user data!" << endl;
+		WARN("Body has no user data!");
 		return;
 	}
 	
@@ -377,7 +377,7 @@ b2Fixture* fixture1 = contact->GetFixtureA();
 	contact->GetWorldManifold(&manifold);
 	
 	if (body1->GetUserData() == NULL || body2->GetUserData() == NULL) {
-		cerr << "Body has no user data!" << endl;
+		WARN("Body has no user data!");
 		return;
 	}
 	

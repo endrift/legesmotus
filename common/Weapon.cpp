@@ -23,8 +23,9 @@
  */
 
 #include "Weapon.hpp"
-#include "common/WeaponReader.hpp"
-#include "common/StandardGun.hpp"
+#include "WeaponReader.hpp"
+#include "StandardGun.hpp"
+#include "misc.hpp"
 #include <cstring>
 
 #include <iostream>
@@ -43,24 +44,24 @@ Weapon*	Weapon::new_weapon (WeaponReader& data) {
 	const uint32_t weapon_id = data.get_id();
 
 	if (strcasecmp(weapon_type, "standard") == 0) {
-		cerr << "Standard." << endl;
+		INFO("Standard.");
 		return new StandardGun(weapon_id, data);
 	} else if (strcasecmp(weapon_type, "spread") == 0) {
-		cerr << "Spread." << endl;
+		INFO("Spread.");
 		return new StandardGun(weapon_id, data);
 	} else if (strcasecmp(weapon_type, "impact") == 0) {
-		cerr << "Impact." << endl;
+		INFO("Impact.");
 	} else if (strcasecmp(weapon_type, "thaw") == 0) {
-		cerr << "Thaw." << endl;
+		INFO("Thaw.");
 		return new StandardGun(weapon_id, data);
 	} else if (strcasecmp(weapon_type, "area") == 0) {
-		cerr << "Area." << endl;
+		INFO("Area.");
 	//} else if (strcasecmp(weapon_type, "charge") == 0) { 
 	} else if (strcasecmp(weapon_type, "penetration") == 0)	{
-		cerr << "Penetration." << endl;
+		INFO("Penetration.");
 		return new StandardGun(weapon_id, data);
 	} else {
-		cerr << "Error: unknown weapon type: " << weapon_type << endl;
+		WARN("Error: unknown weapon type: " << weapon_type);
 	}
 
 	return NULL;

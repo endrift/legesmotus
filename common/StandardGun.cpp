@@ -22,13 +22,14 @@
  * 
  */
 
-#include "common/StandardGun.hpp"
-#include "common/Player.hpp"
-#include "common/StringTokenizer.hpp"
-#include "common/PacketWriter.hpp"
-#include "common/timer.hpp"
-#include "common/math.hpp"
-#include "common/TypeWrapper.hpp"
+#include "StandardGun.hpp"
+#include "Player.hpp"
+#include "StringTokenizer.hpp"
+#include "PacketWriter.hpp"
+#include "timer.hpp"
+#include "math.hpp"
+#include "TypeWrapper.hpp"
+#include "misc.hpp"
 #include "common/misc.hpp"
 #include "common/MapObject.hpp"
 #include <algorithm>
@@ -302,7 +303,7 @@ float32 StandardGun::ReportFixture(b2Fixture* fixture, const b2Vec2& point, cons
 	b2Body* body = fixture->GetBody();
 	
 	if (body->GetUserData() == NULL) {
-		cerr << "Body has no user data!" << endl;
+		WARN("Body has no user data!");
 		return 1;
 	}
 	

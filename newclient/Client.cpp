@@ -320,14 +320,14 @@ void Client::spawn(const Packet& p) {
 
 void Client::weapon_info(const Packet& p) {
 	Packet pcopy(p);
-	cerr << "Weapon: " << pcopy.weapon_info.index << endl;
+	DEBUG("Weapon: " << pcopy.weapon_info.index);
 	Weapon* weapon = Weapon::new_weapon(*pcopy.weapon_info.weapon_data);
 	
 	if (weapon != NULL) {
 		if (m_curr_weapon == -1) {
 			m_curr_weapon = weapon->get_id();
 		}
-		cerr << weapon->get_name() << ", " << weapon->get_id() << endl;
+		DEBUG(weapon->get_name() << ", " << weapon->get_id());
 		m_logic->add_weapon(pcopy.weapon_info.index, weapon);
 	}
 }
@@ -339,7 +339,7 @@ void Client::weapon_discharged(const Packet& p) {
 void Client::player_hit(const Packet& p) {
 	Player* hit_player = m_logic->get_player(p.player_hit.shot_player_id);
 	if (hit_player == NULL) {
-		cerr << "Shot hit player that doesn't exist: " << p.player_hit.shot_player_id << endl;
+		WARN("Shot hit player that doesn't exist: " << p.player_hit.shot_player_id);
 		return;
 	}
 	

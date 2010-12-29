@@ -178,7 +178,7 @@ CXXFLAGS += -Wnon-virtual-dtor
 
 ifeq ($(DEBUG),1)
  RELEASE = debug
- CFLAGS += -g -O0 -DLM_DEBUG
+ CFLAGS += -g -O0 -DLM_DEBUG -DLM_HARDBKPT
 else
  RELEASE = release
  # Take O-flag from CFLAGS if we already have it set

@@ -27,8 +27,9 @@
 #include <cmath>
 #include <iostream>
 #include <limits>
-#include "common/math.hpp"
-#include "common/Circle.hpp"
+#include "misc.hpp"
+#include "math.hpp"
+#include "Circle.hpp"
 
 // See .hpp file for extensive comments.
 
@@ -75,7 +76,7 @@ double	Polygon::boundary_intersects_circle(const Circle& circle, double* angle) 
 				y2res = closest_point.y;
 				
 				if (x2res == -1 && y2res == -1) {
-					cerr << "x2res and y2res are -1 - could not find closest point on line" << endl;
+					WARN("x2res and y2res are -1 - could not find closest point on line");
 				}
 				
 				x1res = p.x;

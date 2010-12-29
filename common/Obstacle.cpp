@@ -28,6 +28,7 @@
 #include <cstring>
 #include <Box2D/Box2D.h>
 #include <iostream>
+#include "misc.hpp"
 #include "math.hpp"
 
 using namespace LM;
@@ -60,7 +61,7 @@ void Obstacle::initialize_physics(b2World* world) {
 	m_physics_body->SetUserData((void*)this);
 	
 	if (m_bounding_shape == NULL) {
-		cerr << "No bounding shape for obstacle that should have physics." << endl;
+		WARN("No bounding shape for obstacle that should have physics.");
 		return;
 	}
 	
