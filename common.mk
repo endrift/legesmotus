@@ -17,8 +17,10 @@ DATADIR = data
 
 # Default targets if no targets are explicitly listed
 ifeq ($(TARGETS),)
-TARGETS = client server gui
+TARGETS := client server gui
 endif
+
+TARGETS := $(TARGETS) $(MAKECMDGOALS)
 
 ifeq ($(SDL_CONFIG),)
  SDL_CONFIG = sdl-config

@@ -1,7 +1,5 @@
 BASEDIR = ..
-LIBSRCS := GraphicalPlayer.cpp GraphicalMap.cpp Transition.cpp Curve.cpp TransitionManager.cpp \
-	ClientConfiguration.cpp MapReceiver.cpp ConvolveKernel.cpp MapObjectParams.cpp BaseMapObject.cpp ClientGate.cpp \
-	ClientMap.cpp RepulsionField.cpp ForceField.cpp
+LIBSRCS :=  Curve.cpp ClientConfiguration.cpp MapReceiver.cpp
 BINSRCS := main.cpp
 
 include $(BASEDIR)/common.mk
@@ -10,7 +8,7 @@ LIBRARY := ../liblmclient.a
 CXXFLAGS += $(CLIENTFLAGS)
 
 ifeq ($(NOSOUND),)
-LIBSRCS += SoundController.cpp
+LIBSRCS +=
 else
 CXXFLAGS += -DLM_NOSOUND
 LIBSRCS += SoundController_dummy.cpp

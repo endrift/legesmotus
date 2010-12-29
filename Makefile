@@ -99,7 +99,7 @@ lmserver: server
 
 $(ALL_PKG):
 	+@mkdir -p $@
-	+@$(MAKE) -C $@ -f $(BASEDIR)/$@/Makefile BASEDIR="../../.." SUBDIR="$@" $(TARGET)
+	+@$(MAKE) -C $@ -f $(BASEDIR)/$@/Makefile BASEDIR="../../.." SUBDIR="$@" TARGETS="$(TARGETS)" $(TARGET)
 
 server: common
 

@@ -53,7 +53,9 @@ GuiClient::GuiClient() {
 	m_view = new GameView("gv", m_cache, m_window->get_width(), m_window->get_height(), 128, &m_root);
 
 	m_debugdraw = new PhysicsDraw;
+	#ifdef LM_DEBUG
 	m_view->add_child(m_debugdraw, GameView::OVERLAY);
+	#endif
 
 	m_map = NULL;
 }

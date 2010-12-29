@@ -53,12 +53,12 @@
 
 #else
 
-#define ASSERT(x) (void)(x)
+#define ASSERT(x)
 #define UNUSED(x) (void)(x)
-#define WARN(x) (void)(x)
-#define INFO(x) (void)(x)
-#define DEBUG(x) (void)(x)
-#define STUB(x) (void)(x)
+#define WARN(x)
+#define INFO(x)
+#define DEBUG(x)
+#define STUB(x)
 
 
 #endif
