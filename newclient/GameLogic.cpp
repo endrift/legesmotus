@@ -95,6 +95,14 @@ void GameLogic::clear_weapons() {
 }
 
 void GameLogic::step() {
+	for (map<uint32_t, Player*>::iterator iter = m_players.begin(); iter != m_players.end(); ++iter) {
+		Player* player = iter->second;
+		
+		if (!player->is_grabbing_obstacle() && player->get_attach_joint() != NULL) {
+			player->set_attach_joint(NULL);
+		}
+	}
+
 	m_physics->Step(PHYSICS_TIMESTEP, VEL_ITERATIONS, POS_ITERATIONS);
 	
 	// Remove any forces we applied for this timestep.
@@ -219,6 +227,7 @@ void GameLogic::create_grab(Player* player, b2Body* body2, b2WorldManifold* mani
 		joint_def->enableMotor = false;
 
 		m_joints_to_create.push_back(pair<b2Body*, b2JointDef*>(body1, joint_def));
+		player->set_is_grabbing_obstacle(true);
 		return;
 	}
 	
@@ -229,21 +238,26 @@ void GameLogic::create_grab(Player* player, b2Body* body2, b2WorldManifold* mani
 		joint_def->collideConnected = true;
 
 		m_joints_to_create.insert(m_joints_to_create.begin(), pair<b2Body*, b2JointDef*>(body1, joint_def));
+		player->set_is_grabbing_obstacle(true);
 		return;
 	}
 }
 
-MapObject::CollisionResult GameLogic::collide(PhysicsObject* userdata1, PhysicsObject* userdata2, b2Contact* contact, bool disengage) {
+MapObject::CollisionResult GameLogic::collide(PhysicsObject* userdata1, PhysicsObject* userdata2, b2Contact* contact, bool isnew, bool disengage) {	
 	MapObject::CollisionResult result1 = MapObject::GRAB;
 	if (userdata1->get_type() == PhysicsObject::MAP_OBJECT) {
 		MapObject* object = static_cast<MapObject*>(userdata1);
-		result1 = object->collide(userdata2, contact);
+		result1 = object->get_collision_result(userdata2, contact);
+		
+		if (isnew && result1 != MapObject::IGNORE) {
+			object->collide(userdata2, contact);
+		}
 		
 		if (object->is_interactive()) {
 			if (disengage) {
 				object->disengage(userdata2);
 			} else {
-				object->interact(userdata2);
+				object->interact(userdata2, contact);
 			}
 		}
 	}
@@ -251,13 +265,17 @@ MapObject::CollisionResult GameLogic::collide(PhysicsObject* userdata1, PhysicsO
 	MapObject::CollisionResult result2 = MapObject::GRAB;
 	if (userdata2->get_type() == PhysicsObject::MAP_OBJECT) {
 		MapObject* object = static_cast<MapObject*>(userdata2);
-		result2 = object->collide(userdata1, contact);
+		result2 = object->get_collision_result(userdata1, contact);
+		
+		if (isnew && result2 != MapObject::IGNORE) {
+			object->collide(userdata1, contact);
+		}
 		
 		if (object->is_interactive()) {
 			if (disengage) {
 				object->disengage(userdata1);
 			} else {
-				object->interact(userdata1);
+				object->interact(userdata1, contact);
 			}
 		}
 	}
@@ -294,7 +312,7 @@ void GameLogic::BeginContact(b2Contact* contact) {
 	PhysicsObject* userdata2 = static_cast<PhysicsObject*>(body2->GetUserData());
 	
 	// Perform extra collision actions, check if we should ignore this collision:
-	MapObject::CollisionResult result = collide(userdata1, userdata2, contact, false);
+	MapObject::CollisionResult result = collide(userdata1, userdata2, contact, true, false);
 	if (result == MapObject::IGNORE) {
 		contact->SetEnabled(false);
 		return;
@@ -331,7 +349,7 @@ void GameLogic::EndContact(b2Contact* contact) {
 	PhysicsObject* userdata2 = static_cast<PhysicsObject*>(body2->GetUserData());
 
 	// Perform extra collision actions, check if we should ignore this collision:
-	if (collide(userdata1, userdata2, contact, true) == MapObject::IGNORE) {
+	if (collide(userdata1, userdata2, contact, false, true) == MapObject::IGNORE) {
 		contact->SetEnabled(false);
 		return;
 	}
@@ -356,7 +374,7 @@ void GameLogic::PreSolve(b2Contact* contact, const b2Manifold* old_manifold) {
 	PhysicsObject* userdata2 = static_cast<PhysicsObject*>(body2->GetUserData());
 
 	// Perform extra collision actions, check if we should ignore this collision:
-	if (collide(userdata1, userdata2, contact, false) == MapObject::IGNORE) {
+	if (collide(userdata1, userdata2, contact, false, false) == MapObject::IGNORE) {
 		contact->SetEnabled(false);
 		return;
 	}

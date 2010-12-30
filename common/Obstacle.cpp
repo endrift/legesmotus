@@ -30,6 +30,8 @@
 #include <iostream>
 #include "misc.hpp"
 #include "math.hpp"
+#include "common/team.hpp"
+#include "common/Player.hpp"
 
 using namespace LM;
 using namespace std;
@@ -37,15 +39,93 @@ using namespace std;
 Obstacle::Obstacle(Point position, ClientMapObject* clientpart) : MapObject(position, clientpart) {
 	// TODO
 	m_is_slippery = false;
+	m_is_collidable = true;
 	m_bounce_factor = 0.9;
 	m_bounding_shape = NULL;
+	
+	m_is_hazardous = false;
+	m_team = 0;
+	m_damage = 0;
+	m_damage_rate = 100;
+	m_collision_damage = 0;
+	
+	// TODO: Make this sent in by game parameters from client.
+	m_freeze_time = 10000;
+	m_freeze_on_hit = 0;
+	m_repel_velocity = 100.0;
+	
+	m_last_damage_time = 0;
 }
 
-MapObject::CollisionResult Obstacle::collide(PhysicsObject* other, b2Contact* contact) {
+MapObject::CollisionResult Obstacle::get_collision_result(PhysicsObject* other, b2Contact* contact) {
+	if (!m_is_collidable) {
+		return IGNORE;
+	}
+
 	if (m_is_slippery) {
 		return BOUNCE;
 	} else {
 		return GRAB;
+	}
+}
+
+MapObject::CollisionResult Obstacle::collide(PhysicsObject* other, b2Contact* contact) {
+	// Check if we're hazardous and the player is affected:
+	if (other->get_type() == PhysicsObject::PLAYER && m_is_hazardous) {
+		b2WorldManifold manifold;
+		contact->GetWorldManifold(&manifold);
+		b2Vec2 repel_normal = manifold.normal;
+	
+		Player* player = static_cast<Player*>(other);
+		
+		if (m_team == 0 || player->get_team() != m_team) {
+			if (m_freeze_on_hit != 0 && !player->is_frozen()) {
+				player->set_is_frozen(true, m_freeze_on_hit);
+				player->apply_force(b2Vec2(m_repel_velocity * repel_normal.x, m_repel_velocity * repel_normal.y));
+			}
+		
+			if (m_collision_damage != 0) {
+				player->change_energy(-1 * m_collision_damage);
+				m_last_damage_time = get_ticks();
+		
+				// Freeze 'em if they're dead.
+				if (player->get_energy() == 0) {
+					player->set_is_frozen(true, m_freeze_time);
+					player->apply_force(b2Vec2(m_repel_velocity * repel_normal.x, m_repel_velocity * repel_normal.y));
+				}
+			}
+		}
+	}
+	
+	return get_collision_result(other, contact);
+}
+
+void Obstacle::interact(PhysicsObject* other, b2Contact* contact) {
+	if (other->get_type() != PhysicsObject::PLAYER || !m_is_hazardous) {
+		return;
+	}
+	
+	b2WorldManifold manifold;
+	contact->GetWorldManifold(&manifold);
+	b2Vec2 repel_normal = manifold.normal;
+
+	Player* player = static_cast<Player*>(other);
+	
+	if ((m_team == 0 || player->get_team() != m_team) && !player->is_frozen() && m_damage != 0 &&
+			m_last_damage_time < get_ticks() - m_damage_rate) {
+			
+		if (m_last_damage_time == 0) {
+			m_last_damage_time = get_ticks()-m_damage_rate;
+		}
+		
+		player->change_energy(-1 * m_damage * ((get_ticks() - m_last_damage_time)/m_damage_rate));
+		m_last_damage_time = get_ticks();
+
+		// Freeze 'em if they're dead.
+		if (player->get_energy() == 0) {
+			player->set_is_frozen(true, m_freeze_time);
+			player->apply_force(b2Vec2(m_repel_velocity * repel_normal.x, m_repel_velocity * repel_normal.y));
+		}
 	}
 }
 
@@ -85,6 +165,25 @@ void Obstacle::init(MapReader* reader) {
 			m_is_slippery = false;
 		} else if (strncmp(param_string.c_str(), "bounce=", 7) == 0) {
 			m_bounce_factor = atof(param_string.c_str() + 7);
+		} else if (strncmp(param_string.c_str(), "team=", 5) == 0) {
+			m_team = parse_team_string(param_string.c_str() + 5);
+		} else if (param_string == "collidable") {
+			m_is_collidable = true;
+		} else if (param_string == "uncollidable") {
+			m_is_collidable = false;
+		} else if (strncmp(param_string.c_str(), "collision_damage=", 17) == 0) {
+			m_collision_damage = atoi(param_string.c_str() + 17);
+			m_is_hazardous = true;
+		} else if (strncmp(param_string.c_str(), "damage=", 7) == 0) {
+			m_damage = atoi(param_string.c_str() + 7);
+			m_is_hazardous = true;
+		} else if (strncmp(param_string.c_str(), "rate=", 5) == 0) {
+			m_damage_rate = atol(param_string.c_str() + 5);
+		} else if (strncmp(param_string.c_str(), "freeze=", 7) == 0) {
+			m_freeze_on_hit = atol(param_string.c_str() + 7);
+			m_is_hazardous = true;
+		} else if (strncmp(param_string.c_str(), "repel=", 6) == 0) {
+			m_repel_velocity = atof(param_string.c_str() + 6);
 		} else {
 			parse_param(param_string.c_str());
 		}

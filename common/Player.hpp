@@ -73,6 +73,7 @@ namespace LM {
 		b2Body*		m_physics_body; // Box2D physics body for this player
 		b2Joint*	m_attach_joint; // Box2D joint that attaches this player to a surface
 		b2World*	m_physics; // Box2D physics world pointer
+		bool		m_awaiting_detach; // Should we delete the attach joint as soon as possible?
 	
 		virtual void update_location() { }
 

@@ -46,7 +46,8 @@ namespace LM {
 		uint64_t		m_damage_rate;		// How often damage is applied (when interacting)
 		bool			m_is_collidable;	// Can player collide with this hazard?  If false, then it's a hazard *area*
 		int			m_collision_damage;	// Damage when player collides with obstacle
-		uint64_t		m_freeze_time;		// How long you're frozen for (only when colliding)
+		uint64_t		m_freeze_on_hit;	// How long you're frozen for (only when colliding)
+		uint64_t		m_freeze_time;		// How long you're frozen for when your energy is reduced to 0 by this hazard
 		double			m_repel_velocity;	// The magnitude of velocity at which killed player should be pushed away
 		double			m_bounce_factor;	// How much your velocity changes when you bounce off
 

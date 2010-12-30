@@ -92,7 +92,7 @@ namespace LM {
 		
 		// Physics helper methods
 		virtual void create_contact_joint(b2Body* body1, b2JointDef* joint_def);
-		virtual MapObject::CollisionResult collide(PhysicsObject* userdata1, PhysicsObject* userdata2, b2Contact* contact, bool disengage);
+		virtual MapObject::CollisionResult collide(PhysicsObject* userdata1, PhysicsObject* userdata2, b2Contact* contact, bool isnew, bool disengage);
 		virtual void create_grab(Player* player, b2Body* body2, b2WorldManifold* manifold, bool weld);
 		
 		// Physics contact listener methods.

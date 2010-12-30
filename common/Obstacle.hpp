@@ -47,12 +47,14 @@ namespace LM {
 		double			m_bounce_factor;
 		b2Body*			m_physics_body; 	// Box2D physics body for this map object
 		
+		bool			m_is_hazardous;		// Is this obstacle hazardous?
 		char			m_team;			// What team this affects (0 for all players)
 		int			m_damage;		// Damage when player interacts with object
 		uint64_t		m_damage_rate;		// How often damage is applied (when interacting)
 		bool			m_is_collidable;	// Can player collide with this hazard?  If false, then it's a hazard *area*
 		int			m_collision_damage;	// Damage when player collides with obstacle
-		uint64_t		m_freeze_time;		// How long you're frozen for (only when colliding)
+		uint64_t		m_freeze_on_hit;	// How long you're frozen for (only when colliding)
+		uint64_t		m_freeze_time;		// How long you're frozen for when your energy is reduced to 0 by this hazard
 		double			m_repel_velocity;	// The magnitude of velocity at which killed player should be pushed away
 		uint64_t		m_last_damage_time;	// 0 if not engaged
 
@@ -64,12 +66,16 @@ namespace LM {
 
 		virtual const b2Shape* get_bounding_shape () const { return m_bounding_shape; }
 
-		virtual bool is_jumpable() const { return true; }
-		virtual bool is_shootable() const { return true; }
+		virtual bool is_jumpable() const { return m_is_collidable; }
+		virtual bool is_shootable() const { return m_is_collidable; }
 		virtual bool is_collidable() const { return true; }
-		virtual bool is_interactive() const { return false; }
+		virtual bool is_interactive() const { return m_is_hazardous; }
 		virtual bool is_engaged() const { return false; }
 		virtual bool shot(Player* shooter, Point point_hit, float direction) { return true; }
+		
+		// Called to get the collision result when hit by an object.
+		virtual CollisionResult get_collision_result(PhysicsObject* other, b2Contact* contact);
+		
 		// Called when an object starts colliding with the obstacle
 		//  contact is the Box2D contact manifold
 		virtual CollisionResult collide(PhysicsObject* other, b2Contact* contact);
@@ -77,13 +83,13 @@ namespace LM {
 		// Called every frame during which an object is _within_ this obstacle's bounds
 		//  (Only called if is_interactive() returns true)
 		//  is_engaged() should return true after this function returns
-		virtual void interact(PhysicsObject* other) {}
+		virtual void interact(PhysicsObject* other, b2Contact* contact);
 
 		// Called the first frame that the object is no longer within the obstacle's bounds
 		//  (as determined by the result of calling is_engaged above)
 		//  (Only called if is_interactive() returns true)
 		//  is_engaged() should returns false after this function returns
-		virtual void disengage(PhysicsObject* other) {}
+		virtual void disengage(PhysicsObject* other) { m_last_damage_time = 0; }
 		virtual void init(MapReader* reader);
 	};
 }

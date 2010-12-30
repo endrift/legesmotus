@@ -380,7 +380,7 @@ void Client::connect(const IPAddress& server_address) {
 		join.join.protocol_number = PROTOCOL_VERSION;
 		join.join.compat_version = COMPAT_VERSION;
 		join.join.name = "Foo";
-		join.join.team = 'A';
+		join.join.team = 0;
 
 		m_network.send_reliable_packet(&join);
 	}

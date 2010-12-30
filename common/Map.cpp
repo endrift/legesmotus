@@ -121,6 +121,7 @@ MapObject* Map::make_map_object(MapReader* reader) {
 
 	switch (reader->get_type()) {
 	case Map::OBSTACLE:
+	case Map::HAZARD:
 		object = new Obstacle(position, clientpart);
 		break;
 	case Map::DECORATION:

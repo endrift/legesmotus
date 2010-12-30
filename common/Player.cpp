@@ -33,6 +33,7 @@
 #include "common/timer.hpp"
 #include <Box2D/Box2D.h>
 #include <iostream>
+#include "common/misc.hpp"
 
 using namespace LM;
 using namespace std;
@@ -111,6 +112,7 @@ void Player::initialize_physics(b2World* world) {
 	b2BodyDef bodydef;
 	bodydef.type = b2_dynamicBody;
 	bodydef.position.Set(to_physics(m_x), to_physics(m_y));
+	bodydef.allowSleep = false;
 	m_physics_body = world->CreateBody(&bodydef);
 	m_physics_body->SetUserData((void*)this);
 	
@@ -322,7 +324,7 @@ void Player::set_attach_joint(b2Joint* joint) {
 
 	m_attach_joint = joint;
 	
-	m_is_grabbing_obstacle = true;
+	m_is_grabbing_obstacle = (m_attach_joint != NULL);
 }
 
 void Player::write_update_packet (PacketWriter& packet) const {
@@ -362,11 +364,6 @@ void Player::read_update_packet (PacketReader& packet) {
 
 void Player::set_is_grabbing_obstacle(bool x) {
 	m_is_grabbing_obstacle = x;
-	
-	if (!m_is_grabbing_obstacle && m_attach_joint != NULL && m_physics != NULL) {
-		m_physics->DestroyJoint(m_attach_joint);
-		m_attach_joint = NULL;
-	}
 }
 
 void Player::generate_player_update(Packet::PlayerUpdate* p) {

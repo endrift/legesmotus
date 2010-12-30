@@ -114,6 +114,8 @@ void	Hazard::init (MapReader& reader, ClientMap& map) {
 			m_team = parse_team_string(param_string.c_str() + 5);
 		} else if (param_string == "collidable") {
 			m_is_collidable = true;
+		} else if (param_string == "uncollidable") {
+			m_is_collidable = false;
 		} else if (strncmp(param_string.c_str(), "collision_damage=", 17) == 0) {
 			m_collision_damage = atoi(param_string.c_str() + 17);
 		} else if (strncmp(param_string.c_str(), "damage=", 7) == 0) {
