@@ -16,12 +16,13 @@ ACK = 0 {
 
 PLAYER_UPDATE = 1 {
 	player_id : uint32_t ; ID of the player being updated
-	x : double ; x coordinate
-	y : double ; y coordinate
-	x_vel : double ; x velocity
-	y_vel : double ; y velocity
-	rotation : double ; current rotation (in degrees)
+	x : float ; x coordinate
+	y : float ; y coordinate
+	x_vel : float ; x velocity
+	y_vel : float ; y velocity
+	rotation : float ; current rotation (in degrees)
 	energy : int ; current energy
+	gun_rotation : float
 	current_weapon_id : uint32_t ; current weapon ID
 	flags : string ; flags specifying the state of the current player. Present if set, not set if not present
 	               ; * I - Invisible
@@ -85,7 +86,7 @@ ANNOUNCE = 9 {
 GATE_UPDATE = 10 {
 	acting_player_id : uint32_t ; The ID of the player who triggered the change
 	team : char ; The team for which the gate is being updated
-	progress : double ; Amount gate is open from 0 (fully closed) to 1 (fully open)
+	progress : float ; Amount gate is open from 0 (fully closed) to 1 (fully open)
 	change_in_players : int ; Change in number of players on the gate (-1, 0, or 1).
 	new_nbr_players : size_t ; How many players are now engaging the gate.
 	sequence_no : uint64_t ; The unique ID of this gate update packet (should be greater than the last received gate update packet).

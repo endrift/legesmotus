@@ -68,12 +68,13 @@ namespace LM {
 
 		struct PlayerUpdate {
 			uint32_t player_id;
-			double x;
-			double y;
-			double x_vel;
-			double y_vel;
-			double rotation;
+			float x;
+			float y;
+			float x_vel;
+			float y_vel;
+			float rotation;
 			int energy;
+			float gun_rotation;
 			uint32_t current_weapon_id;
 			TypeWrapper<std::string> flags;
 		};
@@ -134,7 +135,7 @@ namespace LM {
 		struct GateUpdate {
 			uint32_t acting_player_id;
 			char team;
-			double progress;
+			float progress;
 			int change_in_players;
 			size_t new_nbr_players;
 			uint64_t sequence_no;

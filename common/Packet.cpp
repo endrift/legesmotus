@@ -24,6 +24,7 @@ static void marshal_PLAYER_UPDATE(PacketWriter& w, Packet* p) {
 	w << p->player_update.y_vel;
 	w << p->player_update.rotation;
 	w << p->player_update.energy;
+	w << p->player_update.gun_rotation;
 	w << p->player_update.current_weapon_id;
 	w << p->player_update.flags;
 }
@@ -36,6 +37,7 @@ static void unmarshal_PLAYER_UPDATE(PacketReader& r, Packet* p) {
 	r >> p->player_update.y_vel;
 	r >> p->player_update.rotation;
 	r >> p->player_update.energy;
+	r >> p->player_update.gun_rotation;
 	r >> p->player_update.current_weapon_id;
 	r >> p->player_update.flags;
 }
@@ -424,6 +426,7 @@ Packet::Packet(const Packet& other) {
 		player_update.y_vel = other.player_update.y_vel;
 		player_update.rotation = other.player_update.rotation;
 		player_update.energy = other.player_update.energy;
+		player_update.gun_rotation = other.player_update.gun_rotation;
 		player_update.current_weapon_id = other.player_update.current_weapon_id;
 		player_update.flags = *other.player_update.flags;
 		break;

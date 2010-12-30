@@ -332,26 +332,28 @@ void Player::write_update_packet (PacketWriter& packet) const {
 	if (is_frozen())		{ flags.push_back('F'); }
 	if (is_grabbing_obstacle())	{ flags.push_back('G'); }
 
-	packet << get_id() << get_x() << get_y() << get_x_vel() << get_y_vel() << get_rotation_degrees() << get_energy() << get_current_weapon_id() << flags;
+	packet << get_id() << get_x() << get_y() << get_x_vel() << get_y_vel() << get_rotation_degrees() << get_energy() << get_gun_rotation_degrees() << get_current_weapon_id() << flags;
 }
 
 void Player::read_update_packet (PacketReader& packet) {
-	float	x;
-	float	y;
-	float	x_vel;
-	float	y_vel;
-	float	rotation;
-	int	energy;
+	float x;
+	float y;
+	float x_vel;
+	float y_vel;
+	float rotation;
+	float aim;
+	int energy;
 	uint32_t current_weapon_id;
 	string	flags;
 
-	packet >> x >> y >> x_vel >> y_vel >> rotation >> energy >> current_weapon_id >> flags;
+	packet >> x >> y >> x_vel >> y_vel >> rotation >> energy >> aim >> current_weapon_id >> flags;
 
 	// Note: We must use the setter functions, and not set the values directly, since a derived class may have overridden a setter.  (GraphicalPlayer overrides nearly all of them.)
 	set_position(x, y);
 	set_velocity(x_vel, y_vel);
 	set_rotation_degrees(rotation);
 	set_energy(energy);
+	set_gun_rotation_degrees(aim);
 	set_current_weapon_id(current_weapon_id);
 	set_is_invisible(flags.find_first_of('I') != string::npos);
 	set_is_frozen(flags.find_first_of('F') != string::npos);
@@ -375,6 +377,7 @@ void Player::generate_player_update(Packet::PlayerUpdate* p) {
 	p->y_vel = get_y_vel();
 	p->rotation = get_rotation_degrees();
 	p->energy = get_energy();
+	p->gun_rotation = get_gun_rotation_degrees();
 	p->current_weapon_id = get_current_weapon_id();
 	p->flags = "";
 	if (is_invisible()) {
@@ -393,6 +396,7 @@ void Player::read_player_update(const Packet::PlayerUpdate& p) {
 	set_velocity(p.x_vel, p.y_vel);
 	set_rotation_degrees(p.rotation);
 	set_energy(p.energy);
+	set_gun_rotation_degrees(p.gun_rotation);
 	set_current_weapon_id(p.current_weapon_id);
 	//set_is_invisible(p.flags->find_first_of('I') != string::npos);
 	set_is_frozen(p.flags->find_first_of('F') != string::npos);
