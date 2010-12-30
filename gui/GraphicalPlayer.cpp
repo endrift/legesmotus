@@ -107,6 +107,7 @@ void GraphicalPlayer::set_rotation_degrees(float rotation) {
 }
 
 void GraphicalPlayer::set_gun_rotation_degrees(float rotation) {
+	Player::set_gun_rotation_degrees(rotation);
 	// TODO un-hardcode angle
 	// Red team is right-handed, blue team is left-handed
 	bool handedness = true;
