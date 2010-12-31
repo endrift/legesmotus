@@ -37,6 +37,9 @@ GraphicalMap::GraphicalMap(ResourceCache *cache) {
 	m_cache = cache;
 }
 
+GraphicalMap::~GraphicalMap() {
+}
+
 GraphicalMapObject* GraphicalMap::make_client_map_object(MapReader* reader) {
 	switch(reader->get_type()) {
 	case Map::GATE:

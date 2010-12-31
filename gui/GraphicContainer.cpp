@@ -27,20 +27,22 @@
 using namespace LM;
 using namespace std;
 
-GraphicContainer::GraphicContainer(Widget* parent) : Widget(parent) {
-	// Nothing to do
+GraphicContainer::GraphicContainer(bool self_contained, Widget* parent) : Widget(parent) {
+	m_autodelete = self_contained;
 }
 
 GraphicContainer::~GraphicContainer() {
 	m_name_map.clear();
 
-	for (multimap<int, Graphic*>::iterator iter = m_priority_map.begin(); iter != m_priority_map.end(); ++iter) {
-		delete iter->second;
+	if (m_autodelete) {
+		for (multimap<int, Graphic*>::iterator iter = m_priority_map.begin(); iter != m_priority_map.end(); ++iter) {
+			delete iter->second;
+		}
 	}
 }
 
 void GraphicContainer::add_graphic(Graphic* graphic, int priority) {
-	m_priority_map.insert(make_pair(priority, graphic->clone()));
+	m_priority_map.insert(make_pair(priority, m_autodelete?graphic->clone():graphic));
 }
 
 void GraphicContainer::add_graphic(const std::string& name, Graphic* graphic, int priority) {

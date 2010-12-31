@@ -46,6 +46,8 @@ namespace LM {
 
 	public:
 		GraphicalMap(ResourceCache* cache);
+		virtual ~GraphicalMap();
+
 		GraphicContainer* get_background();
 	};
 }

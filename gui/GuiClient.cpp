@@ -160,7 +160,7 @@ void GuiClient::run() {
 	set_running(true);
 	// XXX testing code
 	Bone crosshair_bone;
-	GraphicContainer aim(&m_root);
+	GraphicContainer aim(false, &m_root);
 	Sprite crosshair(m_cache->get<Image>("aim.png"));
 	crosshair.set_center_x(128);
 	crosshair.set_center_y(128);

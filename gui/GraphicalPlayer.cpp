@@ -30,7 +30,7 @@
 using namespace LM;
 using namespace std;
 
-GraphicalPlayer::GraphicalPlayer(const char* name, uint32_t id, char team, ResourceCache* cache) : Player(name, id, team) {
+GraphicalPlayer::GraphicalPlayer(const char* name, uint32_t id, char team, ResourceCache* cache) : Player(name, id, team), m_graphic_root(true) {
 	string color;
 	if (team == 'A') {
 		color = "blue";

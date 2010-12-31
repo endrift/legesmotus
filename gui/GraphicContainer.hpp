@@ -43,11 +43,12 @@ namespace LM {
 		std::multimap<int, Graphic*> m_priority_map;
 		std::map<std::string, std::multimap<int, Graphic*>::iterator> m_name_map;
 
+		bool m_autodelete;
+
 	public:
-		GraphicContainer(Widget* parent = NULL);
+		GraphicContainer(bool self_contained = false, Widget* parent = NULL);
 		virtual ~GraphicContainer();
 
-		// Adding a graphic to the container clones it
 		void add_graphic(Graphic* graphic, int priority = 0);
 		void add_graphic(const std::string& name, Graphic* graphic, int priority = 0);
 
