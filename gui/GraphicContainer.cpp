@@ -62,7 +62,9 @@ void GraphicContainer::change_priority(const std::string& name, int new_priority
 void GraphicContainer::draw(DrawContext* ctx) const {
 	ctx->translate(get_x(), get_y());
 	for (multimap<int, Graphic*>::const_iterator iter = m_priority_map.begin(); iter != m_priority_map.end(); ++iter) {
-		iter->second->draw(ctx);
+		if (!iter->second->is_invisible()) {
+			iter->second->draw(ctx);
+		}
 	}
 	ctx->translate(-get_x(), -get_y());
 }

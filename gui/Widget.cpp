@@ -39,6 +39,8 @@ Widget::Widget(Widget* parent) {
 	m_y = 0;
 	m_w = 0;
 	m_h = 0;
+
+	m_drawable = true;
 }
 
 Widget::~Widget() {
@@ -176,12 +178,20 @@ float Widget::get_height() const {
 	return m_h;
 }
 
+void Widget::set_drawable(bool drawable) {
+	m_drawable = drawable;
+}
+
+bool Widget::is_drawable() const {
+	return m_drawable;
+}
+
 void Widget::focus() {
-	s_focus();
+	//s_focus();
 }
 
 void Widget::blur() {
-	s_blur();
+	//s_blur();
 }
 
 // TODO propagate events downward
@@ -192,7 +202,7 @@ void Widget::mouse_clicked(float x, float y, bool down, int button) {
 		child->mouse_clicked(x - get_x(), y - get_y(), down, button);
 	}
 
-	s_mouse_clicked(x, y, down, button);
+	//s_mouse_clicked(x, y, down, button);
 }
 
 void Widget::mouse_moved(float x, float y, float delta_x, float delta_y) {
@@ -201,17 +211,19 @@ void Widget::mouse_moved(float x, float y, float delta_x, float delta_y) {
 		iter->second->mouse_moved(x - get_x(), y - get_y(), delta_x, delta_y);
 	}
 
-	s_mouse_moved(x, y, delta_x, delta_y);
+	//s_mouse_moved(x, y, delta_x, delta_y);
 }
 
 void Widget::keypress(int key, bool down) {
-	s_keypress(key, down);
+	//s_keypress(key, down);
 }
 
 void Widget::draw(DrawContext* ctx) const {
 	ctx->translate(get_x(), get_y());
 	for (multimap<int, Widget*>::const_iterator iter = m_children.begin(); iter != m_children.end(); ++iter) {
-		iter->second->draw(ctx);
+		if (iter->second->is_drawable()) {
+			iter->second->draw(ctx);
+		}
 	}
 	ctx->translate(-get_x(), -get_y());
 }

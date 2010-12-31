@@ -36,10 +36,12 @@ namespace LM {
 		Widget* m_parent;
 		std::multimap<int, Widget*> m_children;
 
-		float	m_x;
-		float	m_y;
-		float	m_w;
-		float	m_h;
+		float m_x;
+		float m_y;
+		float m_w;
+		float m_h;
+
+		bool m_drawable;
 
 	public:
 		Widget(Widget* parent = NULL);
@@ -64,10 +66,13 @@ namespace LM {
 		virtual void set_width(float w);
 		virtual void set_height(float h);
 
-		float	get_x() const;
-		float	get_y() const;
-		float	get_width() const;
-		float	get_height() const;
+		float get_x() const;
+		float get_y() const;
+		float get_width() const;
+		float get_height() const;
+
+		virtual void set_drawable(bool drawable);
+		bool is_drawable() const;
 
 		virtual void focus();
 		virtual void blur();
@@ -78,12 +83,12 @@ namespace LM {
 
 		virtual void draw(DrawContext* ctx) const;
 
-		boost::signals2::signal<void ()> s_focus;
+		/*boost::signals2::signal<void ()> s_focus;
 		boost::signals2::signal<void ()> s_blur;
 
 		boost::signals2::signal<void (float, float, bool, int)> s_mouse_clicked;
 		boost::signals2::signal<void (float, float, float, float)> s_mouse_moved;
-		boost::signals2::signal<void (int, bool)> s_keypress;
+		boost::signals2::signal<void (int, bool)> s_keypress;*/
 	};
 }
 
