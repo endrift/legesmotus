@@ -59,10 +59,10 @@ GraphicalPlayer::GraphicalPlayer(const char* name, uint32_t id, char team, Resou
 	front_arm.set_x(14);
 	front_arm.set_y(-18);
 	back_arm.get_bone()->set_parent(&m_root_bone);
-	back_arm.set_center_x(27);
-	back_arm.set_center_y(29);
-	back_arm.set_x(-5);
-	back_arm.set_y(-19);
+	back_arm.set_center_x(29);
+	back_arm.set_center_y(32);
+	back_arm.set_x(-4);
+	back_arm.set_y(-17);
 	front_leg.get_bone()->set_parent(&m_root_bone);
 	front_leg.set_center_x(37);
 	front_leg.set_center_y(60);
