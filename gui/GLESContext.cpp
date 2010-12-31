@@ -561,12 +561,11 @@ void GLESContext::draw_image(int width, int height, Image img) {
 }
 
 void GLESContext::bind_image(Image img) {
-	// XXX uncomment when graphics revamp is done
-	//if (m_bound_img != img || !m_img_bound) {
+	if (m_bound_img != img || !m_img_bound) {
 		glBindTexture(GL_TEXTURE_2D, img);
 		m_bound_img = img;
 		bind_vbo(IMG_VERTS);
-	//}
+	}
 	if (!m_img_bound) {
 		glEnable(GL_TEXTURE_2D);
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);

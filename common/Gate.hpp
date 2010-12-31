@@ -44,7 +44,6 @@ namespace LM {
 		char			m_team;
 		float			m_width;
 		float			m_length;
-		float			m_curr_length;
 		float			m_extent;
 		float			m_rotation;
 
@@ -61,11 +60,11 @@ namespace LM {
 	
 		virtual const b2Shape* get_bounding_shape() const { return m_bounding_shape; }
 		
-		virtual Type get_type() const { return MAP_OBJECT; }
-		virtual char get_team() const { return m_team; }
-		virtual float get_curr_length() const { return m_curr_length; }
+		char get_team() const { return m_team; }
 		
-		virtual void set_progress(float progress);
+		void set_progress(float progress);
+		float get_length() { return m_length; }
+		float get_width() { return m_width; }
 		
 		// Decorations have no physics of their own.
 		virtual void initialize_physics(b2World* world);
@@ -77,22 +76,9 @@ namespace LM {
 		virtual bool is_engaged() const { return m_is_engaged; };
 		virtual bool is_engaged_by(Player* player) const { return m_engaging_players.find(player) != m_engaging_players.end(); };
 		virtual bool shot(Player* shooter, Point point_hit, float direction) { return false; }
-		
 		virtual CollisionResult get_collision_result(PhysicsObject* other, b2Contact* contact);
-		
-		// Called when an object starts colliding with the obstacle
-		//  contact is the Box2D contact manifold
 		virtual CollisionResult collide(PhysicsObject* other, b2Contact* contact);
-
-		// Called every frame during which an object is _within_ this obstacle's bounds
-		//  (Only called if is_interactive() returns true)
-		//  is_engaged() should return true after this function returns
 		virtual void interact(PhysicsObject* other, b2Contact* contact) {}
-
-		// Called the first frame that the object is no longer within the obstacle's bounds
-		//  (as determined by the result of calling is_engaged above)
-		//  (Only called if is_interactive() returns true)
-		//  is_engaged() should returns false after this function returns
 		virtual void disengage(PhysicsObject* other);
 		virtual void init(MapReader* reader);
 	};

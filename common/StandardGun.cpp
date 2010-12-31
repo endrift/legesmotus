@@ -294,9 +294,8 @@ Packet::PlayerHit* StandardGun::generate_next_hit_packet(Packet::PlayerHit* p, P
 		}
 	}
 	
-	if (!found_player) {
-		return NULL;
-	}
+	ASSERT(!found_player);
+	return NULL;
 }
 
 float32 StandardGun::ReportFixture(b2Fixture* fixture, const b2Vec2& point, const b2Vec2& normal, float32 fraction) {

@@ -41,6 +41,14 @@ GraphicalMapObject::~GraphicalMapObject() {
 	delete m_graphic;
 }
 
+void GraphicalMapObject::load_graphic(const string& imagename) {
+	Image image(imagename + ".png", m_cache, true);
+	delete m_graphic;
+	m_graphic = new GraphicRegion(&image);
+	m_graphic->set_width(image.get_width());
+	m_graphic->set_height(image.get_height());
+}
+
 void GraphicalMapObject::read(MapReader* reader, MapObject* owner) {
 	string graphic_name;
 	(*reader) >> graphic_name;
@@ -49,12 +57,9 @@ void GraphicalMapObject::read(MapReader* reader, MapObject* owner) {
 		return;
 	}
 
-	Image image(graphic_name + ".png", m_cache, true);
-	m_graphic = new GraphicRegion(&image);
+	load_graphic(graphic_name);
 	m_graphic->set_x(owner->get_position().x);
 	m_graphic->set_y(owner->get_position().y);
-	m_graphic->set_width(image.get_width());
-	m_graphic->set_height(image.get_height());
 
 	// TODO other properties
 }
@@ -85,6 +90,6 @@ void GraphicalMapObject::set_rotation(float rotation) {
 	m_graphic->set_rotation(rotation);
 }
 
-Graphic* GraphicalMapObject::get_graphic() {
+GraphicRegion* GraphicalMapObject::get_graphic() {
 	return m_graphic;
 }

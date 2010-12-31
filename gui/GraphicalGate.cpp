@@ -1,5 +1,5 @@
 /*
- * gui/GraphicalMapObject.hpp
+ * gui/GraphicalGate.cpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,40 +22,41 @@
  * 
  */
 
-#ifndef LM_GUI_GRAPHICALMAPOBJECT_HPP
-#define LM_GUI_GRAPHICALMAPOBJECT_HPP
+#include "GraphicalGate.hpp"
+#include "GraphicRegion.hpp"
+#include "common/Gate.hpp"
 
-#include "common/ClientMapObject.hpp"
-#include "Graphic.hpp"
-#include <string>
+using namespace LM;
+using namespace std;
 
-namespace LM {
-	class GraphicRegion;
-	class ResourceCache;
-
-	class GraphicalMapObject : public ClientMapObject {
-	private:
-		GraphicRegion* m_graphic;
-		ResourceCache* m_cache;
-
-	protected:
-		void load_graphic(const std::string& imagename);
-
-	public:
-		GraphicalMapObject(ResourceCache* cache);
-		~GraphicalMapObject();
-
-		virtual void read(MapReader* reader, MapObject* owner);
-
-		virtual void set_position(Point position); 
-		virtual void set_is_tiled(bool is_tiled);
-		virtual void set_tile_dimensions(Vector tile_dimensions);
-		virtual void set_scale_x(float scale_x);
-		virtual void set_scale_y(float scale_y);
-		virtual void set_rotation(float rotation);
-
-		GraphicRegion* get_graphic();
-	};
+GraphicalGate::GraphicalGate(ResourceCache* cache) : GraphicalMapObject(cache) {
+	// Nothing to do
 }
 
-#endif
+void GraphicalGate::read(MapReader* reader, MapObject* owner) {
+	const char* team_name;
+	Gate* gate = static_cast<Gate*>(owner);
+	switch (gate->get_team()) {
+	case 'A':
+		team_name = "blue";
+		break;
+	case 'B':
+		team_name = "red";
+		break;
+	default:
+		return;
+	}
+	load_graphic(team_name + string("_gate"));
+	get_graphic()->set_width(gate->get_width());
+	get_graphic()->set_height(gate->get_length());
+	m_length = gate->get_length();
+}
+
+void GraphicalGate::set_position(Point position) {
+	get_graphic()->set_x(position.x + 27);
+	get_graphic()->set_y(position.y);
+}
+
+void GraphicalGate::set_scale_y(float scale_y) {
+	get_graphic()->set_height(m_length*scale_y);
+}

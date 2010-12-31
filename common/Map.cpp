@@ -25,6 +25,7 @@
 #include "Map.hpp"
 #include "MapReader.hpp"
 #include "MapObject.hpp"
+#include "ClientMapObject.hpp"
 #include "StringTokenizer.hpp"
 #include "PacketReader.hpp"
 #include "PacketWriter.hpp"
@@ -131,6 +132,7 @@ MapObject* Map::make_map_object(MapReader* reader) {
 		object = new Gate(position, clientpart);
 		break;
 	default:
+		delete clientpart;
 		return NULL;
 	}
 

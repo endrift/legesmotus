@@ -114,14 +114,10 @@ void Gate::set_progress(float progress) {
 	
 	m_progress = progress;
 	
-	m_curr_length = m_length * (1.0f - progress);
+	get_client_part()->set_scale_y(1.0f - progress);
 }
 
 void Gate::init(MapReader* reader) {
-	MapObject::init(reader);
-
-	get_client_part()->set_is_tiled(true);
-
 	while (reader->has_more()) {
 		string param_string;
 		(*reader) >> param_string;
@@ -130,10 +126,8 @@ void Gate::init(MapReader* reader) {
 			m_team = parse_team_string(param_string.c_str() + 5);
 		} else if (strncmp(param_string.c_str(), "width=", 6) == 0) {
 			m_width = atof(param_string.c_str() + 6);
-			get_client_part()->set_scale_x(m_width);
 		} else if (strncmp(param_string.c_str(), "length=", 7) == 0) {
 			m_length = atof(param_string.c_str() + 7);
-			get_client_part()->set_scale_y(m_length);
 		} else if (strncmp(param_string.c_str(), "extent=", 7) == 0) {
 			m_extent = atof(param_string.c_str() + 7);
 		} else if (strncmp(param_string.c_str(), "rotate=", 7) == 0) {
@@ -145,8 +139,6 @@ void Gate::init(MapReader* reader) {
 		delete m_bounding_shape;
 	}
 	
-	set_progress(0.0f);
-	
 	b2Vec2 size(m_width + m_extent * 2.0, m_length);
 	b2PolygonShape* shape = new b2PolygonShape();
 	shape->SetAsBox(to_physics(size.x/2 * get_scale_x()), to_physics(size.y/2 * get_scale_y()),
@@ -154,5 +146,8 @@ void Gate::init(MapReader* reader) {
 
 	m_bounding_shape = shape;
 	
+	MapObject::init(reader);
+
 	set_position(get_position() - Point(size.x/2, 0));
+	set_progress(0.0f);
 }

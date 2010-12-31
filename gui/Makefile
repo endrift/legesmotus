@@ -2,7 +2,8 @@ BASEDIR = ..
 LIBSRCS := Widget.cpp DrawContext.cpp GLESContext.cpp GuiWindow.cpp Font.cpp Label.cpp Image.cpp ResourceCache.cpp \
 	GraphicContainer.cpp Graphic.cpp Sprite.cpp Bone.cpp GraphicRegion.cpp Window.cpp SDLWindow.cpp GuiClient.cpp \
 	GraphicalMap.cpp GraphicalPlayer.cpp InputDriver.cpp SDLInputDriver.cpp InputSink.cpp HumanController.cpp \
-	GameView.cpp input.cpp GraphicalMapObject.cpp ShaderSet.cpp GLESProgram.cpp Bindings.cpp PhysicsDraw.cpp
+	GameView.cpp input.cpp GraphicalMapObject.cpp ShaderSet.cpp GLESProgram.cpp Bindings.cpp PhysicsDraw.cpp \
+	GraphicalGate.cpp
 BINSRCS := main.cpp
 LIBRARY := ../liblmgui.a
 

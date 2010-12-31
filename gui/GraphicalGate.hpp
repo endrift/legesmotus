@@ -1,5 +1,5 @@
 /*
- * gui/GraphicalMapObject.hpp
+ * gui/GraphicalGate.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,39 +22,20 @@
  * 
  */
 
-#ifndef LM_GUI_GRAPHICALMAPOBJECT_HPP
-#define LM_GUI_GRAPHICALMAPOBJECT_HPP
+#ifndef LM_GUI_GRAPHICALGATE_HPP
+#define LM_GUI_GRAPHICALGATE_HPP
 
-#include "common/ClientMapObject.hpp"
-#include "Graphic.hpp"
-#include <string>
+#include "gui/GraphicalMapObject.hpp"
 
 namespace LM {
-	class GraphicRegion;
-	class ResourceCache;
-
-	class GraphicalMapObject : public ClientMapObject {
+	class GraphicalGate : public GraphicalMapObject {
 	private:
-		GraphicRegion* m_graphic;
-		ResourceCache* m_cache;
-
-	protected:
-		void load_graphic(const std::string& imagename);
-
+		float m_length;
 	public:
-		GraphicalMapObject(ResourceCache* cache);
-		~GraphicalMapObject();
-
+		GraphicalGate(ResourceCache* cache);
 		virtual void read(MapReader* reader, MapObject* owner);
-
-		virtual void set_position(Point position); 
-		virtual void set_is_tiled(bool is_tiled);
-		virtual void set_tile_dimensions(Vector tile_dimensions);
-		virtual void set_scale_x(float scale_x);
+		virtual void set_position(Point position);
 		virtual void set_scale_y(float scale_y);
-		virtual void set_rotation(float rotation);
-
-		GraphicRegion* get_graphic();
 	};
 }
 

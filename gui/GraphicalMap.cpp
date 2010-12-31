@@ -24,8 +24,11 @@
 
 #include "GraphicalMap.hpp"
 #include "GraphicalMapObject.hpp"
-#include "common/MapObject.hpp"
+#include "GraphicalGate.hpp"
 #include "ResourceCache.hpp"
+#include "GraphicRegion.hpp"
+#include "common/MapObject.hpp"
+#include "common/MapReader.hpp"
 
 using namespace LM;
 using namespace std;
@@ -35,7 +38,12 @@ GraphicalMap::GraphicalMap(ResourceCache *cache) {
 }
 
 GraphicalMapObject* GraphicalMap::make_client_map_object(MapReader* reader) {
-	return new GraphicalMapObject(m_cache);
+	switch(reader->get_type()) {
+	case Map::GATE:
+		return new GraphicalGate(m_cache);
+	default:
+		return new GraphicalMapObject(m_cache);
+	}
 }
 
 void GraphicalMap::add_object(MapObject* object) {
