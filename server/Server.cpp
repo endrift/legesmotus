@@ -536,11 +536,6 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 		new_player.set_is_op(true);
 	}
 
-	// Send the welcome packet back to this client.
-	PacketWriter		welcome_packet(WELCOME_PACKET);
-	welcome_packet << PROTOCOL_VERSION << player_id << name << team;
-	m_network.send_reliable_packet(address, welcome_packet);
-
 	if (is_first_player) {
 		// This is the first player.  Start a new game.
 		new_game();
@@ -558,26 +553,7 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 			send_round_start_packet(&new_player);
 		}
 	}
-
-	// Send the new player an announce packet and score update packet for every player currently in the game (except for the one just added)
-	PlayerMap::const_iterator	it(m_players.begin());
-	while (it != m_players.end()) {
-		const ServerPlayer&	player((it++)->second);
-
-		if (player.get_id() == player_id) {
-			// Skip the player just added
-			continue;
-		}
-
-		PacketWriter	announce_packet(ANNOUNCE_PACKET);
-		announce_packet << player.get_id() << player.get_name() << player.get_team();
-		m_network.send_reliable_packet(address, announce_packet);
-
-		PacketWriter	score_packet(SCORE_UPDATE_PACKET);
-		score_packet << player.get_id() << player.get_score();
-		m_network.send_reliable_packet(address, score_packet);
-	}
-
+	
 	// Send the player the team scores
 	report_team_scores(new_player);
 
@@ -1283,6 +1259,21 @@ uint64_t	Server::gametime_left() const {
 
 
 void	Server::send_new_round_packets(const ServerPlayer* player) {
+	if (player) {
+		PacketWriter		welcome_packet(WELCOME_PACKET);
+		welcome_packet << PROTOCOL_VERSION << player->get_id() << player->get_name() << player->get_team();
+		m_network.send_reliable_packet(player->get_address(), welcome_packet);
+	} else {
+		PlayerMap::const_iterator	it(m_players.begin());
+		while (it != m_players.end()) {
+			const ServerPlayer&	nextplayer((it++)->second);
+			// Send the welcome packet back to each client.
+			PacketWriter		welcome_packet(WELCOME_PACKET);
+			welcome_packet << PROTOCOL_VERSION << nextplayer.get_id() << nextplayer.get_name() << nextplayer.get_team();
+			m_network.send_reliable_packet(nextplayer.get_address(), welcome_packet);
+		}
+	}
+
 	PacketWriter	packet(NEW_ROUND_PACKET);
 	packet << m_current_map.get_name() << m_current_map.get_revision() << m_current_map.get_width() << m_current_map.get_height();
 	if (m_players_have_spawned) {
@@ -1300,6 +1291,28 @@ void	Server::send_new_round_packets(const ServerPlayer* player) {
 
 	broadcast_params(player);
 	broadcast_weapons(player);
+	
+	// Send the new player an announce packet and score update packet for every player currently in the game
+	PlayerMap::const_iterator	it(m_players.begin());
+	while (it != m_players.end()) {
+		const ServerPlayer&	otherplayer((it++)->second);
+
+		PacketWriter	announce_packet(ANNOUNCE_PACKET);
+		announce_packet << otherplayer.get_id() << otherplayer.get_name() << otherplayer.get_team();
+		if (player) {
+			m_network.send_reliable_packet(player->get_address(), announce_packet);
+		} else {
+			broadcast_reliable_packet_except(announce_packet, otherplayer.get_id());
+		}
+
+		PacketWriter	score_packet(SCORE_UPDATE_PACKET);
+		score_packet << otherplayer.get_id() << otherplayer.get_score();
+		if (player) {
+			m_network.send_reliable_packet(player->get_address(), score_packet);
+		} else {
+			broadcast_reliable_packet_except(score_packet, otherplayer.get_id());
+		}
+	}
 }
 
 void	Server::send_round_start_packet(const ServerPlayer* player) {
