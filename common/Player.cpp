@@ -398,6 +398,7 @@ void Player::read_player_update(const Packet::PlayerUpdate& p) {
 	//set_is_invisible(p.flags->find_first_of('I') != string::npos);
 	set_is_frozen(p.flags->find_first_of('F') != string::npos);
 	set_is_grabbing_obstacle(p.flags->find_first_of('G') != string::npos);
+	set_is_invisible(p.flags->find_first_of('I') != string::npos);
 	if (is_grabbing_obstacle() && m_physics_body != NULL) {
 		// Let the other client say how we're moving on the wall
 		m_physics_body->SetAwake(false);

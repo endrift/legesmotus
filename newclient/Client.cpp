@@ -262,6 +262,7 @@ void Client::welcome(const Packet& p) {
 	if (get_player(p.welcome.player_id) == NULL) {
 		Player* player = make_player(p.welcome.player_name->c_str(), p.welcome.player_id, p.welcome.team);
 		add_player(player);
+		player->set_is_invisible(true);
 	}
 	set_own_player(p.welcome.player_id);
 }
@@ -315,6 +316,8 @@ void Client::spawn(const Packet& p) {
 	} else {
 		player->set_is_frozen(true, p.spawn.freeze_time);
 	}
+	
+	player->set_is_invisible(false);
 	// TODO implement the rest
 }
 

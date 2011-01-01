@@ -138,3 +138,9 @@ void GraphicalPlayer::set_gun_rotation_degrees(float rotation) {
 		m_graphic_root.get_graphic("back_arm")->set_rotation(-rotation + 60);
 	}
 }
+
+void GraphicalPlayer::set_is_invisible(bool invisible) {
+	Player::set_is_invisible(invisible);
+	
+	m_graphic_root.set_drawable(!invisible);
+}

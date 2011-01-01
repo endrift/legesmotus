@@ -52,6 +52,7 @@ namespace LM {
 		virtual void set_position(float x, float y);
 		virtual void set_rotation_degrees(float rotation);
 		virtual void set_gun_rotation_degrees(float rotation);
+		virtual void set_is_invisible(bool invisible);
 	};
 }
 

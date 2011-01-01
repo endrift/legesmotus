@@ -149,11 +149,17 @@ b2World* GameLogic::get_world() {
 }
 
 void GameLogic::attempt_jump(uint32_t player_id, float angle) {
-	if (m_players[player_id]->is_grabbing_obstacle() && !m_players[player_id]->is_frozen()) {
-		m_players[player_id]->set_is_grabbing_obstacle(false);
+	Player* player = get_player(player_id);
 	
-		m_players[player_id]->apply_force(b2Vec2(JUMP_STRENGTH * cos(angle), JUMP_STRENGTH  * sin(angle)));
-		m_players[player_id]->apply_torque(-1*(JUMP_ROTATION/2.0f) + (float)rand()/(float)RAND_MAX * JUMP_ROTATION);
+	if (player == NULL) {
+		return;
+	}
+
+	if (player->is_grabbing_obstacle() && !player->is_frozen() && !player->is_invisible()) {
+		player->set_is_grabbing_obstacle(false);
+	
+		player->apply_force(b2Vec2(JUMP_STRENGTH * cos(angle), JUMP_STRENGTH  * sin(angle)));
+		player->apply_torque(-1*(JUMP_ROTATION/2.0f) + (float)rand()/(float)RAND_MAX * JUMP_ROTATION);
 	}
 }
 
@@ -161,11 +167,11 @@ bool GameLogic::attempt_fire(uint32_t player_id, uint32_t weapon_id, float angle
 	Weapon* weapon = get_weapon(weapon_id);
 	Player* player = get_player(player_id);
 	
-	if (weapon == NULL) {
+	if (weapon == NULL || player == NULL) {
 		return false;
 	}
 	
-	if (player->is_frozen() || weapon->get_remaining_cooldown() > 0) {
+	if (player->is_frozen() || weapon->get_remaining_cooldown() > 0 || player->is_invisible()) {
 		return false;
 	}
 	
@@ -244,6 +250,21 @@ void GameLogic::create_grab(Player* player, b2Body* body2, b2WorldManifold* mani
 }
 
 MapObject::CollisionResult GameLogic::collide(PhysicsObject* userdata1, PhysicsObject* userdata2, b2Contact* contact, bool isnew, bool disengage) {	
+	// IGNORE all collisions with invisible players!
+	if (userdata1->get_type() == PhysicsObject::PLAYER) {
+		Player* player = static_cast<Player*>(userdata1);
+		if (player->is_invisible()) {
+			return MapObject::IGNORE;
+		}
+	}
+	
+	if (userdata2->get_type() == PhysicsObject::PLAYER) {
+		Player* player = static_cast<Player*>(userdata2);
+		if (player->is_invisible()) {
+			return MapObject::IGNORE;
+		}
+	}
+	
 	MapObject::CollisionResult result1 = MapObject::GRAB;
 	if (userdata1->get_type() == PhysicsObject::MAP_OBJECT) {
 		MapObject* object = static_cast<MapObject*>(userdata1);
