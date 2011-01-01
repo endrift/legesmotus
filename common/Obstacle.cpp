@@ -78,7 +78,7 @@ MapObject::CollisionResult Obstacle::collide(PhysicsObject* other, b2Contact* co
 	
 		Player* player = static_cast<Player*>(other);
 		
-		if (m_team == 0 || player->get_team() != m_team && !player->is_frozen()) {
+		if ((m_team == 0 || player->get_team() != m_team) && !player->is_frozen()) {
 			if (m_freeze_on_hit != 0) {
 				player->set_is_frozen(true, m_freeze_on_hit);
 				player->apply_force(b2Vec2(m_repel_velocity * repel_normal.x, m_repel_velocity * repel_normal.y));
