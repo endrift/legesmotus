@@ -37,7 +37,6 @@ using namespace LM;
 using namespace std;
 
 Obstacle::Obstacle(Point position, ClientMapObject* clientpart) : MapObject(position, clientpart) {
-	// TODO
 	m_is_slippery = false;
 	m_is_collidable = true;
 	m_bounce_factor = 0.9;
@@ -92,6 +91,7 @@ MapObject::CollisionResult Obstacle::collide(PhysicsObject* other, b2Contact* co
 				if (player->get_energy() == 0) {
 					player->set_is_frozen(true, m_freeze_time);
 					player->apply_force(b2Vec2(m_repel_velocity * repel_normal.x, m_repel_velocity * repel_normal.y));
+					m_last_damage_time = 0;
 				}
 			}
 		}
@@ -125,6 +125,7 @@ void Obstacle::interact(PhysicsObject* other, b2Contact* contact) {
 		if (player->get_energy() == 0) {
 			player->set_is_frozen(true, m_freeze_time);
 			player->apply_force(b2Vec2(m_repel_velocity * repel_normal.x, m_repel_velocity * repel_normal.y));
+			m_last_damage_time = 0;
 		}
 	}
 }

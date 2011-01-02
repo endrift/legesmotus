@@ -53,7 +53,9 @@ void GraphicalMap::add_object(MapObject* object) {
 	Map::add_object(object);
 	GraphicalMapObject* obj = static_cast<GraphicalMapObject*>(object->get_client_part());
 	// TODO What if it's foreground!?
-	m_background.add_graphic(obj->get_graphic());
+	if (!(obj->get_graphic() == NULL)) {
+		m_background.add_graphic(obj->get_graphic());
+	}
 }
 
 GraphicContainer* GraphicalMap::get_background() {

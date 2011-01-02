@@ -105,6 +105,8 @@ namespace LM {
 		virtual bool is_shootable() const = 0;
 
 		// Returns true if players can collide with this obstacle, false otherwise
+		// NOTE: This means that get_collision_result should be checked and collide() should be called -
+		// it might still return IGNORE, in which case the collision should be ignored.
 		virtual bool is_collidable() const = 0;
 
 		// Returns true if players can interact with this obstacle while within its bounds, false otherwise
@@ -144,5 +146,6 @@ namespace LM {
 #include "Obstacle.hpp"
 #include "Decoration.hpp"
 #include "Gate.hpp"
+#include "ForceField.hpp"
 
 #endif

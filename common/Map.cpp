@@ -131,6 +131,10 @@ MapObject* Map::make_map_object(MapReader* reader) {
 	case Map::GATE:
 		object = new Gate(position, clientpart);
 		break;
+	case Map::FORCE_FIELD:
+	case Map::REPULSION:
+		object = new ForceField(position, clientpart);
+		break;
 	default:
 		delete clientpart;
 		return NULL;
