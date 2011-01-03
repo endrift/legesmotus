@@ -59,6 +59,7 @@ Player::Player(b2World* physics_world) {
 	m_is_grabbing_obstacle = false;
 	m_attach_joint = NULL;
 	m_physics = NULL;
+	m_current_weapon_id = 0;
 	
 	if (physics_world != NULL) {
 		m_physics = physics_world;
@@ -85,6 +86,7 @@ Player::Player(const char* name, uint32_t id, char team, float x, float y, float
 	m_is_grabbing_obstacle = false;
 	m_attach_joint = NULL;
 	m_physics = NULL;
+	m_current_weapon_id = 0;
 	
 	if (physics_world != NULL) {
 		m_physics = physics_world;

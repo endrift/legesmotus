@@ -38,6 +38,7 @@ using namespace std;
 Client::Client() : m_network(this) {
 	m_logic = NULL;
 	m_curr_weapon = -1;
+	m_player_id = -1;
 	m_engaging_gate = false;
 }
 
@@ -101,6 +102,10 @@ void Client::add_player(Player* player) {
 
 void Client::set_own_player(uint32_t id) {
 	m_player_id = id;
+	Player* player = m_logic->get_player(m_player_id);
+	if (player != NULL) {
+		player->set_current_weapon_id(m_curr_weapon);
+	}
 }
 
 void Client::remove_player(uint32_t id) {
@@ -328,7 +333,7 @@ void Client::weapon_info(const Packet& p) {
 	
 	if (weapon != NULL) {
 		if (m_curr_weapon == -1) {
-			m_curr_weapon = weapon->get_id();
+			set_curr_weapon(weapon->get_id());
 		}
 		DEBUG(weapon->get_name() << ", " << weapon->get_id());
 		m_logic->add_weapon(pcopy.weapon_info.index, weapon);
@@ -371,6 +376,11 @@ void Client::set_controller(Controller* controller) {
 
 void Client::set_curr_weapon(uint32_t id) {
 	m_curr_weapon = id;
+
+	Player* player = m_logic->get_player(m_player_id);
+	if (player != NULL) {
+		player->set_current_weapon_id(m_curr_weapon);
+	}
 }
 
 void Client::set_running(bool running) {
