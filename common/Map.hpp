@@ -97,6 +97,7 @@ namespace LM {
 		const ConfigManager&	get_options() const { return m_options; }
 		const std::list<MapObject*>& get_objects() const { return m_objects; }
 		Gate*	get_gate(char team);
+		const Gate*	get_gate(char team) const;
 
 		bool		is_loaded(const char* name, int revision) const;
 		

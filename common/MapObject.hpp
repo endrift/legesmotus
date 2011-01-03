@@ -65,7 +65,7 @@ namespace LM {
 		explicit MapObject(Point position, ClientMapObject* clientpart = NULL);
 		virtual ~MapObject();
 
-		virtual Type get_type() const { return MAP_OBJECT; }
+		virtual ObjectType get_type() const { return MAP_OBJECT; }
 
 		Point get_position() const { return m_position; }
 		bool get_is_tiled() const { return m_is_tiled; }

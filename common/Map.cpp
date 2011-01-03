@@ -63,7 +63,15 @@ Gate* Map::get_gate(char team) {
 		return NULL;
 	}
 	
-	return m_gates[team];
+	return m_gates.find(team)->second;
+}
+
+const Gate* Map::get_gate(char team) const {
+	if (m_gates.find(team) == m_gates.end()) {
+		return NULL;
+	}
+	
+	return m_gates.find(team)->second;
 }
 
 void Map::initialize_physics(b2World* world) {

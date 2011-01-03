@@ -83,7 +83,7 @@ namespace LM {
 		virtual ~Player();
 		
 		// Simple getters
-		virtual Type get_type() const { return PLAYER; }
+		virtual ObjectType get_type() const { return PLAYER; }
 		const char* get_name() const { return m_name.c_str(); }
 		uint32_t get_id() const { return m_id; }
 		char get_team() const { return m_team; }

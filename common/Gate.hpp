@@ -50,7 +50,7 @@ namespace LM {
 		float			m_progress;
 
 		bool			m_is_engaged;
-		std::map<Player*, uint64_t>	m_engaging_players;
+		std::map<const Player*, uint64_t> m_engaging_players;
 		b2Shape*		m_bounding_shape;
 		
 		b2Body*			m_physics_body; // Box2D physics body for this map object
@@ -63,8 +63,8 @@ namespace LM {
 		char get_team() const { return m_team; }
 		
 		void set_progress(float progress);
-		float get_length() { return m_length; }
-		float get_width() { return m_width; }
+		float get_length() const { return m_length; }
+		float get_width() const { return m_width; }
 		
 		// Decorations have no physics of their own.
 		virtual void initialize_physics(b2World* world);
@@ -74,7 +74,7 @@ namespace LM {
 		virtual bool is_collidable() const { return false; }
 		virtual bool is_interactive() const { return true; }
 		virtual bool is_engaged() const { return m_is_engaged; };
-		virtual bool is_engaged_by(Player* player) const { return m_engaging_players.find(player) != m_engaging_players.end(); };
+		virtual bool is_engaged_by(const Player* player) const { return m_engaging_players.find(player) != m_engaging_players.end(); };
 		virtual bool shot(Player* shooter, Point point_hit, float direction) { return false; }
 		virtual CollisionResult get_collision_result(PhysicsObject* other, b2Contact* contact);
 		virtual CollisionResult collide(PhysicsObject* other, b2Contact* contact);

@@ -29,14 +29,14 @@ namespace LM {
 	class PhysicsObject {
 
 	public:
-		enum Type { 
+		enum ObjectType { 
 			PLAYER = 0, 
 			MAP_OBJECT = 1,
 			MAP_EDGE = 2
 		};
 	
 		virtual ~PhysicsObject();
-		virtual Type get_type() const { return MAP_EDGE; };
+		virtual ObjectType get_type() const { return MAP_EDGE; };
 
 	};
 }

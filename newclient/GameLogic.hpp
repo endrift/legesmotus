@@ -64,9 +64,11 @@ namespace LM {
 		
 		void add_weapon(size_t index, Weapon* weapon);
 		void clear_weapons();
+		const std::map<uint32_t, Weapon*>& list_weapons() const;
 		
 		void update_map();
 		Map* get_map();
+		const Map* get_map() const;
 		
 		// Run the next step of the game logic.
 		void step();
@@ -75,7 +77,9 @@ namespace LM {
 		uint64_t steps(uint64_t ticks);
 
 		Player* get_player(const uint32_t id);
+		const Player* get_player(const uint32_t id) const;
 		Weapon* get_weapon(const uint32_t id);
+		const Weapon* get_weapon(const uint32_t id) const;
 		b2World* get_world();
 		
 		// Attempt to jump off an obstacle
@@ -88,7 +92,7 @@ namespace LM {
 		virtual void update_gate_progress(char team, float progress);
 		
 		// Check if a player is engaging a gate
-		virtual bool is_engaging_gate(uint32_t player_id, char team);
+		virtual bool is_engaging_gate(uint32_t player_id, char team) const;
 		
 		// Physics helper methods
 		virtual void create_contact_joint(b2Body* body1, b2JointDef* joint_def);

@@ -66,6 +66,10 @@ Map* GameLogic::get_map() {
 	return m_map;
 }
 
+const Map* GameLogic::get_map() const {
+	return m_map;
+}
+
 void GameLogic::add_player(Player* player) {
 	// TODO: Put them at their proper spawn location.
 	//player->set_position(50, 50);
@@ -92,6 +96,10 @@ void GameLogic::clear_weapons() {
 		delete it->second;
 	}
 	m_weapons.clear();
+}
+
+const map<uint32_t, Weapon*>& GameLogic::list_weapons() const {
+	return m_weapons;
 }
 
 void GameLogic::step() {
@@ -139,8 +147,22 @@ Player* GameLogic::get_player(const uint32_t id) {
 	return m_players[id];
 }
 
+const Player* GameLogic::get_player(const uint32_t id) const {
+	if (m_players.find(id) == m_players.end()) {
+		WARN("No player found for id: " << id);
+		return NULL;
+	}
+
+	return m_players.find(id)->second;
+}
+
 Weapon*	GameLogic::get_weapon(const uint32_t id) {
-	map<uint32_t, Weapon*>::iterator it(m_weapons.find(id));
+	map<uint32_t, Weapon*>::const_iterator it(m_weapons.find(id));
+	return it == m_weapons.end() ? NULL : it->second;
+}
+
+const Weapon*	GameLogic::get_weapon(const uint32_t id) const {
+	map<uint32_t, Weapon*>::const_iterator it(m_weapons.find(id));
 	return it == m_weapons.end() ? NULL : it->second;
 }
 
@@ -194,15 +216,15 @@ void GameLogic::update_gate_progress(char team, float progress) {
 	gate->set_progress(progress);
 }
 
-bool GameLogic::is_engaging_gate(uint32_t player_id, char team) {
-	Map* map = get_map();
-	Player* player = get_player(player_id);
+bool GameLogic::is_engaging_gate(uint32_t player_id, char team) const {
+	const Map* map = get_map();
+	const Player* player = get_player(player_id);
 	
 	if (map == NULL || player == NULL) {
 		return false;
 	}
 	
-	Gate* gate = map->get_gate(team);
+	const Gate* gate = map->get_gate(team);
 	if (gate == NULL) {
 		return false;
 	}
