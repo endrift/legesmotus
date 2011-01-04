@@ -49,7 +49,7 @@ namespace LM {
 		std::map<uint32_t, Player*> m_players;
 		Map* m_map;
 		b2World* m_physics;
-		std::map<uint32_t, Weapon*> m_weapons;
+		std::vector<Weapon*> m_weapons;
 		
 		std::vector< std::pair<b2Body*, b2JointDef*> > m_joints_to_create;
 		
@@ -64,7 +64,7 @@ namespace LM {
 		
 		void add_weapon(size_t index, Weapon* weapon);
 		void clear_weapons();
-		const std::map<uint32_t, Weapon*>& list_weapons() const;
+		const std::vector<Weapon*>& list_weapons() const;
 		
 		void update_map();
 		Map* get_map();

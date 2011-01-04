@@ -72,6 +72,8 @@ namespace LM {
 		uint32_t get_curr_weapon_id() const { return m_curr_weapon; };
 
 		virtual void set_map(Map* map);
+		
+		void send_quit();
 
 	public:
 		Client();

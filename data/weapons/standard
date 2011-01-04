@@ -1,4 +1,4 @@
-1-rifle:PENETRATION
+0:PENETRATION
 	name=Rifle
 	hud=large_rifle.png
 	damage=130
@@ -10,7 +10,7 @@
 	normal=4,20:-15:1:rifle_noshot.png
 	firing=4,20:-15:1:rifle_shot.png
 
-2-shotgun:SPREAD
+1:SPREAD
 	name=Shotgun
 	hud=large_sgun.png
 	projectiles=5
@@ -22,7 +22,7 @@
 	normal=5,20:-15:1:sgun_noshot.png
 	firing=5,20:-15:1:sgun_shot.png
 
-#3-impact:IMPACT
+#2:IMPACT
 #	name=Impact Cannon
 #	hud=large_cannon.png
 #	force=20
@@ -31,7 +31,7 @@
 #	normal=10,-1:-15:-1:cannon_back.png;10,-1:-15:1:cannon_front.png
 #	firing=10,-1:-15:-1:cannon_back.png;10,-1:-15:1:cannon_front_shot.png
 	
-3-impact:AREA
+2:AREA
 	name=Impact Cannon
 	hud=large_cannon.png
 	force=20
@@ -45,7 +45,7 @@
 	shape=poly:0,0;1000,100;1000,-100;0,0;
 #	move=false; # not yet implemented
 
-#4-machinegun:CHARGE
+#3:CHARGE
 #	name=Machine Gun
 #	hud=large_mgun.png
 #	damage=20
@@ -59,7 +59,7 @@
 #	ammo_recharge=750
 #	charge_time=3000
 
-#5-pulse:AREA
+#4:AREA
 #	name=Melee Pulse
 #	hud=large_mpulse.png
 #	force=10

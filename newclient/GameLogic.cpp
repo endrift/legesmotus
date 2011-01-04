@@ -88,17 +88,23 @@ void GameLogic::remove_player(uint32_t id) {
 }
 
 void GameLogic::add_weapon(size_t index, Weapon* weapon) {
-	m_weapons.insert(std::make_pair(weapon->get_id(), weapon));
+	while(index > m_weapons.size()) {
+		m_weapons.push_back(NULL);
+	}
+	
+	if (index == m_weapons.size()) {
+		m_weapons.push_back(weapon);
+	} else {
+		m_weapons.erase(m_weapons.begin() + index);
+		m_weapons.insert(m_weapons.begin() + index, weapon);
+	}
 }
 
 void GameLogic::clear_weapons() {
-	for (map<uint32_t, Weapon*>::iterator it(m_weapons.begin()); it != m_weapons.end(); ++it) {
-		delete it->second;
-	}
 	m_weapons.clear();
 }
 
-const map<uint32_t, Weapon*>& GameLogic::list_weapons() const {
+const vector<Weapon*>& GameLogic::list_weapons() const {
 	return m_weapons;
 }
 
@@ -156,14 +162,18 @@ const Player* GameLogic::get_player(const uint32_t id) const {
 	return m_players.find(id)->second;
 }
 
-Weapon*	GameLogic::get_weapon(const uint32_t id) {
-	map<uint32_t, Weapon*>::const_iterator it(m_weapons.find(id));
-	return it == m_weapons.end() ? NULL : it->second;
+Weapon* GameLogic::get_weapon(const uint32_t id) {
+	if (id > m_weapons.size()) {
+		return NULL;
+	}
+	return m_weapons.at(id);
 }
 
 const Weapon*	GameLogic::get_weapon(const uint32_t id) const {
-	map<uint32_t, Weapon*>::const_iterator it(m_weapons.find(id));
-	return it == m_weapons.end() ? NULL : it->second;
+	if (id > m_weapons.size()) {
+		return NULL;
+	}
+	return m_weapons.at(id);
 }
 
 b2World* GameLogic::get_world() {

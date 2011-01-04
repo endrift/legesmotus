@@ -384,6 +384,10 @@ void Client::set_curr_weapon(uint32_t id) {
 }
 
 void Client::set_running(bool running) {
+	if (!running) {
+		send_quit();
+	}
+
 	m_running = running;
 }
 
@@ -410,4 +414,13 @@ void Client::run() {
 		step(current_time - last_time);
 		last_time = current_time;
 	}
+}
+
+void Client::send_quit() {
+	Packet leave(LEAVE_PACKET);
+	
+	leave.leave.player_id = m_player_id;
+	leave.leave.message = "Client quit.";
+	
+	m_network.send_reliable_packet(&leave);
 }
