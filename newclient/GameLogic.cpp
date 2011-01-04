@@ -163,14 +163,14 @@ const Player* GameLogic::get_player(const uint32_t id) const {
 }
 
 Weapon* GameLogic::get_weapon(const uint32_t id) {
-	if (id > m_weapons.size()) {
+	if (id >= m_weapons.size()) {
 		return NULL;
 	}
 	return m_weapons.at(id);
 }
 
 const Weapon*	GameLogic::get_weapon(const uint32_t id) const {
-	if (id > m_weapons.size()) {
+	if (id >= m_weapons.size()) {
 		return NULL;
 	}
 	return m_weapons.at(id);
