@@ -49,6 +49,18 @@ Bindings::ControlEvent Bindings::process_event(const KeyEvent& event) {
 		case L' ':
 			e.type = CONTROL_JUMP;
 			break;
+
+		case L'1':
+		case L'2':
+		case L'3':
+		case L'4':
+		case L'5':
+		case L'6':
+		case L'7':
+		case L'8':
+			e.type = CONTROL_SET_WEAPON;
+			e.set_weapon.weapon_no = event.character - L'1';
+			break;
 		}
 		break;
 	default:
@@ -71,6 +83,17 @@ Bindings::ControlEvent Bindings::process_event(const MouseButtonEvent& event) {
 	case BUTTON_LEFT:
 		e.type = event.down?CONTROL_FIRE:CONTROL_STOP_FIRE;
 		break;
+	}
+
+	if (event.down) {
+		switch (event.button) {
+		case BUTTON_WHEEL_UP:
+			e.type = CONTROL_DECREMENT_WEAPON;
+			break;
+		case BUTTON_WHEEL_DOWN:
+			e.type = CONTROL_INCREMENT_WEAPON;
+			break;
+		}
 	}
 	return e;
 }

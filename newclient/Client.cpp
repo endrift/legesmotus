@@ -76,6 +76,12 @@ uint64_t Client::step(uint64_t diff) {
 		attempt_firing();
 	}
 	
+	// Handle weapon switching
+	if (changes & Controller::CHANGE_WEAPON) {
+		INFO("Setting weapon to ID " << m_controller->get_weapon());
+		set_curr_weapon(m_controller->get_weapon());
+	}
+	
 	diff = m_logic->steps(diff);
 
 	Packet p;

@@ -32,6 +32,10 @@ using namespace std;
 HumanController::HumanController() {
 	m_changeset = 0;
 	m_typing_message = false;
+
+	m_weapon = 0;
+	m_nextweapon = 0;
+	m_lastweapon = 0;
 }
 
 void HumanController::process_control(const Bindings::ControlEvent& event) {
@@ -48,8 +52,19 @@ void HumanController::process_control(const Bindings::ControlEvent& event) {
 	case Bindings::CONTROL_BEGIN_TYPING:
 		m_message.clear();
 		m_typing_message = true;
-		m_changes[m_changeset ^ 1] = event.typing.is_team_only;
+		m_message_is_team_only[m_changeset ^ 1] = event.typing.is_team_only;
 		break;
+	case Bindings::CONTROL_INCREMENT_WEAPON:
+		m_wdelta = 1;
+		m_changes[m_changeset ^ 1] = CHANGE_WEAPON;
+		break;
+	case Bindings::CONTROL_DECREMENT_WEAPON:
+		m_wdelta = -1;
+		m_changes[m_changeset ^ 1] = CHANGE_WEAPON;
+		break;
+	case Bindings::CONTROL_SET_WEAPON:
+		m_nextweapon = event.set_weapon.weapon_no;
+		m_changes[m_changeset ^ 1] = CHANGE_WEAPON;
 	default:
 		// No default action
 		break;
@@ -95,6 +110,24 @@ void HumanController::system_event(const SystemEvent& event) {
 void HumanController::update(uint64_t diff, const GameLogic& state) {
 	m_changes[m_changeset] = 0;
 	m_changeset ^= 1;
+
+	int nweapons = state.list_weapons().size();
+	if (m_wdelta) {
+		m_nextweapon += m_wdelta;
+		if (m_nextweapon < 0) {
+			m_nextweapon += nweapons;
+		}
+		m_nextweapon %= nweapons;
+		m_wdelta = 0;
+	} else if (m_nextweapon >= nweapons) {
+		m_nextweapon = m_weapon;
+		m_changes[m_changeset] &= ~CHANGE_WEAPON;
+	}
+
+	if (m_nextweapon != m_weapon) {
+		m_lastweapon = m_weapon;
+		m_weapon = m_nextweapon;
+	}
 }
 
 int HumanController::get_changes() const {

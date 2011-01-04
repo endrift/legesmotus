@@ -43,6 +43,9 @@ namespace LM {
 		int m_view_h;
 
 		int m_weapon;
+		int m_nextweapon;
+		int m_lastweapon;
+		int m_wdelta;
 
 		Bindings m_bindings;
 

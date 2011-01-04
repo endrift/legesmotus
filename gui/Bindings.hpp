@@ -45,6 +45,10 @@ namespace LM {
 			ControlType type;
 			union {
 				struct {
+					int weapon_no;
+				} set_weapon;
+
+				struct {
 					bool is_team_only;
 				} typing;
 			};
