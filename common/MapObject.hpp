@@ -86,7 +86,7 @@ namespace LM {
 
 		ClientMapObject* get_client_part();
 
-		b2Shape* make_bounding_shape(const std::string& shape_string, Point position);
+		b2Shape* make_bounding_shape(const std::string& shape_string);
 		
 		// Initializes the physics for this object.
 		virtual void initialize_physics(b2World* world) = 0;

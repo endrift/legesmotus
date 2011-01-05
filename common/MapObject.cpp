@@ -29,7 +29,7 @@
 #include "common/Point.hpp"
 #include <memory>
 #include <cstring>
-#include <Box2D/Box2D.h>
+#include "common/physics.hpp"
 #include <vector>
 #include "common/math.hpp"
 
@@ -114,11 +114,7 @@ ClientMapObject* MapObject::get_client_part() {
 	return m_clientpart;
 }
 
-b2Shape* MapObject::make_bounding_shape(const std::string& shape_string, Point position) {
-	// TODO: Support scaling of shape!
-	const char* str = shape_string.c_str();
-
-
+b2Shape* MapObject::make_bounding_shape(const std::string& shape_string) {
 	if (m_is_tiled) {
 		b2PolygonShape* shape = new b2PolygonShape();
 		
@@ -128,53 +124,8 @@ b2Shape* MapObject::make_bounding_shape(const std::string& shape_string, Point p
 		                b2Vec2(to_physics(m_tile_dimensions.x/2 * m_scale_x), to_physics(m_tile_dimensions.y/2 * m_scale_y)), 0);
 		return shape;
 	} else {
-		if (strncmp(str, "poly:", 5) == 0) {
-			b2PolygonShape* shape = new b2PolygonShape();
-
-			// Polygon - specified by a list of points.
-			// The points are converted into a list of lines for internal representation.
-			StringTokenizer		tokenizer(str + 5, ';');
-
-			Point			first_point;
-			tokenizer >> first_point;
-
-			int numpoints = 0;
-
-			std::vector<Point> points;
-			Point			previous_point(first_point);
-			while (tokenizer.has_more()) {
-				Point		next_point;
-				tokenizer >> next_point;
-				points.push_back(next_point);
-				
-				numpoints++;
-			}
-			
-			b2Vec2 vertices[numpoints];
-			for (unsigned int i = 0; i < points.size(); i++) {
-				vertices[i].Set(to_physics(points.at(i).x), to_physics(points.at(i).y));
-			}
-			shape->Set(vertices, numpoints);
-
-			return shape;
-		} else if (strncmp(str, "rect:", 5) == 0) {
-			Vector size(Vector::make_from_string(str + 5));
-			b2PolygonShape* shape = new b2PolygonShape();
-			
-			shape->SetAsBox(to_physics(size.x/2 * m_scale_x), to_physics(size.y/2 * m_scale_y),
-			                b2Vec2(to_physics(size.x/2 * m_scale_x), to_physics(size.y/2 * m_scale_y)), 0);
-
-			return shape;
-		} else if (strncmp(str, "circle:", 7) == 0) {
-			b2CircleShape* shape = new b2CircleShape();
-			// TODO: Support scaling in y?
-			shape->m_radius = to_physics(atof(str + 7) * m_scale_x);
-			
-			return shape;
-		}
+		return make_shape_from_string(shape_string, m_scale_x, m_scale_y);
 	}
-
-	return NULL;
 }
 
 void MapObject::init(MapReader* reader) {

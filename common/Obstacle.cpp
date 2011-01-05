@@ -194,5 +194,5 @@ void Obstacle::init(MapReader* reader) {
 		delete m_bounding_shape;
 	}
 
-	m_bounding_shape = make_bounding_shape(bounding_shape, get_position());
+	m_bounding_shape = make_bounding_shape(bounding_shape);
 }
