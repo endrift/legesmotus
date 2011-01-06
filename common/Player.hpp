@@ -67,9 +67,9 @@ namespace LM {
 		bool		m_is_invisible;	// Is this player inivisible? (should be true while player is waiting to spawn)
 		bool		m_is_frozen;	// Is this player frozen? (should be true after the player gets shot)
 		uint64_t	m_frozen_at;  // At what time was the player frozen?
-		uint64_t	m_freeze_time; // How long should the player be frozen for?
+		long		m_freeze_time; // How long should the player be frozen for?
 		bool		m_is_grabbing_obstacle;	// Is the player grabbing an obstacle?
-		uint32_t	m_current_weapon_id;	// ID of the current weapon
+		long		m_current_weapon_id;	// ID of the current weapon
 		b2Body*		m_physics_body; // Box2D physics body for this player
 		b2Joint*	m_attach_joint; // Box2D joint that attaches this player to a surface
 		b2World*	m_physics; // Box2D physics world pointer
@@ -110,9 +110,9 @@ namespace LM {
 		bool is_frozen() const { return m_is_frozen; }
 		bool is_unfrozen() const { return !m_is_frozen; }
 		bool is_grabbing_obstacle() const { return m_is_grabbing_obstacle; }
-		uint32_t get_current_weapon_id() const { return m_current_weapon_id; }
+		long get_current_weapon_id() const { return m_current_weapon_id; }
 		b2Joint* get_attach_joint() const { return m_attach_joint; }
-		uint64_t get_freeze_time() const { return m_freeze_time; }
+		long get_freeze_time() const { return m_freeze_time; }
 	
 		// Return true if this player has the same canonical name as the specified string.
 		// Name comparisons are case-insensitive.
@@ -140,10 +140,10 @@ namespace LM {
 		void set_gun_rotation_radians(float gun_rotation);
 		virtual void set_is_invisible(bool is_invisible);
 		virtual void set_is_frozen(bool is_frozen);
-		virtual void set_is_frozen(bool is_frozen, uint64_t freeze_time);
-		virtual void set_freeze_time(uint64_t freeze_time);
+		virtual void set_is_frozen(bool is_frozen, long freeze_time);
+		virtual void set_freeze_time(long freeze_time);
 		virtual void set_is_grabbing_obstacle(bool);
-		virtual void set_current_weapon_id(uint32_t id);
+		virtual void set_current_weapon_id(long id);
 		virtual void set_attach_joint(b2Joint* joint);
 
 		void generate_player_update(Packet::PlayerUpdate* p);

@@ -41,7 +41,7 @@ namespace LM {
 		GameLogic* m_logic;
 		uint32_t m_player_id;
 		ClientNetwork m_network;
-		uint32_t m_curr_weapon;
+		long m_curr_weapon;
 
 		bool m_running;
 		

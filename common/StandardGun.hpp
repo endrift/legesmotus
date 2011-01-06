@@ -43,8 +43,6 @@ namespace LM {
 		b2Vec2			normal;
 		float32			fraction;
 	};
-	
-	static bool compare_hit_data(HitData first, HitData second) { return first.fraction > second.fraction; }
 
 	class StandardGun : public Weapon, public b2RayCastCallback {
 	private:

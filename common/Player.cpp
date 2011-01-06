@@ -221,7 +221,7 @@ void Player::update_physics() {
 	}
 	
 	if (m_is_frozen) {
-		if (m_freeze_time != -1 && m_freeze_time < get_ticks() - m_frozen_at) {
+		if (m_freeze_time >= 0 && m_freeze_time < (long)(get_ticks() - m_frozen_at)) {
 			set_is_frozen(false);
 			set_energy(MAX_ENERGY);
 		}
@@ -301,7 +301,7 @@ void Player::set_is_frozen(bool is_frozen) {
 	}
 }
 
-void Player::set_is_frozen(bool is_frozen, uint64_t freeze_time) {
+void Player::set_is_frozen(bool is_frozen, long freeze_time) {
 	m_is_frozen = is_frozen;
 	
 	if (is_frozen) {
@@ -311,11 +311,11 @@ void Player::set_is_frozen(bool is_frozen, uint64_t freeze_time) {
 	}
 }
 
-void Player::set_freeze_time(uint64_t freeze_time) {
+void Player::set_freeze_time(long freeze_time) {
 	m_freeze_time = freeze_time;
 }
 
-void Player::set_current_weapon_id(uint32_t current_weapon_id) {
+void Player::set_current_weapon_id(long current_weapon_id) {
 	m_current_weapon_id = current_weapon_id;
 }
 

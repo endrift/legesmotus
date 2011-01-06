@@ -40,6 +40,8 @@
 using namespace LM;
 using namespace std;
 
+static bool compare_hit_data(HitData first, HitData second) { return first.fraction > second.fraction; }
+
 StandardGun::StandardGun(uint32_t id, StringTokenizer& gun_data) : Weapon(id) {
 	m_last_fired_time = 0;
 
