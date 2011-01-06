@@ -52,7 +52,8 @@ b2Shape* LM::make_shape_from_string(const std::string& shape_string, float scale
 		while (tokenizer.has_more()) {
 			Point		next_point;
 			tokenizer >> next_point;
-			if (next_point.x == previous_point.x && next_point.y == previous_point.y) {
+			if ((next_point.x == previous_point.x && next_point.y == previous_point.y) || 
+				(next_point.x == first_point.x && next_point.y == first_point.y)) {
 				continue;
 			}
 			points.push_back(next_point);
@@ -71,9 +72,9 @@ b2Shape* LM::make_shape_from_string(const std::string& shape_string, float scale
 		float area = a.x * b.y - a.y * b.x + a.y * c.x - a.x * c.y + b.x * c.y - c.x * b.y;
 		
 		b2Vec2 vertices[points.size()];
-		if (area < 0) {
-			for (unsigned int i = points.size(); i > 0; i--) {
-				vertices[i].Set(to_physics(points.at(i).x), to_physics(points.at(i).y));
+		if (area <= 0) {
+			for (int i = points.size()-1; i >= 0; i--) {
+				vertices[points.size()-1 - i].Set(to_physics(points.at(i).x), to_physics(points.at(i).y));
 			}
 		} else {
 			for (unsigned int i = 0; i < points.size(); i++) {
