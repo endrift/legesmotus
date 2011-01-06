@@ -62,6 +62,7 @@ namespace LM {
 		
 		void update_gates();
 		void attempt_firing();
+		void check_player_hits();
 		
 		void generate_player_update(uint32_t id, Packet* p);
 		void generate_weapon_fired(uint32_t weapon_id, uint32_t player_id);

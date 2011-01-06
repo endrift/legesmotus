@@ -82,11 +82,15 @@ uint64_t Client::step(uint64_t diff) {
 		set_curr_weapon(m_controller->get_weapon());
 	}
 	
+	// Step the GameLogic.
 	diff = m_logic->steps(diff);
 
 	Packet p;
 	generate_player_update(m_player_id, &p);
 	m_network.send_packet(&p);
+	
+	// Check the weapon for hitting any players:
+	check_player_hits();
 	
 	// Check gates for any updates/changes.
 	update_gates();
@@ -158,15 +162,17 @@ void Client::attempt_firing() {
 	bool fired_successfully = m_logic->attempt_fire(m_player_id, m_curr_weapon, m_controller->get_aim());
 	if (fired_successfully) {
 		generate_weapon_fired(m_curr_weapon, m_player_id);
-	
-		Weapon* weapon = m_logic->get_weapon(m_curr_weapon);
-		Packet p(PLAYER_HIT_PACKET);
-		Packet::PlayerHit* player_hit = weapon->generate_next_hit_packet(&p.player_hit, m_logic->get_player(m_player_id));
-		while (player_hit != NULL) {
-			p.type = PLAYER_HIT_PACKET;
-			m_network.send_reliable_packet(&p);
-			player_hit = weapon->generate_next_hit_packet(&p.player_hit, m_logic->get_player(m_player_id));
-		}
+	}
+}
+
+void Client::check_player_hits() {
+	Weapon* weapon = m_logic->get_weapon(m_curr_weapon);
+	Packet p(PLAYER_HIT_PACKET);
+	Packet::PlayerHit* player_hit = weapon->generate_next_hit_packet(&p.player_hit, m_logic->get_player(m_player_id));
+	while (player_hit != NULL) {
+		p.type = PLAYER_HIT_PACKET;
+		m_network.send_reliable_packet(&p);
+		player_hit = weapon->generate_next_hit_packet(&p.player_hit, m_logic->get_player(m_player_id));
 	}
 }
 
@@ -357,7 +363,7 @@ void Client::player_hit(const Packet& p) {
 		return;
 	}
 	
-	m_logic->get_weapon(m_curr_weapon)->hit(hit_player, &p.player_hit);
+	m_logic->get_weapon(p.player_hit.weapon_id)->hit(hit_player, &p.player_hit);
 }
 
 void Client::gate_update(const Packet& p) {

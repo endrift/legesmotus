@@ -42,7 +42,7 @@
 	normal=10,-1:-15:-1:cannon_back.png;10,-1:-15:1:cannon_front.png
 	firing=10,-1:-15:-1:cannon_back.png;10,-1:-15:1:cannon_front_shot.png
 	pivot=0,0;
-	shape=poly:0,0;1000,100;1000,-100;0,0;
+	shape=poly:1000,-100;1000,100;0,0;
 #	move=false; # not yet implemented
 
 #3:CHARGE

@@ -281,7 +281,7 @@ void GameLogic::create_grab(Player* player, b2Body* body2, b2WorldManifold* mani
 	}
 }
 
-MapObject::CollisionResult GameLogic::collide(PhysicsObject* userdata1, PhysicsObject* userdata2, b2Contact* contact, bool isnew, bool disengage) {	
+MapObject::CollisionResult GameLogic::collide(PhysicsObject* userdata1, PhysicsObject* userdata2, b2Contact* contact, bool isnew, bool disengage) {
 	// IGNORE all collisions with invisible players!
 	if (userdata1->get_type() == PhysicsObject::PLAYER) {
 		Player* player = static_cast<Player*>(userdata1);
@@ -295,6 +295,16 @@ MapObject::CollisionResult GameLogic::collide(PhysicsObject* userdata1, PhysicsO
 		if (player->is_invisible()) {
 			return MapObject::IGNORE;
 		}
+	}
+	
+	if (isnew && userdata1->get_type() == PhysicsObject::SHOT) {
+		Shot* shot = static_cast<Shot*>(userdata1);
+		shot->get_weapon()->hit_object(userdata2, shot, contact);
+	}
+	
+	if (isnew && userdata2->get_type() == PhysicsObject::SHOT) {
+		Shot* shot = static_cast<Shot*>(userdata2);
+		shot->get_weapon()->hit_object(userdata1, shot, contact);
 	}
 	
 	MapObject::CollisionResult result1 = MapObject::GRAB;

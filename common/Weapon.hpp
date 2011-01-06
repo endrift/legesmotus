@@ -27,10 +27,13 @@
 
 #include "common/Point.hpp"
 #include "common/Packet.hpp"
+#include "common/PhysicsObject.hpp"
+#include "common/Shot.hpp"
 #include <string>
 #include <stdint.h>
 
 class b2World;
+class b2Contact;
 
 namespace LM {
 	class Player;
@@ -62,6 +65,9 @@ namespace LM {
 		//virtual void		discharged(Player& player, StringTokenizer& data) = 0;
 		// When the current player (player) is hit by this weapon:
 		virtual void		hit(Player* hit_player, const Packet::PlayerHit* p) = 0;
+		
+		// Called when another object sees that a shot owned by this gun has hit something.
+		virtual void		hit_object(PhysicsObject* object, Shot* shot, b2Contact* contact) = 0;
 		
 		virtual Packet::PlayerHit*	generate_next_hit_packet(Packet::PlayerHit* p, Player* shooter) = 0;
 		

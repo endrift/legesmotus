@@ -25,6 +25,7 @@
 #include "Weapon.hpp"
 #include "WeaponReader.hpp"
 #include "StandardGun.hpp"
+#include "AreaGun.hpp"
 #include "misc.hpp"
 #include <cstring>
 
@@ -51,11 +52,13 @@ Weapon*	Weapon::new_weapon (WeaponReader& data) {
 		return new StandardGun(weapon_id, data);
 	} else if (strcasecmp(weapon_type, "impact") == 0) {
 		INFO("Impact.");
+		return new AreaGun(weapon_id, data);
 	} else if (strcasecmp(weapon_type, "thaw") == 0) {
 		INFO("Thaw.");
 		return new StandardGun(weapon_id, data);
 	} else if (strcasecmp(weapon_type, "area") == 0) {
 		INFO("Area.");
+		return new AreaGun(weapon_id, data);
 	//} else if (strcasecmp(weapon_type, "charge") == 0) { 
 	} else if (strcasecmp(weapon_type, "penetration") == 0)	{
 		INFO("Penetration.");

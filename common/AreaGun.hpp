@@ -1,5 +1,5 @@
 /*
- * common/StandardGun.hpp
+ * common/AreaGun.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,70 +22,68 @@
  * 
  */
 
-#ifndef LM_COMMON_StandardGun_HPP
-#define LM_COMMON_StandardGun_HPP
+#ifndef LM_COMMON_AREAGUN_HPP
+#define LM_COMMON_AREAGUN_HPP
 
 #include "common/Weapon.hpp"
 #include "common/StringTokenizer.hpp"
 #include "common/Packet.hpp"
 #include <stdint.h>
-#include <Box2D/Box2D.h>
+#include "common/physics.hpp"
 #include <vector>
+#include "common/PhysicsObject.hpp"
+#include "common/Point.hpp"
 
-#define StandardGun NewStandardGun
-
-class b2World;
+#define AreaGun NewAreaGun
 
 namespace LM {
-	struct HitData {
-		b2Fixture*		fixture;
-		b2Vec2			point;
-		b2Vec2			normal;
-		float32			fraction;
+	struct HitPlayer {
+		Player* player;
+		float angle;
+		Point point;
 	};
-	
-	static bool compare_hit_data(HitData first, HitData second) { return first.fraction > second.fraction; }
 
-	class StandardGun : public Weapon, public b2RayCastCallback {
+	class AreaGun : public Weapon, public b2RayCastCallback  {
 	private:
 		// Weapon settings
-		float			m_max_range;		// What is the maximum range at which the gun is effective?
+		uint64_t		m_freeze_on_hit;	// If the gun hits someone, for how long does it freeze them each time?
 		uint64_t		m_freeze_time;		// If the gun freezes someone, for how long?
 		int 			m_damage;		// How much damage does the gun do?
 		uint64_t		m_cooldown;		// How much time must the gun cool down between shots?
 		float			m_recoil;		// How much recoil does this gun create?
-		float			m_inaccuracy;		// The angle by which firing may deviate randomly
+		float			m_force;		// How much force is generated on the target?
 		bool			m_is_continuous;	// Is this gun able to be fired repeatedly by holding down the trigger?
 		int			m_total_ammo;		// Ammo the gun can hold, 0 == unlimited
 		uint64_t		m_ammo_recharge;	// Give back one unit of ammo this often
-		float			m_penetrates_players;	// At what strength does this gun penetrate players (0-1).
-		float			m_penetrates_walls; 	// At what strength does this gun penetrate walls (0-1).
-		int			m_max_penetration;	// Max number of objects that can be penetrated.
 		float			m_damage_degradation;	// Damage decreases by this much per unit distance
-		int			m_nbr_projectiles;	// How many projectiles to fire (default, 1)
-		float			m_angle;		// Total angle spanned by this weapon (in RADIANS)
-		uint64_t		m_freeze_reduction; 	// Time by which this gun reduces the hit player's freeze time.
 		unsigned int		m_energy_cost;		// Amount of energy this gun takes from the player when fired.
-
+		b2Shape*		m_area;			// Area affected by the shot
+		float			m_max_range;		// Maximum range at which to test for hits
+	
 		// Weapon state
 		uint64_t		m_last_fired_time;	// Time that this gun was last fired (to enforce cooldown)
 		int			m_current_ammo;		// How much ammo does the gun have left?
-		float			m_current_damage;	// How much damage is the gun currently doing on this shot?
-		int			m_objects_penetrated;	// How many objects has the current shot gone through?
+		Player*			m_firing_player;	// Which player fired this weapon?
+		Shot*			m_shot;			// The current shot that was fired.
+		std::vector<HitPlayer>	m_hits;			// A list of players that were hit.
 		
-		// Data for firing/rays:
-		std::vector<std::vector<HitData> > m_hit_data;	// Holds the information about each hit.
-		float			m_last_fired_dir;	// Holds the last angle at which the gun was fired.
-
+		// For ray casts:
+		uint32_t		m_hit_player_check;	// The ID of the closest player hit by the ray, -1 if none or if a wall is in the way.
+		float			m_shortest_dist;	// The shortest distance seen in this ray cast.
+	
+		Point			m_pivot;		// The pivot point and the point where damage spreads from
+		
+		b2World*		m_physics;
+	
 	protected:
 		virtual bool		parse_param(const char* param_string);
 
 	public:
-		StandardGun(uint32_t id, StringTokenizer& gun_data);
-
+		AreaGun(uint32_t id, StringTokenizer& gun_data);
+		
 		virtual void		fire(b2World* physics, Player& player, Point start, float direction);
 		virtual void		hit(Player* hit_player, const Packet::PlayerHit* p);
-		virtual void		hit_object(PhysicsObject* object, Shot* shot, b2Contact* contact) {};
+		virtual void		hit_object(PhysicsObject* object, Shot* shot, b2Contact* contact);
 		
 		virtual void		reset();
 		virtual bool		is_continuous() { return m_is_continuous; }

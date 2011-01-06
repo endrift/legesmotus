@@ -1,5 +1,5 @@
 /*
- * common/PhysicsObject.hpp
+ * common/Shot.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,23 +22,39 @@
  * 
  */
 
-#ifndef LM_COMMON_PHYSICSOBJECT_HPP
-#define LM_COMMON_PHYSICSOBJECT_HPP
+#ifndef LM_COMMON_SHOT_HPP
+#define LM_COMMON_SHOT_HPP
+
+#include "common/PhysicsObject.hpp"
+#include "common/Point.hpp"
+
+class b2Body;
 
 namespace LM {
-	class PhysicsObject {
+	class Player;
+	class Weapon;
+	
+	class Shot : public PhysicsObject {
+	private:
+		Weapon* m_weapon;
+		Player* m_firing_player;
+		b2Body* m_physics_body;
+		Point	m_center;
 
 	public:
-		enum ObjectType { 
-			PLAYER = 0, 
-			MAP_OBJECT = 1,
-			MAP_EDGE = 2,
-			SHOT = 3
-		};
+		Shot();
+		Shot(Weapon* weapon, Player* firing_player);
+		virtual ~Shot() {};
 	
-		virtual ~PhysicsObject();
-		virtual ObjectType get_type() const { return MAP_EDGE; };
-
+		Weapon* get_weapon() const { return m_weapon; };
+		Player* get_firing_player() const { return m_firing_player; };
+		b2Body* get_physics_body() const { return m_physics_body; };
+		Point	get_center() const { return m_center; };
+		
+		void set_physics_body(b2Body* body) { m_physics_body = body; };
+		void set_center(Point center) { m_center = center; };
+	
+		virtual ObjectType get_type() const { return SHOT; };
 	};
 }
 

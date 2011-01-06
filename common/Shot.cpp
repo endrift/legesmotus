@@ -1,5 +1,5 @@
 /*
- * common/PhysicsObject.hpp
+ * common/Shot.cpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,24 +22,20 @@
  * 
  */
 
-#ifndef LM_COMMON_PHYSICSOBJECT_HPP
-#define LM_COMMON_PHYSICSOBJECT_HPP
+#include "Shot.hpp"
+#include <cstdlib>
 
-namespace LM {
-	class PhysicsObject {
+using namespace LM;
+using namespace std;
 
-	public:
-		enum ObjectType { 
-			PLAYER = 0, 
-			MAP_OBJECT = 1,
-			MAP_EDGE = 2,
-			SHOT = 3
-		};
-	
-		virtual ~PhysicsObject();
-		virtual ObjectType get_type() const { return MAP_EDGE; };
-
-	};
+Shot::Shot() {
+	m_weapon = NULL;
+	m_firing_player = NULL;
+	m_physics_body = NULL;
 }
 
-#endif
+Shot::Shot(Weapon* weapon, Player* firing_player) {
+	m_weapon = weapon;
+	m_firing_player = firing_player;
+	m_physics_body = NULL;
+}
