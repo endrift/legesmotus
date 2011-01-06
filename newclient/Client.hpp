@@ -67,6 +67,7 @@ namespace LM {
 		void generate_player_update(uint32_t id, Packet* p);
 		void generate_weapon_fired(uint32_t weapon_id, uint32_t player_id);
 		void generate_gate_update(uint32_t player_id, char team, bool holding);
+		void generate_player_died(uint32_t died_id, uint32_t killer_id, bool killer_is_player);
 
 		GameLogic* get_game();
 		Weapon* get_curr_weapon();
@@ -79,6 +80,7 @@ namespace LM {
 	public:
 		Client();
 		virtual ~Client();
+		
 		virtual Player* make_player(const char* name, uint32_t id, char team);
 		virtual Map* make_map();
 		virtual Weapon* make_weapon(WeaponReader& weapon_data);

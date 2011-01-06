@@ -82,12 +82,19 @@ uint64_t Client::step(uint64_t diff) {
 		set_curr_weapon(m_controller->get_weapon());
 	}
 	
+	bool already_frozen = player->is_frozen();
+	
 	// Step the GameLogic.
 	diff = m_logic->steps(diff);
 
 	Packet p;
 	generate_player_update(m_player_id, &p);
 	m_network.send_packet(&p);
+	
+	// Check if our player was killed by a map hazard this frame:
+	if (!already_frozen && player->is_frozen() && player->get_energy() == 0) {
+		generate_player_died(m_player_id, 0, false);
+	}
 	
 	// Check the weapon for hitting any players:
 	check_player_hits();
@@ -207,6 +214,15 @@ void Client::generate_gate_update(uint32_t player_id, char team, bool holding) {
 	m_network.send_reliable_packet(&gate_update);
 }
 
+void Client::generate_player_died(uint32_t killed_player_id, uint32_t killer_id, bool killer_is_player = false) {
+	Packet player_died(PLAYER_DIED_PACKET);
+	player_died.player_died.killed_player_id = killed_player_id;
+	player_died.player_died.killer_id = killer_id;
+	player_died.player_died.killer_type = (killer_is_player ? 0 : 1);
+	
+	m_network.send_reliable_packet(&player_died);
+}
+
 GameLogic* Client::get_game() {
 	return m_logic;
 }
@@ -225,156 +241,13 @@ void Client::set_map(Map* map) {
 	}
 }
 
-void Client::player_update(const Packet& p) {
-	Player* player = get_player(p.player_update.player_id);
-	if (player == NULL) {
-		return;
-	}
-	player->read_player_update(p.player_update);
-}
-
-void Client::new_round(const Packet& p) {
-	Map* map;
-	if (m_logic == NULL) {
-		set_map(make_map());
-	}
-	map = m_logic->get_map();
-	// TODO use time_until_start, remove round_started from packet
-	// TODO preload and tell revision instead of loading the whole thing
-	if (map->load_file((string(get_res_directory()) + "/maps/" + *p.new_round.map_name + ".map").c_str())) {
-		// TODO put back during real map loading
-		/*if (map->get_revision() != map_revision) {
-			// this is really lame
-			delete map;
-			map = make_map();
-			map->set_width(map_width);
-			map->set_height(map_height);
-			map->set_revision(map_revision);
-		}*/
-		// XXX move
-	} else {
-		map->set_width(p.new_round.map_width);
-		map->set_height(p.new_round.map_height);
-		map->set_revision(p.new_round.map_revision);
-	}
-	m_logic->update_map();
-}
-
-void Client::round_start(const Packet& p) {
-	STUB(Client::round_start);
-}
-
-void Client::round_over(const Packet& p) {
-	// TODO: We may need to do other things here, like update scores, etc.
-
-	if (m_logic != NULL) {
-		delete m_logic;
-	}
+void Client::send_quit() {
+	Packet leave(LEAVE_PACKET);
 	
-	m_logic = NULL;
-}
-
-void Client::welcome(const Packet& p) {
-	INFO("Received welcome: " << p.welcome.player_id);
-	if (get_player(p.welcome.player_id) == NULL) {
-		Player* player = make_player(p.welcome.player_name->c_str(), p.welcome.player_id, p.welcome.team);
-		add_player(player);
-		player->set_is_invisible(true);
-	}
-	set_own_player(p.welcome.player_id);
-}
-
-void Client::announce(const Packet& p) {
-	if (get_player(p.announce.player_id) != NULL) {
-		return;
-	}
-	INFO("Received announce for " << p.announce.player_id << ": " << *p.announce.player_name);
-	Player* player = make_player(p.announce.player_name->c_str(), p.announce.player_id, p.announce.team);
-	add_player(player);
-}
-
-void Client::leave(const Packet& p) {
-	if (p.leave.player_id != m_player_id) {
-		remove_player(p.leave.player_id, *p.leave.message);
-	} else {
-		WARN("We've left the game, according to the server.");
-	}
-}
-
-void Client::name_change(const Packet& p) {
-	Player* player = get_player(p.name_change.player_id);
-	if (player == NULL) {
-		return;
-	}
-	player->set_name(p.name_change.name->c_str());
-}
-
-void Client::team_change(const Packet& p) {
-	Player* player = get_player(p.team_change.player_id);
-	if (player == NULL) {
-		return;
-	}
-	player->set_team(p.team_change.name);
-}
-
-void Client::spawn(const Packet& p) {
-	Player* player = get_player(m_player_id);
-	if (player == NULL) {
-		WARN("We don't exist, so we can't spawn");
-		return;
-	}
-	player->set_position(*p.spawn.position);
-	player->set_velocity(*p.spawn.velocity);
-	player->set_rotation_degrees(0);
-	player->set_is_grabbing_obstacle(p.spawn.is_grabbing_obstacle);
+	leave.leave.player_id = m_player_id;
+	leave.leave.message = "Client quit.";
 	
-	if (p.spawn.freeze_time <= 0) {
-		player->set_is_frozen(false);
-	} else {
-		player->set_is_frozen(true, p.spawn.freeze_time);
-	}
-	
-	player->set_is_invisible(false);
-	// TODO implement the rest
-}
-
-void Client::weapon_info(const Packet& p) {
-	WeaponReader wr(*p.weapon_info.weapon_data);
-	DEBUG("Weapon: " << p.weapon_info.index);
-	Weapon* weapon = make_weapon(wr);
-	Weapon::new_weapon(wr);
-	
-	if (weapon != NULL) {
-		if (m_curr_weapon == -1) {
-			set_curr_weapon(weapon->get_id());
-		}
-		DEBUG(weapon->get_name() << ", " << weapon->get_id());
-		m_logic->add_weapon(p.weapon_info.index, weapon);
-	} else {
-		WARN("Failed to create weapon");
-	}
-}
-
-void Client::weapon_discharged(const Packet& p) {
-	// TODO: Make this do something???
-}
-
-void Client::player_hit(const Packet& p) {
-	Player* hit_player = m_logic->get_player(p.player_hit.shot_player_id);
-	if (hit_player == NULL) {
-		WARN("Shot hit player that doesn't exist: " << p.player_hit.shot_player_id);
-		return;
-	}
-	
-	m_logic->get_weapon(p.player_hit.weapon_id)->hit(hit_player, &p.player_hit);
-}
-
-void Client::gate_update(const Packet& p) {
-	char team = p.gate_update.team;
-	float progress = p.gate_update.progress;
-	m_logic->update_gate_progress(team, progress);
-	
-	// TODO: In graphical client, this will need to update many other things, probably (graphics, etc.).
+	m_network.send_reliable_packet(&leave);
 }
 
 Player* Client::make_player(const char* name, uint32_t id, char team) {
@@ -422,6 +295,165 @@ void Client::connect(const IPAddress& server_address) {
 	}
 }
 
+void Client::player_update(const Packet& p) {
+	Player* player = get_player(p.player_update.player_id);
+	if (player == NULL) {
+		return;
+	}
+	player->read_player_update(p.player_update);
+}
+
+void Client::weapon_discharged(const Packet& p) {
+	// TODO: Make this do something???
+}
+
+void Client::player_hit(const Packet& p) {
+	Player* hit_player = m_logic->get_player(p.player_hit.shot_player_id);
+	if (hit_player == NULL) {
+		WARN("Shot hit player that doesn't exist: " << p.player_hit.shot_player_id);
+		return;
+	}
+	
+	bool already_frozen = hit_player->is_frozen();
+	
+	m_logic->get_weapon(p.player_hit.weapon_id)->hit(hit_player, &p.player_hit);
+	
+	// Send a player_died packet if necessary.
+	if (p.player_hit.shot_player_id == m_player_id && hit_player->is_frozen() && !already_frozen) {
+		generate_player_died(p.player_hit.shot_player_id, p.player_hit.shooter_id, true);
+	}
+}
+
+void Client::new_round(const Packet& p) {
+	Map* map;
+	if (m_logic == NULL) {
+		set_map(make_map());
+	}
+	map = m_logic->get_map();
+	// TODO use time_until_start, remove round_started from packet
+	// TODO preload and tell revision instead of loading the whole thing
+	if (map->load_file((string(get_res_directory()) + "/maps/" + *p.new_round.map_name + ".map").c_str())) {
+		// TODO put back during real map loading
+		/*if (map->get_revision() != map_revision) {
+			// this is really lame
+			delete map;
+			map = make_map();
+			map->set_width(map_width);
+			map->set_height(map_height);
+			map->set_revision(map_revision);
+		}*/
+		// XXX move
+	} else {
+		map->set_width(p.new_round.map_width);
+		map->set_height(p.new_round.map_height);
+		map->set_revision(p.new_round.map_revision);
+	}
+	m_logic->update_map();
+}
+
+void Client::round_over(const Packet& p) {
+	// TODO: We may need to do other things here, like update scores, etc.
+
+	if (m_logic != NULL) {
+		delete m_logic;
+	}
+	
+	m_logic = NULL;
+}
+
+void Client::welcome(const Packet& p) {
+	INFO("Received welcome: " << p.welcome.player_id);
+	if (get_player(p.welcome.player_id) == NULL) {
+		Player* player = make_player(p.welcome.player_name->c_str(), p.welcome.player_id, p.welcome.team);
+		add_player(player);
+		player->set_is_invisible(true);
+	}
+	set_own_player(p.welcome.player_id);
+}
+
+void Client::announce(const Packet& p) {
+	if (get_player(p.announce.player_id) != NULL) {
+		return;
+	}
+	INFO("Received announce for " << p.announce.player_id << ": " << *p.announce.player_name);
+	Player* player = make_player(p.announce.player_name->c_str(), p.announce.player_id, p.announce.team);
+	add_player(player);
+}
+
+void Client::gate_update(const Packet& p) {
+	char team = p.gate_update.team;
+	float progress = p.gate_update.progress;
+	m_logic->update_gate_progress(team, progress);
+	
+	// TODO: In graphical client, this will need to update many other things, probably (graphics, etc.).
+}
+
+void Client::leave(const Packet& p) {
+	if (p.leave.player_id != m_player_id) {
+		remove_player(p.leave.player_id, *p.leave.message);
+	} else {
+		WARN("We've left the game, according to the server.");
+	}
+}
+
+void Client::name_change(const Packet& p) {
+	Player* player = get_player(p.name_change.player_id);
+	if (player == NULL) {
+		return;
+	}
+	player->set_name(p.name_change.name->c_str());
+}
+
+void Client::team_change(const Packet& p) {
+	Player* player = get_player(p.team_change.player_id);
+	if (player == NULL) {
+		return;
+	}
+	player->set_team(p.team_change.name);
+}
+
+void Client::weapon_info(const Packet& p) {
+	WeaponReader wr(*p.weapon_info.weapon_data);
+	DEBUG("Weapon: " << p.weapon_info.index);
+	Weapon* weapon = make_weapon(wr);
+	Weapon::new_weapon(wr);
+	
+	if (weapon != NULL) {
+		if (m_curr_weapon == -1) {
+			set_curr_weapon(weapon->get_id());
+		}
+		DEBUG(weapon->get_name() << ", " << weapon->get_id());
+		m_logic->add_weapon(p.weapon_info.index, weapon);
+	} else {
+		WARN("Failed to create weapon");
+	}
+}
+
+void Client::round_start(const Packet& p) {
+	STUB(Client::round_start);
+}
+
+void Client::spawn(const Packet& p) {
+	Player* player = get_player(m_player_id);
+	if (player == NULL) {
+		WARN("We don't exist, so we can't spawn");
+		return;
+	}
+	player->set_position(*p.spawn.position);
+	player->set_velocity(*p.spawn.velocity);
+	player->set_rotation_degrees(0);
+	player->set_is_grabbing_obstacle(p.spawn.is_grabbing_obstacle);
+	
+	if (p.spawn.freeze_time <= 0) {
+		player->set_is_frozen(false);
+	} else {
+		player->set_is_frozen(true, p.spawn.freeze_time);
+	}
+	
+	player->set_is_invisible(false);
+	// TODO implement the rest
+}
+
 bool Client::running() const {
 	return m_running;
 }
@@ -433,13 +465,4 @@ void Client::run() {
 		step(current_time - last_time);
 		last_time = current_time;
 	}
-}
-
-void Client::send_quit() {
-	Packet leave(LEAVE_PACKET);
-	
-	leave.leave.player_id = m_player_id;
-	leave.leave.message = "Client quit.";
-	
-	m_network.send_reliable_packet(&leave);
 }
