@@ -192,7 +192,7 @@ HOLE_PUNCH = 25 {
 
 PLAYER_DIED = 26 {
 	killed_player_id : uint32_t ; The ID of the player who died.
-	scan_id : uint32_t ; The ID of the player who killed that player.
+	killer_id : uint32_t ; The ID of the player who killed that player.
 }
 
 WEAPON_INFO = 28 {
