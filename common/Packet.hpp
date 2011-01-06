@@ -240,6 +240,7 @@ namespace LM {
 		struct PlayerDied {
 			uint32_t killed_player_id;
 			uint32_t killer_id;
+			int killer_type;
 		};
 
 		struct WeaponInfo {
