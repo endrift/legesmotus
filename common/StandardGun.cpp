@@ -42,7 +42,7 @@ using namespace std;
 
 static bool compare_hit_data(HitData first, HitData second) { return first.fraction > second.fraction; }
 
-StandardGun::StandardGun(uint32_t id, StringTokenizer& gun_data) : Weapon(id) {
+StandardGun::StandardGun(uint32_t id) : Weapon(id) {
 	m_last_fired_time = 0;
 
 	m_freeze_time = 10000;
@@ -64,12 +64,6 @@ StandardGun::StandardGun(uint32_t id, StringTokenizer& gun_data) : Weapon(id) {
 	m_energy_cost = 0;
 	// TODO: FOR NOW, HARDCODE MAX RANGE.
 	m_max_range = 10000;
-
-	while (gun_data.has_more()) {
-		parse_param(gun_data.get_next());
-	}
-
-	reset();
 }
 
 bool StandardGun::parse_param(const char* param_string) {

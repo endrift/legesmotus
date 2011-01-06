@@ -3,7 +3,7 @@ LIBSRCS := Widget.cpp DrawContext.cpp GLESContext.cpp GuiWindow.cpp Font.cpp Lab
 	GraphicContainer.cpp Graphic.cpp Sprite.cpp Bone.cpp GraphicRegion.cpp Window.cpp SDLWindow.cpp GuiClient.cpp \
 	GraphicalMap.cpp GraphicalPlayer.cpp InputDriver.cpp SDLInputDriver.cpp InputSink.cpp HumanController.cpp \
 	GameView.cpp input.cpp GraphicalMapObject.cpp ShaderSet.cpp GLESProgram.cpp Bindings.cpp PhysicsDraw.cpp \
-	GraphicalGate.cpp
+	GraphicalGate.cpp GraphicalWeapon.cpp
 BINSRCS := main.cpp
 LIBRARY := ../liblmgui.a
 

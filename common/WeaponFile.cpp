@@ -31,8 +31,7 @@
 using namespace LM;
 using namespace std;
 
-bool	WeaponFile::load(const char* name, std::istream& in)
-{
+bool WeaponFile::load(const char* name, std::istream& in) {
 	static const WeaponReader	empty_reader;
 
 	clear();
@@ -68,16 +67,14 @@ bool	WeaponFile::load(const char* name, std::istream& in)
 }
 
 
-bool	WeaponFile::load_file(const char* name, const char* path)
-{
+bool WeaponFile::load_file(const char* name, const char* path) {
 	ifstream		file(path);
 
 	return file && load(name, file);
 }
 
 
-void	WeaponFile::clear()
-{
+void WeaponFile::clear() {
 	m_name.clear();
 	m_weapons.clear();
 }

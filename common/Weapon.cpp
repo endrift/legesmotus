@@ -23,6 +23,7 @@
  */
 
 #include "Weapon.hpp"
+#include "ClientWeapon.hpp"
 #include "WeaponReader.hpp"
 #include "StandardGun.hpp"
 #include "AreaGun.hpp"
@@ -35,53 +36,63 @@ using namespace LM;
 using namespace std;
 
 Weapon::Weapon() {
+	m_clientpart = NULL;
 }
 
 Weapon::Weapon(uint32_t id) : m_id(id) {
+	m_clientpart = NULL;
 }
 
-Weapon*	Weapon::new_weapon (WeaponReader& data) {
+Weapon::~Weapon() {
+	delete m_clientpart;
+}
+
+Weapon*	Weapon::new_weapon (WeaponReader& data, ClientWeapon* clientpart) {
 	const char* weapon_type = data.get_type().c_str();
 	const uint32_t weapon_id = data.get_id();
+	Weapon* weapon = NULL;
 
 	if (strcasecmp(weapon_type, "standard") == 0) {
 		INFO("Standard.");
-		return new StandardGun(weapon_id, data);
+		weapon = new StandardGun(weapon_id);
 	} else if (strcasecmp(weapon_type, "spread") == 0) {
 		INFO("Spread.");
-		return new StandardGun(weapon_id, data);
+		weapon = new StandardGun(weapon_id);
 	} else if (strcasecmp(weapon_type, "impact") == 0) {
 		INFO("Impact.");
-		return new AreaGun(weapon_id, data);
+		weapon = new AreaGun(weapon_id);
 	} else if (strcasecmp(weapon_type, "thaw") == 0) {
 		INFO("Thaw.");
-		return new StandardGun(weapon_id, data);
+		weapon = new StandardGun(weapon_id);
 	} else if (strcasecmp(weapon_type, "area") == 0) {
 		INFO("Area.");
-		return new AreaGun(weapon_id, data);
+		weapon = new AreaGun(weapon_id);
 	//} else if (strcasecmp(weapon_type, "charge") == 0) { 
 	} else if (strcasecmp(weapon_type, "penetration") == 0)	{
 		INFO("Penetration.");
-		return new StandardGun(weapon_id, data);
+		weapon = new StandardGun(weapon_id);
 	} else {
 		WARN("Error: unknown weapon type: " << weapon_type);
 	}
 
-	return NULL;
+	if (weapon != NULL) {
+		weapon->m_clientpart = clientpart;
+		while (data.has_more()) {
+			weapon->parse_param(data.get_next());
+		}
+		weapon->reset();
+	}
+
+	return weapon;
 }
 
-bool	Weapon::parse_param(const char* param_string) {
+bool Weapon::parse_param(const char* param_string) {
 	if (strncmp(param_string, "name=", 5) == 0) {
 		m_name = param_string + 5;
-	} else if (strncmp(param_string, "hud=", 4) == 0) {
-		// This class does not deal with graphics.
-	} else if (strncmp(param_string, "normal=", 7) == 0) {
-		// This class does not deal with graphics.
-	} else if (strncmp(param_string, "firing=", 7) == 0) {
-		// This class does not deal with graphics.
-	} else if (strncmp(param_string, "impact=", 7) == 0) {
-		// This class does not deal with graphics.
 	} else {
+		if (m_clientpart != NULL) {
+			return m_clientpart->parse_param(param_string, this);
+		}
 		return false;
 	}
 	return true;

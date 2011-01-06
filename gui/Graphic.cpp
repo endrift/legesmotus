@@ -46,8 +46,16 @@ Graphic::~Graphic() {
 	// Nothing to do
 }
 
-const Image* Graphic::get_image() const {
-	return &m_image;
+void Graphic::set_image(Image image) {
+	m_image = image;
+}
+
+const Image& Graphic::get_image() const {
+	return m_image;
+}
+
+Image Graphic::get_image() {
+	return m_image;
 }
 
 void Graphic::transform(DrawContext* ctx) const {

@@ -339,16 +339,19 @@ void Client::spawn(const Packet& p) {
 }
 
 void Client::weapon_info(const Packet& p) {
-	Packet pcopy(p);
-	DEBUG("Weapon: " << pcopy.weapon_info.index);
-	Weapon* weapon = Weapon::new_weapon(*pcopy.weapon_info.weapon_data);
+	WeaponReader wr(*p.weapon_info.weapon_data);
+	DEBUG("Weapon: " << p.weapon_info.index);
+	Weapon* weapon = make_weapon(wr);
+	Weapon::new_weapon(wr);
 	
 	if (weapon != NULL) {
 		if (m_curr_weapon == -1) {
 			set_curr_weapon(weapon->get_id());
 		}
 		DEBUG(weapon->get_name() << ", " << weapon->get_id());
-		m_logic->add_weapon(pcopy.weapon_info.index, weapon);
+		m_logic->add_weapon(p.weapon_info.index, weapon);
+	} else {
+		WARN("Failed to create weapon");
 	}
 }
 
@@ -380,6 +383,10 @@ Player* Client::make_player(const char* name, uint32_t id, char team) {
 
 Map* Client::make_map() {
 	return new Map;
+}
+
+Weapon* Client::make_weapon(WeaponReader& weapon_data) {
+	return Weapon::new_weapon(weapon_data);
 }
 
 void Client::set_controller(Controller* controller) {

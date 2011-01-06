@@ -79,7 +79,7 @@ namespace LM {
 		virtual bool		parse_param(const char* param_string);
 
 	public:
-		AreaGun(uint32_t id, StringTokenizer& gun_data);
+		AreaGun(uint32_t id);
 		
 		virtual void		fire(b2World* physics, Player& player, Point start, float direction);
 		virtual void		hit(Player* hit_player, const Packet::PlayerHit* p);

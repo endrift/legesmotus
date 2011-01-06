@@ -1,5 +1,5 @@
 /*
- * gui/Sprite.cpp
+ * common/ClientWeapon.cpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,29 +22,8 @@
  * 
  */
 
-#include "Sprite.hpp"
+#include "ClientWeapon.hpp"
 
 using namespace LM;
 using namespace std;
 
-Sprite::Sprite(Image* image) : Graphic(image) {
-	// Nothing to do
-}
-
-Sprite::Sprite(const Sprite& other) : Graphic(other) {
-	// Nothing to do
-}
-
-Sprite* Sprite::clone() const {
-	return new Sprite(*this);
-}
-
-void Sprite::draw(DrawContext* ctx) const {
-	ctx->push_transform();
-	transform(ctx);
-	preprocess(ctx);
-	const Image& image = get_image();
-	ctx->draw_image(image.get_handle_width(), image.get_handle_height(), image.get_handle());
-	postprocess(ctx);
-	ctx->pop_transform();
-}

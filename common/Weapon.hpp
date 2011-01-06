@@ -39,6 +39,7 @@ namespace LM {
 	class Player;
 	class StringTokenizer;
 	class WeaponReader;
+	class ClientWeapon;
 
 	class Weapon {
 	private:
@@ -46,13 +47,14 @@ namespace LM {
 
 	protected:
 		std::string		m_name;			// Friendly name - presented to user
+		ClientWeapon*	m_clientpart;
 	
 		virtual bool		parse_param(const char* param_data);
 
 	public:
 		Weapon();
 		explicit Weapon(uint32_t id);
-		virtual ~Weapon() { }
+		virtual ~Weapon();
 
 		const long		get_id() const { return m_id; }
 		const char*		get_name() const { return m_name.c_str(); }
@@ -89,7 +91,7 @@ namespace LM {
 		
 		// TODO: set up mouse events?
 
-		static Weapon*		new_weapon (WeaponReader&);
+		static Weapon*		new_weapon (WeaponReader&, ClientWeapon* clientpart = NULL);
 	};
 }
 

@@ -52,8 +52,6 @@ namespace LM {
 		Graphic(Image* image = NULL);
 		Graphic(const Graphic& other);
 
-		const Image*	get_image() const;
-
 		void	transform(DrawContext* ctx) const;
 		void	preprocess(DrawContext* ctx) const;
 		void	postprocess(DrawContext* ctx) const;
@@ -79,6 +77,10 @@ namespace LM {
 
 		float	get_center_x() const;
 		float	get_center_y() const;
+
+		void	set_image(Image image);
+		Image	get_image();
+		const Image&	get_image() const;
 
 		void	set_bone(const Bone& bone);
 		Bone*	get_bone();

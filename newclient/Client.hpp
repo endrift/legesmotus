@@ -81,6 +81,7 @@ namespace LM {
 		virtual ~Client();
 		virtual Player* make_player(const char* name, uint32_t id, char team);
 		virtual Map* make_map();
+		virtual Weapon* make_weapon(WeaponReader& weapon_data);
 
 		void set_controller(Controller* controller);
 		virtual void set_curr_weapon(uint32_t id);

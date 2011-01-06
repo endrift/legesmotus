@@ -30,7 +30,7 @@
 using namespace LM;
 using namespace std;
 
-AreaGun::AreaGun(uint32_t id, StringTokenizer& gun_data) : Weapon(id) {
+AreaGun::AreaGun(uint32_t id) : Weapon(id) {
 	m_last_fired_time = 0;
 
 	// TODO: We need a way to set this freeze time to the value from the client.
@@ -55,12 +55,6 @@ AreaGun::AreaGun(uint32_t id, StringTokenizer& gun_data) : Weapon(id) {
 	
 	// TODO: What should we do about max_range?
 	m_max_range = 10000;
-	
-	while (gun_data.has_more()) {
-		parse_param(gun_data.get_next());
-	}
-
-	reset();
 }
 
 bool AreaGun::parse_param(const char* param_string) {
