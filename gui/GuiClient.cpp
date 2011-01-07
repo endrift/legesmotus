@@ -28,6 +28,7 @@
 #include "ResourceCache.hpp"
 #include "GraphicalPlayer.hpp"
 #include "HumanController.hpp"
+#include "common/Weapon.hpp"
 #include "common/timer.hpp"
 #include "Window.hpp"
 #include "Bone.hpp"
@@ -153,6 +154,15 @@ GraphicalPlayer* GuiClient::make_player(const char* name, uint32_t id, char team
 
 GraphicalMap* GuiClient::make_map() {
 	return new GraphicalMap(m_cache);
+}
+
+Weapon* GuiClient::make_weapon(WeaponReader& weapon_data) {
+	GraphicalWeapon* gw = new GraphicalWeapon(m_cache);
+	Weapon* w = Weapon::new_weapon(weapon_data, gw);
+	if (w == NULL) {
+		delete gw;
+	}
+	return w;
 }
 
 void GuiClient::run() {

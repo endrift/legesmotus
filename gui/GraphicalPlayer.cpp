@@ -26,6 +26,7 @@
 #include "Sprite.hpp"
 #include "ResourceCache.hpp"
 #include "common/math.hpp"
+#include <sstream>
 
 using namespace LM;
 using namespace std;
@@ -75,10 +76,49 @@ GraphicalPlayer::GraphicalPlayer(const char* name, uint32_t id, char team, Resou
 	back_leg.set_y(12);
 	m_graphic_root.add_graphic("head", &head, 1);
 	m_graphic_root.add_graphic("torso", &torso, 0);
-	m_graphic_root.add_graphic("front_arm", &front_arm, 3);
+	m_graphic_root.add_graphic("front_arm", &front_arm, 4);
 	m_graphic_root.add_graphic("back_arm", &back_arm, -2);
 	m_graphic_root.add_graphic("front_leg", &front_leg, 2);
 	m_graphic_root.add_graphic("back_leg", &back_leg, 1);
+
+	Image dummyi;
+	Sprite dummy(&dummyi);
+	stringstream gunname;
+	dummy.get_bone()->set_parent(m_graphic_root.get_graphic("front_arm")->get_bone());
+
+	gunname.str("gun_");
+	gunname << (PART_BACK_HAND|PART_FRONT_ARM|PART_UNFIRED);
+	m_graphic_root.add_graphic(gunname.str(), &dummy, 3);
+
+	gunname.str("gun_");
+	gunname << (PART_BACK_HAND|PART_FRONT_ARM|PART_FIRED);
+	m_graphic_root.add_graphic(gunname.str(), &dummy, 3);
+
+	gunname.str("gun_");
+	gunname << (PART_FRONT_HAND|PART_FRONT_ARM|PART_UNFIRED);
+	m_graphic_root.add_graphic(gunname.str(), &dummy, 5);
+
+	gunname.str("gun_");
+	gunname << (PART_FRONT_HAND|PART_FRONT_ARM|PART_FIRED);
+	m_graphic_root.add_graphic(gunname.str(), &dummy, 5);
+
+	dummy.get_bone()->set_parent(m_graphic_root.get_graphic("back_arm")->get_bone());
+
+	gunname.str("gun_");
+	gunname << (PART_BACK_HAND|PART_BACK_ARM|PART_UNFIRED);
+	m_graphic_root.add_graphic(gunname.str(), &dummy, -3);
+
+	gunname.str("gun_");
+	gunname << (PART_BACK_HAND|PART_BACK_ARM|PART_FIRED);
+	m_graphic_root.add_graphic(gunname.str(), &dummy, -3);
+
+	gunname.str("gun_");
+	gunname << (PART_FRONT_HAND|PART_BACK_ARM|PART_UNFIRED);
+	m_graphic_root.add_graphic(gunname.str(), &dummy, -1);
+
+	gunname.str("gun_");
+	gunname << (PART_FRONT_HAND|PART_BACK_ARM|PART_FIRED);
+	m_graphic_root.add_graphic(gunname.str(), &dummy, -1);
 }
 
 GraphicalPlayer::~GraphicalPlayer() {
@@ -143,4 +183,10 @@ void GraphicalPlayer::set_is_invisible(bool invisible) {
 	Player::set_is_invisible(invisible);
 	
 	m_graphic_root.set_drawable(!invisible);
+}
+
+Graphic* GraphicalPlayer::get_weapon_graphic(int partid) {
+	stringstream gunname("gun_");
+	gunname << partid;
+	return m_graphic_root.get_graphic(gunname.str());
 }

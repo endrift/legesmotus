@@ -27,11 +27,13 @@
 
 namespace LM {
 	class Weapon;
+	class Player;
 
 	class ClientWeapon {
 	public:
 		virtual ~ClientWeapon() {}
 		virtual bool parse_param(const char* param_string, Weapon* owner) = 0;
+		virtual void select(Player* player) = 0;
 	};
 }
 

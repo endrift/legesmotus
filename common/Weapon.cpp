@@ -98,7 +98,9 @@ bool Weapon::parse_param(const char* param_string) {
 	return true;
 }
 
-void	Weapon::select(Player& player) {
-	// TODO: Do we need the base class to do something here?
+void Weapon::select(Player* player) {
+	if (m_clientpart != NULL && player != NULL) {
+		m_clientpart->select(player);
+	}
 }
 

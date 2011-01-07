@@ -74,7 +74,7 @@ namespace LM {
 		virtual Packet::PlayerHit*	generate_next_hit_packet(Packet::PlayerHit* p, Player* shooter) = 0;
 		
 		// Call when a player selects this weapon:
-		virtual void		select(Player& player);
+		virtual void		select(Player* player);
 		// Call when the round ends to reset this weapon's state:
 		virtual void		reset() = 0;
 

@@ -25,12 +25,27 @@
 #ifndef LM_GUI_GRAPHICALWEAPON_HPP
 #define LM_GUI_GRAPHICALWEAPON_HPP
 
+#include "common/ClientWeapon.hpp"
+#include "GraphicalPlayer.hpp"
+
 namespace LM {
-	class GraphicalWeapon {
+	class ResourceCache;
+	
+	class GraphicalWeapon : public ClientWeapon {
 	private:
+		struct GunPart {
+			Image image;
+			Point position;
+			float rotation;
+		};
+
+		ResourceCache* m_cache;
+		GunPart m_gunpart[GraphicalPlayer::PART_MAX];
 
 	public:
-
+		GraphicalWeapon(ResourceCache* cache);
+		virtual bool parse_param(const char* param_string, Weapon* owner);
+		virtual void select(Player* player);
 	};
 }
 

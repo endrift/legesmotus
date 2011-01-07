@@ -27,3 +27,62 @@
 using namespace LM;
 using namespace std;
 
+GraphicalWeapon::GraphicalWeapon(ResourceCache* cache) {
+	m_cache = cache;
+}
+
+bool GraphicalWeapon::parse_param(const char* param_string, Weapon* owner) {
+	int type = 0;
+	if (strncasecmp(param_string, "normal=", 7) == 0) {
+		type |= GraphicalPlayer::PART_UNFIRED;
+	} else if (strncasecmp(param_string, "firing=", 7) == 0) {
+		type |= GraphicalPlayer::PART_FIRED;
+	} else {
+		return false;
+	}
+
+	StringTokenizer item_tokenizer(param_string + 7, ';');
+	while (item_tokenizer.has_more()) {
+		int thistype = type;
+		GunPart part;
+		string item_string;
+		string part_image_name;
+		string part_type_primary, part_type_secondary;
+		item_tokenizer >> item_string;
+
+		StringTokenizer(item_string, ':') >> part.position >> part.rotation >> part_type_primary >> part_type_secondary >> part_image_name;
+
+		if (!part_image_name.empty()) {
+			part.image = Image(part_image_name, m_cache, true);
+		} else {
+			part.image = Image();
+		}
+
+		if (part_type_primary == "front") {
+			thistype |= GraphicalPlayer::PART_FRONT_ARM;
+		} else if (part_type_primary == "back") {
+			thistype |= GraphicalPlayer::PART_BACK_ARM;
+		}
+
+		if (part_type_secondary == "front") {
+			thistype |= GraphicalPlayer::PART_FRONT_HAND;
+		} else if (part_type_secondary == "back") {
+			thistype |= GraphicalPlayer::PART_BACK_HAND;
+		}
+
+		m_gunpart[thistype] = part;
+	}
+
+	return true;
+}
+
+void GraphicalWeapon::select(Player* player) {
+	GraphicalPlayer* p = static_cast<GraphicalPlayer*>(player);
+	for (int i = 0; i < GraphicalPlayer::PART_MAX; ++i) {
+		Graphic* sprite = p->get_weapon_graphic(i);
+		sprite->set_image(m_gunpart[i].image);
+		sprite->set_x(m_gunpart[i].position.x);
+		sprite->set_y(m_gunpart[i].position.y);
+		sprite->set_rotation(m_gunpart[i].rotation);
+	}
+}

@@ -29,6 +29,7 @@
 #include "newclient/Client.hpp"
 #include "GraphicalPlayer.hpp"
 #include "GraphicalMap.hpp"
+#include "GraphicalWeapon.hpp"
 #include "GameView.hpp"
 #include "InputSink.hpp"
 #include "PhysicsDraw.hpp"
@@ -77,6 +78,7 @@ namespace LM {
 
 		virtual GraphicalPlayer* make_player(const char* name, uint32_t id, char team);
 		virtual GraphicalMap* make_map();
+		virtual Weapon* make_weapon(WeaponReader& weapon_data);
 
 		virtual void run();
 

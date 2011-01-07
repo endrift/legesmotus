@@ -35,6 +35,19 @@ namespace LM {
 	class ResourceCache;
 
 	class GraphicalPlayer : public Player {
+	public:
+		enum WeaponPartId {
+			PART_BACK_HAND = 0,
+			PART_FRONT_HAND = 1,
+
+			PART_FRONT_ARM = 0,
+			PART_BACK_ARM = 2,
+
+			PART_UNFIRED = 0,
+			PART_FIRED = 4,
+
+			PART_MAX = 8
+		};
 	private:
 		GraphicContainer m_graphic_root;
 		Bone m_root_bone;
@@ -53,6 +66,8 @@ namespace LM {
 		virtual void set_rotation_degrees(float rotation);
 		virtual void set_gun_rotation_degrees(float rotation);
 		virtual void set_is_invisible(bool invisible);
+
+		Graphic* get_weapon_graphic(int partid);
 	};
 }
 

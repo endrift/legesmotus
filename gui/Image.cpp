@@ -212,7 +212,12 @@ void Image::reload(bool autogen) {
 }
 
 void Image::delete_pixels() {
-	Image* master = m_cache->get<Image>(m_name);
+	Image* master;
+	if (m_cache == NULL) {
+		master = this;
+	} else {
+		master = m_cache->get<Image>(m_name);
+	}
 	if (master == this || master == NULL) {
 		delete[] m_pixels;
 	} else {
@@ -290,7 +295,9 @@ Image& Image::operator=(const Image& other) {
 		m_handle_height = other.m_handle_height;
 		m_owns_handle = false;
 	
-		m_cache->increment<Image>(m_name);
+		if (m_cache != NULL) {
+			m_cache->increment<Image>(m_name);
+		}
 	}
 
 	return *this;

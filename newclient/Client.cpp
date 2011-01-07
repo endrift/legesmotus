@@ -271,6 +271,12 @@ void Client::set_curr_weapon(uint32_t id) {
 
 	Player* player = m_logic->get_player(m_player_id);
 	if (player != NULL) {
+		Weapon* weapon = m_logic->get_weapon(id);
+		if (weapon != NULL) {
+			weapon->select(player);
+		} else {
+			WARN("Setting current weapon to a non-existent weapon: " << id);
+		}
 		player->set_current_weapon_id(m_curr_weapon);
 	}
 }
@@ -416,14 +422,13 @@ void Client::weapon_info(const Packet& p) {
 	WeaponReader wr(*p.weapon_info.weapon_data);
 	DEBUG("Weapon: " << p.weapon_info.index);
 	Weapon* weapon = make_weapon(wr);
-	Weapon::new_weapon(wr);
 	
 	if (weapon != NULL) {
+		DEBUG(weapon->get_name() << ", " << weapon->get_id());
+		m_logic->add_weapon(p.weapon_info.index, weapon);
 		if (m_curr_weapon == -1) {
 			set_curr_weapon(weapon->get_id());
 		}
-		DEBUG(weapon->get_name() << ", " << weapon->get_id());
-		m_logic->add_weapon(p.weapon_info.index, weapon);
 	} else {
 		WARN("Failed to create weapon");
 	}
