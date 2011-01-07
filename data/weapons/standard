@@ -7,8 +7,8 @@
 	penetrate_players=0.75
 	penetrate_walls=0.0
 	max_penetration=3
-	normal=4,20:-15:1:rifle_noshot.png
-	firing=4,20:-15:1:rifle_shot.png
+	normal=4,20:-15:front:back:rifle_noshot.png;4,20:-15:back:back:rifle_noshot.png
+	firing=4,20:-15:front:back:rifle_shot.png;4,20:-15:back:back:rifle_shot.png
 
 1:SPREAD
 	name=Shotgun
@@ -19,8 +19,8 @@
 	degradation=0.01
 	cooldown=600
 	recoil=1.5
-	normal=5,20:-15:1:sgun_noshot.png
-	firing=5,20:-15:1:sgun_shot.png
+	normal=5,20:-15:front:back:sgun_noshot.png;5,20:-15:back:back:sgun_noshot.png
+	firing=5,20:-15:front:back:sgun_shot.png;5,20:-15:back:back:sgun_shot.png
 
 #2:IMPACT
 #	name=Impact Cannon
@@ -39,8 +39,8 @@
 	freeze=1000
 	cooldown=2000
 	recoil=4.0
-	normal=10,-1:-15:-1:cannon_back.png;10,-1:-15:1:cannon_front.png
-	firing=10,-1:-15:-1:cannon_back.png;10,-1:-15:1:cannon_front_shot.png
+	normal=10,-1:-15:front:back:cannon_back.png;10,-1:-15:front:front:cannon_front.png;10,-1:-15:back:back:cannon_back.png;10,-1:-15:back:front:cannon_front.png
+	firing=10,-1:-15:front:back:cannon_back.png;10,-1:-15:front:front:cannon_front_shot.png;10,-1:-15:back:back:cannon_back.png;10,-1:-15:back:front:cannon_front_shot.png
 	pivot=0,0;
 	shape=poly:1000,-100;1000,100;0,0;
 #	move=false; # not yet implemented

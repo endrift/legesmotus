@@ -4,5 +4,5 @@ pistol:STANDARD
 	damage=100
 	cooldown=700
 	recoil=1.5
-	normal=3,19:-15:1:gun_noshot.png
-	firing=3,19:-15:1:gun_shot.png
+	normal=3,19:-15:front:back:gun_noshot.png;3,19:-15:back:back:gun_noshot.png
+	firing=3,19:-15:front:back:gun_shot.png;3,19:-15:back:back:gun_noshot.png
