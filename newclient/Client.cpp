@@ -307,6 +307,12 @@ void Client::player_update(const Packet& p) {
 		return;
 	}
 	player->read_player_update(p.player_update);
+
+	// XXX if Weapon::select ever has side effects, we need to have a different way of updating the other players' weapons
+	Weapon* weapon = get_game()->get_weapon(p.player_update.current_weapon_id);
+	if (weapon != NULL) {
+		weapon->select(player);
+	}
 }
 
 void Client::weapon_discharged(const Packet& p) {
