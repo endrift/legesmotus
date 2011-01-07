@@ -39,8 +39,8 @@
 	freeze=1000
 	cooldown=2000
 	recoil=4.0
-	normal=15,32:-15:front:front:cannon_back.png;10,-1:-15:front:back:cannon_front.png;10,-1:-15:back:back:cannon_back.png;10,-1:-15:back:front:cannon_front.png
-	firing=15,32:-15:front:front:cannon_back.png;10,-1:-15:front:back:cannon_front_shot.png;10,-1:-15:back:back:cannon_back.png;10,-1:-15:back:front:cannon_front_shot.png
+	normal=15,32:-15:front:front:cannon_back.png;15,32:-15:back:front:cannon_front.png;10,-1:-15:front:back:cannon_back.png;10,-1:-15:back:back:cannon_front.png
+	firing=15,32:-15:front:front:cannon_back.png;15,32:-15:front:back:cannon_front_shot.png;10,-1:-15:back:back:cannon_back.png;10,-1:-15:back:front:cannon_front_shot.png
 	pivot=0,0;
 	shape=poly:1000,-100;1000,100;0,0;
 #	move=false; # not yet implemented
