@@ -101,6 +101,9 @@ void GameLogic::add_weapon(size_t index, Weapon* weapon) {
 }
 
 void GameLogic::clear_weapons() {
+	for (vector<Weapon*>::iterator iter = m_weapons.begin(); iter != m_weapons.end(); ++iter) {
+		delete *iter;
+	}
 	m_weapons.clear();
 }
 

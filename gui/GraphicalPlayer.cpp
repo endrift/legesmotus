@@ -31,6 +31,7 @@
 using namespace LM;
 using namespace std;
 
+
 GraphicalPlayer::GraphicalPlayer(const char* name, uint32_t id, char team, ResourceCache* cache) : Player(name, id, team), m_graphic_root(true) {
 	string color;
 	if (team == 'A') {
@@ -170,12 +171,31 @@ void GraphicalPlayer::set_gun_rotation_degrees(float rotation) {
 	}
 
 	m_root_bone.set_scale_x(flip);
+
 	if (handedness) {
 		m_graphic_root.get_graphic("front_arm")->set_rotation(rotation - 120);
 		m_graphic_root.get_graphic("back_arm")->set_rotation(0);
+
+		get_weapon_graphic(PART_BACK_HAND|PART_BACK_ARM|PART_UNFIRED)->set_invisible(true);
+		get_weapon_graphic(PART_FRONT_HAND|PART_BACK_ARM|PART_UNFIRED)->set_invisible(true);
+		get_weapon_graphic(PART_BACK_HAND|PART_BACK_ARM|PART_FIRED)->set_invisible(true);
+		get_weapon_graphic(PART_FRONT_HAND|PART_BACK_ARM|PART_FIRED)->set_invisible(true);
+		get_weapon_graphic(PART_BACK_HAND|PART_FRONT_ARM|PART_UNFIRED)->set_invisible(false);
+		get_weapon_graphic(PART_FRONT_HAND|PART_FRONT_ARM|PART_UNFIRED)->set_invisible(false);
+		get_weapon_graphic(PART_BACK_HAND|PART_FRONT_ARM|PART_FIRED)->set_invisible(false);
+		get_weapon_graphic(PART_FRONT_HAND|PART_FRONT_ARM|PART_FIRED)->set_invisible(false);
 	} else {
 		m_graphic_root.get_graphic("front_arm")->set_rotation(0);
 		m_graphic_root.get_graphic("back_arm")->set_rotation(-rotation + 60);
+
+		get_weapon_graphic(PART_BACK_HAND|PART_FRONT_ARM|PART_UNFIRED)->set_invisible(true);
+		get_weapon_graphic(PART_FRONT_HAND|PART_FRONT_ARM|PART_UNFIRED)->set_invisible(true);
+		get_weapon_graphic(PART_BACK_HAND|PART_FRONT_ARM|PART_FIRED)->set_invisible(true);
+		get_weapon_graphic(PART_FRONT_HAND|PART_FRONT_ARM|PART_FIRED)->set_invisible(true);
+		get_weapon_graphic(PART_BACK_HAND|PART_BACK_ARM|PART_UNFIRED)->set_invisible(false);
+		get_weapon_graphic(PART_FRONT_HAND|PART_BACK_ARM|PART_UNFIRED)->set_invisible(false);
+		get_weapon_graphic(PART_BACK_HAND|PART_BACK_ARM|PART_FIRED)->set_invisible(false);
+		get_weapon_graphic(PART_FRONT_HAND|PART_BACK_ARM|PART_FIRED)->set_invisible(false);
 	}
 }
 
