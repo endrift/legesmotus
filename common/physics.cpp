@@ -30,6 +30,9 @@
 using namespace LM;
 using namespace std;
 
+const float LM::PHYSICS_TO_GAME = 64.0f;
+const float LM::GAME_TO_PHYSICS = 1.0f/LM::PHYSICS_TO_GAME;
+
 b2Shape* LM::make_shape_from_string(const std::string& shape_string, float scale_x, float scale_y) {
 	// TODO: Support scaling of shape!
 	const char* str = shape_string.c_str();

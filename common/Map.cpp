@@ -34,7 +34,7 @@
 #include <fstream>
 #include <string>
 #include <string.h>
-#include <Box2D/Box2D.h>
+#include "physics.hpp"
 #include "math.hpp"
 
 using namespace LM;

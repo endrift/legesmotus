@@ -35,7 +35,7 @@
 #include <algorithm>
 #include <stdlib.h>
 #include <iostream>
-#include <Box2D/Box2D.h>
+#include "common/physics.hpp"
 
 using namespace LM;
 using namespace std;

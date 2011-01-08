@@ -26,7 +26,7 @@
 #include "ClientMapObject.hpp"
 #include "MapReader.hpp"
 #include <cstring>
-#include <Box2D/Box2D.h>
+#include "common/physics.hpp"
 #include <iostream>
 #include "misc.hpp"
 #include "math.hpp"

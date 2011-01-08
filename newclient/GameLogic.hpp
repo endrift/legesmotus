@@ -26,7 +26,7 @@
 #define LM_NEWCLIENT_GAMELOGIC_HPP
 
 #include "common/Player.hpp"
-#include <Box2D/Box2D.h>
+#include "common/physics.hpp"
 #include <map>
 #include <vector>
 #include <utility>

@@ -29,7 +29,7 @@
 #include "common/StringTokenizer.hpp"
 #include "common/Packet.hpp"
 #include <stdint.h>
-#include <Box2D/Box2D.h>
+#include "common/physics.hpp"
 #include <vector>
 
 #define StandardGun NewStandardGun

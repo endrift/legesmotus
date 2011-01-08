@@ -34,8 +34,6 @@ using namespace std;
 
 const double LM::RADIANS_TO_DEGREES = 57.29577951308232;
 const double LM::DEGREES_TO_RADIANS = 1.745329251994e-02;
-const float LM::PHYSICS_TO_GAME = 64.0f;
-const float LM::GAME_TO_PHYSICS = 1.0f/LM::PHYSICS_TO_GAME;
 
 // Returns a vector containing { closest point x, closest point y, u }
 // Note: You can check whether the closest point was on the initial line segment by

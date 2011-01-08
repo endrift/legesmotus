@@ -42,8 +42,6 @@ namespace LM {
 	// For easy conversion between radians and degrees:
 	extern const double RADIANS_TO_DEGREES;
 	extern const double DEGREES_TO_RADIANS;
-	extern const float PHYSICS_TO_GAME;
-	extern const float GAME_TO_PHYSICS;
 
 	inline uint32_t to_pow_2(uint32_t num) {
 		--num;
@@ -58,10 +56,6 @@ namespace LM {
 
 	// Get a value in the range [0,360)
 	double get_normalized_angle(double angle);
-
-	// Go from game to physics "world" units
-	inline float to_physics(float value) { return value * GAME_TO_PHYSICS; }
-	inline float to_game(float value) { return value * PHYSICS_TO_GAME; }
 
 	// Go from degrees to radians
 	inline double to_radians(double degrees) { return degrees * DEGREES_TO_RADIANS; }

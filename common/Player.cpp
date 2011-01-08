@@ -31,7 +31,7 @@
 #include "common/PacketReader.hpp"
 #include "common/PacketWriter.hpp"
 #include "common/timer.hpp"
-#include <Box2D/Box2D.h>
+#include "common/physics.hpp"
 #include <iostream>
 #include "common/misc.hpp"
 

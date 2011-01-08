@@ -28,7 +28,7 @@
 #include <string>
 #include <cstring>
 #include <cstdlib>
-#include <Box2D/Box2D.h>
+#include "common/physics.hpp"
 #include "common/math.hpp"
 #include "common/misc.hpp"
 #include "common/ClientMapObject.hpp"

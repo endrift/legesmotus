@@ -25,13 +25,20 @@
 #ifndef LM_COMMON_PHYSICS_HPP
 #define LM_COMMON_PHYSICS_HPP
 
-#include "Box2D/Box2D.h"
+#include <Box2D/Box2D.h>
 #include "common/Point.hpp"
 #include "common/math.hpp"
 
 namespace LM {
+	extern const float PHYSICS_TO_GAME;
+	extern const float GAME_TO_PHYSICS;
+
 	// Make a Box2D shape from a string
 	b2Shape* make_shape_from_string(const std::string& shape_string, float scale_x = 1.0f, float scale_y = 1.0f);
+
+	// Go from game to physics "world" units
+	inline float to_physics(float value) { return value * GAME_TO_PHYSICS; }
+	inline float to_game(float value) { return value * PHYSICS_TO_GAME; }
 }
 
 #endif

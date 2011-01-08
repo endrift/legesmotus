@@ -24,7 +24,7 @@
 
 #include "GameLogic.hpp"
 #include "common/Map.hpp"
-#include <Box2D/Box2D.h>
+#include "common/physics.hpp"
 #include <iostream>
 #include "common/math.hpp"
 #include "common/Weapon.hpp"

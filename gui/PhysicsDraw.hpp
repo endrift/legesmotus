@@ -27,7 +27,7 @@
 
 #include "Widget.hpp"
 #include "common/misc.hpp"
-#include <Box2D/Box2D.h>
+#include "common/physics.hpp"
 
 namespace LM {
 	class PhysicsDraw : public Widget {
