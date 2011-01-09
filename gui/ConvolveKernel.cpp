@@ -94,37 +94,12 @@ Image ConvolveKernel::convolve(const Image& source) const {
 						}
 					}
 
-					/*
-					conv_sum[0] += src_pixels[conv_x*source->format->BytesPerPixel + conv_y*source->pitch]*current_k;
-					if (source->format->BytesPerPixel >= 2) {
-						conv_sum[1] += src_pixels[conv_x*source->format->BytesPerPixel + conv_y*source->pitch + 1]*current_k;
-					}
-					if (source->format->BytesPerPixel >= 3) {
-						conv_sum[2] += src_pixels[conv_x*source->format->BytesPerPixel + conv_y*source->pitch + 2]*current_k;
-					}
-					if (source->format->BytesPerPixel >= 4) {
-						conv_sum[3] += src_pixels[conv_x*source->format->BytesPerPixel + conv_y*source->pitch + 3]*current_k;
-					}
-					*/
-					
 					conv_sum[0] += src_pixels[conv_x*4 + conv_y*source.get_pitch()]*current_k;
 					conv_sum[1] += src_pixels[conv_x*4 + conv_y*source.get_pitch() + 1]*current_k;
 					conv_sum[2] += src_pixels[conv_x*4 + conv_y*source.get_pitch() + 2]*current_k;
 					conv_sum[3] += src_pixels[conv_x*4 + conv_y*source.get_pitch() + 3]*current_k;
 				}
 			}
-			/*
-			dst_pixels[x*dest->format->BytesPerPixel + y*dest->pitch] = min<float>(conv_sum[0]/m_normalization, 255.0);
-			if (source->format->BytesPerPixel >= 2) {
-				dst_pixels[x*dest->format->BytesPerPixel + y*dest->pitch + 1] = min<float>(conv_sum[1]/m_normalization, 255.0);
-			}
-			if (source->format->BytesPerPixel >= 3) {
-				dst_pixels[x*dest->format->BytesPerPixel + y*dest->pitch + 2] = min<float>(conv_sum[2]/m_normalization, 255.0);
-			}
-			if (source->format->BytesPerPixel >= 4) {
-				dst_pixels[x*dest->format->BytesPerPixel + y*dest->pitch + 3] = min<float>(conv_sum[3]/m_normalization, 255.0);
-			}
-			*/
 
 			dst_pixels[x*4 + y*dest.get_pitch()] = min<float>(conv_sum[0]/m_normalization, 255.0);
 			dst_pixels[x*4 + y*dest.get_pitch() + 1] = min<float>(conv_sum[1]/m_normalization, 255.0);
