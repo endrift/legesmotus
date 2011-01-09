@@ -27,61 +27,61 @@
 
 using namespace LM;
 
-Curve::Curve(double start, double end) {
+Curve::Curve(float start, float end) {
 	m_start_mapping = start;
 	m_end_mapping = end;
 }
 
-void Curve::set_start(double start) {
+void Curve::set_start(float start) {
 	m_start_mapping = start;
 }
 
-void Curve::set_end(double end) {
+void Curve::set_end(float end) {
 	m_end_mapping = end;
 }
 
-double Curve::get_start() const {
+float Curve::get_start() const {
 	return m_start_mapping;
 }
 
-double Curve::get_end() const {
+float Curve::get_end() const {
 	return m_end_mapping;
 }
 
-double Curve::operator()(double t) const {
+float Curve::operator()(float t) const {
 	return m_start_mapping + (m_end_mapping-m_start_mapping)*map_progress(t);
 }
 
-ConstantCurve::ConstantCurve(double start, double end) : Curve(start, end) {
+ConstantCurve::ConstantCurve(float start, float end) : Curve(start, end) {
 	// Nothing to do
 }
 
-double ConstantCurve::map_progress(double t) const {
+float ConstantCurve::map_progress(float t) const {
 	return 1.0;
 }
 
-LinearCurve::LinearCurve(double start, double end) : Curve(start, end) {
+LinearCurve::LinearCurve(float start, float end) : Curve(start, end) {
 	// Nothing to do
 }
 
-double LinearCurve::map_progress(double t) const {
+float LinearCurve::map_progress(float t) const {
 	return t;
 }
 
-SinusoidalCurve::SinusoidalCurve(double start, double end, double frequency, double phase) : Curve(start, end) {
+SinusoidalCurve::SinusoidalCurve(float start, float end, float frequency, float phase) : Curve(start, end) {
 	m_frequency = frequency;
 	m_phase = phase;
 }
 
-double SinusoidalCurve::map_progress(double t) const {
-	return (sin(m_frequency*2.0*M_PI*t + m_phase) + 1.0)*0.5;
+float SinusoidalCurve::map_progress(float t) const {
+	return (sinf(m_frequency*2.0*M_PI*t + m_phase) + 1.0)*0.5;
 }
 
-LogisticCurve::LogisticCurve(double start, double end, double width) : Curve(start, end) {
-	m_coeff = 1 + pow(M_E, width*-0.5);
+LogisticCurve::LogisticCurve(float start, float end, float width) : Curve(start, end) {
+	m_coeff = 1 + powf(M_E, width*-0.5);
 	m_width = width;
 }
 
-double LogisticCurve::map_progress(double t) const {
-	return m_coeff/(1 + pow(M_E, m_width*(0.5 - t)));
+float LogisticCurve::map_progress(float t) const {
+	return m_coeff/(1 + powf(M_E, m_width*(0.5 - t)));
 }

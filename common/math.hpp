@@ -31,11 +31,11 @@
 #include "common/Point.hpp"
 
 #ifndef M_PI
-#define M_PI (3.141592653589793)
+#define M_PI (3.141592653589793f)
 #endif
 
 #ifndef M_E
-#define M_E (2.718281828459045)
+#define M_E (2.718281828459045f)
 #endif
 
 namespace LM {

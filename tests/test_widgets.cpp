@@ -1,6 +1,7 @@
 #include "gui/SDLWindow.hpp"
 #include "gui/GuiWindow.hpp"
 #include "gui/GLESContext.hpp"
+#include "gui/ResourceCache.hpp"
 #include <iostream>
 
 using namespace LM;
@@ -9,7 +10,8 @@ using namespace std;
 int main(int argc, char *argv[]) {
 	SDLWindow *window = SDLWindow::get_instance(300, 300, 24, SDLWindow::FLAG_VSYNC);
 	GLESContext *ctx = window->get_context();
-	Font f("data/fonts/DustHomeMedium.ttf", 18, ctx);
+	ResourceCache *cache = new ResourceCache("data", ctx);
+	Font f("data/fonts/DustHomeMedium.ttf", 18, cache);
 	Widget w0;
 	w0.set_x(150);
 	w0.set_y(150);

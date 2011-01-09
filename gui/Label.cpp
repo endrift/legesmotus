@@ -23,7 +23,7 @@
  */
 
 #include "Label.hpp"
-#include "client/ConvolveKernel.hpp"
+#include "ConvolveKernel.hpp"
 #include <cmath>
 
 using namespace LM;

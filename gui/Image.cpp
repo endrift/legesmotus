@@ -79,9 +79,34 @@ Image::Image(int width, int height, const string& name, ResourceCache* cache, Dr
 		m_handle = handle;
 		m_owns_handle = false;
 	} else {
-		m_pixels = new unsigned char[m_width*m_pitch];
+		m_pixels = new unsigned char[m_pitch*m_height];
 		m_handle = 0;
 		m_owns_handle = true;
+	}
+}
+
+Image::Image(int width, int height, int pitch, DrawContext::PixelFormat fmt, const string& name, ResourceCache* cache, unsigned char* pixels) {
+	m_cache = cache;
+	m_width = width;
+	m_height = height;
+	m_handle_width = width;
+	m_handle_height = height;
+
+	m_name = name;
+	m_handle = 0;
+	m_owns_handle = true;
+
+	switch (fmt) {
+	case DrawContext::ALPHA:
+		m_pitch = m_width*4;
+		m_pixels = new unsigned char[m_pitch*m_height];
+		upconvert_alpha(pitch, pixels);
+		break;
+	case DrawContext::RGBA:
+		m_pitch = pitch;
+		m_pixels = new unsigned char[m_pitch*m_height];
+		memcpy(m_pixels, pixels, m_pitch*m_height);
+		break;
 	}
 }
 
@@ -98,6 +123,17 @@ Image::~Image() {
 			if (m_handle && m_owns_handle) {
 				m_cache->get_context()->del_image(m_handle);
 			}
+		}
+	}
+}
+
+void Image::upconvert_alpha(int p, unsigned char* d) {
+	for (int row = 0; row < m_height; ++row) {
+		for (int col = 0; col < m_width; ++col) {
+			m_pixels[m_pitch*row + 4*col + 0] = 0xFF;
+			m_pixels[m_pitch*row + 4*col + 1] = 0xFF;
+			m_pixels[m_pitch*row + 4*col + 2] = 0xFF;
+			m_pixels[m_pitch*row + 4*col + 3] = d[p*row + col];
 		}
 	}
 }
@@ -150,11 +186,11 @@ void Image::rearrange_32(SDL_Surface* image) {
 	}
 }
 
-DrawContext::Image Image::gen_handle(bool autofree) {
+DrawContext::Image Image::gen_handle(bool autofree, DrawContext* ctx) {
 	if (m_pixels != NULL) {
 		m_handle_width = m_width;
 		m_handle_height = m_height;
-		m_handle = m_cache->get_context()->gen_image(&m_handle_width, &m_handle_height, DrawContext::RGBA, m_pixels);
+		m_handle = (ctx == NULL?m_cache->get_context():ctx)->gen_image(&m_handle_width, &m_handle_height, DrawContext::RGBA, m_pixels);
 		m_owns_handle = true;
 	}
 
@@ -260,20 +296,28 @@ int Image::get_handle_height() const {
 }
 
 const unsigned char* Image::get_pixels() const {
-	Image* master = m_cache->get<Image>(m_name);
-	if (master == this || master == NULL) {
-		return m_pixels;
+	if (m_cache != NULL) {
+		Image* master = m_cache->get<Image>(m_name);
+		if (master == this || master == NULL) {
+			return m_pixels;
+		} else {
+			return master->get_pixels();
+		}
 	} else {
-		return master->get_pixels();
+		return m_pixels;
 	}
 }
 
 unsigned char* Image::get_pixels() {
-	Image* master = m_cache->get<Image>(m_name);
-	if (master != this && master != NULL) {
-		m_pixels = master->get_pixels();
+	if (m_cache != NULL) {
+		Image* master = m_cache->get<Image>(m_name);
+		if (master != this && master != NULL) {
+			m_pixels = master->get_pixels();
+		}
+		return m_pixels;
+	} else {
+		return m_pixels;
 	}
-	return m_pixels;
 }
 
 Image& Image::operator=(const Image& other) {

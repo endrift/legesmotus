@@ -28,55 +28,55 @@
 namespace LM {
 	class Curve {
 	private:
-		double	m_start_mapping;
-		double	m_end_mapping;
+		float	m_start_mapping;
+		float	m_end_mapping;
 	protected:
 		// Must return a value in [0, 1]
-		virtual double	map_progress(double t) const = 0;
-		Curve(double start, double end);
+		virtual float	map_progress(float t) const = 0;
+		Curve(float start, float end);
 	public:
 		virtual ~Curve() {}
-		double operator()(double t) const;
+		float operator()(float t) const;
 	
-		void set_start(double start);
-		void set_end(double end);
+		void set_start(float start);
+		void set_end(float end);
 	
-		double get_start() const;
-		double get_end() const;
+		float get_start() const;
+		float get_end() const;
 	};
 	
 	class ConstantCurve : public Curve {
 	protected:
-		virtual double	map_progress(double t) const;
+		virtual float	map_progress(float t) const;
 	public:
-		ConstantCurve(double start, double end);
+		ConstantCurve(float start, float end);
 	};
 	
 	class LinearCurve : public Curve {
 	protected:
-		virtual double	map_progress(double t) const;
+		virtual float	map_progress(float t) const;
 	public:
-		LinearCurve(double start, double end);
+		LinearCurve(float start, float end);
 	};
 	
 	class SinusoidalCurve : public Curve {
 	private:
-		double m_frequency;
-		double m_phase;
+		float m_frequency;
+		float m_phase;
 	protected:
-		virtual double	map_progress(double t) const;
+		virtual float	map_progress(float t) const;
 	public:
-		SinusoidalCurve(double start, double end, double frequency, double phase);
+		SinusoidalCurve(float start, float end, float frequency, float phase);
 	};
 
 	class LogisticCurve : public Curve {
 	private:
-		double m_coeff;
-		double m_width;
+		float m_coeff;
+		float m_width;
 	protected:
-		virtual double	map_progress(double t) const;
+		virtual float	map_progress(float t) const;
 	public:
-		LogisticCurve(double start, double end, double width = 6.0);
+		LogisticCurve(float start, float end, float width = 6.0);
 	};
 }
 

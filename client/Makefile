@@ -1,6 +1,5 @@
 BASEDIR = ..
-LIBSRCS := ConvolveKernel.cpp Curve.cpp ClientConfiguration.cpp MapReceiver.cpp
-BINSRCS := main.cpp
+LIBSRCS := Curve.cpp
 
 include $(BASEDIR)/common.mk
 LIBRARY := ../liblmclient.a

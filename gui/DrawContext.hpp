@@ -29,8 +29,8 @@
 #include <vector>
 
 namespace LM {
-	class Widget;
 	class Image;
+	class Widget;
 	class ResourceCache;
 	class ShaderSet;
 
@@ -76,6 +76,7 @@ namespace LM {
 		bool	is_dirty();
 
 		virtual void	make_active() = 0;
+		// Get this DrawContext as an image
 		virtual LM::Image get_image(const std::string& name, ResourceCache* cache) = 0;
 
 		virtual int		get_width() const = 0;

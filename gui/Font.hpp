@@ -32,19 +32,18 @@
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
 #include "DrawContext.hpp"
-
-// A temporary measure
-#define Font NewFont
+#include "Image.hpp"
 
 namespace LM {
 	class ConvolveKernel;
+	class ResourceCache;
 
 	class Font {
 	public:
 		struct Glyph {
 		private:
 			DrawContext* m_ctx;
-			DrawContext::Image image;
+			Image image;
 
 		public:
 			float advance;
@@ -66,9 +65,10 @@ namespace LM {
 		static FT_Library m_library;
 		static bool m_init;
 
+		std::string m_font_name;
 		FT_Face m_face;
-		std::map<int, Glyph*> m_glyphs;
-		DrawContext* m_ctx;
+		std::map<int, Glyph*>* m_glyphs;
+		ResourceCache* m_cache;
 		ConvolveKernel* m_kernel;
 		bool m_italic;
 
@@ -76,7 +76,8 @@ namespace LM {
 		virtual Glyph* make_glyph(const FT_GlyphSlot& glyph);
 
 	public:
-		Font(const std::string& filename, float size, DrawContext* ctx, bool italic = false, ConvolveKernel* kernel = 0);
+		Font(const std::string& filename, float size, ResourceCache* cache, bool italic = false, ConvolveKernel* kernel = 0);
+		Font(const Font& other);
 		virtual ~Font();
 
 		const Glyph* get_glyph(int character);

@@ -53,6 +53,7 @@ namespace LM {
 		DrawContext::Image	m_handle;
 		bool				m_owns_handle;
 
+		void upconvert_alpha(int p, unsigned char* d);
 		void upconvert_8(SDL_Surface* image);
 		void upconvert_24(SDL_Surface* image);
 		void rearrange_32(SDL_Surface* image);
@@ -61,10 +62,11 @@ namespace LM {
 		Image();
 		Image(const std::string& path, ResourceCache* cache, bool autogen = false);
 		Image(int width, int height, const std::string& name, ResourceCache* cache, DrawContext::Image handle = 0);
+		Image(int width, int height, int pitch, DrawContext::PixelFormat fmt, const std::string& name, ResourceCache* cache, unsigned char* pixels);
 		Image(const Image& other);
 		~Image();
 
-		DrawContext::Image gen_handle(bool autofree = true);
+		DrawContext::Image gen_handle(bool autofree = true, DrawContext* ctx = NULL);
 		DrawContext::Image get_handle() const;
 
 		void reload(bool autogen = false);

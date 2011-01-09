@@ -23,12 +23,11 @@
  */
 
 #include "Font.hpp"
-#include "client/ConvolveKernel.hpp"
+#include "ConvolveKernel.hpp"
 #include "common/Exception.hpp"
+#include "ResourceCache.hpp"
 #include <cmath>
-
-// XXX remove SDL dependency here
-#include "SDL.h"
+#include <sstream>
 
 using namespace LM;
 using namespace std;
@@ -36,7 +35,7 @@ using namespace std;
 FT_Library Font::m_library;
 bool Font::m_init = false;
 
-Font::Font(const std::string& filename, float size, DrawContext* ctx, bool italic, ConvolveKernel* kernel) {
+Font::Font(const std::string& filename, float size, ResourceCache* cache, bool italic, ConvolveKernel* kernel) {
 	// TODO error checking
 	FT_Error err;
 	if (!m_init) {
@@ -46,6 +45,13 @@ Font::Font(const std::string& filename, float size, DrawContext* ctx, bool itali
 		}
 		m_init = true;
 	}
+
+	stringstream font_name;
+	font_name << "font:" << filename << "@" << size << (italic?"i":"") << "/" << hex << kernel;
+	m_font_name = font_name.str();
+	// If this assert fails, we need operator= like in Image
+	ASSERT(cache->get<Font>(m_font_name) == NULL);
+
 	err = FT_New_Face(m_library, filename.c_str(), 0, &m_face);
 	if (err) {
 		throw new Exception("Could not initialize font");
@@ -56,16 +62,29 @@ Font::Font(const std::string& filename, float size, DrawContext* ctx, bool itali
 		throw new Exception("Could not initialize font size");
 	}
 
-	m_ctx = ctx;
+	m_cache = cache;
 	m_italic = italic;
 	m_kernel = kernel;
+	m_glyphs = new map<int, Glyph*>;
+
+	m_cache->add(m_font_name, *this);
+}
+
+Font::Font(const Font& other) {
+	m_font_name = other.m_font_name;
+	m_face = other.m_face;
+	m_glyphs = other.m_glyphs;
+	m_cache = other.m_cache;
+	m_kernel = other.m_kernel;
+	m_italic = other.m_italic;
 }
 
 Font::~Font() {
-	for (map<int, Glyph*>::iterator iter = m_glyphs.begin(); iter != m_glyphs.end(); ++iter) {
-		delete iter->second;
+	int remaining = m_cache->decrement<Font>(m_font_name);
+	if (!remaining) {
+		delete m_glyphs;
+		FT_Done_Face(m_face);
 	}
-	FT_Done_Face(m_face);
 }
 
 Font::Glyph::Glyph() {
@@ -74,7 +93,6 @@ Font::Glyph::Glyph() {
 	advance = 0;
 	baseline = 0;
 	bearing = 0;
-	image = 0;
 }
 
 Font::Glyph::Glyph(const FT_GlyphSlot& glyph, DrawContext* ctx, bool italic, ConvolveKernel* kernel) {
@@ -101,52 +119,46 @@ Font::Glyph::Glyph(const FT_GlyphSlot& glyph, DrawContext* ctx, bool italic, Con
 	bitmap_width = ft_bmp->bitmap.pitch;
 	bitmap_height = ft_bmp->bitmap.rows;
 	if (bitmap_width > 0 && bitmap_height > 0) {
-		SDL_Surface* sdl_bmp = NULL;
 		unsigned char* bmp = ft_bmp->bitmap.buffer;
+		Image surf(ft_bmp->bitmap.width, bitmap_height, bitmap_width, DrawContext::ALPHA, "", NULL, bmp);
 		if (kernel != NULL) {
-			// FIXME figure out why we pass 2 here and not 1
-			SDL_Surface* surf = SDL_CreateRGBSurfaceFrom(bmp, ft_bmp->bitmap.width, bitmap_height, 2, bitmap_width, 0, 0, 0, 0xFF);
-			sdl_bmp = kernel->convolve(surf);
-			SDL_FreeSurface(surf);
-			bitmap_width = sdl_bmp->pitch;
-			bitmap_height = sdl_bmp->h;
-			bmp = (unsigned char*) sdl_bmp->pixels;
+			image = kernel->convolve(surf);
+		} else {
+			image = surf;
 		}
-		image = m_ctx->gen_image(&bitmap_width, &bitmap_height, DrawContext::ALPHA, bmp);
-		if (sdl_bmp != NULL) {
-			SDL_FreeSurface(sdl_bmp);
-		}
-	} else {
-		image = 0;
+		image.gen_handle(true, m_ctx);
+
+		bitmap_width = image.get_handle_width();
+		bitmap_height = image.get_handle_height();
 	}
 	FT_Done_Glyph(ft_glyph);
 }
 
 Font::Glyph::~Glyph() {
-	m_ctx->del_image(image);
+	// Nothing to do
 }
 
 void Font::Glyph::draw() const {
 	if (bitmap_width > 0 && bitmap_height > 0) {
-		m_ctx->draw_image(bitmap_width, bitmap_height, image);
+		m_ctx->draw_image(bitmap_width, bitmap_height, image.get_handle());
 	}
 }
 
 Font::Glyph* Font::make_glyph(const FT_GlyphSlot& glyph) {
-	return new Glyph(m_face->glyph, m_ctx, m_italic, m_kernel);
+	return new Glyph(m_face->glyph, m_cache->get_context(), m_italic, m_kernel);
 }
 
 const Font::Glyph* Font::get_glyph(int character) {
-	if (m_glyphs.find(character) == m_glyphs.end()) {
+	if (m_glyphs->find(character) == m_glyphs->end()) {
 		FT_Error err = FT_Load_Char(m_face, character, FT_LOAD_DEFAULT);
 		if (err) {
 			return NULL;
 		}
 
 		Glyph* g = make_glyph(m_face->glyph);
-		m_glyphs[character] = g;
+		(*m_glyphs)[character] = g;
 	}
-	return m_glyphs[character];
+	return (*m_glyphs)[character];
 }
 
 float Font::get_height() const {
