@@ -52,8 +52,6 @@ namespace LM {
 		return num;
 	}
 
-	std::vector<double> closest_point_on_line(double x1, double y1, double x2, double y2, double x3, double y3);
-
 	// Get a value in the range [0,360)
 	double get_normalized_angle(double angle);
 

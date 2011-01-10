@@ -31,7 +31,7 @@ using namespace std;
 
 const int ConvolveKernel::SUPERSAMPLE = 2;
 
-ConvolveKernel::ConvolveKernel(Curve* curve, int kwidth, int kheight, float normalization) {
+ConvolveKernel::ConvolveKernel(const Curve* curve, int kwidth, int kheight, float normalization) {
 	float sum = 0;
 	m_width = kwidth;
 	m_height = kheight;
@@ -52,6 +52,23 @@ ConvolveKernel::ConvolveKernel(Curve* curve, int kwidth, int kheight, float norm
 				}
 			}
 			k /= (SUPERSAMPLE*SUPERSAMPLE);
+			m_data[x + kwidth*y] = k;
+			sum += k;
+		}
+	}
+
+	m_extend = false; // TODO: setter
+	m_normalization = normalization == 0 ? sum : normalization;
+}
+
+ConvolveKernel::ConvolveKernel(const float data[], int kwidth, int kheight, float normalization) {
+	float sum = 0;
+	m_width = kwidth;
+	m_height = kheight;
+	m_data = new float[kwidth * kheight];
+	for (int x = 0; x < kwidth; ++x) {
+		for (int y = 0; y < kheight; ++y) {
+			float k = data[x + kwidth*y];
 			m_data[x + kwidth*y] = k;
 			sum += k;
 		}

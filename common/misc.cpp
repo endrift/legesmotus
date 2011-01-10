@@ -229,15 +229,22 @@ Color::Color() {
 	a = 1;
 }
 
-Color::Color(double r, double g, double b, double a) {
+Color::Color(float r, float g, float b, float a) {
 	this->r = r;
 	this->g = g;
 	this->b = b;
 	this->a = a;
 }
 
-const Color Color::WHITE(1.0, 1.0, 1.0);
-const Color Color::BLACK(0.0, 0.0, 0.0);
+Color::Color(int r, int g, int b, int a) {
+	this->r = r / 255.0f;
+	this->g = g / 255.0f;
+	this->b = b / 255.0f;
+	this->a = a / 255.0f;
+}
+
+const Color Color::WHITE(1.0f, 1.0f, 1.0f);
+const Color Color::BLACK(0.0f, 0.0f, 0.0f);
 
 void	LM::strip_leading_trailing_spaces(string& str) {
 	string::size_type startpos = str.find_first_not_of(" \t");

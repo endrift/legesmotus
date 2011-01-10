@@ -43,11 +43,14 @@ namespace LM {
 	class Font;
 	class Label;
 	class ConvolveKernel;
+	class Hud;
 
 	class GuiClient : public Client, public InputSink {
 	private:
 		enum FontUse {
 			FONT_BADGE = 0,
+			FONT_BADGE_SHADOW,
+
 			FONT_MAX
 		};
 
@@ -66,6 +69,8 @@ namespace LM {
 		std::vector<std::string> m_preloaded_images;
 		std::vector<std::string> m_preloaded_fonts;
 
+		Hud* m_hud;
+
 		std::map<int, Label*> m_badges;
 
 		// XXX how much of this should be moved to a new class?
@@ -73,13 +78,13 @@ namespace LM {
 
 		void preload();
 		void preload_image(const char* filename);
-		std::string preload_font(const char* filename, int size, ConvolveKernel* kernel = false);
+		std::string preload_font(const char* filename, int size, const ConvolveKernel* kernel = NULL);
 
 		void cleanup();
 
 		void set_font(Font* font, FontUse fontuse);
 		Font* get_font(FontUse font);
-		Font* load_font(const char* filename, int size, ConvolveKernel* kernel = false);
+		Font* load_font(const char* filename, int size, const ConvolveKernel* kernel = NULL);
 
 		void read_input();
 		void set_sink(InputSink* input_sink);
@@ -102,6 +107,9 @@ namespace LM {
 		virtual GraphicalPlayer* make_player(const char* name, uint32_t id, char team);
 		virtual GraphicalMap* make_map();
 		virtual Weapon* make_weapon(WeaponReader& weapon_data);
+
+		virtual void name_change(Player* player, const std::string& new_name);
+		virtual void team_change(Player* player, char new_team);
 
 		virtual void run();
 		void update_gui();

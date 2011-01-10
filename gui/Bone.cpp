@@ -118,7 +118,7 @@ void Bone::diagnostic_draw(DrawContext* ctx) const {
 		m_parent->transform(ctx);
 	}
 	ctx->unbind_image();
-	ctx->set_draw_color(Color(1.0, 0, 0, 0.5));
+	ctx->set_draw_color(Color(1.0f, 0.0f, 0.0f, 0.5f));
 	ctx->draw_arc_line(1, 4, 4, 16);
 	ctx->draw_line(0, 0, round(m_x), round(m_y));
 	ctx->translate(round(m_x), round(m_y));
@@ -130,5 +130,5 @@ void Bone::diagnostic_draw(DrawContext* ctx) const {
 	ctx->translate(-round(m_center_x), -round(m_center_y));
 	ctx->draw_rect_line(4, 4);
 	ctx->pop_transform();
-	ctx->set_draw_color(Color(1.0, 1.0, 1.0, 1.0));
+	ctx->set_draw_color(Color(1.0f, 1.0f, 1.0f, 1.0f));
 }

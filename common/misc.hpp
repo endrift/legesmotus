@@ -100,11 +100,12 @@ namespace LM {
 	// Represent a color (with red, green, blue, and alpha components)
 	struct Color {
 		Color();
-		Color(double r, double g, double b, double a = 1.0);
-		double r;
-		double g;
-		double b;
-		double a;
+		Color(float r, float g, float b, float a = 1.0);
+		explicit Color(int r, int g, int b, int a = 0xFF);
+		float r;
+		float g;
+		float b;
+		float a;
 
 		static const Color WHITE;
 		static const Color BLACK;

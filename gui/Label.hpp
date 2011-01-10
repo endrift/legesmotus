@@ -27,6 +27,7 @@
 
 #include "Widget.hpp"
 #include "Font.hpp"
+#include "DrawContext.hpp"
 #include "common/misc.hpp"
 #include <string>
 
@@ -50,6 +51,7 @@ namespace LM {
 		std::wstring m_text;
 		Align m_align;
 		Color m_color;
+		DrawContext::BlendMode m_blend;
 		float m_tracking;
 		Label* m_shadow;
 		float m_skew;
@@ -67,6 +69,7 @@ namespace LM {
 		void set_string(const std::string& str);
 
 		void set_color(Color color);
+		void set_blend(DrawContext::BlendMode mode);
 
 		void set_align(Align align);
 		Align get_align() const;

@@ -67,7 +67,7 @@ void GuiWindow::draw_decoration(DrawContext* ctx) const {
 	ctx->finish_clip(); /*}*/
 
 	ctx->set_draw_color(m_title_color);
-	ctx->set_blend_mode(DrawContext::BLEND_MULTIPLY);
+	ctx->set_blend_mode(DrawContext::BLEND_SUBTRACT);
 	ctx->draw_rect_fill(get_viewport_width(), m_title_height);
 
 	ctx->set_blend_mode(DrawContext::BLEND_ADD);
@@ -121,7 +121,7 @@ void GuiWindow::draw(DrawContext* ctx) const {
 	// Position for background
 	ctx->translate(0, (m_title_height + m_decoration_width)*0.5f);
 	// Draw background
-	ctx->set_blend_mode(DrawContext::BLEND_MULTIPLY);
+	ctx->set_blend_mode(DrawContext::BLEND_SUBTRACT);
 	ctx->set_draw_color(m_background_color);
 	ctx->draw_rect_fill(get_viewport_width(), get_viewport_height());
 

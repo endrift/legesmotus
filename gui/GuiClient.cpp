@@ -35,6 +35,7 @@
 #include "common/math.hpp"
 #include "Font.hpp"
 #include "Label.hpp"
+#include "Hud.hpp"
 
 using namespace LM;
 using namespace std;
@@ -50,6 +51,8 @@ GuiClient::GuiClient() {
 	set_sink(m_gcontrol);
 	set_controller(m_gcontrol);
 
+	memset(m_fonts, 0, sizeof(m_fonts));
+
 	preload();
 
 	m_window->set_root_widget(&m_root);
@@ -62,6 +65,7 @@ GuiClient::GuiClient() {
 
 	m_map = NULL;
 	m_player = NULL;
+	m_hud = NULL;
 }
 
 GuiClient::~GuiClient() {
@@ -100,7 +104,7 @@ void GuiClient::preload_image(const char* filename) {
 	m_preloaded_images.push_back(filename);
 }
 
-string GuiClient::preload_font(const char* filename, int size, ConvolveKernel* kernel) {
+string GuiClient::preload_font(const char* filename, int size, const ConvolveKernel* kernel) {
 	Font font(filename, size, m_cache, false, kernel);
 	const string& name = font.get_id();
 	m_cache->increment<Font>(name);
@@ -122,6 +126,9 @@ void GuiClient::cleanup() {
 	for (int i = 0; i < FONT_MAX; ++i) {
 		set_font(NULL, (FontUse)i);
 	}
+
+	delete m_hud;
+	m_hud = NULL;
 }
 
 void GuiClient::set_font(Font* font, FontUse fontuse) {
@@ -140,7 +147,7 @@ Font* GuiClient::get_font(FontUse font) {
 	return m_fonts[font];
 }
 
-Font* GuiClient::load_font(const char* filename, int size, ConvolveKernel* kernel) {
+Font* GuiClient::load_font(const char* filename, int size, const ConvolveKernel* kernel) {
 	string id = Font::lookup_id(filename, size, false, kernel);
 	Font* font = m_cache->get<Font>(id);
 	if (font == NULL) {
@@ -155,9 +162,13 @@ void GuiClient::set_sink(InputSink* input_sink) {
 
 void GuiClient::add_badge(Player* player) {
 	Label* badge = new Label(player->get_name(), get_font(FONT_BADGE), &m_root);
+	Label* shadow = new Label(player->get_name(), get_font(FONT_BADGE_SHADOW));
 	m_badges[player->get_id()] = badge;
-	badge->set_color(Color::WHITE);
+	badge->set_color(Hud::get_team_color(player->get_team(), Hud::COLOR_DARK));
 	badge->set_align(Label::ALIGN_CENTER);
+	shadow->set_color(Hud::get_team_color(player->get_team(), Hud::COLOR_SHADOW));
+	shadow->set_blend(DrawContext::BLEND_SUBTRACT);
+	badge->set_shadow(shadow);
 }
 
 void GuiClient::remove_badge(Player* player) {
@@ -237,6 +248,20 @@ Weapon* GuiClient::make_weapon(WeaponReader& weapon_data) {
 	return w;
 }
 
+void GuiClient::name_change(Player* player, const std::string& new_name) {
+	Client::name_change(player, new_name);
+	Label* badge = m_badges[player->get_id()];
+	badge->set_string(new_name);
+}
+
+void GuiClient::team_change(Player* player, char new_team) {
+	Client::team_change(player, new_team);
+	Label* badge = m_badges[player->get_id()];
+	Label* shadow = badge->get_shadow();
+	badge->set_color(Hud::get_team_color(player->get_team(), Hud::COLOR_DARK));
+	shadow->set_color(Hud::get_team_color(player->get_team(), Hud::COLOR_SHADOW));
+}
+
 void GuiClient::run() {
 	INFO("Beginning running GuiClient...");
 	set_running(true);
@@ -254,6 +279,8 @@ void GuiClient::run() {
 	m_view->set_scale_base(1024);
 	crosshair_bone.set_scale_x(m_view->get_scale()/4.0f);
 	crosshair_bone.set_scale_y(m_view->get_scale()/4.0f);
+	m_hud = new Hud(&m_root);
+	set_font(load_font("DustHomeMedium.ttf", 12, m_hud->get_shadow_kernel()), FONT_BADGE_SHADOW);
 
 	IPAddress host;
 	resolve_hostname(host, "endrift.com", 16876);

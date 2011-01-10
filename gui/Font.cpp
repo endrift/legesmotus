@@ -35,13 +35,13 @@ using namespace std;
 FT_Library Font::m_library;
 bool Font::m_init = false;
 
-string Font::lookup_id(const std::string& filename, float size, bool italic, ConvolveKernel* kernel) {
+string Font::lookup_id(const std::string& filename, float size, bool italic, const ConvolveKernel* kernel) {
 	stringstream font_name;
 	font_name << "font:" << filename << "@" << size << (italic?"i":"") << "/" << hex << kernel;
 	return font_name.str();
 }
 
-Font::Font(const std::string& filename, float size, ResourceCache* cache, bool italic, ConvolveKernel* kernel) {
+Font::Font(const std::string& filename, float size, ResourceCache* cache, bool italic, const ConvolveKernel* kernel) {
 	// TODO error checking
 	FT_Error err;
 	if (!m_init) {
@@ -99,7 +99,7 @@ Font::Glyph::Glyph() {
 	bearing = 0;
 }
 
-Font::Glyph::Glyph(const FT_GlyphSlot& glyph, DrawContext* ctx, bool italic, ConvolveKernel* kernel) {
+Font::Glyph::Glyph(const FT_GlyphSlot& glyph, DrawContext* ctx, bool italic, const ConvolveKernel* kernel) {
 	FT_Glyph ft_glyph;
 	FT_BitmapGlyph ft_bmp;
 	m_ctx = ctx;

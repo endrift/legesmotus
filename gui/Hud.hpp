@@ -1,5 +1,5 @@
 /*
- * client/ConvolveKernel.hpp
+ * gui/Hud.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,29 +22,43 @@
  * 
  */
 
-#ifndef LM_CLIENT_CONVOLVEKERNEL_HPP
-#define LM_CLIENT_CONVOLVEKERNEL_HPP
+#ifndef LM_GUI_HUD_HPP
+#define LM_GUI_HUD_HPP
 
-#include "client/Curve.hpp"
-#include "Image.hpp"
+#include "Widget.hpp"
+#include "common/misc.hpp"
+#include "ConvolveKernel.hpp"
 
 namespace LM {
-	class ConvolveKernel {
-	private:
-		static const int SUPERSAMPLE;
-		float* m_data;
-		float m_normalization;
-		int m_width;
-		int m_height;
-		bool m_extend;
+	class Hud : public Widget {
 	public:
-		ConvolveKernel(const Curve* curve, int kwidth, int kheight, float normalization = 0);
-		ConvolveKernel(const float data[], int kwidth, int kheight, float normalization = 0);
-		~ConvolveKernel();
-		Image convolve(const Image& source) const;
+		static const Color BLUE_BRIGHT;
+		static const Color BLUE_SHADOW;
+		static const Color BLUE_DARK;
 
-		int get_width() const;
-		int get_height() const;
+		static const Color RED_BRIGHT;
+		static const Color RED_SHADOW;
+		static const Color RED_DARK;
+
+		enum ColorType {
+			COLOR_BRIGHT,
+			COLOR_SHADOW,
+			COLOR_DARK
+		};
+
+		static const Color& get_team_color(char team, ColorType type);
+
+	private:
+		static const int m_shadow_convolve_height;
+		static const int m_shadow_convolve_width;
+		static const float m_shadow_convolve_data[];
+
+		ConvolveKernel m_shadow_kernel;
+
+	public:
+		Hud(Widget* parent = NULL);
+
+		const ConvolveKernel* get_shadow_kernel() const;
 	};
 }
 

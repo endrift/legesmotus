@@ -22,12 +22,14 @@ int main(int argc, char *argv[]) {
 	ConvolveKernel kernel(&curve, 7, 2);
 	ConvolveKernel bkernel(&bcurve, 4, 1, 1);
 	
-	Font font("DustHomeMedium.ttf", 20, cache, false, &bkernel);
+	Font font("DustHomeMedium.ttf", 20, cache, false, NULL);
 	Font cfont("DustHomeMedium.ttf", 20, cache, false, &kernel);
 	//Font icfont(string("data/fonts/JuraMedium.ttf"), 30, &ctx, true, &kernel);
 	Label l(string("I'm nauseous! I'm nauseous..."), &font);
 	Label sl(&cfont);
 	l.set_shadow(&sl);
+	l.set_x(250);
+	l.set_y(50);
 	Label p(&font);
 	l.set_align(Label::ALIGN_CENTER);
 	l.set_skew_align(Label::VALIGN_BOTTOM);
@@ -40,8 +42,6 @@ int main(int argc, char *argv[]) {
 
 	bool running = true;
 	int phase = 0;
-
-	ctx->translate(250, 60);
 
 	while(running) {
 		SDL_Event e;
@@ -59,13 +59,11 @@ int main(int argc, char *argv[]) {
 		float f = sin(phase*M_PI/50.0f);
 		float c = (1-f)*0.5f;
 		//ctx.scale(1, 1/(c+0.8));
-		ctx->translate(250, 20);
-		l.set_color(Color(c, c, c, 1));
+		l.set_color(Color(c, c, c, 1.0f));
 		l.set_tracking(4.0f*c);
 		l.set_skew(f);
 		l.draw(ctx);
 		//ctx.scale(1, (c+0.8));
-		ctx->translate(-250, -20);
 
 		ctx->translate(245, 35);
 		ctx->scale(0.5f, 0.5f);
@@ -81,6 +79,8 @@ int main(int argc, char *argv[]) {
 
 		phase = (phase+1)%100;
 	}
+	
+	l.set_shadow(NULL);
 
 	return 0;
 }

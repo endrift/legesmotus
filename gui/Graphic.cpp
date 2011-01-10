@@ -64,6 +64,7 @@ void Graphic::transform(DrawContext* ctx) const {
 
 void Graphic::preprocess(DrawContext* ctx) const {
 	ctx->set_draw_color(m_color);
+	ctx->set_blend_mode(DrawContext::BLEND_NORMAL);
 	if (m_shaders != NULL) {
 		ctx->bind_shader_set(m_shaders);
 	}

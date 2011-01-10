@@ -380,20 +380,24 @@ void GLESContext::set_draw_color(Color c) {
 
 void GLESContext::set_blend_mode(BlendMode m) {
 	switch (m) {
-		case BLEND_NORMAL:
+	case BLEND_NORMAL:
+		glBlendEquation(GL_FUNC_ADD);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		break;
 
-		case BLEND_ADD:
+	case BLEND_ADD:
+		glBlendEquation(GL_FUNC_ADD);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 		break;
 
-		case BLEND_MULTIPLY:
-		glBlendFunc(GL_DST_COLOR, GL_ZERO);
+	case BLEND_SUBTRACT:
+		glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 		break;
 
-		case BLEND_SCREEN:
-		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_COLOR);
+	case BLEND_SCREEN:
+		glBlendEquation(GL_FUNC_ADD);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR);
 		break;
 	}
 	m_mode = m;

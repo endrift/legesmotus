@@ -124,6 +124,9 @@ namespace LM {
 		virtual void spawn(const Packet& p);
 		// End packet callbacks
 
+		virtual void name_change(Player* player, const std::string& new_name);
+		virtual void team_change(Player* player, char new_team);
+
 		// Main loop: override for subclass behaviors, but call step inside
 		virtual void run();
 	};

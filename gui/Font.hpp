@@ -55,7 +55,7 @@ namespace LM {
 			int bitmap_height;
 
 			Glyph();
-			Glyph(const FT_GlyphSlot& glyph, DrawContext* ctx, bool italic, ConvolveKernel* kernel);
+			Glyph(const FT_GlyphSlot& glyph, DrawContext* ctx, bool italic, const ConvolveKernel* kernel);
 			virtual ~Glyph();
 
 			virtual void draw() const;
@@ -69,16 +69,16 @@ namespace LM {
 		FT_Face m_face;
 		std::map<int, Glyph*>* m_glyphs;
 		ResourceCache* m_cache;
-		ConvolveKernel* m_kernel;
+		const ConvolveKernel* m_kernel;
 		bool m_italic;
 
 	protected:
 		virtual Glyph* make_glyph(const FT_GlyphSlot& glyph);
 
 	public:
-		static std::string lookup_id(const std::string& filename, float size, bool italic = false, ConvolveKernel* kernel = NULL);
+		static std::string lookup_id(const std::string& filename, float size, bool italic = false, const ConvolveKernel* kernel = NULL);
 
-		Font(const std::string& filename, float size, ResourceCache* cache, bool italic = false, ConvolveKernel* kernel = NULL);
+		Font(const std::string& filename, float size, ResourceCache* cache, bool italic = false, const ConvolveKernel* kernel = NULL);
 		Font(const Font& other);
 		virtual ~Font();
 

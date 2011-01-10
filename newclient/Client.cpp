@@ -413,7 +413,7 @@ void Client::name_change(const Packet& p) {
 	if (player == NULL) {
 		return;
 	}
-	player->set_name(p.name_change.name->c_str());
+	name_change(player, *p.name_change.name);
 }
 
 void Client::team_change(const Packet& p) {
@@ -421,7 +421,7 @@ void Client::team_change(const Packet& p) {
 	if (player == NULL) {
 		return;
 	}
-	player->set_team(p.team_change.name);
+	team_change(player, p.team_change.name);
 }
 
 void Client::weapon_info(const Packet& p) {
@@ -463,6 +463,14 @@ void Client::spawn(const Packet& p) {
 	
 	player->set_is_invisible(false);
 	// TODO implement the rest
+}
+
+void Client::name_change(Player* player, const std::string& new_name) {
+	player->set_name(new_name.c_str());
+}
+
+void Client::team_change(Player* player, char new_team) {
+	player->set_team(new_team);
 }
 
 bool Client::running() const {

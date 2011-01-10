@@ -35,6 +35,7 @@ Label::Label(Font* font, Widget* parent) : Widget(parent), m_font(NULL) {
 	m_skew_align = VALIGN_MIDDLE;
 	m_tracking = 0;
 	m_skew = 0;
+	m_blend = DrawContext::BLEND_NORMAL;
 	m_shadow = NULL;
 }
 
@@ -44,6 +45,7 @@ Label::Label(const wstring& str, Font* font, Widget* parent) : Widget(parent), m
 	m_skew_align = VALIGN_MIDDLE;
 	m_tracking = 0;
 	m_skew = 0;
+	m_blend = DrawContext::BLEND_NORMAL;
 	m_shadow = NULL;
 	recalculate_width();
 }
@@ -55,6 +57,7 @@ Label::Label(const string& str, Font* font, Widget* parent) :  Widget(parent), m
 	m_skew_align = VALIGN_MIDDLE;
 	m_tracking = 0;
 	m_skew = 0;
+	m_blend = DrawContext::BLEND_NORMAL;
 	m_shadow = NULL;
 	recalculate_width();
 }
@@ -102,6 +105,10 @@ void Label::set_string(const string& str) {
 
 void Label::set_color(Color color) {
 	m_color = color;
+}
+
+void Label::set_blend(DrawContext::BlendMode mode) {
+	m_blend = mode;
 }
 
 void Label::set_align(Align align) {
@@ -181,10 +188,6 @@ const Font* Label::get_font() const {
 }
 
 void Label::draw(DrawContext* ctx) const {
-	if (m_shadow != NULL) {
-		m_shadow->draw(ctx);
-	}
-
 	if (m_font == NULL) {
 		return;
 	}
@@ -192,6 +195,7 @@ void Label::draw(DrawContext* ctx) const {
 	float total_advance = 0;
 	float align = 0;
 	float valign = 0;
+	float kernel_factor = 0.5f;
 	wchar_t prev_char = -1;
 	const ConvolveKernel* kernel = get_font()->get_kernel();
 
@@ -203,18 +207,28 @@ void Label::draw(DrawContext* ctx) const {
 
 	if (get_align() == ALIGN_CENTER) {
 		align = (get_width() + m_skew*valign) * 0.5f;
+		kernel_factor = 0.5;
 	} else if (get_align() == ALIGN_RIGHT) {
 		align = get_width() + m_skew*valign;
+		kernel_factor = -2.0;
 	}
 
 	ctx->skew_x(m_skew);
 
 	if (kernel != NULL) {
-		ctx->translate(-kernel->get_width() / 2.0, -kernel->get_height() / 2.0);
+		ctx->translate(-kernel->get_width() * kernel_factor, -kernel->get_height() / 2.0);
+	}
+	
+	ctx->translate(get_x(), get_y());
+	
+	if (m_shadow != NULL) {
+		m_shadow->draw(ctx);
 	}
 
+	ctx->translate(-align, 0);
+
 	ctx->set_draw_color(m_color);
-	ctx->translate(get_x() - align, get_y());
+	ctx->set_blend_mode(m_blend);
 
 	for (wstring::const_iterator iter = m_text.begin(); iter != m_text.end(); ++iter) {
 		const Font::Glyph* glyph = m_font->get_glyph(*iter);
@@ -231,7 +245,7 @@ void Label::draw(DrawContext* ctx) const {
 	ctx->translate(align - (total_advance + get_x()), -get_y());
 
 	if (kernel != NULL) {
-		ctx->translate(kernel->get_width() / 2.0, kernel->get_height() / 2.0);
+		ctx->translate(kernel->get_width() * kernel_factor, kernel->get_height() / 2.0);
 	}
 
 	ctx->skew_x(-m_skew);
