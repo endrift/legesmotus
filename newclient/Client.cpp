@@ -248,6 +248,8 @@ void Client::send_quit() {
 	leave.leave.message = "Client quit.";
 	
 	m_network.send_reliable_packet(&leave);
+	
+	m_network.disconnect();
 }
 
 Player* Client::make_player(const char* name, uint32_t id, char team) {
@@ -282,10 +284,6 @@ void Client::set_curr_weapon(uint32_t id) {
 }
 
 void Client::set_running(bool running) {
-	if (!running) {
-		send_quit();
-	}
-
 	m_running = running;
 }
 
@@ -406,6 +404,9 @@ void Client::leave(const Packet& p) {
 	} else {
 		WARN("We've left the game, according to the server.");
 	}
+	// Disconnect our network connection so we don't send a leave packet to the server.
+	m_network.disconnect();
+	disconnect();
 }
 
 void Client::name_change(const Packet& p) {
@@ -484,4 +485,12 @@ void Client::run() {
 		step(current_time - last_time);
 		last_time = current_time;
 	}
+}
+
+void Client::disconnect() {
+	if (m_network.is_connected()) {
+		send_quit();
+	}
+	
+	set_running(false);
 }

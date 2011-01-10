@@ -129,6 +129,9 @@ namespace LM {
 
 		// Main loop: override for subclass behaviors, but call step inside
 		virtual void run();
+		
+		// Called when client should disconnect from the server.
+		virtual void disconnect();
 	};
 }
 

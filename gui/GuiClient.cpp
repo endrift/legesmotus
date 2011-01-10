@@ -293,6 +293,10 @@ void GuiClient::run() {
 		uint64_t diff = current_time - last_time;
 
 		m_input->update();
+		
+		if (!running()) {
+			break;
+		}
 
 		// Fudge the current time so that the remaining time between steps is accounted for
 		current_time -= step(diff);
@@ -325,7 +329,7 @@ void GuiClient::key_pressed(const KeyEvent& event) {
 	m_input_sink->key_pressed(event);
 
 	if (event.type == KEY_ESCAPE) {
-		set_running(false);
+		disconnect();
 	}
 }
 
@@ -341,6 +345,14 @@ void GuiClient::system_event(const SystemEvent& event) {
 	m_input_sink->system_event(event);
 
 	if (event.type == SYSTEM_QUIT) {
-		set_running(false);
+		disconnect();
 	}
+}
+
+void GuiClient::disconnect() {
+	Client::disconnect();
+	
+	cleanup();
+	
+	DEBUG("Disconnected.");
 }
