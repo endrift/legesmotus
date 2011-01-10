@@ -100,7 +100,7 @@ void GuiClient::preload_image(const char* filename) {
 	m_preloaded_images.push_back(filename);
 }
 
-const string& GuiClient::preload_font(const char* filename, int size, ConvolveKernel* kernel) {
+string GuiClient::preload_font(const char* filename, int size, ConvolveKernel* kernel) {
 	Font font(filename, size, m_cache, false, kernel);
 	const string& name = font.get_id();
 	m_cache->increment<Font>(name);

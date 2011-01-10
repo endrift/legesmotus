@@ -73,7 +73,7 @@ namespace LM {
 
 		void preload();
 		void preload_image(const char* filename);
-		const std::string& preload_font(const char* filename, int size, ConvolveKernel* kernel = false);
+		std::string preload_font(const char* filename, int size, ConvolveKernel* kernel = false);
 
 		void cleanup();
 
