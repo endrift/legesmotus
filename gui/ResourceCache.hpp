@@ -26,7 +26,6 @@
 #define LM_GUI_RESOURCECACHE_HPP
 
 #include "DrawContext.hpp"
-#include "Font.hpp"
 #include "common/Exception.hpp"
 
 #include <string>
@@ -35,8 +34,7 @@
 namespace LM {
 	class ResourceCache;
 	class Image;
-	// XXX remove Font include when refactor is done
-	//class Font;
+	class Font;
 
 	class ResourceCache {
 	private:

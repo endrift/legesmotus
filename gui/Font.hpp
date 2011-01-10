@@ -76,15 +76,22 @@ namespace LM {
 		virtual Glyph* make_glyph(const FT_GlyphSlot& glyph);
 
 	public:
-		Font(const std::string& filename, float size, ResourceCache* cache, bool italic = false, ConvolveKernel* kernel = 0);
+		static std::string lookup_id(const std::string& filename, float size, bool italic = false, ConvolveKernel* kernel = NULL);
+
+		Font(const std::string& filename, float size, ResourceCache* cache, bool italic = false, ConvolveKernel* kernel = NULL);
 		Font(const Font& other);
 		virtual ~Font();
+
+		const std::string& get_id() const;
 
 		const Glyph* get_glyph(int character);
 		float get_height() const;
 		float kern(int lchar, int rchar) const;
 
 		const ConvolveKernel* get_kernel() const;
+
+		void increment();
+		void decrement();
 	};
 }
 

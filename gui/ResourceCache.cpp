@@ -24,6 +24,7 @@
 
 #include "ResourceCache.hpp"
 #include "Image.hpp"
+#include "Font.hpp"
 #include "common/Exception.hpp"
 #include <iostream>
 
@@ -41,6 +42,9 @@ ResourceCache::~ResourceCache() {
 	#ifdef LM_DEBUG
 	if (!m_instances_image.empty() || !m_instances_font.empty()) {
 		for (instance_map<Image>::const_iterator iter = m_instances_image.begin(); iter != m_instances_image.end(); ++iter) {
+			WARN(iter->first << " still live");
+		}
+		for (instance_map<Font>::const_iterator iter = m_instances_font.begin(); iter != m_instances_font.end(); ++iter) {
 			WARN(iter->first << " still live");
 		}
 		FATAL("Resources still in use while freeing cache");

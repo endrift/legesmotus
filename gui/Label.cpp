@@ -29,7 +29,7 @@
 using namespace LM;
 using namespace std;
 
-Label::Label(Font* font) {
+Label::Label(Font* font, Widget* parent) : Widget(parent), m_font(NULL) {
 	set_font(font);
 	m_align = ALIGN_LEFT;
 	m_skew_align = VALIGN_MIDDLE;
@@ -38,7 +38,7 @@ Label::Label(Font* font) {
 	m_shadow = NULL;
 }
 
-Label::Label(const wstring& str, Font* font) : m_text(str) {
+Label::Label(const wstring& str, Font* font, Widget* parent) : Widget(parent), m_font(NULL), m_text(str) {
 	set_font(font);
 	m_align = ALIGN_LEFT;
 	m_skew_align = VALIGN_MIDDLE;
@@ -48,7 +48,7 @@ Label::Label(const wstring& str, Font* font) : m_text(str) {
 	recalculate_width();
 }
 
-Label::Label(const string& str, Font* font) : m_text(str.length(), L' ') {
+Label::Label(const string& str, Font* font, Widget* parent) :  Widget(parent), m_font(NULL), m_text(str.length(), L' ') {
 	set_font(font);
 	copy(str.begin(), str.end(), m_text.begin());
 	m_align = ALIGN_LEFT;
@@ -57,6 +57,11 @@ Label::Label(const string& str, Font* font) : m_text(str.length(), L' ') {
 	m_skew = 0;
 	m_shadow = NULL;
 	recalculate_width();
+}
+
+Label::~Label() {
+	set_font(NULL);
+	delete m_shadow;
 }
 
 void Label::recalculate_width() {
@@ -158,6 +163,12 @@ Label* Label::get_shadow() {
 }
 
 void Label::set_font(Font* font) {
+	if (font != NULL) {
+		font->increment();
+	}
+	if (m_font != NULL) {
+		m_font->decrement();
+	}
 	m_font = font;
 	if (font != NULL) {
 		set_height(font->get_height());

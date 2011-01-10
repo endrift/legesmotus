@@ -22,8 +22,8 @@ int main(int argc, char *argv[]) {
 	ConvolveKernel kernel(&curve, 7, 2);
 	ConvolveKernel bkernel(&bcurve, 4, 1, 1);
 	
-	Font font(string("data/fonts/DustHomeMedium.ttf"), 20, cache, false, &bkernel);
-	Font cfont(string("data/fonts/DustHomeMedium.ttf"), 20, cache, false, &kernel);
+	Font font("DustHomeMedium.ttf", 20, cache, false, &bkernel);
+	Font cfont("DustHomeMedium.ttf", 20, cache, false, &kernel);
 	//Font icfont(string("data/fonts/JuraMedium.ttf"), 30, &ctx, true, &kernel);
 	Label l(string("I'm nauseous! I'm nauseous..."), &font);
 	Label sl(&cfont);

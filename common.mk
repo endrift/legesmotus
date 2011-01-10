@@ -195,8 +195,8 @@ ifeq ($(MACHINE),Windows)
  LIBS += -lwsock32
 endif
 
-CLIENTFLAGS = $(FLAGS_SDL)
-CLIENTLIBS = $(LIBS_GL) $(LIBS) $(LIBS_SDL)
+CLIENTFLAGS = $(FLAGS_SDL) $(shell freetype-config --cflags) -I../client
+CLIENTLIBS = $(LIBS_GL) $(LIBS) $(LIBS_SDL) $(shell freetype-config --libs)
 
 CXXFLAGS += $(CFLAGS)
 

@@ -58,9 +58,10 @@ namespace LM {
 		void recalculate_width();
 
 	public:
-		Label(Font* font = NULL);
-		Label(const std::wstring& str, Font* font);
-		Label(const std::string& str, Font* font);
+		Label(Font* font = NULL, Widget* parent = NULL);
+		Label(const std::wstring& str, Font* font, Widget* parent = NULL);
+		Label(const std::string& str, Font* font, Widget* parent = NULL);
+		~Label();
 
 		void set_string(const std::wstring& str);
 		void set_string(const std::string& str);

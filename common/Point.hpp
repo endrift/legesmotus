@@ -32,37 +32,37 @@
 namespace LM {
 	class Point {
 	public:
-		double		x;
-		double		y;
+		float x;
+		float y;
 	
 		Point() { clear(); }
-		Point(double arg_x, double arg_y) { x = arg_x; y = arg_y; }
+		Point(float arg_x, float arg_y) { x = arg_x; y = arg_y; }
 	
 		void		clear() { x = y = 0; }
-		void		scale(double factor);
-		void		rotate(double angle);	// Rotate CW given number of _radians_
-		double		get_angle() const;	// In radians
-		double		get_magnitude() const;
+		void		scale(float factor);
+		void		rotate(float angle);	// Rotate CW given number of _radians_
+		float		get_angle() const;	// In radians
+		float		get_magnitude() const;
 		Point		get_unit_vector() const;
 	
 		// Given a string of the from "x,y", make a point from it
 		static Point	make_from_string(const char* str);
 		// Given a magnitude and an angle (in radians), make a point from it
-		static Point	make_from_magnitude(double magnitude, double angle);
+		static Point	make_from_magnitude(float magnitude, float angle);
 
-		inline static double dot_product(Point u, Point v) {
+		inline static float dot_product(Point u, Point v) {
 			return u.x * v.x + u.y * v.y;
 		}
-		inline static double cross_product(Point u, Point v) {
+		inline static float cross_product(Point u, Point v) {
 			return u.x * v.y - u.y * v.x;
 		}
 
 		void		operator+=(Point other);
 		void		operator-=(Point other);
-		void		operator*=(double scale_factor);
-		void		operator/=(double scale_factor);
+		void		operator*=(float scale_factor);
+		void		operator/=(float scale_factor);
 	
-		static double distance(Point a, Point b);
+		static float distance(Point a, Point b);
 	};
 	
 	// Output in the form "x,y"
@@ -71,8 +71,8 @@ namespace LM {
 	// Arithmetic
 	Point	operator+(Point a, Point b);
 	Point	operator-(Point a, Point b);
-	Point	operator*(Point p, double scale_factor);
-	Point	operator/(Point p, double scale_factor);
+	Point	operator*(Point p, float scale_factor);
+	Point	operator/(Point p, float scale_factor);
 
 	// Comparison
 	inline bool	operator==(Point a, Point b) { return a.x == b.x && a.y == b.y; }

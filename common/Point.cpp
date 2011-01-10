@@ -35,30 +35,30 @@ using namespace std;
 // See .hpp file for extensive comments.
 
 Point	Point::make_from_string(const char* str) {
-	double x;
-	double y;
+	float x;
+	float y;
 	StringTokenizer(str, ',', 2) >> x >> y;
 	return Point(x, y);
 }
 
-Point	Point::make_from_magnitude(double magnitude, double angle) {
+Point	Point::make_from_magnitude(float magnitude, float angle) {
 	return Point(magnitude * cos(angle), magnitude * sin(angle));
 }
 
-void	Point::scale(double factor) {
+void	Point::scale(float factor) {
 	x *= factor;
 	y *= factor;
 }
 
-void	Point::rotate(double change_in_angle) {
+void	Point::rotate(float change_in_angle) {
 	*this = make_from_magnitude(get_magnitude(), get_angle() + change_in_angle);
 }
 
-double	Point::get_angle() const {
+float	Point::get_angle() const {
 	return atan2(y, x);
 }
 
-double	Point::get_magnitude() const {
+float	Point::get_magnitude() const {
 	return hypot(x, y);
 }
 
@@ -66,7 +66,7 @@ Point	Point::get_unit_vector() const {
 	return make_from_magnitude(1.0, get_angle());
 }
 
-double	Point::distance(Point a, Point b) {
+float	Point::distance(Point a, Point b) {
 	return sqrt((b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y));
 }
 
@@ -81,11 +81,11 @@ Point	LM::operator-(Point a, Point b) {
 	return Point(a.x - b.x, a.y - b.y);
 }
 
-Point	LM::operator*(Point p, double scale_factor) {
+Point	LM::operator*(Point p, float scale_factor) {
 	return Point(p.x * scale_factor, p.y * scale_factor);
 }
 
-Point	LM::operator/(Point p, double scale_factor) {
+Point	LM::operator/(Point p, float scale_factor) {
 	return Point(p.x / scale_factor, p.y / scale_factor);
 }
 
@@ -99,12 +99,12 @@ void	Point::operator-=(Point other) {
 	y -= other.y;
 }
 
-void	Point::operator*=(double scale_factor) {
+void	Point::operator*=(float scale_factor) {
 	x *= scale_factor;
 	y *= scale_factor;
 }
 
-void	Point::operator/=(double scale_factor) {
+void	Point::operator/=(float scale_factor) {
 	x /= scale_factor;
 	y /= scale_factor;
 }

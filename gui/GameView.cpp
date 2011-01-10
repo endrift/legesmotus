@@ -32,19 +32,21 @@ using namespace std;
 GameView::GameView(const string& name, ResourceCache* cache, int width, int height, int overscan, Widget* parent) : Widget(parent) {
 	m_offset_x = 0;
 	m_offset_y = 0;
-	m_scale_base = 1536;
+	m_scale_base = 1280;
 
 	// TODO find a way to pass down the context type
 	m_ctx = new GLESContext(width + 2*overscan, height + 2*overscan, true);
 	m_overscan = overscan;
 	Image img = m_ctx->get_image(name, cache);
 	m_ctxi = new GraphicRegion(&img);
-	m_ctxi->set_image_x(-overscan);
-	m_ctxi->set_image_y(-overscan);
-	m_ctxi->set_width(width);
-	m_ctxi->set_height(height);
+	m_ctxi->set_image_x(0);
+	m_ctxi->set_image_y(0);
+	m_ctxi->set_image_width(width);
+	m_ctxi->set_image_height(height);
+	m_ctxi->set_width(width + 2*overscan);
+	m_ctxi->set_height(height + 2*overscan);
 	m_ctxi->set_scale_y(-1.0f);
-	m_ctxi->set_y(m_ctxi->get_height());
+	m_ctxi->set_y(height);
 
 	set_width(width);
 	set_height(height);
@@ -82,7 +84,7 @@ float GameView::get_scale() const {
 }
 
 Point GameView::world_to_view(Point world) const {
-	return (world + Point(get_width()/2 - m_offset_x, get_height()/2 - m_offset_y))*m_scale;
+	return world - Point(m_offset_x, m_offset_y)/m_scale + Point(get_width()/2, get_height()/2);
 }
 
 void GameView::draw(DrawContext* ctx) const {

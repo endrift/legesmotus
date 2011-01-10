@@ -81,8 +81,8 @@ void GraphicalWeapon::select(Player* player) {
 	for (int i = 0; i < GraphicalPlayer::PART_MAX; ++i) {
 		Graphic* sprite = p->get_weapon_graphic(i);
 		sprite->set_image(m_gunpart[i].image);
-		sprite->set_x(m_gunpart[i].position.x - 16);
-		sprite->set_y(m_gunpart[i].position.y + 14);
+		sprite->set_x(m_gunpart[i].position.x);
+		sprite->set_y(m_gunpart[i].position.y);
 		sprite->set_rotation(m_gunpart[i].rotation);
 	}
 }

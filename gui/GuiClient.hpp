@@ -40,9 +40,17 @@ namespace LM {
 	class Player;
 	class ResourceCache;
 	class InputDriver;
+	class Font;
+	class Label;
+	class ConvolveKernel;
 
 	class GuiClient : public Client, public InputSink {
 	private:
+		enum FontUse {
+			FONT_BADGE = 0,
+			FONT_MAX
+		};
+
 		Window* m_window;
 		HumanController* m_gcontrol;
 		InputSink* m_input_sink;
@@ -56,19 +64,34 @@ namespace LM {
 
 		ResourceCache* m_cache;
 		std::vector<std::string> m_preloaded_images;
+		std::vector<std::string> m_preloaded_fonts;
+
+		std::map<int, Label*> m_badges;
+
+		// XXX how much of this should be moved to a new class?
+		Font* m_fonts[FONT_MAX];
 
 		void preload();
 		void preload_image(const char* filename);
+		const std::string& preload_font(const char* filename, int size, ConvolveKernel* kernel = false);
 
 		void cleanup();
+
+		void set_font(Font* font, FontUse fontuse);
+		Font* get_font(FontUse font);
+		Font* load_font(const char* filename, int size, ConvolveKernel* kernel = false);
 
 		void read_input();
 		void set_sink(InputSink* input_sink);
 
+		void add_badge(Player* player);
+		void remove_badge(Player* player);
+		void realign_badges();
+
 	protected:
 		virtual void add_player(Player* player);
 		virtual void set_own_player(uint32_t id);
-		virtual void remove_player(uint32_t id);
+		virtual void remove_player(uint32_t id, const std::string& reason);
 
 		virtual void set_map(Map* map);
 
@@ -81,6 +104,7 @@ namespace LM {
 		virtual Weapon* make_weapon(WeaponReader& weapon_data);
 
 		virtual void run();
+		void update_gui();
 
 		virtual void key_pressed(const KeyEvent& event);
 		virtual void mouse_moved(const MouseMotionEvent& event);

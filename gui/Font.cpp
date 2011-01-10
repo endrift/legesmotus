@@ -35,6 +35,12 @@ using namespace std;
 FT_Library Font::m_library;
 bool Font::m_init = false;
 
+string Font::lookup_id(const std::string& filename, float size, bool italic, ConvolveKernel* kernel) {
+	stringstream font_name;
+	font_name << "font:" << filename << "@" << size << (italic?"i":"") << "/" << hex << kernel;
+	return font_name.str();
+}
+
 Font::Font(const std::string& filename, float size, ResourceCache* cache, bool italic, ConvolveKernel* kernel) {
 	// TODO error checking
 	FT_Error err;
@@ -46,13 +52,11 @@ Font::Font(const std::string& filename, float size, ResourceCache* cache, bool i
 		m_init = true;
 	}
 
-	stringstream font_name;
-	font_name << "font:" << filename << "@" << size << (italic?"i":"") << "/" << hex << kernel;
-	m_font_name = font_name.str();
+	m_font_name = lookup_id(filename, size, italic, kernel);
 	// If this assert fails, we need operator= like in Image
 	ASSERT(cache->get<Font>(m_font_name) == NULL);
 
-	err = FT_New_Face(m_library, filename.c_str(), 0, &m_face);
+	err = FT_New_Face(m_library, (cache->get_root() + "/fonts/" + filename).c_str(), 0, &m_face);
 	if (err) {
 		throw new Exception("Could not initialize font");
 	}
@@ -148,6 +152,10 @@ Font::Glyph* Font::make_glyph(const FT_GlyphSlot& glyph) {
 	return new Glyph(m_face->glyph, m_cache->get_context(), m_italic, m_kernel);
 }
 
+const string& Font::get_id() const {
+	return m_font_name;
+}
+
 const Font::Glyph* Font::get_glyph(int character) {
 	if (m_glyphs->find(character) == m_glyphs->end()) {
 		FT_Error err = FT_Load_Char(m_face, character, FT_LOAD_DEFAULT);
@@ -180,4 +188,12 @@ float Font::kern(int lchar, int rchar) const {
 
 const ConvolveKernel* Font::get_kernel() const {
 	return m_kernel;
+}
+
+void Font::increment() {
+	m_cache->increment<Font>(m_font_name);
+}
+
+void Font::decrement() {
+	m_cache->decrement<Font>(m_font_name);
 }

@@ -33,6 +33,8 @@
 #include "Window.hpp"
 #include "Bone.hpp"
 #include "common/math.hpp"
+#include "Font.hpp"
+#include "Label.hpp"
 
 using namespace LM;
 using namespace std;
@@ -59,6 +61,7 @@ GuiClient::GuiClient() {
 	#endif
 
 	m_map = NULL;
+	m_player = NULL;
 }
 
 GuiClient::~GuiClient() {
@@ -86,6 +89,9 @@ void GuiClient::preload() {
 	preload_image("blue_frontleg.png");
 	preload_image("blue_backleg.png");
 	preload_image("aim.png");
+
+	// XXX un-hardcode
+	set_font(load_font("DustHomeMedium.ttf", 12), FONT_BADGE);
 }
 
 void GuiClient::preload_image(const char* filename) {
@@ -94,22 +100,86 @@ void GuiClient::preload_image(const char* filename) {
 	m_preloaded_images.push_back(filename);
 }
 
+const string& GuiClient::preload_font(const char* filename, int size, ConvolveKernel* kernel) {
+	Font font(filename, size, m_cache, false, kernel);
+	const string& name = font.get_id();
+	m_cache->increment<Font>(name);
+	m_preloaded_fonts.push_back(name);
+	return name;
+}
+
 void GuiClient::cleanup() {
 	set_map(NULL);
 
 	for (vector<string>::iterator iter = m_preloaded_images.begin(); iter != m_preloaded_images.end(); ++iter) {
 		m_cache->decrement<Image>(*iter);
 	}
+
+	for (vector<string>::iterator iter = m_preloaded_fonts.begin(); iter != m_preloaded_fonts.end(); ++iter) {
+		m_cache->decrement<Font>(*iter);
+	}
+
+	for (int i = 0; i < FONT_MAX; ++i) {
+		set_font(NULL, (FontUse)i);
+	}
+}
+
+void GuiClient::set_font(Font* font, FontUse fontuse) {
+	Font* oldfont = m_fonts[fontuse];
+	if (font != NULL) {
+		string newid = font->get_id();
+		m_cache->increment<Font>(newid);
+	}
+	m_fonts[fontuse] = font;
+	if (oldfont != NULL) {
+		m_cache->decrement<Font>(oldfont->get_id());
+	}
+}
+
+Font* GuiClient::get_font(FontUse font) {
+	return m_fonts[font];
+}
+
+Font* GuiClient::load_font(const char* filename, int size, ConvolveKernel* kernel) {
+	string id = Font::lookup_id(filename, size, false, kernel);
+	Font* font = m_cache->get<Font>(id);
+	if (font == NULL) {
+		id = preload_font(filename, size, kernel);
+	}
+	return m_cache->get<Font>(id);
 }
 
 void GuiClient::set_sink(InputSink* input_sink) {
 	m_input_sink = input_sink;
 }
 
+void GuiClient::add_badge(Player* player) {
+	Label* badge = new Label(player->get_name(), get_font(FONT_BADGE), &m_root);
+	m_badges[player->get_id()] = badge;
+	badge->set_color(Color::WHITE);
+	badge->set_align(Label::ALIGN_CENTER);
+}
+
+void GuiClient::remove_badge(Player* player) {
+	map<int, Label*>::iterator iter = m_badges.find(player->get_id());
+	delete iter->second;
+	m_badges.erase(iter);
+}
+
+void GuiClient::realign_badges() {
+	for (map<int, Label*>::iterator iter = m_badges.begin(); iter != m_badges.end(); ++iter) {
+		Player* player = get_game()->get_player(iter->first);
+		Point new_point = m_view->world_to_view(Point(player->get_x(), player->get_y()));
+		iter->second->set_x(new_point.x);
+		iter->second->set_y(new_point.y - 64.0f*m_view->get_scale());
+	}
+}
+
 void GuiClient::add_player(Player* player) {
 	Client::add_player(player);
 	GraphicalPlayer *gp = static_cast<GraphicalPlayer*>(player);
 	m_view->add_child(gp->get_graphic(), GameView::PLAYERS);
+	add_badge(player);
 }
 
 void GuiClient::set_own_player(uint32_t id) {
@@ -117,20 +187,22 @@ void GuiClient::set_own_player(uint32_t id) {
 	m_player = static_cast<GraphicalPlayer*>(get_player(id));
 }
 
-void GuiClient::remove_player(uint32_t id) {
+void GuiClient::remove_player(uint32_t id, const std::string& reason) {
 	Player *p = get_player(id);
 	if (p == NULL) {
+		WARN("Can't remove a non-existent player");
 		return;
 	}
 
 	GraphicalPlayer *gp = static_cast<GraphicalPlayer*>(p);
 	m_view->remove_child(gp->get_graphic());
+	remove_badge(p);
 
 	if (m_player != NULL && m_player->get_id() == id) {
 		m_player = NULL;
 	}
 
-	Client::remove_player(id);
+	Client::remove_player(id, reason);
 }
 
 void GuiClient::set_map(Map* map) {
@@ -202,17 +274,24 @@ void GuiClient::run() {
 		crosshair_bone.set_rotation(m_gcontrol->get_aim() * RADIANS_TO_DEGREES);
 		// XXX end
 
-		// Recenter player
-		if (m_player != NULL) {
-			m_view->set_offset_x(m_player->get_x() * m_view->get_scale());
-			m_view->set_offset_y(m_player->get_y() * m_view->get_scale());
-		}
+		update_gui();
 
 		m_window->redraw();
 		last_time = current_time;
 	}
 
 	cleanup();
+}
+
+void GuiClient::update_gui() {
+	// Recenter player
+	if (m_player != NULL) {
+		m_view->set_offset_x(m_player->get_x() * m_view->get_scale());
+		m_view->set_offset_y(m_player->get_y() * m_view->get_scale());
+	}
+
+	// Move badges
+	realign_badges();
 }
 
 void GuiClient::key_pressed(const KeyEvent& event) {
