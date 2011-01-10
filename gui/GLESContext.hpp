@@ -155,6 +155,7 @@ namespace LM {
 
 		virtual void draw_line(float x1, float y1, float x2, float y2);
 		virtual void draw_lines(const float vertices[], int n, bool loop);
+		virtual void draw_stroke(const float vertices[], int n, float out, float in, bool loop);
 		virtual void draw_polygon(const float vertices[], int n);
 		virtual void draw_polygon_fill(const float vertices[], int n);
 

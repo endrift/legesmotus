@@ -40,8 +40,8 @@
 
 namespace LM {
 	// For easy conversion between radians and degrees:
-	extern const double RADIANS_TO_DEGREES;
-	extern const double DEGREES_TO_RADIANS;
+	extern const float RADIANS_TO_DEGREES;
+	extern const float DEGREES_TO_RADIANS;
 
 	inline uint32_t to_pow_2(uint32_t num) {
 		--num;
@@ -53,20 +53,22 @@ namespace LM {
 	}
 
 	// Get a value in the range [0,360)
-	double get_normalized_angle(double angle);
+	float get_normalized_angle(float angle);
 
 	// Go from degrees to radians
-	inline double to_radians(double degrees) { return degrees * DEGREES_TO_RADIANS; }
+	inline float to_radians(float degrees) { return degrees * DEGREES_TO_RADIANS; }
 
 	// Go from radians to degrees
-	inline double to_degrees(double radians) { return radians * RADIANS_TO_DEGREES; }
+	inline float to_degrees(float radians) { return radians * RADIANS_TO_DEGREES; }
 
-	double	dist_from_line_to_point(Point start, Point end, Point p);
+	float dist_from_line_to_point(Point start, Point end, Point p);
 
 	// Return the point on the given line that is closest to the given point
 	// If is_segment is true, then the line is considered a finite segment, and the function will return Point(-1, -1) if the closest point would lie outside the segment
-	Point	closest_point_on_line_to_point(Point start, Point end, Point p, bool is_segment =true);
-		
+	Point closest_point_on_line_to_point(Point start, Point end, Point p, bool is_segment = true);
+
+	// Return the intersection of these two lines, if any
+	bool intersection(Point s1, Point s2, Point t1, Point t2, Point *st);
 }
 
 #endif

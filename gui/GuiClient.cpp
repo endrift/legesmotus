@@ -69,6 +69,14 @@ GuiClient::GuiClient() {
 }
 
 GuiClient::~GuiClient() {
+	for (vector<string>::iterator iter = m_preloaded_images.begin(); iter != m_preloaded_images.end(); ++iter) {
+		m_cache->decrement<Image>(*iter);
+	}
+
+	for (vector<string>::iterator iter = m_preloaded_fonts.begin(); iter != m_preloaded_fonts.end(); ++iter) {
+		m_cache->decrement<Font>(*iter);
+	}
+
 	delete m_cache;
 	delete m_input;
 	delete m_view;
@@ -114,14 +122,6 @@ string GuiClient::preload_font(const char* filename, int size, const ConvolveKer
 
 void GuiClient::cleanup() {
 	set_map(NULL);
-
-	for (vector<string>::iterator iter = m_preloaded_images.begin(); iter != m_preloaded_images.end(); ++iter) {
-		m_cache->decrement<Image>(*iter);
-	}
-
-	for (vector<string>::iterator iter = m_preloaded_fonts.begin(); iter != m_preloaded_fonts.end(); ++iter) {
-		m_cache->decrement<Font>(*iter);
-	}
 
 	for (int i = 0; i < FONT_MAX; ++i) {
 		set_font(NULL, (FontUse)i);

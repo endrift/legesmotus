@@ -499,6 +499,63 @@ void GLESContext::draw_lines(const float vertices[], int n, bool loop) {
 	glDrawArrays(loop?GL_LINE_LOOP:GL_LINE_STRIP, 0, n);
 }
 
+void GLESContext::draw_stroke(const float vertices[], int n, float out, float in, bool loop) {
+	ASSERT(sizeof(GLfloat) == sizeof(float));
+	float quad_vertices[(n+1)*4];
+
+	for (int i = 0; i < n; ++i) {
+		int j = (i + 1) % n;
+		int k = (i + 2) % n;
+		Point t1(vertices[2*i], vertices[2*i + 1]);
+		Point t2(vertices[2*j], vertices[2*j + 1]);
+		Point t3(vertices[2*k], vertices[2*k + 1]);
+		Point i1, i21, i22, i3;
+		Point o1, o21, o22, o3;
+		Vector p12 = t2 - t1;
+		Vector p23 = t3 - t2;
+		Point u;
+		u = p12;
+		p12.x = -u.y;
+		p12.y = u.x;
+		p12 /= u.get_magnitude();
+		u = p23;
+		p23.x = -u.y;
+		p23.y = u.x;
+		p23 /= u.get_magnitude();
+
+		i1 = t1 + p12*in;
+		i21 = t2 + p12*in;
+		i22 = t2 + p23*in;
+		i3 = t3 + p23*in;
+
+		o1 = t1 - p12*out;
+		o21 = t2 - p12*out;
+		o22 = t2 - p23*out;
+		o3 = t3 - p23*out;
+
+		intersection(i1, i21, i22, i3, &u);
+		quad_vertices[4*j] = u.x;
+		quad_vertices[4*j + 1] = u.y;
+
+		intersection(o1, o21, o22, o3, &u);
+		quad_vertices[4*j + 2] = u.x;
+		quad_vertices[4*j + 3] = u.y;
+	}
+
+	if (loop) {
+		++n;
+		
+		quad_vertices[4*n-4] = quad_vertices[0];
+		quad_vertices[4*n-3] = quad_vertices[1];
+		quad_vertices[4*n-2] = quad_vertices[2];
+		quad_vertices[4*n-1] = quad_vertices[3];
+	}
+
+	unbind_vbo();
+	glVertexPointer(2, GL_FLOAT, 0, quad_vertices);
+	glDrawArrays(GL_QUAD_STRIP, 0, n*2);
+}
+
 void GLESContext::draw_polygon(const float vertices[], int n) {
 	unbind_vbo();
 	glVertexPointer(2, GL_FLOAT, 0, vertices);

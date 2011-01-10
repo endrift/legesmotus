@@ -32,10 +32,10 @@
 using namespace LM;
 using namespace std;
 
-const double LM::RADIANS_TO_DEGREES = 57.29577951308232;
-const double LM::DEGREES_TO_RADIANS = 1.745329251994e-02;
+const float LM::RADIANS_TO_DEGREES = 57.29577951308232f;
+const float LM::DEGREES_TO_RADIANS = 1.745329251994e-02f;
 
-double LM::get_normalized_angle(double angle) {
+float LM::get_normalized_angle(float angle) {
 	while (angle < 0) {
 		angle += 360;
 	}
@@ -45,10 +45,21 @@ double LM::get_normalized_angle(double angle) {
 	return angle;
 }
 
+float LM::dist_from_line_to_point(Point start, Point end, Point p) {
+	const float x1 = start.x;
+	const float y1 = start.y;
+	const float x2 = end.x;
+	const float y2 = end.y;
+	const float px = p.x;
+	const float py = p.y;
+
+	return fabs(float((x2-x1)*(y1-py) - (x1-px)*(y2-y1) ) / sqrt(float((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1))));
+}
+
 Point LM::closest_point_on_line_to_point(Point start, Point end, Point p, bool is_segment) {
 	Point v = end - start;
 	Point w = p - start;
-	double projection = Point::dot_product(v, w) / Point::dot_product(v, v);
+	float projection = Point::dot_product(v, w) / Point::dot_product(v, v);
 	if (is_segment && (projection < 0 || projection > 1)) {
 		return Point(-1, -1);
 	} else {
@@ -56,14 +67,16 @@ Point LM::closest_point_on_line_to_point(Point start, Point end, Point p, bool i
 	}
 }
 
-double LM::dist_from_line_to_point(Point start, Point end, Point p) {
-	const double x1 = start.x;
-	const double y1 = start.y;
-	const double x2 = end.x;
-	const double y2 = end.y;
-	const double px = p.x;
-	const double py = p.y;
-
-	return fabs(double((x2-x1)*(y1-py) - (x1-px)*(y2-y1) ) / sqrt(double((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1))));
+bool LM::intersection(Point s1, Point s2, Point t1, Point t2, Point *st) {
+	Point st1 = t1 - s1;
+	Point st2 = s2 - t2;
+	float u;
+	u = (s1.x - s2.x)*(t1.y - t2.y) - (s1.y - s2.y)*(t1.x - t2.x);
+	if (fabs(u) < numeric_limits<float>::epsilon()) {
+		return false;
+	}
+	st->x = (s1.x*s2.y - s1.y*s2.x)*(t1.x - t2.x) - (s1.x - s2.x)*(t1.x*t2.y - t1.y*t2.x);
+	st->y = (s1.x*s2.y - s1.y*s2.x)*(t1.y - t2.y) - (s1.y - s2.y)*(t1.x*t2.y - t1.y*t2.x);
+	*st /= u;
+	return true;
 }
-
