@@ -384,12 +384,16 @@ void GLESContext::set_blend_mode(BlendMode m) {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		break;
 
+		case BLEND_ADD:
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+		break;
+
 		case BLEND_MULTIPLY:
 		glBlendFunc(GL_DST_COLOR, GL_ZERO);
 		break;
 
-		case BLEND_ADD:
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+		case BLEND_SCREEN:
+		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_COLOR);
 		break;
 	}
 	m_mode = m;

@@ -48,7 +48,8 @@ namespace LM {
 		enum BlendMode {
 			BLEND_NORMAL,
 			BLEND_ADD,
-			BLEND_MULTIPLY
+			BLEND_MULTIPLY,
+			BLEND_SCREEN
 		};
 
 	private:
