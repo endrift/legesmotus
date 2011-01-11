@@ -28,30 +28,13 @@
 #include <map>
 // TODO #include "common/Point.hpp"
 #include "DrawContext.hpp"
-
-#define LM_DECLARE_LISTENER(type) extern const char* LISTENER_ ## type
-#define LM_DEFINE_LISTENER(type) const char* LISTENER_ ## type = "LISTENER:" # type
-#define LM_ASSIGN_LISTENER(l, type) ((l)->p = LISTENER_ ## type)
-#define LM_SWITCH_LISTENER(l) ((l)->id)
+#include "pubsub.hpp"
 
 namespace LM {
-	class Widget {
-	public:
-		union ListenType {
-			long id;
-			const char* p;
-		};
-
-		class Listener {
-		public:
-			virtual ~Listener() {}
-			virtual void handle(ListenType type, Widget* speaker, void* data) = 0;
-		};
-
+	class Widget : public Publisher {
 	private:
 		Widget* m_parent;
 		std::multimap<int, Widget*> m_children;
-		std::map<long, std::pair<Listener*, void*> > m_listeners;
 
 		float m_x;
 		float m_y;
@@ -59,9 +42,6 @@ namespace LM {
 		float m_h;
 
 		bool m_drawable;
-
-	protected:
-		void raise(ListenType type);
 
 	public:
 		Widget(Widget* parent = NULL);
@@ -102,8 +82,6 @@ namespace LM {
 		void keypress(int key, bool down);
 
 		virtual void draw(DrawContext* ctx) const;
-
-		void set_listener(ListenType type, Listener* listener, void* data);
 	};
 }
 

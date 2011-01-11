@@ -23,11 +23,10 @@
  */
 
 #include "Widget.hpp"
-#include <boost/bind.hpp>
+#include "pubsub.hpp"
 
 using namespace LM;
 using namespace std;
-using namespace boost;
 
 Widget::Widget(Widget* parent) {
 	m_parent = parent;
@@ -46,11 +45,6 @@ Widget::Widget(Widget* parent) {
 Widget::~Widget() {
 	set_parent(NULL);
 	clear_children();
-}
-
-void Widget::raise(ListenType type) {
-	pair<Listener*, void*> l = m_listeners[type.id];
-	l.first->handle(type, this, l.second);
 }
 
 void Widget::set_parent(Widget* new_parent) {
@@ -231,8 +225,4 @@ void Widget::draw(DrawContext* ctx) const {
 		}
 	}
 	ctx->translate(-get_x(), -get_y());
-}
-
-void Widget::set_listener(ListenType type, Listener* listener, void* data) {
-	m_listeners[type.id] = make_pair(listener, data);
 }
