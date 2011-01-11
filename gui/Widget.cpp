@@ -48,6 +48,11 @@ Widget::~Widget() {
 	clear_children();
 }
 
+void Widget::raise(ListenType type) {
+	pair<Listener*, void*> l = m_listeners[type.id];
+	l.first->handle(type, this, l.second);
+}
+
 void Widget::set_parent(Widget* new_parent) {
 	if (new_parent == m_parent) {
 		return;
@@ -226,4 +231,8 @@ void Widget::draw(DrawContext* ctx) const {
 		}
 	}
 	ctx->translate(-get_x(), -get_y());
+}
+
+void Widget::set_listener(ListenType type, Listener* listener, void* data) {
+	m_listeners[type.id] = make_pair(listener, data);
 }

@@ -26,15 +26,32 @@
 #define LM_GUI_WIDGET_HPP
 
 #include <map>
-#include <boost/signals2/signal.hpp>
 // TODO #include "common/Point.hpp"
 #include "DrawContext.hpp"
 
+#define LM_DECLARE_LISTENER(type) extern const char* LISTENER_ ## type
+#define LM_DEFINE_LISTENER(type) const char* LISTENER_ ## type = "LISTENER:" # type
+#define LM_ASSIGN_LISTENER(l, type) ((l)->p = LISTENER_ ## type)
+#define LM_SWITCH_LISTENER(l) ((l)->id)
+
 namespace LM {
 	class Widget {
+	public:
+		union ListenType {
+			long id;
+			const char* p;
+		};
+
+		class Listener {
+		public:
+			virtual ~Listener() {}
+			virtual void handle(ListenType type, Widget* speaker, void* data) = 0;
+		};
+
 	private:
 		Widget* m_parent;
 		std::multimap<int, Widget*> m_children;
+		std::map<long, std::pair<Listener*, void*> > m_listeners;
 
 		float m_x;
 		float m_y;
@@ -42,6 +59,9 @@ namespace LM {
 		float m_h;
 
 		bool m_drawable;
+
+	protected:
+		void raise(ListenType type);
 
 	public:
 		Widget(Widget* parent = NULL);
@@ -74,21 +94,16 @@ namespace LM {
 		virtual void set_drawable(bool drawable);
 		bool is_drawable() const;
 
-		virtual void focus();
-		virtual void blur();
+		void focus();
+		void blur();
 
-		virtual void mouse_clicked(float x, float y, bool down, int button = 0);
-		virtual void mouse_moved(float x, float y, float delta_x, float delta_y);
-		virtual void keypress(int key, bool down);
+		void mouse_clicked(float x, float y, bool down, int button = 0);
+		void mouse_moved(float x, float y, float delta_x, float delta_y);
+		void keypress(int key, bool down);
 
 		virtual void draw(DrawContext* ctx) const;
 
-		/*boost::signals2::signal<void ()> s_focus;
-		boost::signals2::signal<void ()> s_blur;
-
-		boost::signals2::signal<void (float, float, bool, int)> s_mouse_clicked;
-		boost::signals2::signal<void (float, float, float, float)> s_mouse_moved;
-		boost::signals2::signal<void (int, bool)> s_keypress;*/
+		void set_listener(ListenType type, Listener* listener, void* data);
 	};
 }
 
