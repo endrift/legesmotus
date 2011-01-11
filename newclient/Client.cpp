@@ -402,10 +402,10 @@ void Client::leave(const Packet& p) {
 		remove_player(p.leave.player_id, *p.leave.message);
 	} else {
 		WARN("We've left the game, according to the server.");
+		// Disconnect our network connection so we don't send a leave packet to the server.
+		m_network.disconnect();
+		disconnect();
 	}
-	// Disconnect our network connection so we don't send a leave packet to the server.
-	m_network.disconnect();
-	disconnect();
 }
 
 void Client::name_change(const Packet& p) {
