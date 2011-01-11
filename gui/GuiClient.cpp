@@ -127,6 +127,11 @@ void GuiClient::cleanup() {
 		set_font(NULL, (FontUse)i);
 	}
 
+	for (map<int, Label*>::iterator iter = m_badges.begin(); iter != m_badges.end(); ++iter) {
+		delete iter->second;
+	}
+	m_badges.clear();
+
 	delete m_hud;
 	m_hud = NULL;
 }
@@ -350,9 +355,9 @@ void GuiClient::system_event(const SystemEvent& event) {
 }
 
 void GuiClient::disconnect() {
-	Client::disconnect();
-	
 	cleanup();
+
+	Client::disconnect();
 	
 	DEBUG("Disconnected.");
 }

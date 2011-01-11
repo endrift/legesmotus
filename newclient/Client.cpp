@@ -364,10 +364,7 @@ void Client::new_round(const Packet& p) {
 void Client::round_over(const Packet& p) {
 	// TODO: We may need to do other things here, like update scores, etc.
 
-	if (m_logic != NULL) {
-		delete m_logic;
-	}
-	
+	delete m_logic;
 	m_logic = NULL;
 }
 
@@ -493,4 +490,7 @@ void Client::disconnect() {
 	}
 	
 	set_running(false);
+
+	delete m_logic;
+	m_logic = NULL;
 }
