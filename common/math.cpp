@@ -26,6 +26,7 @@
 #include "misc.hpp"
 #include "Point.hpp"
 #include <iostream>
+#include <limits>
 
 // See .hpp file for extensive comments.
 
