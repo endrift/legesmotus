@@ -63,8 +63,10 @@ uint64_t Client::step(uint64_t diff) {
 	m_controller->update(diff, *m_logic);
 	
 	int changes = m_controller->get_changes();
-	
-	player->set_gun_rotation_radians(m_controller->get_aim());
+
+	if (!player->is_frozen()) {
+		player->set_gun_rotation_radians(m_controller->get_aim());
+	}
 	
 	// Handle jumping
 	if (changes & Controller::JUMPING) {

@@ -23,7 +23,6 @@
  */
 
 #include "GLESProgram.hpp"
-#include <iostream>
 
 using namespace LM;
 using namespace std;
@@ -60,7 +59,7 @@ void GLESProgram::link() {
 		glGetProgramiv(m_program, GL_INFO_LOG_LENGTH, &linked);
 		char* log = new char[linked];
 		glGetProgramInfoLog(m_program, linked, &linked, log);
-		cout << log << endl;
+		WARN("Shader linking failed: " << log);
 	}
 }
 

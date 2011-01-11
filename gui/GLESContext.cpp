@@ -415,7 +415,6 @@ PixelShader GLESContext::load_pixel_shader(const std::string& filename) {
 
 	current = code.str();
 	const char* codechars = current.c_str();
-	cout << current << endl;
 	glShaderSource(shader, 1, &codechars, NULL);
 	glCompileShader(shader);
 
