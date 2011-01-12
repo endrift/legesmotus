@@ -166,7 +166,7 @@ Point Polygon::intersects_line(Point start, Point end, double* angle) const {
 		Point scale = Point(mindist * r.x, mindist * r.y);
 		return start + scale;
 	}
-	return Point(-1, -1);
+	return Point::get_invalid_point();
 }
 
 double	Polygon::dist_from_circle(const Circle& circle) const {

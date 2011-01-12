@@ -62,7 +62,7 @@ Point LM::closest_point_on_line_to_point(Point start, Point end, Point p, bool i
 	Point w = p - start;
 	float projection = Point::dot_product(v, w) / Point::dot_product(v, v);
 	if (is_segment && (projection < 0 || projection > 1)) {
-		return Point(-1, -1);
+		return Point::get_invalid_point();
 	} else {
 		return start + Point(v.x * projection, v.y * projection);
 	}

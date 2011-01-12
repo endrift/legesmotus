@@ -26,6 +26,7 @@
 #define LM_COMMON_POINT_HPP
 
 #include <iosfwd>
+#include <limits>
 
 // A simple class which represents a point or a vector in the Cartesian plane.
 // Has x and y components.
@@ -44,6 +45,9 @@ namespace LM {
 		float		get_angle() const;	// In radians
 		float		get_magnitude() const;
 		Point		get_unit_vector() const;
+		bool		is_valid() const { return (x == x && y == y); };
+		
+		static Point	get_invalid_point() { return Point(std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()); };
 	
 		// Given a string of the from "x,y", make a point from it
 		static Point	make_from_string(const char* str);
