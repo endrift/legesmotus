@@ -71,13 +71,13 @@ Point	Circle::intersects_line(Point start, Point end, double* angle) const {
 	Point	closest = closest_point_on_line_to_point(start, end, center);
 	if (closest.x == -1 && closest.y == -1) {
 		// This circle's not near the line
-		return Point(-1, -1);
+		return Point::get_invalid_point();
 	}
 
 	double	closest_distance = Point::distance(center, closest);
 	if (closest_distance > radius) {
 		// The line is too far away from the circle
-		return Point(-1, -1);
+		return Point::get_invalid_point();
 	} else if (closest_distance == radius) {
 		// The line is tangent to the circle
 		return closest;
