@@ -16,5 +16,5 @@ void main() {
 		}
 	}
 	csum /= sum;
-	gl_FragColor = vec4(csum.r, csum.g, csum.b, csum.a);
+	gl_FragColor = gl_Color*vec4(csum.r/csum.a, csum.g/csum.a, csum.b/csum.a, csum.a);
 }

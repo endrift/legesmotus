@@ -99,16 +99,9 @@ void GraphicContainer::draw(DrawContext* ctx) const {
 		dctx->push_context();
 		dctx->clear();
 		// TODO fix inverted axis bug
-		//dctx->translate(0, get_height()/1.0f);
 		dctx->scale(1.0f, -1.0f);
 		dctx->translate(0, -get_height());
 
-		/*dctx->set_draw_color(Color(0.0f, 1.0f, 0.0f));
-		dctx->draw_polygon_fill((float[]){-0x4000, 0, 0x4000, 0, 0x4000, 0x4000, -0x4000, 0x4000}, 4);
-		dctx->set_draw_color(Color(1.0f, 0.0f, 0.0f));
-		dctx->draw_polygon_fill((float[]){get_width(), get_height(), get_width()/2, get_height(), get_width()/2, get_height()/2, get_width(), get_height()/2}, 4);
-		dctx->set_draw_color(Color(0.0f, 0.0f, 1.0f));
-		dctx->draw_polygon_fill((float[]){0, 0, get_width()/2, 0, get_width()/2, get_height()/2, 0, get_height()/2}, 4);*/
 	} else {
 		ctx->translate(get_x(), get_y());
 	}
