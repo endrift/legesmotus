@@ -53,7 +53,7 @@ Player::Player(b2World* physics_world) {
 	m_rotation = 0;
 	m_rotational_vel = 0;
 	m_gun_rotation = 0;
-	m_freeze_time = -1;
+	m_freeze_time = 0;
 	m_is_invisible = true;
 	m_is_frozen = false;
 	m_is_grabbing_obstacle = false;
@@ -80,7 +80,7 @@ Player::Player(const char* name, uint32_t id, char team, float x, float y, float
 	m_rotation = rotation;
 	m_rotational_vel = 0;
 	m_gun_rotation = 0;
-	m_freeze_time = -1;
+	m_freeze_time = 0;
 	m_is_invisible = true;
 	m_is_frozen = false;
 	m_is_grabbing_obstacle = false;
@@ -295,7 +295,7 @@ void Player::set_is_invisible(bool is_invisible) {
 
 void Player::set_is_frozen(bool is_frozen, int64_t freeze_time) {
 	if (is_frozen) {
-		if (!m_is_frozen) {
+		if (!m_is_frozen || m_freeze_time == 0) {
 			m_freeze_time = freeze_time;
 			m_frozen_at = get_ticks();
 		}
