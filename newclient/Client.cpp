@@ -408,6 +408,15 @@ void Client::leave(const Packet& p) {
 	}
 }
 
+void Client::request_denied(const Packet& p) {
+	if (p.request_denied.packet_type == JOIN_PACKET) {
+		DEBUG("Could not join server: " << *p.request_denied.message);
+		// Disconnect our network connection so we don't send a leave packet to the server.
+		m_network.disconnect();
+		disconnect();
+	}
+}
+
 void Client::name_change(const Packet& p) {
 	Player* player = get_player(p.name_change.player_id);
 	if (player == NULL) {

@@ -109,7 +109,7 @@ namespace LM {
 		//virtual void info(const Packet& p); // FIXME this packet is asymmetrical
 		virtual void leave(const Packet& p);
 		//virtual void player_animation(const Packet& p); // TODO revamp this packet
-		//virtual void request_denied(const Packet& p);
+		virtual void request_denied(const Packet& p);
 		virtual void name_change(const Packet& p);
 		virtual void team_change(const Packet& p);
 		//virtual void register_server(const Packet& p);
