@@ -44,6 +44,8 @@ namespace LM {
 		std::map<std::string, std::multimap<int, Graphic*>::iterator> m_name_map;
 
 		bool m_autodelete;
+		Graphic* m_tex;
+		DrawContext* m_priv_ctx;
 
 	public:
 		GraphicContainer(bool self_contained = false, Widget* parent = NULL);
@@ -57,6 +59,10 @@ namespace LM {
 		void change_priority(const std::string& name, int new_priority);
 
 		void remove_graphic(const std::string& name);
+
+		void build_texture(ResourceCache* cache);
+		void delete_texture();
+		Graphic* get_texture();
 
 		virtual void draw(DrawContext* ctx) const;
 	};

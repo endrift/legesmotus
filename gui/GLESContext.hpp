@@ -55,6 +55,8 @@ namespace LM {
 
 	private:
 		static GLuint m_vbo;
+		static GLESContext* m_current;
+
 		enum VBOOffset {
 			INVALID_VBO = 0,
 			RECT_VERTS = sizeof(GLfloat[4]),
@@ -62,18 +64,20 @@ namespace LM {
 			IMG_VERTS = RECT_TEXS
 		};
 
-		GLint	m_width;
-		GLint	m_height;
+		GLint m_width;
+		GLint m_height;
 
 		GLfloat	m_arc_vertices[2*(MAX_ARC_FINE + 2)];
 
 		// Buffer objects
-		GLuint	m_fbo;
-		GLuint	m_stencil_rbo;
-		GLuint	m_fbo_tex;
+		GLuint m_fbo;
+		GLuint m_stencil_rbo;
+		GLuint m_fbo_tex;
+
+		GLESContext* m_last;
 
 		VBOOffset m_active_vbo;
-		bool	m_using_vbo;
+		bool m_using_vbo;
 
 		// Current state
 		GLuint	m_bound_img;
@@ -91,24 +95,29 @@ namespace LM {
 		void	unbind_vbo();
 		void	reset_vbo();
 
-		void	prepare_arc(float len, float xr, float yr, int fine);
-		void	bind_rect(float w, float h);
-		void	unbind_rect();
+		void prepare_arc(float len, float xr, float yr, int fine);
+		void bind_rect(float w, float h);
+		void unbind_rect();
 
-		void	draw_subimage(int width, int height,
-							  float tex_x, float tex_y,
-							  float tex_width, float tex_height);
+		void draw_subimage(int width, int height,
+		                   float tex_x, float tex_y,
+		                   float tex_width, float tex_height);
 
-		unsigned char*	setup_texture(PixelFormat fmt, const unsigned char* data,
-									  int* w, int* h, GLint* bpc, GLint* ifmt,
-									  GLenum* glfmt, GLenum* type);
+		unsigned char* setup_texture(PixelFormat fmt, const unsigned char* data,
+		                             int* w, int* h, GLint* bpc, GLint* ifmt,
+		                             GLenum* glfmt, GLenum* type);
+
+		void make_active();
 
 	public:
 		GLESContext(int width, int height, bool genfb = false);
 		virtual ~GLESContext();
 
-		virtual void	make_active();
+		virtual void push_context();
+		virtual void pop_context();
+
 		virtual LM::Image get_image(const std::string& name, ResourceCache* cache);
+		virtual GLESContext* make_new_context(int width, int height);
 
 		virtual int get_width() const;
 		virtual int get_height() const;
@@ -138,6 +147,7 @@ namespace LM {
 		virtual void set_draw_color(Color c);
 		virtual void set_blend_mode(BlendMode m);
 
+		virtual const char* shader_directory() const;
 		virtual PixelShader load_pixel_shader(const std::string& filename);
 		virtual void delete_pixel_shader(PixelShader shader);
 

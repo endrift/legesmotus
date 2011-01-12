@@ -27,6 +27,7 @@
 
 #include "common/Player.hpp"
 #include "GraphicContainer.hpp"
+#include "DrawContext.hpp"
 #include "Bone.hpp"
 #include <string>
 #include "Sprite.hpp"
@@ -51,6 +52,10 @@ namespace LM {
 	private:
 		GraphicContainer m_graphic_root;
 		Bone m_root_bone;
+		ResourceCache* m_cache;
+
+		PixelShader m_blur_shader;
+		ShaderSet* m_blur;
 
 	protected:
 		virtual void update_location();
@@ -66,6 +71,7 @@ namespace LM {
 		virtual void set_rotation_degrees(float rotation);
 		virtual void set_gun_rotation_degrees(float rotation);
 		virtual void set_is_invisible(bool invisible);
+		virtual void set_is_frozen(bool is_frozen, int freeze_time = 0);
 
 		Graphic* get_weapon_graphic(int partid);
 	};

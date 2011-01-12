@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
 		ctx->draw_rect_fill(wx, hy);
 
 		ctx->translate(-25.0, 25.0f);
-		ctx->set_blend_mode(DrawContext::BLEND_MULTIPLY);
+		ctx->set_blend_mode(DrawContext::BLEND_SCREEN);
 		ctx->translate(-25.0f, 25.0f);
 		ctx->draw_rect_fill(wx, hy);
 		ctx->translate(50.0f, 25.0f);

@@ -14,23 +14,33 @@ using namespace std;
 int main(int argc, char *argv[]) {
 	SDLWindow *window = SDLWindow::get_instance(800, 600, 24, SDLWindow::FLAG_VSYNC);
 	GLESContext *ctx = window->get_context();
-	GameView gv;
 	ResourceCache cache("data", ctx);
+	GameView gv("gv", &cache, 600, 400, 100);
 	Image blue("blue_full.png", &cache, true);
 	Image tile("metal_bgtile64.png", &cache, true);
 
 	Sprite blue_s(&blue);
 	blue_s.set_center_x(24);
 	blue_s.set_center_y(32);
+	blue_s.set_x(64);
+	blue_s.set_y(64);
 	GraphicRegion tile_s(&tile);
-	tile_s.set_width(1024);
-	tile_s.set_height(768);
-	tile_s.set_center_x(512);
-	tile_s.set_center_y(384);
+	tile_s.set_width(800);
+	tile_s.set_height(800);
+	tile_s.set_x(64);
+	tile_s.set_y(64);
 
-	GraphicContainer g;
+	GraphicContainer bg(true);
+	bg.add_graphic("tile", &tile_s, -1);
+	gv.add_child(&bg);
+
+	GraphicContainer g(true);
 	g.add_graphic("blue", &blue_s, 1);
-	g.add_graphic("tile", &tile_s, -1);
+	g.set_width(128);
+	g.set_height(128);
+	g.set_x(32);
+	g.set_y(32);
+	g.build_texture(&cache);
 	gv.add_child(&g);
 
 	ctx->set_root_widget(&gv);
@@ -72,8 +82,6 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
-		gv.set_width(wx);
-		gv.set_height(hy);
 		window->redraw();
 
 		SDL_Delay(20);

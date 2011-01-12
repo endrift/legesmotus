@@ -66,7 +66,7 @@
 	} while (0)
 
 #define UNUSED(x)
-#define MESSAGE(type, msg) std::cerr << "[" << get_ticks() << "] [" #type "] " __FILE__ ":" STRING(__LINE__) ": " << msg << std::endl
+#define MESSAGE(type, msg) std::cerr << dec << "[" << get_ticks() << "] [" #type "] " __FILE__ ":" STRING(__LINE__) ": " << msg << std::endl
 #define WARN(x) MESSAGE(WARN, x)
 #define INFO(x) MESSAGE(INFO, x)
 #define DEBUG(x) MESSAGE(DEBUG, x)

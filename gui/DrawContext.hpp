@@ -56,11 +56,6 @@ namespace LM {
 		Widget*	m_root_widget;
 		bool	m_dirtied;
 
-	protected:
-		/*std::vector<Widget*>::iterator	begin();
-		std::vector<Widget*>::iterator	end();
-		virtual void	focus_change(int oldFocus, int newFocus);*/
-
 	public:
 		DrawContext();
 		virtual ~DrawContext();
@@ -76,9 +71,12 @@ namespace LM {
 		void	clean();
 		bool	is_dirty();
 
-		virtual void	make_active() = 0;
+		virtual void	push_context() = 0;
+		virtual void	pop_context() = 0;
+
 		// Get this DrawContext as an image
 		virtual LM::Image get_image(const std::string& name, ResourceCache* cache) = 0;
+		virtual DrawContext* make_new_context(int width, int height) = 0;
 
 		virtual int		get_width() const = 0;
 		virtual int		get_height() const = 0;
@@ -110,6 +108,7 @@ namespace LM {
 		virtual void	set_draw_color(Color c) = 0;
 		virtual void	set_blend_mode(BlendMode m) = 0;
 
+		virtual const char* shader_directory() const = 0;
 		virtual PixelShader load_pixel_shader(const std::string& filename) = 0;
 		virtual void	delete_pixel_shader(PixelShader shader) = 0;
 

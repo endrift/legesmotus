@@ -37,7 +37,22 @@
 using namespace LM;
 using namespace std;
 
+#ifdef LM_DEBUG
+#define LM_GL(call) \
+	do {            \
+		GLenum e;   \
+		gl ## call; \
+		e = glGetError(); \
+		if (e) {    \
+			WARN("OpenGL error: 0x" << hex << e); \
+		}           \
+	} while(0)
+#else
+#define LM_GL(call) gl ## call
+#endif
+
 GLuint GLESContext::m_vbo = 0;
+GLESContext* GLESContext::m_current = NULL;
 
 GLESContext::GLESContext(int width, int height, bool genfb) {
 	m_width = width;
@@ -53,29 +68,30 @@ GLESContext::GLESContext(int width, int height, bool genfb) {
 	m_active_vbo = INVALID_VBO;
 
 	m_color = Color::WHITE;
+	m_last = NULL;
 
 	if (genfb) {
-		glGenFramebuffersEXT(1, &m_fbo);
-		glGenRenderbuffersEXT(1, &m_stencil_rbo);
-		glGenTextures(1, &m_fbo_tex);
+		LM_GL(GenFramebuffersEXT(1, &m_fbo));
+		LM_GL(GenRenderbuffersEXT(1, &m_stencil_rbo));
+		LM_GL(GenTextures(1, &m_fbo_tex));
 	
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fbo);
+		LM_GL(BindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fbo));
 
-		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, m_stencil_rbo);
-		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_STENCIL_INDEX8_EXT, width, height);
+		LM_GL(BindRenderbufferEXT(GL_RENDERBUFFER_EXT, m_stencil_rbo));
+		LM_GL(RenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_STENCIL_INDEX8_EXT, width, height));
 
-		glBindTexture(GL_TEXTURE_2D, m_fbo_tex);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);	
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		LM_GL(BindTexture(GL_TEXTURE_2D, m_fbo_tex));
+		LM_GL(TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+		LM_GL(TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));	
+		LM_GL(TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL));
 
-		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, m_fbo_tex, 0);
+		LM_GL(FramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, m_fbo_tex, 0));
 	} else {
 		m_fbo = 0;
 		m_stencil_rbo = 0;
 		m_fbo_tex = 0;
 
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+		LM_GL(BindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0));
 	}
 
 	if (!m_vbo) {
@@ -90,64 +106,74 @@ GLESContext::GLESContext(int width, int height, bool genfb) {
 			1, 1,
 			0, 1
 		};
-		glGenBuffers(1, &m_vbo);
-		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-		glTexCoordPointer(2, GL_FLOAT, 0, (GLvoid*)RECT_TEXS);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		LM_GL(GenBuffers(1, &m_vbo));
+		LM_GL(BindBuffer(GL_ARRAY_BUFFER, m_vbo));
+		LM_GL(BufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW));
+		LM_GL(TexCoordPointer(2, GL_FLOAT, 0, (GLvoid*)RECT_TEXS));
+		LM_GL(BindBuffer(GL_ARRAY_BUFFER, 0));
 	}
 
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glViewport(0, 0, width, height);
-	glEnable(GL_STENCIL_TEST);
-	glEnable(GL_BLEND);
+	if (m_current == NULL) {
+		m_current = this;
+	}
+
+	LM_GL(EnableClientState(GL_VERTEX_ARRAY));
+	LM_GL(DisableClientState(GL_TEXTURE_COORD_ARRAY));
+	LM_GL(Viewport(0, 0, width, height));
+	LM_GL(Scissor(0, 0, width, height));
+	//LM_GL(Enable(GL_SCISSOR_TEST));
+	LM_GL(Enable(GL_STENCIL_TEST));
+	LM_GL(Enable(GL_BLEND));
 	set_blend_mode(BLEND_NORMAL);
+
+	if (m_current != this) {
+		LM_GL(BindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_current->m_fbo));
+	}
 }
 
 GLESContext::~GLESContext() {
 	if (m_fbo) {
-		glDeleteFramebuffersEXT(1, &m_fbo);
+		LM_GL(DeleteFramebuffersEXT(1, &m_fbo));
 		m_fbo = 0;
 	}
 	if (m_stencil_rbo) {
-		glDeleteRenderbuffersEXT(1, &m_stencil_rbo);
+		LM_GL(DeleteRenderbuffersEXT(1, &m_stencil_rbo));
 		m_stencil_rbo = 0;
 	}
 	if (m_fbo_tex) {
-		glDeleteTextures(1, &m_fbo_tex);
+		LM_GL(DeleteTextures(1, &m_fbo_tex));
 		m_fbo_tex = 0;
 	}
 }
 
 void GLESContext::update_stencil() {
-	glStencilFunc(m_stencil_type, m_stencil_depth + m_stencil_func, 0xFF);
+	LM_GL(StencilFunc(m_stencil_type, m_stencil_depth + m_stencil_func, 0xFF));
 }
 
 void GLESContext::bind_vbo(VBOOffset offset) {
 	if (!m_using_vbo) {
-		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+		LM_GL(BindBuffer(GL_ARRAY_BUFFER, m_vbo));
 		m_using_vbo = true;
 	}
 	if (offset != m_active_vbo) {
-		glVertexPointer(2, GL_FLOAT, 0, (GLvoid*)offset);
+		LM_GL(VertexPointer(2, GL_FLOAT, 0, (GLvoid*)offset));
 		m_active_vbo = offset;
 	}
 }
 
 void GLESContext::unbind_vbo() {
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	LM_GL(BindBuffer(GL_ARRAY_BUFFER, 0));
 	m_using_vbo = false;
 	m_active_vbo = INVALID_VBO;
 }
 
 void GLESContext::reset_vbo() {
 	if (m_active_vbo != INVALID_VBO) {
-		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-		glVertexPointer(2, GL_FLOAT, 0, (GLvoid*)m_active_vbo);
+		LM_GL(BindBuffer(GL_ARRAY_BUFFER, m_vbo));
+		LM_GL(VertexPointer(2, GL_FLOAT, 0, (GLvoid*)m_active_vbo));
 	}
 	if (!m_using_vbo) {
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		LM_GL(BindBuffer(GL_ARRAY_BUFFER, 0));
 	}
 }
 
@@ -163,31 +189,31 @@ void GLESContext::prepare_arc(float len, float xr, float yr, int fine) {
 		m_arc_vertices[(i + 1)*2 + 1] = yr*sin(len*i*2.0*M_PI/fine);
 	}
 	unbind_vbo();
-	glVertexPointer(2, GL_FLOAT, 0, m_arc_vertices);
+	LM_GL(VertexPointer(2, GL_FLOAT, 0, m_arc_vertices));
 }
 
 void GLESContext::bind_rect(float w, float h) {
 	bind_vbo(RECT_VERTS);
 
-	glPushMatrix();
-	glScalef(w, h, 1);
+	LM_GL(PushMatrix());
+	LM_GL(Scalef(w, h, 1));
 }
 
 void GLESContext::unbind_rect() {
-	glPopMatrix();
+	LM_GL(PopMatrix());
 }
 
 void GLESContext::draw_subimage(int width, int height, float tex_x, float tex_y, float tex_width, float tex_height) {
-	glMatrixMode(GL_TEXTURE);
-	glLoadIdentity();
+	LM_GL(MatrixMode(GL_TEXTURE));
+	LM_GL(LoadIdentity());
 
-	glTranslatef(-tex_x/tex_width, -tex_y/tex_height, 0);
-	glScalef(width/(tex_width), height/(tex_height), 1.0);
+	LM_GL(Translatef(-tex_x/tex_width, -tex_y/tex_height, 0));
+	LM_GL(Scalef(width/(tex_width), height/(tex_height), 1.0));
 
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	LM_GL(DrawArrays(GL_TRIANGLE_FAN, 0, 4));
 
-	glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
+	LM_GL(LoadIdentity());
+	LM_GL(MatrixMode(GL_MODELVIEW));
 }
 
 unsigned char* GLESContext::setup_texture(PixelFormat fmt, const unsigned char* data,
@@ -242,12 +268,44 @@ unsigned char* GLESContext::setup_texture(PixelFormat fmt, const unsigned char* 
 }
 
 void GLESContext::make_active() {
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fbo);
-	glViewport(0, 0, m_width, m_height);
-	glBindTexture(GL_TEXTURE_2D, m_bound_img);
-	glColor4f(m_color.r, m_color.g, m_color.b, m_color.a);
+	LM_GL(BindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fbo));
+	LM_GL(Viewport(0, 0, m_width, m_height));
+	LM_GL(Scissor(0, 0, m_width, m_height));
+	LM_GL(BindTexture(GL_TEXTURE_2D, m_bound_img));
+	LM_GL(Color4f(m_color.r, m_color.g, m_color.b, m_color.a));
 	set_blend_mode(m_mode);
 	reset_vbo();
+
+	m_current = this;
+}
+
+void GLESContext::push_context() {
+	LM_GL(MatrixMode(GL_PROJECTION));
+	LM_GL(PushMatrix());
+	LM_GL(LoadIdentity());
+	LM_GL(Ortho(0, m_width, m_height, 0, -0x7FFF, 1));
+	LM_GL(MatrixMode(GL_MODELVIEW));
+	LM_GL(PushMatrix());
+	LM_GL(LoadIdentity());
+
+	ASSERT(m_current != this);
+	m_last = m_current;
+
+	make_active();
+}
+
+void GLESContext::pop_context() {
+	LM_GL(MatrixMode(GL_PROJECTION));
+	LM_GL(PopMatrix());
+	LM_GL(MatrixMode(GL_MODELVIEW));
+	LM_GL(PopMatrix());
+
+	m_last->make_active();
+	m_current = m_last;
+}
+
+GLESContext* GLESContext::make_new_context(int width, int height) {
+	return new GLESContext(width, height, true);
 }
 
 Image GLESContext::get_image(const string& name, ResourceCache* cache) {
@@ -267,39 +325,39 @@ int GLESContext::get_height() const {
 }
 
 void GLESContext::set_active_camera() {
-	glMatrixMode(GL_PROJECTION);
+	LM_GL(MatrixMode(GL_PROJECTION));
 }
 
 void GLESContext::set_active_graphics() {
-	glMatrixMode(GL_MODELVIEW);
+	LM_GL(MatrixMode(GL_MODELVIEW));
 }
 
 void GLESContext::load_identity() {
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, m_width, m_height, 0, -0x7FFF, 1);
+	LM_GL(MatrixMode(GL_PROJECTION));
+	LM_GL(LoadIdentity());
+	LM_GL(Ortho(0, m_width, m_height, 0, -0x7FFF, 1));
 
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	LM_GL(MatrixMode(GL_MODELVIEW));
+	LM_GL(LoadIdentity());
 }
 
 void GLESContext::push_transform() {
-	glPushMatrix();
+	LM_GL(PushMatrix());
 }
 
 void GLESContext::pop_transform() {
-	glPopMatrix();
+	LM_GL(PopMatrix());
 }
 
 void GLESContext::start_clip() {
-	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+	LM_GL(ColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE));
 	++m_stencil_depth;
 	clip_add();
 }
 
 void GLESContext::clip_add() {
 	m_stencil_func = -1;
-	glStencilOp(GL_KEEP, GL_INCR, GL_INCR);
+	LM_GL(StencilOp(GL_KEEP, GL_INCR, GL_INCR));
 	update_stencil();
 
 	//set_draw_color(Color(1, 0, 0, 1));
@@ -307,15 +365,15 @@ void GLESContext::clip_add() {
 
 void GLESContext::clip_sub() {
 	m_stencil_func = 0;
-	glStencilOp(GL_KEEP, GL_DECR, GL_DECR);
+	LM_GL(StencilOp(GL_KEEP, GL_DECR, GL_DECR));
 	update_stencil();
 
 	//set_draw_color(Color(0, 0, 1, 1));
 }
 
 void GLESContext::finish_clip() {
-	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	LM_GL(ColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
+	LM_GL(StencilOp(GL_KEEP, GL_KEEP, GL_KEEP));
 	--m_stencil_depth;
 	update_stencil();
 }
@@ -345,15 +403,15 @@ int GLESContext::clip_depth() {
 }
 
 void GLESContext::translate(float x, float y) {
-	glTranslatef(x, y, 0);
+	LM_GL(Translatef(x, y, 0));
 }
 
 void GLESContext::scale(float x, float y) {
-	glScalef(x, y, 1);
+	LM_GL(Scalef(x, y, 1));
 }
 
 void GLESContext::rotate(float degrees) {
-	glRotatef(degrees, 0, 0, 1);
+	LM_GL(Rotatef(degrees, 0, 0, 1));
 }
 
 void GLESContext::skew_x(float amount) {
@@ -361,7 +419,7 @@ void GLESContext::skew_x(float amount) {
 					  -amount, 1, 0, 0,
 					   0,      0, 1, 0,
 					   0,      0, 0, 1 };
-	glMultMatrixf(mat);
+	LM_GL(MultMatrixf(mat));
 }
 
 void GLESContext::skew_y(float amount) {
@@ -369,45 +427,54 @@ void GLESContext::skew_y(float amount) {
 					  0,       1, 0, 0,
 					  0,       0, 1, 0,
 					  0,       0, 0, 1 };
-	glMultMatrixf(mat);
+	LM_GL(MultMatrixf(mat));
 }
 
 void GLESContext::set_draw_color(Color c) {
-	glColor4f(c.r, c.g, c.b, c.a);
+	LM_GL(Color4f(c.r, c.g, c.b, c.a));
 	m_color = c;
 }
 
 void GLESContext::set_blend_mode(BlendMode m) {
 	switch (m) {
 	case BLEND_NORMAL:
-		glBlendEquation(GL_FUNC_ADD);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		LM_GL(BlendEquation(GL_FUNC_ADD));
+		LM_GL(BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 		break;
 
 	case BLEND_ADD:
-		glBlendEquation(GL_FUNC_ADD);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+		LM_GL(BlendEquation(GL_FUNC_ADD));
+		LM_GL(BlendFunc(GL_SRC_ALPHA, GL_ONE));
 		break;
 
 	case BLEND_SUBTRACT:
-		glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+		LM_GL(BlendEquation(GL_FUNC_REVERSE_SUBTRACT));
+		LM_GL(BlendFunc(GL_SRC_ALPHA, GL_ONE));
 		break;
 
 	case BLEND_SCREEN:
-		glBlendEquation(GL_FUNC_ADD);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR);
+		LM_GL(BlendEquation(GL_FUNC_ADD));
+		LM_GL(BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR));
 		break;
 	}
 	m_mode = m;
+}
+
+const char* GLESContext::shader_directory() const {
+	return "shaders/gl";
 }
 
 PixelShader GLESContext::load_pixel_shader(const std::string& filename) {
 	GLuint shader = glCreateShader(GL_FRAGMENT_SHADER);
 	string current;
 	stringstream code;
-	ifstream src(filename.c_str());
+	ifstream src((filename + ".frag").c_str());
 	while (!src.eof()) {
+		if (src.fail()) {
+			LM_GL(DeleteShader(shader));
+			WARN("Failed to load shader");
+			return 0;
+		}
 		getline(src, current);
 		code << current << "\n";
 	}
@@ -415,22 +482,23 @@ PixelShader GLESContext::load_pixel_shader(const std::string& filename) {
 
 	current = code.str();
 	const char* codechars = current.c_str();
-	glShaderSource(shader, 1, &codechars, NULL);
-	glCompileShader(shader);
+	LM_GL(ShaderSource(shader, 1, &codechars, NULL));
+	LM_GL(CompileShader(shader));
 
 	GLint compiled;
-	glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+	LM_GL(GetShaderiv(shader, GL_COMPILE_STATUS, &compiled));
 	if (!compiled) {
-		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &compiled);
+		LM_GL(GetShaderiv(shader, GL_INFO_LOG_LENGTH, &compiled));
 		char* log = new char[compiled];
-		glGetShaderInfoLog(shader, compiled, &compiled, log);
+		LM_GL(GetShaderInfoLog(shader, compiled, &compiled, log));
 		WARN("Shader compilation failed: " << log);
+		delete[] log;
 	}
 	return shader;
 }
 
 void GLESContext::delete_pixel_shader(PixelShader shader) {
-	glDeleteShader(shader);
+	LM_GL(DeleteShader(shader));
 }
 	
 ShaderSet* GLESContext::create_shader_set() {
@@ -438,45 +506,45 @@ ShaderSet* GLESContext::create_shader_set() {
 }
 
 void GLESContext::bind_shader_set(ShaderSet* shaders) {
-	glUseProgram(((GLESProgram*) shaders)->program_number());
+	LM_GL(UseProgram(((GLESProgram*) shaders)->program_number()));
 }
 
 void GLESContext::unbind_shader_set() {
-	glUseProgram(0);
+	LM_GL(UseProgram(0));
 }
 
 void GLESContext::draw_arc(float len, float xr, float yr, int fine) {
 	prepare_arc(len, xr, yr, fine);
-	glDrawArrays(GL_TRIANGLE_FAN, 0, fine + 2);
-	glDrawArrays(GL_LINE_STRIP, 1, fine + 1);
+	LM_GL(DrawArrays(GL_TRIANGLE_FAN, 0, fine + 2));
+	LM_GL(DrawArrays(GL_LINE_STRIP, 1, fine + 1));
 }
 
 void GLESContext::draw_arc_fill(float len, float xr, float yr, int fine) {
 	prepare_arc(len, xr, yr, fine);
-	glDrawArrays(GL_TRIANGLE_FAN, 0, fine + 2);
+	LM_GL(DrawArrays(GL_TRIANGLE_FAN, 0, fine + 2));
 }
 
 void GLESContext::draw_arc_line(float len, float xr, float yr, int fine) {
 	prepare_arc(len, xr, yr, fine);
-	glDrawArrays(GL_LINE_STRIP, 1, fine + 1);
+	LM_GL(DrawArrays(GL_LINE_STRIP, 1, fine + 1));
 }
 
 void GLESContext::draw_rect(float w, float h) {
 	bind_rect(w, h);
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-	glDrawArrays(GL_LINE_LOOP, 0, 4);
+	LM_GL(DrawArrays(GL_TRIANGLE_FAN, 0, 4));
+	LM_GL(DrawArrays(GL_LINE_LOOP, 0, 4));
 	unbind_rect();
 }
 
 void GLESContext::draw_rect_fill(float w, float h) {
 	bind_rect(w, h);
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	LM_GL(DrawArrays(GL_TRIANGLE_FAN, 0, 4));
 	unbind_rect();
 }
 
 void GLESContext::draw_rect_line(float w, float h) {
 	bind_rect(w, h);
-	glDrawArrays(GL_LINE_LOOP, 0, 4);
+	LM_GL(DrawArrays(GL_LINE_LOOP, 0, 4));
 	unbind_rect();
 }
 
@@ -487,14 +555,14 @@ void GLESContext::draw_line(float x1, float y1, float x2, float y2) {
 	vertices[2] = x2;
 	vertices[3] = y2;
 	unbind_vbo();
-	glVertexPointer(2, GL_FLOAT, 0, vertices);
-	glDrawArrays(GL_LINE_STRIP, 0, 2);
+	LM_GL(VertexPointer(2, GL_FLOAT, 0, vertices));
+	LM_GL(DrawArrays(GL_LINE_STRIP, 0, 2));
 }
 
 void GLESContext::draw_lines(const float vertices[], int n, bool loop) {
 	unbind_vbo();
-	glVertexPointer(2, GL_FLOAT, 0, vertices);
-	glDrawArrays(loop?GL_LINE_LOOP:GL_LINE_STRIP, 0, n);
+	LM_GL(VertexPointer(2, GL_FLOAT, 0, vertices));
+	LM_GL(DrawArrays(loop?GL_LINE_LOOP:GL_LINE_STRIP, 0, n));
 }
 
 void GLESContext::draw_stroke(const float vertices[], int n, float out, float in, bool loop) {
@@ -550,21 +618,21 @@ void GLESContext::draw_stroke(const float vertices[], int n, float out, float in
 	}
 
 	unbind_vbo();
-	glVertexPointer(2, GL_FLOAT, 0, quad_vertices);
-	glDrawArrays(GL_QUAD_STRIP, 0, n*2);
+	LM_GL(VertexPointer(2, GL_FLOAT, 0, quad_vertices));
+	LM_GL(DrawArrays(GL_QUAD_STRIP, 0, n*2));
 }
 
 void GLESContext::draw_polygon(const float vertices[], int n) {
 	unbind_vbo();
-	glVertexPointer(2, GL_FLOAT, 0, vertices);
-	glDrawArrays(GL_POLYGON, 0, n);
-	glDrawArrays(GL_LINE_LOOP, 0, n);
+	LM_GL(VertexPointer(2, GL_FLOAT, 0, vertices));
+	LM_GL(DrawArrays(GL_POLYGON, 0, n));
+	LM_GL(DrawArrays(GL_LINE_LOOP, 0, n));
 }
 
 void GLESContext::draw_polygon_fill(const float vertices[], int n) {
 	unbind_vbo();
-	glVertexPointer(2, GL_FLOAT, 0, vertices);
-	glDrawArrays(GL_POLYGON, 0, n);
+	LM_GL(VertexPointer(2, GL_FLOAT, 0, vertices));
+	LM_GL(DrawArrays(GL_POLYGON, 0, n));
 }
 
 DrawContext::Image GLESContext::gen_image(int* width, int* height, PixelFormat format, const unsigned char* data) {
@@ -578,12 +646,12 @@ DrawContext::Image GLESContext::gen_image(int* width, int* height, PixelFormat f
 	unsigned char* ndata = setup_texture(format, data, &w, &h, &bpc, &ifmt, &glfmt, &type);
 
 	GLuint img;
-	glGenTextures(1, &img);
+	LM_GL(GenTextures(1, &img));
 	bind_image(img);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);	
-	glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
-	glTexImage2D(GL_TEXTURE_2D, 0, ifmt, w, h, 0, glfmt, type, ndata);
+	LM_GL(TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
+	LM_GL(TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));	
+	LM_GL(TexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE));
+	LM_GL(TexImage2D(GL_TEXTURE_2D, 0, ifmt, w, h, 0, glfmt, type, ndata));
 	if (ndata != data) {
 		delete[] ndata;
 	}
@@ -604,7 +672,7 @@ void GLESContext::add_mipmap(Image handle, int level, int* width, int* height, P
 	ndata = setup_texture(format, data, &nwidth, &nheight, &bpc, &ifmt, &glfmt, &type);
 
 	bind_image(handle);
-	glTexImage2D(GL_TEXTURE_2D, level, ifmt, nwidth, nheight, 0, glfmt, type, ndata);
+	LM_GL(TexImage2D(GL_TEXTURE_2D, level, ifmt, nwidth, nheight, 0, glfmt, type, ndata));
 	if (ndata != data) {
 		delete[] ndata;
 	}
@@ -614,7 +682,7 @@ void GLESContext::add_mipmap(Image handle, int level, int* width, int* height, P
 }
 
 void GLESContext::del_image(Image img) {
-	glDeleteTextures(1, &img);
+	LM_GL(DeleteTextures(1, &img));
 }
 
 void GLESContext::draw_image(int width, int height, Image img) {
@@ -625,62 +693,62 @@ void GLESContext::draw_image(int width, int height, Image img) {
 
 void GLESContext::bind_image(Image img) {
 	if (m_bound_img != img || !m_img_bound) {
-		glBindTexture(GL_TEXTURE_2D, img);
+		LM_GL(BindTexture(GL_TEXTURE_2D, img));
 		m_bound_img = img;
 		bind_vbo(IMG_VERTS);
 	}
 	if (!m_img_bound) {
-		glEnable(GL_TEXTURE_2D);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		LM_GL(Enable(GL_TEXTURE_2D));
+		LM_GL(EnableClientState(GL_TEXTURE_COORD_ARRAY));
 		m_img_bound = true;
 	}
 }
 
 void GLESContext::unbind_image() {
 	if (m_img_bound) {
-		glDisable(GL_TEXTURE_2D);
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+		LM_GL(Disable(GL_TEXTURE_2D));
+		LM_GL(DisableClientState(GL_TEXTURE_COORD_ARRAY));
 		m_img_bound = false;
 	}
 }
 
 void GLESContext::draw_bound_image(int width, int height) {
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	glPushMatrix();
-	glScalef(width, height, 1);
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-	glPopMatrix();
+	LM_GL(TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP));
+	LM_GL(TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP));
+	LM_GL(PushMatrix());
+	LM_GL(Scalef(width, height, 1));
+	LM_GL(DrawArrays(GL_TRIANGLE_FAN, 0, 4));
+	LM_GL(PopMatrix());
 }
 
 void GLESContext::draw_bound_image_region(int width, int height,
 										  float tex_x, float tex_y,
 										  float tex_width, float tex_height) {
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	glPushMatrix();
-	glScalef(width, height, 1);
+	LM_GL(TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP));
+	LM_GL(TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP));
+	LM_GL(PushMatrix());
+	LM_GL(Scalef(width, height, 1));
 
 	draw_subimage(width, height, tex_x, tex_y, tex_width, tex_height);
 
-	glPopMatrix();
+	LM_GL(PopMatrix());
 }
 
 void GLESContext::draw_bound_image_tiled(int width, int height,
 										 float tex_x, float tex_y,
 										 float tex_width, float tex_height) {
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glPushMatrix();
-	glScalef(width, height, 1);
+	LM_GL(TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
+	LM_GL(TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
+	LM_GL(PushMatrix());
+	LM_GL(Scalef(width, height, 1));
 
 	draw_subimage(width, height, tex_x, tex_y, tex_width, tex_height);
 
-	glPopMatrix();
+	LM_GL(PopMatrix());
 }
 
 void GLESContext::clear() {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	LM_GL(Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
 }
 
 void GLESContext::redraw() {

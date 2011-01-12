@@ -188,6 +188,8 @@ void GuiClient::realign_badges() {
 		Point new_point = m_view->world_to_view(Point(player->get_x(), player->get_y()));
 		iter->second->set_x(new_point.x);
 		iter->second->set_y(new_point.y - 64.0f*m_view->get_scale());
+
+		iter->second->set_drawable(!player->is_invisible());
 	}
 }
 

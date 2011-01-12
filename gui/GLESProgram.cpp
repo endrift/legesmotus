@@ -60,6 +60,7 @@ void GLESProgram::link() {
 		char* log = new char[linked];
 		glGetProgramInfoLog(m_program, linked, &linked, log);
 		WARN("Shader linking failed: " << log);
+		delete[] log;
 	}
 }
 

@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
 
 		Point localpoints[3] = ppoints;
 
-		r = atan2(wx, -hy);
+		r = 0;//atan2(wx, -hy);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		ctx->set_draw_color(Color(1.0f, 1.0f, 1.0f, 0.5f));
@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
 		points[3] = localpoints[1].y;
 		points[4] = localpoints[2].x;
 		points[5] = localpoints[2].y;
-		ctx->draw_stroke(points, 3, 0.0, 0.2, true);
+		ctx->draw_stroke(points, 3, 0.0, 0.1, true);
 
 		SDL_GL_SwapBuffers();
 		SDL_Delay(6);

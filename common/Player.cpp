@@ -293,15 +293,7 @@ void Player::set_is_invisible(bool is_invisible) {
 	m_is_invisible = is_invisible;
 }
 
-void Player::set_is_frozen(bool is_frozen) {
-	m_is_frozen = is_frozen;
-	
-	if (is_frozen) {
-		set_is_grabbing_obstacle(false);
-	}
-}
-
-void Player::set_is_frozen(bool is_frozen, long freeze_time) {
+void Player::set_is_frozen(bool is_frozen, int freeze_time) {
 	m_is_frozen = is_frozen;
 	
 	if (is_frozen) {

@@ -23,16 +23,23 @@
  */
 
 #include "GraphicContainer.hpp"
+#include "ResourceCache.hpp"
+#include "Sprite.hpp"
+#include <sstream>
+#include <GL/gl.h>
 
 using namespace LM;
 using namespace std;
 
 GraphicContainer::GraphicContainer(bool self_contained, Widget* parent) : Widget(parent) {
 	m_autodelete = self_contained;
+	m_tex = NULL;
+	m_priv_ctx = NULL;
 }
 
 GraphicContainer::~GraphicContainer() {
 	m_name_map.clear();
+	delete_texture();
 
 	if (m_autodelete) {
 		for (multimap<int, Graphic*>::iterator iter = m_priority_map.begin(); iter != m_priority_map.end(); ++iter) {
@@ -61,12 +68,60 @@ void GraphicContainer::change_priority(const std::string& name, int new_priority
 	m_priority_map.insert(make_pair(new_priority, g));
 }
 
+void GraphicContainer::build_texture(ResourceCache* cache) {
+	ASSERT(get_width() > 0);
+	ASSERT(get_height() > 0);
+	if (m_priv_ctx != NULL) {
+		delete_texture();
+	}
+	m_priv_ctx = cache->get_context()->make_new_context(get_width(), get_height());
+	stringstream name;
+	name << "container: " << hex << this;
+	Image tex = m_priv_ctx->get_image(name.str(), cache);
+	m_tex = new Sprite(&tex);
+}
+
+void GraphicContainer::delete_texture() {
+	delete m_tex;
+	m_tex = NULL;
+	delete m_priv_ctx;
+	m_priv_ctx = NULL;
+}
+
+Graphic* GraphicContainer::get_texture() {
+	return m_tex;
+}
+
 void GraphicContainer::draw(DrawContext* ctx) const {
-	ctx->translate(get_x(), get_y());
+	DrawContext* dctx = ctx;
+	if (m_priv_ctx != NULL) {
+		dctx = m_priv_ctx;
+		dctx->push_context();
+		dctx->clear();
+		// TODO fix inverted axis bug
+		//dctx->translate(0, get_height()/1.0f);
+		dctx->scale(1.0f, -1.0f);
+		dctx->translate(0, -get_height());
+
+		/*dctx->set_draw_color(Color(0.0f, 1.0f, 0.0f));
+		dctx->draw_polygon_fill((float[]){-0x4000, 0, 0x4000, 0, 0x4000, 0x4000, -0x4000, 0x4000}, 4);
+		dctx->set_draw_color(Color(1.0f, 0.0f, 0.0f));
+		dctx->draw_polygon_fill((float[]){get_width(), get_height(), get_width()/2, get_height(), get_width()/2, get_height()/2, get_width(), get_height()/2}, 4);
+		dctx->set_draw_color(Color(0.0f, 0.0f, 1.0f));
+		dctx->draw_polygon_fill((float[]){0, 0, get_width()/2, 0, get_width()/2, get_height()/2, 0, get_height()/2}, 4);*/
+	} else {
+		ctx->translate(get_x(), get_y());
+	}
 	for (multimap<int, Graphic*>::const_iterator iter = m_priority_map.begin(); iter != m_priority_map.end(); ++iter) {
 		if (!iter->second->is_invisible()) {
-			iter->second->draw(ctx);
+			iter->second->draw(dctx);
 		}
+	}
+	if (m_priv_ctx != NULL) {
+		dctx->pop_context();
+
+		ctx->translate(get_x(), get_y());
+		m_tex->draw(ctx);
 	}
 	ctx->translate(-get_x(), -get_y());
 }

@@ -67,7 +67,7 @@ namespace LM {
 		bool		m_is_invisible;	// Is this player inivisible? (should be true while player is waiting to spawn)
 		bool		m_is_frozen;	// Is this player frozen? (should be true after the player gets shot)
 		uint64_t	m_frozen_at;  // At what time was the player frozen?
-		long		m_freeze_time; // How long should the player be frozen for?
+		int			m_freeze_time; // How long should the player be frozen for?
 		bool		m_is_grabbing_obstacle;	// Is the player grabbing an obstacle?
 		long		m_current_weapon_id;	// ID of the current weapon
 		b2Body*		m_physics_body; // Box2D physics body for this player
@@ -139,8 +139,7 @@ namespace LM {
 		virtual void set_gun_rotation_degrees(float gun_rotation);
 		void set_gun_rotation_radians(float gun_rotation);
 		virtual void set_is_invisible(bool is_invisible);
-		virtual void set_is_frozen(bool is_frozen);
-		virtual void set_is_frozen(bool is_frozen, long freeze_time);
+		virtual void set_is_frozen(bool is_frozen, int freeze_time = 0);
 		virtual void set_freeze_time(long freeze_time);
 		virtual void set_is_grabbing_obstacle(bool);
 		virtual void set_current_weapon_id(long id);

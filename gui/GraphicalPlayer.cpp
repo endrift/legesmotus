@@ -25,6 +25,7 @@
 #include "GraphicalPlayer.hpp"
 #include "Sprite.hpp"
 #include "ResourceCache.hpp"
+#include "ShaderSet.hpp"
 #include "common/math.hpp"
 #include <sstream>
 
@@ -46,7 +47,26 @@ GraphicalPlayer::GraphicalPlayer(const char* name, uint32_t id, char team, Resou
 	Sprite back_arm(cache->get<Image>(color + "_backarm.png"));
 	Sprite front_leg(cache->get<Image>(color + "_frontleg.png"));
 	Sprite back_leg(cache->get<Image>(color + "_backleg.png"));
-    
+
+	m_graphic_root.set_width(128);
+	m_graphic_root.set_height(128);
+	m_graphic_root.build_texture(cache);
+	m_root_bone.set_x(m_graphic_root.get_width()*0.5);
+	m_root_bone.set_y(m_graphic_root.get_height()*0.5);
+
+	m_cache = cache;
+
+	DrawContext* ctx = cache->get_context();
+	PixelShader m_blur_shader = ctx->load_pixel_shader(cache->get_root() + "/" + ctx->shader_directory() + "/blur");
+	m_blur = ctx->create_shader_set();
+	m_blur->attach_shader(m_blur_shader);
+	m_blur->link();
+	ctx->bind_shader_set(m_blur);
+	m_blur->set_variable("d", 0.01f);
+	m_blur->set_variable("tex", 0);
+	m_blur->set_variable("ksize", 5);
+	ctx->unbind_shader_set();
+
 	torso.get_bone()->set_parent(&m_root_bone);
 	torso.set_center_x(32);
 	torso.set_center_y(48);
@@ -123,11 +143,13 @@ GraphicalPlayer::GraphicalPlayer(const char* name, uint32_t id, char team, Resou
 }
 
 GraphicalPlayer::~GraphicalPlayer() {
+	delete m_blur;
+	m_cache->get_context()->delete_pixel_shader(m_blur_shader);
 }
 
 void GraphicalPlayer::update_location() {
-	m_graphic_root.set_x(get_x());
-	m_graphic_root.set_y(get_y());
+	m_graphic_root.set_x(get_x() - m_graphic_root.get_width()*0.5);
+	m_graphic_root.set_y(get_y() - m_graphic_root.get_height()*0.5);
 	m_root_bone.set_rotation(get_rotation_degrees());
 }
 
@@ -203,6 +225,18 @@ void GraphicalPlayer::set_is_invisible(bool invisible) {
 	Player::set_is_invisible(invisible);
 	
 	m_graphic_root.set_drawable(!invisible);
+}
+
+void GraphicalPlayer::set_is_frozen(bool is_frozen, int freeze_time) {
+	Player::set_is_frozen(is_frozen, freeze_time);
+	Graphic* graphic = m_graphic_root.get_texture();
+	if (is_frozen) {
+		graphic->set_shader_set(m_blur);
+		graphic->set_color(Color(0.7f, 0.7f, 0.7f));
+	} else {
+		graphic->set_shader_set(NULL);
+		graphic->set_color(Color::WHITE);
+	}
 }
 
 Graphic* GraphicalPlayer::get_weapon_graphic(int partid) {
