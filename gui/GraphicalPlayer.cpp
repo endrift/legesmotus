@@ -227,7 +227,7 @@ void GraphicalPlayer::set_is_invisible(bool invisible) {
 	m_graphic_root.set_drawable(!invisible);
 }
 
-void GraphicalPlayer::set_is_frozen(bool is_frozen, int freeze_time) {
+void GraphicalPlayer::set_is_frozen(bool is_frozen, int64_t freeze_time) {
 	Player::set_is_frozen(is_frozen, freeze_time);
 	Graphic* graphic = m_graphic_root.get_texture();
 	if (is_frozen) {

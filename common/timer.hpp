@@ -28,6 +28,8 @@
 #include <stdint.h>
 
 namespace LM {
+	const uint64_t FOREVER = 0x7FFFFFFFFFFFFFFFULL;
+
 	uint64_t	get_ticks();
 	uint64_t	utc_time();
 }

@@ -55,7 +55,7 @@ Player::Player(b2World* physics_world) {
 	m_gun_rotation = 0;
 	m_freeze_time = -1;
 	m_is_invisible = true;
-	m_is_frozen = true;
+	m_is_frozen = false;
 	m_is_grabbing_obstacle = false;
 	m_attach_joint = NULL;
 	m_physics = NULL;
@@ -82,7 +82,7 @@ Player::Player(const char* name, uint32_t id, char team, float x, float y, float
 	m_gun_rotation = 0;
 	m_freeze_time = -1;
 	m_is_invisible = true;
-	m_is_frozen = true;
+	m_is_frozen = false;
 	m_is_grabbing_obstacle = false;
 	m_attach_joint = NULL;
 	m_physics = NULL;
@@ -293,14 +293,19 @@ void Player::set_is_invisible(bool is_invisible) {
 	m_is_invisible = is_invisible;
 }
 
-void Player::set_is_frozen(bool is_frozen, int freeze_time) {
-	m_is_frozen = is_frozen;
-	
+void Player::set_is_frozen(bool is_frozen, int64_t freeze_time) {
 	if (is_frozen) {
-		m_freeze_time = freeze_time;
-		m_frozen_at = get_ticks();
+		if (!m_is_frozen) {
+			m_freeze_time = freeze_time;
+			m_frozen_at = get_ticks();
+		}
 		set_is_grabbing_obstacle(false);
+	} else {
+		m_freeze_time = 0;
+		m_frozen_at = 0;
 	}
+
+	m_is_frozen = is_frozen;
 }
 
 void Player::set_freeze_time(long freeze_time) {
@@ -352,7 +357,7 @@ void Player::read_update_packet (PacketReader& packet) {
 	set_gun_rotation_degrees(aim);
 	set_current_weapon_id(current_weapon_id);
 	set_is_invisible(flags.find_first_of('I') != string::npos);
-	set_is_frozen(flags.find_first_of('F') != string::npos);
+	set_is_frozen(flags.find_first_of('F') != string::npos, FOREVER);
 	set_is_grabbing_obstacle(flags.find_first_of('G') != string::npos);
 }
 
@@ -390,7 +395,7 @@ void Player::read_player_update(const Packet::PlayerUpdate& p) {
 	set_gun_rotation_degrees(p.gun_rotation);
 	set_current_weapon_id(p.current_weapon_id);
 	//set_is_invisible(p.flags->find_first_of('I') != string::npos);
-	set_is_frozen(p.flags->find_first_of('F') != string::npos);
+	set_is_frozen(p.flags->find_first_of('F') != string::npos, FOREVER);
 	set_is_grabbing_obstacle(p.flags->find_first_of('G') != string::npos);
 	set_is_invisible(p.flags->find_first_of('I') != string::npos);
 	if (is_grabbing_obstacle() && m_physics_body != NULL) {

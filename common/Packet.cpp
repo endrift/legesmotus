@@ -361,12 +361,14 @@ static void unmarshal_HOLE_PUNCH(PacketReader& r, Packet* p) {
 static void marshal_PLAYER_DIED(PacketWriter& w, Packet* p) {
 	w << p->player_died.killed_player_id;
 	w << p->player_died.killer_id;
+	w << p->player_died.freeze_time;
 	w << p->player_died.killer_type;
 }
 
 static void unmarshal_PLAYER_DIED(PacketReader& r, Packet* p) {
 	r >> p->player_died.killed_player_id;
 	r >> p->player_died.killer_id;
+	r >> p->player_died.freeze_time;
 	r >> p->player_died.killer_type;
 }
 
@@ -594,6 +596,7 @@ Packet::Packet(const Packet& other) {
 	case PLAYER_DIED_PACKET:
 		player_died.killed_player_id = other.player_died.killed_player_id;
 		player_died.killer_id = other.player_died.killer_id;
+		player_died.freeze_time = other.player_died.freeze_time;
 		player_died.killer_type = other.player_died.killer_type;
 		break;
 

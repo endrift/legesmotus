@@ -71,7 +71,7 @@ namespace LM {
 		virtual void set_rotation_degrees(float rotation);
 		virtual void set_gun_rotation_degrees(float rotation);
 		virtual void set_is_invisible(bool invisible);
-		virtual void set_is_frozen(bool is_frozen, int freeze_time = 0);
+		virtual void set_is_frozen(bool is_frozen, int64_t freeze_time = 0);
 
 		Graphic* get_weapon_graphic(int partid);
 	};
