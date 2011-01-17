@@ -89,7 +89,10 @@ namespace LM {
 
 		// Broadcast the address to all registered peers (except perhaps a certain peer, if not NULL)
 		void		broadcast_reliable_packet(const PacketWriter& packet, const IPAddress* exclude_peer =NULL);
+		void		broadcast_reliable_packet(Packet* packet, const IPAddress* exclude_peer=NULL);
 		void		broadcast_packet(const PacketWriter& packet, const IPAddress* exclude_peer =NULL);
+		
+		void		send_packet_to(const IPAddress& dest, Packet* packet) { CommonNetwork::send_packet(dest, packet); }
 	};
 }
 

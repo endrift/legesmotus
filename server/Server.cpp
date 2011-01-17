@@ -39,6 +39,8 @@
 #include "common/PathManager.hpp"
 #include "common/timer.hpp"
 #include "common/Version.hpp"
+#include "common/GameLogic.hpp"
+#include "common/Weapon.hpp"
 #include <string>
 #include <cstdlib>
 #include <cstring>
@@ -66,6 +68,8 @@ Server::Server (ServerConfig& config, PathManager& path_manager) : m_config(conf
 
 	m_team_count[0] = m_team_count[1] = 0;
 	m_team_score[0] = m_team_score[1] = 0;
+	
+	m_game_logic = NULL;
 }
 
 void	Server::player_update(const IPAddress& address, PacketReader& inbound_packet)
@@ -85,7 +89,7 @@ void	Server::player_update(const IPAddress& address, PacketReader& inbound_packe
 		// Re-broadcast the packet to all _other_ players
 		PacketWriter	outbound_packet(PLAYER_UPDATE_PACKET);
 		player->write_update_packet(outbound_packet);
-		broadcast_packet_except(outbound_packet, player_id);
+		m_network.broadcast_packet(outbound_packet);
 	}
 }
 
@@ -568,6 +572,11 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 		// Spawn this player frozen
 		spawn_player(new_player, m_params.late_join_delay);
 	}
+	
+	// Add the player to our Game Logic, if necessary:
+	if (m_game_logic != NULL) {
+		m_game_logic->add_player(&new_player);
+	}
 }
 
 void	Server::info(const IPAddress& address, PacketReader& request_packet) {
@@ -628,6 +637,11 @@ void	Server::remove_player(ServerPlayer& player, const char* leave_message) {
 	const uint32_t	player_id = player.get_id();
 
 	m_timeout_queue.erase(player.get_timeout_queue_position());
+
+	// Remove this player from the game logic
+	if (m_game_logic != NULL) {
+		m_game_logic->remove_player(player_id);
+	}
 
 	// Broadcast to the game that this player has left
 	PacketWriter	leave_packet(LEAVE_PACKET);
@@ -709,6 +723,7 @@ void	Server::start()
 void	Server::run()
 {
 	m_is_running = true;
+	uint64_t last_logic_update = get_ticks();
 	while (m_is_running) {
 		timeout_players();
 		m_network.resend_acks();
@@ -744,6 +759,23 @@ void	Server::run()
 		} else if (waiting_to_spawn()) {
 			if (time_until_spawn() == 0) {
 				start_game();
+			}
+		}
+		
+		uint64_t diff = get_ticks() - last_logic_update;
+		if (diff > 10) {
+			last_logic_update = get_ticks();
+			if (m_game_logic != NULL) {
+				for (PlayerMap::iterator it(m_players.begin()); it != m_players.end(); ++it) {
+					m_game_logic->attempt_jump(it->second.get_id(), rand() % 360);
+					m_game_logic->attempt_fire(it->second.get_id(), 1, rand() % 360);
+				}
+				m_game_logic->steps(diff);
+				
+				// TODO: Check for map hazard kills
+	
+				// Check the weapon for hitting any players:
+				check_player_hits();
 			}
 		}
 		
@@ -815,6 +847,11 @@ void	Server::broadcast_reliable_packet_except(const PacketWriter& packet, uint32
 
 void	Server::new_game() {
 	m_game_start_time = get_ticks();
+	if (m_game_logic != NULL) {
+		m_game_logic->unregister_map();
+		delete m_game_logic;
+		m_game_logic = NULL;
+	}
 	m_players_have_spawned = false;
 	m_gates[0].reset();
 	m_gates[1].reset();
@@ -846,8 +883,28 @@ void	Server::start_game() {
 
 	m_players_have_spawned = true;
 	m_current_map.reset();
+	
+	// Initialize the Game Logic
+	if (m_game_logic != NULL) {
+		m_game_logic->unregister_map();
+		delete m_game_logic;
+	}
+	m_game_logic = new GameLogic(&m_current_map);
+	
+	const std::list<WeaponReader>&	const_weapons(m_weapon_set.get_weapons());
+	std::list<WeaponReader> weapons(const_weapons);
+	size_t index = 0;
+
+	for (std::list<WeaponReader>::iterator it(weapons.begin()); it != weapons.end(); ++it) {
+		Weapon* weapon = Weapon::new_weapon(*it);
+		m_game_logic->add_weapon(index, weapon);
+		index++;
+	}
+	
+	m_game_logic->update_map();
 
 	for (PlayerMap::iterator it(m_players.begin()); it != m_players.end(); ++it) {
+		m_game_logic->add_player(&(it->second));
 		spawn_player(it->second);
 	}
 
@@ -865,6 +922,15 @@ void	Server::spawn_waiting_players() {
 bool	Server::spawn_player(ServerPlayer& player, uint64_t freeze_time) {
 	if (const Spawnpoint* point = m_current_map.next_spawnpoint(player.get_team())) {
 		player.set_spawnpoint(point);
+		player.set_position(point->get_point());
+		player.set_velocity(point->get_initial_velocity());
+		player.set_is_grabbing_obstacle(point->is_grabbing_obstacle());
+		player.set_is_invisible(false);
+		if (freeze_time == 0) {
+			player.set_is_frozen(false);
+		} else {
+			player.set_is_frozen(true, freeze_time);
+		}
 		send_spawn_packet(player, point, true, freeze_time);
 		return true;
 	} else {
@@ -945,6 +1011,29 @@ void	Server::report_gate_status(char team, int change_in_players, uint32_t actin
 	} else {
 		// This is a general update - it is sent often, so reliability isn't important
 		m_network.broadcast_packet(packet);
+	}
+}
+
+void Server::check_player_hits() {
+	const std::list<WeaponReader>&	weapons(m_weapon_set.get_weapons());
+	size_t				index = 0;
+
+	for (std::list<WeaponReader>::const_iterator it(weapons.begin()); it != weapons.end(); ++it) {
+		Packet p(PLAYER_HIT_PACKET);
+		
+		Weapon* weapon = m_game_logic->get_weapon(it->get_id());
+		if (weapon == NULL) {
+			continue;
+		}
+		
+		for (PlayerMap::iterator players(m_players.begin()); players != m_players.end(); ++players) {
+			Packet::PlayerHit* player_hit = weapon->generate_next_hit_packet(&p.player_hit, &players->second);
+			while (player_hit != NULL) {
+				p.type = PLAYER_HIT_PACKET;
+				m_network.broadcast_reliable_packet(&p);
+				player_hit = weapon->generate_next_hit_packet(&p.player_hit, &players->second);
+			}
+		}
 	}
 }
 

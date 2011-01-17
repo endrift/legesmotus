@@ -132,7 +132,8 @@ void Client::remove_player(uint32_t id) {
 }
 
 void Client::remove_player(uint32_t id, const string& reason) {
-	m_logic->remove_player(id);
+	Player* deleted_player = m_logic->remove_player(id);
+	delete deleted_player;
 }
 
 Player* Client::get_player(uint32_t id) {

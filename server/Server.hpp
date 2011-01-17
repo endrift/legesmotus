@@ -47,6 +47,7 @@ namespace LM {
 	class PathManager;
 	class IPAddress;
 	class ServerConfig;
+	class GameLogic;
 	
 	class Server {
 	public:
@@ -90,7 +91,8 @@ namespace LM {
 		ServerPlayer::Queue	m_timeout_queue;	// A list of players in the order in which they will timeout
 		int			m_team_count[2];	// [0] = # of players on team A  [1] == # of players on team B
 		int			m_team_score[2];	// [0] = team A's score  [1] = team B's score
-	
+		
+		GameLogic*		m_game_logic;
 	
 		//
 		// Meta server stuff
@@ -115,6 +117,9 @@ namespace LM {
 		//  acting_player_id = the player who caused this change in gate status
 		void			report_gate_status(char team, int change_in_players, uint32_t acting_player_id);
 	
+	
+		// Player logic stuff:
+		void			check_player_hits();
 	
 		//
 		// Network Helpers

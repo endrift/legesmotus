@@ -146,7 +146,7 @@ namespace LM {
 		virtual void set_attach_joint(b2Joint* joint);
 
 		void generate_player_update(Packet::PlayerUpdate* p);
-		void read_player_update(const Packet::PlayerUpdate& p);
+		virtual void read_player_update(const Packet::PlayerUpdate& p);
 	
 		// Initialize the Box2D physics for this player
 		virtual void initialize_physics(b2World* world);
@@ -188,7 +188,7 @@ namespace LM {
 
 		// Read and write PLAYER_UPDATE packets
 		void	write_update_packet (PacketWriter& packet) const;
-		void	read_update_packet (PacketReader& packet);
+		virtual void	read_update_packet (PacketReader& packet);
 	};
 }
 

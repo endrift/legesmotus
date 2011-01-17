@@ -84,6 +84,11 @@ AckManager::PacketHandle AckManager::add_broadcast_packet(const std::string& pac
 	return --m_packets.end();
 }
 
+AckManager::PacketHandle AckManager::add_broadcast_packet(const Packet& packet) {
+	m_packets.push_back(SentPacket(packet.raw.get_data()));
+	return --m_packets.end();
+}
+
 void AckManager::add_broadcast_recipient(AckManager::PacketHandle packet, const IPAddress& peer_addr, const PacketHeader& header) {
 	packet->add_recipient(peer_addr, header);
 	m_packets_by_id.insert(make_pair(make_pair(peer_addr, header.sequence_no), packet));

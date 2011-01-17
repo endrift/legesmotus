@@ -60,7 +60,7 @@ namespace LM {
 		~GameLogic();
 
 		void add_player(Player* player);
-		void remove_player(uint32_t id);
+		Player* remove_player(uint32_t id);
 		
 		void add_weapon(size_t index, Weapon* weapon);
 		void clear_weapons();
@@ -69,6 +69,7 @@ namespace LM {
 		void update_map();
 		Map* get_map();
 		const Map* get_map() const;
+		Map* unregister_map();
 		
 		// Run the next step of the game logic.
 		void step();

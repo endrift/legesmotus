@@ -66,6 +66,12 @@ Map* GameLogic::get_map() {
 	return m_map;
 }
 
+Map* GameLogic::unregister_map() {
+	Map* old_map = m_map;
+	m_map = NULL;
+	return old_map;
+}
+
 const Map* GameLogic::get_map() const {
 	return m_map;
 }
@@ -81,10 +87,10 @@ void GameLogic::add_player(Player* player) {
 	m_players[player->get_id()] = player;
 }
 
-void GameLogic::remove_player(uint32_t id) {
+Player* GameLogic::remove_player(uint32_t id) {
 	Player* player = m_players[id];
 	m_players.erase(id);
-	delete player;
+	return player;
 }
 
 void GameLogic::add_weapon(size_t index, Weapon* weapon) {

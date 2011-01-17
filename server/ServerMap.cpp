@@ -98,5 +98,7 @@ void	ServerMap::add_object(MapReader& object_data) {
 			m_spawnpoints[team - 'A'].add(Spawnpoint(point, initial_velocity, is_grabbing_obstacle));
 		}
 	}
+	
+	Map::add_object(object_data);
 }
 

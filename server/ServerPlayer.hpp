@@ -83,6 +83,8 @@ namespace LM {
 	
 		// Initialize the player
 		ServerPlayer&	init(uint32_t player_id, const IPAddress& address, int client_version, const char* name, char team, Queue& timeout_queue);
+		
+		virtual void	read_update_packet (PacketReader& packet);
 	
 	};
 }
