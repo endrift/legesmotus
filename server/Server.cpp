@@ -374,11 +374,18 @@ void	Server::command_server(uint32_t player_id, const char* command) {
 void	Server::player_hit(const IPAddress& address, PacketReader& inbound_packet)
 {
 	uint32_t shooter_id;
-	string weapon_name;
+	int weapon_id;
 	uint32_t shot_player_id;
 	bool has_effect;
 
-	inbound_packet >> shooter_id >> weapon_name >> shot_player_id >> has_effect;
+	inbound_packet >> shooter_id >> weapon_id >> shot_player_id >> has_effect;
+		
+	Packet::PlayerHit hitdata = Packet::PlayerHit();
+	hitdata.shooter_id = shooter_id;
+	hitdata.weapon_id = weapon_id;
+	hitdata.shot_player_id = shot_player_id;
+	hitdata.has_effect = has_effect;
+	hitdata.extradata = inbound_packet.get_rest();
 
 	if (!is_authorized(address, shooter_id)) {
 		return;
@@ -393,10 +400,24 @@ void	Server::player_hit(const IPAddress& address, PacketReader& inbound_packet)
 
 	// Tell the current game mode that this player was shot
 	has_effect = m_game_mode->player_shot(*shooter, *shot_player);
+	
+	if (shot_player == NULL) {
+		WARN("Shot hit player that doesn't exist: " << shot_player_id);
+		return;
+	}
+	
+	bool already_frozen = shot_player->is_frozen();
+	
+	m_game_logic->get_weapon(weapon_id)->hit(shot_player, &hitdata);
+	
+	// Send a player_died packet if necessary.
+	if (shot_player->is_frozen() && !already_frozen) {
+		//generate_player_died(shot_player_id, shooter_id, true);
+	}
 
 	// Inform the victim that he has been hit
 	PacketWriter		outbound_packet(PLAYER_HIT_PACKET);
-	outbound_packet << shooter_id << weapon_name << shot_player_id << has_effect << inbound_packet;
+	outbound_packet << shooter_id << weapon_id << shot_player_id << has_effect << hitdata.extradata;
 	m_network.send_reliable_packet(shot_player->get_address(), outbound_packet);
 }
 
@@ -428,12 +449,21 @@ void	Server::weapon_discharged(const IPAddress& address, PacketReader& inbound_p
 {
 	// Just broadcast this packet to all other players
 	uint32_t		shooter_id;
-	inbound_packet >> shooter_id;
+	int			weapon_id;
+	string			extradata;
+	inbound_packet >> shooter_id >> weapon_id >> extradata;
 
 	if (is_authorized(address, shooter_id)) {
 		// Re-broadcast the packet to all _other_ players
 		PacketWriter	outbound_packet(WEAPON_DISCHARGED_PACKET);
-		outbound_packet << shooter_id << inbound_packet;
+		outbound_packet << shooter_id << weapon_id << extradata;
+		
+		// Tell the game logic that there was a weapon fired.
+		Weapon* weapon = m_game_logic->get_weapon(weapon_id);
+		if (weapon != NULL) {
+			weapon->was_fired(m_game_logic->get_world(), *m_game_logic->get_player(shooter_id), extradata);
+		}
+		
 		broadcast_packet_except(outbound_packet, shooter_id);
 	}
 }
@@ -768,7 +798,7 @@ void	Server::run()
 			if (m_game_logic != NULL) {
 				for (PlayerMap::iterator it(m_players.begin()); it != m_players.end(); ++it) {
 					m_game_logic->attempt_jump(it->second.get_id(), rand() % 360);
-					m_game_logic->attempt_fire(it->second.get_id(), 1, rand() % 360);
+					//m_game_logic->attempt_fire(it->second.get_id(), 1, rand() % 360);
 				}
 				m_game_logic->steps(diff);
 				

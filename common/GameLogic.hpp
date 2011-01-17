@@ -87,7 +87,7 @@ namespace LM {
 		virtual void attempt_jump(uint32_t player_id, float angle);
 		
 		// Attempt to fire a weapon
-		virtual bool attempt_fire(uint32_t player_id, uint32_t weapon_id, float angle);
+		virtual bool attempt_fire(uint32_t player_id, uint32_t weapon_id, float angle, Packet::WeaponDischarged* packet);
 		
 		// Update the states of the gates
 		virtual void update_gate_progress(char team, float progress);

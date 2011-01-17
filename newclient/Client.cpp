@@ -169,9 +169,10 @@ void Client::update_gates() {
 }
 
 void Client::attempt_firing() {
-	bool fired_successfully = m_logic->attempt_fire(m_player_id, m_curr_weapon, m_controller->get_aim());
+	Packet weapon_discharged(WEAPON_DISCHARGED_PACKET);
+	bool fired_successfully = m_logic->attempt_fire(m_player_id, m_curr_weapon, m_controller->get_aim(), &(weapon_discharged.weapon_discharged));
 	if (fired_successfully) {
-		generate_weapon_fired(m_curr_weapon, m_player_id);
+		m_network.send_packet(&weapon_discharged);
 	}
 }
 
@@ -317,7 +318,10 @@ void Client::player_update(const Packet& p) {
 }
 
 void Client::weapon_discharged(const Packet& p) {
-	// TODO: Make this do something???
+	Weapon* weapon = m_logic->get_weapon(p.weapon_discharged.weapon_id);
+	if (weapon != NULL) {
+		weapon->was_fired(m_logic->get_world(), *m_logic->get_player(p.weapon_discharged.player_id), *(p.weapon_discharged.extradata));
+	}
 }
 
 void Client::player_hit(const Packet& p) {

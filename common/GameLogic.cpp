@@ -204,7 +204,7 @@ void GameLogic::attempt_jump(uint32_t player_id, float angle) {
 	}
 }
 
-bool GameLogic::attempt_fire(uint32_t player_id, uint32_t weapon_id, float angle) {
+bool GameLogic::attempt_fire(uint32_t player_id, uint32_t weapon_id, float angle, Packet::WeaponDischarged* packet) {
 	Weapon* weapon = get_weapon(weapon_id);
 	Player* player = get_player(player_id);
 	
@@ -216,7 +216,7 @@ bool GameLogic::attempt_fire(uint32_t player_id, uint32_t weapon_id, float angle
 		return false;
 	}
 	
-	weapon->fire(m_physics, *player, player->get_position(), angle);
+	weapon->fire(m_physics, *player, player->get_position(), angle, packet);
 	return true;
 }
 

@@ -109,7 +109,7 @@ bool StandardGun::parse_param(const char* param_string) {
 	return true;
 }
 
-void StandardGun::fire(b2World* physics, Player& player, Point start, float direction) {
+Packet::WeaponDischarged* StandardGun::fire(b2World* physics, Player& player, Point start, float direction, Packet::WeaponDischarged* packet) {
 	m_last_fired_time = get_ticks();
 	m_last_fired_dir = direction;
 	m_hit_data.clear();
@@ -120,7 +120,7 @@ void StandardGun::fire(b2World* physics, Player& player, Point start, float dire
 	
 		if (m_current_ammo == 0) {
 			// Out of ammo
-			return;
+			return NULL;
 		}
 		--m_current_ammo;
 	}
@@ -148,6 +148,29 @@ void StandardGun::fire(b2World* physics, Player& player, Point start, float dire
 		}
 		
 		currdirection += m_angle/(m_nbr_projectiles - 1.0);
+	}
+	
+	packet->player_id = player.get_id();
+	packet->weapon_id = get_id();
+	std::stringstream out;
+	out << start.x << " " << start.y << " " << direction;
+	packet->extradata = out.str();
+	return packet;
+}
+
+void StandardGun::was_fired(b2World* physics, Player& player, std::string extradata) {
+	stringstream s(extradata);
+	float start_x;
+	float start_y;
+	float direction;
+	
+	s >> start_x >> start_y >> direction;
+	
+	// Apply recoil and energy cost if necessary.
+	player.apply_force(b2Vec2(m_recoil * 100 * cos(M_PI + direction), m_recoil * 100 * sin(M_PI + direction)));
+	player.change_energy(-1 * m_energy_cost);
+	if (player.get_energy() <= 0) {
+		player.set_is_frozen(true, m_freeze_time);
 	}
 }
 

@@ -62,7 +62,9 @@ namespace LM {
 		// TODO: Do we want these to be in the common Weapon, or just the client one?
 		// When the current player (player) fires this weapon:
 		//  direction is in radians
-		virtual void		fire(b2World* physics, Player& player, Point start, float direction) = 0;
+		virtual Packet::WeaponDischarged* fire(b2World* physics, Player& player, Point start, float direction, Packet::WeaponDischarged* packet) = 0;
+		virtual void		was_fired(b2World* physics, Player& player, std::string extradata) = 0;
+		
 		// When another player (player) fires this weapon:
 		//virtual void		discharged(Player& player, StringTokenizer& data) = 0;
 		// When the current player (player) is hit by this weapon:
