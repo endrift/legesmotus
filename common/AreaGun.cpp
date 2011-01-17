@@ -106,13 +106,6 @@ Packet::WeaponDischarged* AreaGun::fire(b2World* physics, Player& player, Point 
 		--m_current_ammo;
 	}
 	
-	// Apply recoil and energy cost if necessary.
-	player.apply_force(b2Vec2(m_recoil * 100 * cos(M_PI + direction), m_recoil * 100 * sin(M_PI + direction)));
-	player.change_energy(-1 * m_energy_cost);
-	if (player.get_energy() <= 0) {
-		player.set_is_frozen(true, m_freeze_time);
-	}
-		
 	float currdirection = direction;
 	
 	b2BodyDef body_def;
@@ -153,6 +146,9 @@ Packet::WeaponDischarged* AreaGun::fire(b2World* physics, Player& player, Point 
 	std::stringstream out;
 	out << start.x << " " << start.y << " " << direction;
 	packet->extradata = out.str();
+	
+	was_fired(physics, player, out.str());
+	
 	return packet;
 }
 
