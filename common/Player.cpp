@@ -208,6 +208,8 @@ void Player::update_physics() {
 	if (m_physics_body != NULL) {
 		m_x = to_game(m_physics_body->GetPosition().x);
 		m_y = to_game(m_physics_body->GetPosition().y);
+		m_x_vel = to_game(m_physics_body->GetLinearVelocity().x);
+		m_y_vel = to_game(m_physics_body->GetLinearVelocity().y);
 		m_rotation = to_degrees(m_physics_body->GetAngle());
 
 		update_location();
@@ -394,7 +396,6 @@ void Player::read_player_update(const Packet::PlayerUpdate& p) {
 	set_energy(p.energy);
 	set_gun_rotation_degrees(p.gun_rotation);
 	set_current_weapon_id(p.current_weapon_id);
-	//set_is_invisible(p.flags->find_first_of('I') != string::npos);
 	set_is_frozen(p.flags->find_first_of('F') != string::npos, FOREVER);
 	set_is_grabbing_obstacle(p.flags->find_first_of('G') != string::npos);
 	set_is_invisible(p.flags->find_first_of('I') != string::npos);
