@@ -410,6 +410,7 @@ void	Server::player_hit(const IPAddress& address, PacketReader& inbound_packet)
 	
 	m_game_logic->get_weapon(weapon_id)->hit(shot_player, &hitdata);
 	
+	// TODO: Fix/add player-died packet sending!
 	// Send a player_died packet if necessary.
 	if (shot_player->is_frozen() && !already_frozen) {
 		//generate_player_died(shot_player_id, shooter_id, true);
@@ -620,6 +621,22 @@ void	Server::info(const IPAddress& address, PacketReader& request_packet) {
 	m_network.send_packet(address, response_packet);
 }
 
+void	Server::player_jumped(const IPAddress& address, PacketReader& packet) {
+	uint32_t	player_id;
+	float		direction;
+	packet >> player_id >> direction;
+	
+	if (is_authorized(address, player_id)) {
+		// Re-broadcast the packet to all _other_ players
+		PacketWriter	outbound_packet(PLAYER_JUMPED_PACKET);
+		outbound_packet << player_id << direction;
+		
+		m_game_logic->attempt_jump(player_id, direction);
+		
+		broadcast_packet_except(outbound_packet, player_id);
+	}
+}
+
 // Reset the scores for all players, broadcasting score updates for each one
 void	Server::reset_player_scores() {
 	PlayerMap::iterator	it(m_players.begin());
@@ -796,16 +813,9 @@ void	Server::run()
 		if (diff > 10) {
 			last_logic_update = get_ticks();
 			if (m_game_logic != NULL) {
-				for (PlayerMap::iterator it(m_players.begin()); it != m_players.end(); ++it) {
-					m_game_logic->attempt_jump(it->second.get_id(), rand() % 360);
-					//m_game_logic->attempt_fire(it->second.get_id(), 1, rand() % 360);
-				}
 				m_game_logic->steps(diff);
 				
-				// TODO: Check for map hazard kills
-	
-				// Check the weapon for hitting any players:
-				check_player_hits();
+				// TODO: How can we send proper player_died packets?
 			}
 		}
 		
@@ -877,11 +887,9 @@ void	Server::broadcast_reliable_packet_except(const PacketWriter& packet, uint32
 
 void	Server::new_game() {
 	m_game_start_time = get_ticks();
-	if (m_game_logic != NULL) {
-		m_game_logic->unregister_map();
-		delete m_game_logic;
-		m_game_logic = NULL;
-	}
+	
+	delete_game_logic();
+	
 	m_players_have_spawned = false;
 	m_gates[0].reset();
 	m_gates[1].reset();
@@ -915,10 +923,7 @@ void	Server::start_game() {
 	m_current_map.reset();
 	
 	// Initialize the Game Logic
-	if (m_game_logic != NULL) {
-		m_game_logic->unregister_map();
-		delete m_game_logic;
-	}
+	delete_game_logic();
 	m_game_logic = new GameLogic(&m_current_map);
 	
 	const std::list<WeaponReader>&	const_weapons(m_weapon_set.get_weapons());
@@ -1044,26 +1049,16 @@ void	Server::report_gate_status(char team, int change_in_players, uint32_t actin
 	}
 }
 
-void Server::check_player_hits() {
-	const std::list<WeaponReader>&	weapons(m_weapon_set.get_weapons());
-	size_t				index = 0;
-
-	for (std::list<WeaponReader>::const_iterator it(weapons.begin()); it != weapons.end(); ++it) {
-		Packet p(PLAYER_HIT_PACKET);
-		
-		Weapon* weapon = m_game_logic->get_weapon(it->get_id());
-		if (weapon == NULL) {
-			continue;
-		}
-		
+void Server::delete_game_logic() {
+	if (m_game_logic != NULL) {
+		m_game_logic->unregister_map();
 		for (PlayerMap::iterator players(m_players.begin()); players != m_players.end(); ++players) {
-			Packet::PlayerHit* player_hit = weapon->generate_next_hit_packet(&p.player_hit, &players->second);
-			while (player_hit != NULL) {
-				p.type = PLAYER_HIT_PACKET;
-				m_network.broadcast_reliable_packet(&p);
-				player_hit = weapon->generate_next_hit_packet(&p.player_hit, &players->second);
-			}
+			players->second.set_attach_joint(NULL);
+			players->second.set_is_invisible(true);
+			m_game_logic->remove_player(players->second.get_id());
 		}
+		delete m_game_logic;
+		m_game_logic = NULL;
 	}
 }
 

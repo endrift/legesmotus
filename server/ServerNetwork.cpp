@@ -229,6 +229,10 @@ void	ServerNetwork::process_packet(const IPAddress& address, PacketReader& reade
 	case PLAYER_DIED_PACKET:
 		m_server.player_died(address, reader);
 		break;
+		
+	case PLAYER_JUMPED_PACKET:
+		m_server.player_jumped(address, reader);
+		break;
 	}
 }
 

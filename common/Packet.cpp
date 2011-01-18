@@ -406,6 +406,16 @@ static void unmarshal_SPAWN(PacketReader& r, Packet* p) {
 	r >> p->spawn.freeze_time;
 }
 
+static void marshal_PLAYER_JUMPED(PacketWriter& w, Packet* p) {
+	w << p->player_jumped.player_id;
+	w << p->player_jumped.direction;
+}
+
+static void unmarshal_PLAYER_JUMPED(PacketReader& r, Packet* p) {
+	r >> p->player_jumped.player_id;
+	r >> p->player_jumped.direction;
+}
+
 Packet::Packet(PacketEnum type) {
 	clear();
 	this->type = type;
@@ -617,6 +627,11 @@ Packet::Packet(const Packet& other) {
 		spawn.freeze_time = other.spawn.freeze_time;
 		break;
 
+	case PLAYER_JUMPED_PACKET:
+		player_jumped.player_id = other.player_jumped.player_id;
+		player_jumped.direction = other.player_jumped.direction;
+		break;
+
 	}
 }
 
@@ -745,6 +760,9 @@ Packet::~Packet() {
 	case SPAWN_PACKET:
 		delete spawn.position.item;
 		delete spawn.velocity.item;
+		break;
+
+	case PLAYER_JUMPED_PACKET:
 		break;
 
 	}
@@ -879,6 +897,10 @@ void Packet::marshal() {
 
 	case SPAWN_PACKET:
 		marshal_SPAWN(w, this);
+		break;
+
+	case PLAYER_JUMPED_PACKET:
+		marshal_PLAYER_JUMPED(w, this);
 		break;
 
 	default:
@@ -1018,6 +1040,10 @@ void Packet::unmarshal() {
 		unmarshal_SPAWN(r, this);
 		break;
 
+	case PLAYER_JUMPED_PACKET:
+		unmarshal_PLAYER_JUMPED(r, this);
+		break;
+
 	default:
 		break;
 	}
@@ -1146,6 +1172,10 @@ void Packet::dispatch(PacketReceiver* r) {
 
 	case SPAWN_PACKET:
 		r->spawn(*this);
+		break;
+
+	case PLAYER_JUMPED_PACKET:
+		r->player_jumped(*this);
 		break;
 
 	default:

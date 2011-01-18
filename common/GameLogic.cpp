@@ -189,11 +189,11 @@ b2World* GameLogic::get_world() {
 	return m_physics;
 }
 
-void GameLogic::attempt_jump(uint32_t player_id, float angle) {
+bool GameLogic::attempt_jump(uint32_t player_id, float angle) {
 	Player* player = get_player(player_id);
 	
 	if (player == NULL) {
-		return;
+		return false;
 	}
 
 	if (player->is_grabbing_obstacle() && !player->is_frozen() && !player->is_invisible()) {
@@ -201,7 +201,9 @@ void GameLogic::attempt_jump(uint32_t player_id, float angle) {
 	
 		player->apply_force(b2Vec2(JUMP_STRENGTH * cos(angle), JUMP_STRENGTH  * sin(angle)));
 		player->apply_torque(-1*(JUMP_ROTATION/2.0f) + (float)rand()/(float)RAND_MAX * JUMP_ROTATION);
+		return true;
 	}
+	return false;
 }
 
 bool GameLogic::attempt_fire(uint32_t player_id, uint32_t weapon_id, float angle, Packet::WeaponDischarged* packet) {

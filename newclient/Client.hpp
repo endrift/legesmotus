@@ -68,6 +68,7 @@ namespace LM {
 		void generate_weapon_fired(uint32_t weapon_id, uint32_t player_id);
 		void generate_gate_update(uint32_t player_id, char team, bool holding);
 		void generate_player_died(uint32_t died_id, uint32_t killer_id, bool killer_is_player);
+		void generate_player_jumped(uint32_t player_id, float angle);
 
 		GameLogic* get_game();
 		Weapon* get_curr_weapon();

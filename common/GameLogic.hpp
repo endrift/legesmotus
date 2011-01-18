@@ -84,7 +84,7 @@ namespace LM {
 		b2World* get_world();
 		
 		// Attempt to jump off an obstacle
-		virtual void attempt_jump(uint32_t player_id, float angle);
+		virtual bool attempt_jump(uint32_t player_id, float angle);
 		
 		// Attempt to fire a weapon
 		virtual bool attempt_fire(uint32_t player_id, uint32_t weapon_id, float angle, Packet::WeaponDischarged* packet);

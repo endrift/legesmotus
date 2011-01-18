@@ -70,7 +70,9 @@ uint64_t Client::step(uint64_t diff) {
 	
 	// Handle jumping
 	if (changes & Controller::JUMPING) {
-		m_logic->attempt_jump(m_player_id, m_controller->get_aim());
+		if (m_logic->attempt_jump(m_player_id, m_controller->get_aim())) {
+			generate_player_jumped(m_player_id, m_controller->get_aim());
+		}
 	}
 	
 	// Handle firing
@@ -225,6 +227,13 @@ void Client::generate_player_died(uint32_t killed_player_id, uint32_t killer_id,
 	player_died.player_died.killer_type = (killer_is_player ? 0 : 1);
 	
 	m_network.send_reliable_packet(&player_died);
+}
+
+void Client::generate_player_jumped(uint32_t player_id, float angle) {
+	Packet player_jumped(PLAYER_JUMPED_PACKET);
+	player_jumped.player_jumped.player_id = player_id;
+	player_jumped.player_jumped.direction = angle;
+	m_network.send_reliable_packet(&player_jumped);
 }
 
 GameLogic* Client::get_game() {

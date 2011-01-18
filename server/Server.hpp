@@ -118,8 +118,8 @@ namespace LM {
 		void			report_gate_status(char team, int change_in_players, uint32_t acting_player_id);
 	
 	
-		// Player logic stuff:
-		void			check_player_hits();
+		// Game logic stuff:
+		void			delete_game_logic();
 	
 		//
 		// Network Helpers
@@ -277,6 +277,7 @@ namespace LM {
 		void		map_info_packet(const IPAddress& address, PacketReader& packet);
 		void		hole_punch_packet(const IPAddress& address, PacketReader& packet);
 		void		player_died(const IPAddress& address, PacketReader& packet);
+		void		player_jumped(const IPAddress& address, PacketReader& packet);
 
 		void		excessive_packet_drop(const IPAddress& address);
 	
