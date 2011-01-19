@@ -124,9 +124,14 @@ void Obstacle::interact(PhysicsObject* other, b2Contact* contact) {
 		// Freeze 'em if they're dead.
 		if (player->get_energy() == 0) {
 			player->set_is_frozen(true, m_freeze_time);
-			player->apply_force(b2Vec2(m_repel_velocity * repel_normal.x, m_repel_velocity * repel_normal.y));
+			player->set_is_grabbing_obstacle(false);
+			player->apply_delayed_force(b2Vec2(m_repel_velocity * repel_normal.x, m_repel_velocity * repel_normal.y));
 			m_last_damage_time = 0;
 		}
+	} else if ((m_team == 0 || player->get_team() != m_team) && player->is_frozen() && m_damage != 0 &&
+			m_last_damage_time < get_ticks() - m_damage_rate) {
+		//player->set_is_grabbing_obstacle(false);
+		//player->apply_force(b2Vec2(m_repel_velocity * repel_normal.x, m_repel_velocity * repel_normal.y));
 	}
 }
 

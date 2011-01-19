@@ -61,6 +61,8 @@ Player::Player(b2World* physics_world) {
 	m_physics = NULL;
 	m_current_weapon_id = 0;
 	
+	m_delayed_force.clear();
+	
 	if (physics_world != NULL) {
 		m_physics = physics_world;
 		initialize_physics(physics_world);
@@ -193,11 +195,19 @@ void Player::set_position(float x, float y) {
 }
 
 void Player::apply_force(b2Vec2 force_vec) {
-	m_physics_body->ApplyForce(force_vec, m_physics_body->GetWorldCenter());
+	apply_force(force_vec, m_physics_body->GetWorldCenter());
 }
 
 void Player::apply_force(b2Vec2 force_vec, b2Vec2 world_point) {
 	m_physics_body->ApplyForce(force_vec, world_point);
+}
+
+void Player::apply_delayed_force(b2Vec2 force_vec) {
+	apply_delayed_force(force_vec, m_physics_body->GetWorldCenter());
+}
+
+void Player::apply_delayed_force(b2Vec2 force_vec, b2Vec2 world_point) {
+	m_delayed_force.push_back(std::make_pair(force_vec, world_point));
 }
 
 void Player::apply_torque(float torque) {
@@ -220,6 +230,11 @@ void Player::update_physics() {
 		} else if (m_physics_body->GetAngularVelocity() < -1.0 * MAX_ANGULAR_VELOCITY) {
 			m_physics_body->SetAngularVelocity(-1.0 * MAX_ANGULAR_VELOCITY);
 		}
+		
+		for (int i = 0; i < m_delayed_force.size(); i++) {
+			apply_force(m_delayed_force[i].first, m_delayed_force[i].second);
+		}
+		m_delayed_force.clear();
 	}
 	
 	if (m_is_frozen) {

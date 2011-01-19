@@ -32,6 +32,7 @@
 #include <string>
 #include <string.h>
 #include <stdint.h>
+#include <vector>
 
 /*
  * A Player represents a player in the game.
@@ -74,6 +75,7 @@ namespace LM {
 		b2Joint*	m_attach_joint; // Box2D joint that attaches this player to a surface
 		b2World*	m_physics; // Box2D physics world pointer
 		bool		m_awaiting_detach; // Should we delete the attach joint as soon as possible?
+		std::vector<std::pair<b2Vec2, b2Vec2> > m_delayed_force; // Force to apply after the next update
 	
 		virtual void update_location() { }
 
@@ -155,6 +157,8 @@ namespace LM {
 		// UNITS SHOULD BE IN PHYSICS TERMS
 		virtual void apply_force(b2Vec2 force_vec);
 		virtual void apply_force(b2Vec2 force_vec, b2Vec2 world_point);
+		virtual void apply_delayed_force(b2Vec2 force_vec);
+		virtual void apply_delayed_force(b2Vec2 force_vec, b2Vec2 world_point);
 		
 		// Apply a torque to the player
 		// UNITS SHOULD BE IN PHYSICS TERMS
