@@ -313,14 +313,21 @@ void Client::connect(const IPAddress& server_address) {
 }
 
 void Client::player_update(const Packet& p) {
-	Player* player = get_player(p.player_update.player_id);
+	Packet::PlayerUpdate update = Packet::PlayerUpdate(p.player_update);
+	Player* player = get_player(update.player_id);
 	if (player == NULL) {
 		return;
 	}
-	player->read_player_update(p.player_update);
+	
+	// Don't let the server tell us which weapon our own player is using.
+	if (update.player_id == m_player_id) {
+		update.current_weapon_id = player->get_current_weapon_id();
+	}
+	
+	player->read_player_update(update);
 
 	// XXX if Weapon::select ever has side effects, we need to have a different way of updating the other players' weapons
-	Weapon* weapon = get_game()->get_weapon(p.player_update.current_weapon_id);
+	Weapon* weapon = get_game()->get_weapon(update.current_weapon_id);
 	if (weapon != NULL) {
 		weapon->select(player);
 	}
@@ -445,6 +452,11 @@ void Client::team_change(const Packet& p) {
 		return;
 	}
 	team_change(player, p.team_change.name);
+}
+
+void Client::player_died(const Packet& p) {
+	//TODO: Do we need to do anything else here?
+	DEBUG("Player died: " << p.player_died.killed_player_id);
 }
 
 void Client::weapon_info(const Packet& p) {

@@ -119,7 +119,7 @@ namespace LM {
 		//virtual void map_info(const Packet& p);
 		//virtual void map_object(const Packet& p);
 		//virtual void game_param(const Packet& p);
-		//virtual void player_died(const Packet& p);
+		virtual void player_died(const Packet& p);
 		virtual void weapon_info(const Packet& p);
 		virtual void round_start(const Packet& p);
 		virtual void spawn(const Packet& p);
