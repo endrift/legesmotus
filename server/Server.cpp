@@ -406,15 +406,7 @@ void	Server::player_hit(const IPAddress& address, PacketReader& inbound_packet)
 		return;
 	}
 	
-	bool already_frozen = shot_player->is_frozen();
-	
 	m_game_logic->get_weapon(weapon_id)->hit(shot_player, &hitdata);
-	
-	// TODO: Fix/add player-died packet sending!
-	// Send a player_died packet if necessary.
-	if (shot_player->is_frozen() && !already_frozen) {
-		//generate_player_died(shot_player_id, shooter_id, true);
-	}
 
 	// Inform the victim that he has been hit
 	PacketWriter		outbound_packet(PLAYER_HIT_PACKET);
@@ -813,7 +805,10 @@ void	Server::run()
 		if (diff > 10) {
 			last_logic_update = get_ticks();
 			if (m_game_logic != NULL) {
-				m_game_logic->steps(diff);
+				uint64_t extratime = m_game_logic->steps(diff);
+				
+				// Keep track of the extra time between updates.
+				last_logic_update -= extratime;
 				
 				// TODO: How can we send proper player_died packets?
 			}
