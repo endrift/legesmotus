@@ -232,6 +232,7 @@ void	Map::clear() {
 	m_revision = 0;
 	m_width = m_height = 0;
 	m_options.clear();
+	m_gates.clear();
 
 	while (!m_objects.empty()) {
 		MapObject* victim = m_objects.back();

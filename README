@@ -73,7 +73,6 @@ The following libraries must be installed in order to build the common code for 
 
 The following libraries must be installed in order to build and run the Leges Motus client:
 
- boost::signals2
  FreeType 2
  SDL 1.2
  SDL_image 1.2
@@ -251,7 +250,7 @@ Creative Commons Sampling 1.0 License Sounds:
 
 COPYRIGHT AND WARRANTY
 
-Copyright 2009-2010 Andrew Ayer, Nathan Partlan, Jeffrey Pfau
+Copyright 2009-2011 Andrew Ayer, Nathan Partlan, Jeffrey Pfau
 
 Leges Motus is free and open source software.  You may redistribute it and/or
 modify it under the terms of version 2, or (at your option) version 3, of the

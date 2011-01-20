@@ -120,22 +120,6 @@ string GuiClient::preload_font(const char* filename, int size, const ConvolveKer
 	return name;
 }
 
-void GuiClient::cleanup() {
-	set_map(NULL);
-
-	for (int i = 0; i < FONT_MAX; ++i) {
-		set_font(NULL, (FontUse)i);
-	}
-
-	for (map<int, Label*>::iterator iter = m_badges.begin(); iter != m_badges.end(); ++iter) {
-		delete iter->second;
-	}
-	m_badges.clear();
-
-	delete m_hud;
-	m_hud = NULL;
-}
-
 void GuiClient::set_font(Font* font, FontUse fontuse) {
 	Font* oldfont = m_fonts[fontuse];
 	if (font != NULL) {
@@ -185,6 +169,9 @@ void GuiClient::remove_badge(Player* player) {
 void GuiClient::realign_badges() {
 	for (map<int, Label*>::iterator iter = m_badges.begin(); iter != m_badges.end(); ++iter) {
 		Player* player = get_game()->get_player(iter->first);
+		if (player == NULL) {
+			continue;
+		}
 		Point new_point = m_view->world_to_view(Point(player->get_x(), player->get_y()));
 		iter->second->set_x(new_point.x);
 		iter->second->set_y(new_point.y - 64.0f*m_view->get_scale());
@@ -269,6 +256,15 @@ void GuiClient::team_change(Player* player, char new_team) {
 	shadow->set_color(Hud::get_team_color(player->get_team(), Hud::COLOR_SHADOW));
 }
 
+void GuiClient::round_cleanup() {
+	for (map<int, Label*>::iterator iter = m_badges.begin(); iter != m_badges.end(); ++iter) {
+		delete iter->second;
+	}
+	m_badges.clear();
+
+	Client::round_cleanup();
+}
+
 void GuiClient::run() {
 	INFO("Beginning running GuiClient...");
 	set_running(true);
@@ -290,6 +286,7 @@ void GuiClient::run() {
 	set_font(load_font("DustHomeMedium.ttf", 12, m_hud->get_shadow_kernel()), FONT_BADGE_SHADOW);
 
 	IPAddress host;
+	//resolve_hostname(host, "vulpes.ath.cx", 23668);
 	resolve_hostname(host, "localhost", 16877);
 	connect(host);
 	// XXX end testing code
@@ -318,7 +315,7 @@ void GuiClient::run() {
 		last_time = current_time;
 	}
 
-	cleanup();
+	round_cleanup();
 }
 
 void GuiClient::update_gui() {
@@ -357,9 +354,22 @@ void GuiClient::system_event(const SystemEvent& event) {
 }
 
 void GuiClient::disconnect() {
-	cleanup();
+	for (int i = 0; i < FONT_MAX; ++i) {
+		set_font(NULL, (FontUse)i);
+	}
+
+	delete m_hud;
+	m_hud = NULL;
+
+	round_cleanup();
 
 	Client::disconnect();
 	
 	INFO("Disconnected.");
+}
+
+void GuiClient::round_over(const Packet& p) {
+	round_cleanup();
+	
+	Client::round_over(p);
 }

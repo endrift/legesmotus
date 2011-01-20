@@ -821,17 +821,26 @@ void	Server::run()
 				// Keep track of the extra time between updates.
 				last_logic_update -= extratime;
 				
-				// Check for newly-dead players:
+				// Check for newly-dead players or players engaging gates:
 				for (PlayerMap::iterator it(m_players.begin()); it != m_players.end(); ++it) {
-					if (frozen_players.find(it->second.get_id()) != frozen_players.end()) {
-						if (!it->second.is_frozen()) {
-							frozen_players.erase(it->second.get_id());
+					ServerPlayer& player = it->second;
+					// Check for gates
+					char team = get_other_team(player. get_team());
+					bool is_engaged = m_game_logic->is_engaging_gate(player.get_id(), team);
+					if (get_gate(team).set_engagement(is_engaged, player.get_id())) {
+						report_gate_status(team, is_engaged ? 1 : -1, player.get_id());
+					}
+				
+					// Check for frozen
+					if (frozen_players.find(player.get_id()) != frozen_players.end()) {
+						if (!player.is_frozen()) {
+							frozen_players.erase(player.get_id());
 						}
 					} else {
-						if (it->second.is_frozen()) {
-							frozen_players.insert(it->second.get_id());
-							if (it->second.get_freeze_source() != NULL) {
-								broadcast_player_died(&it->second);
+						if (player.is_frozen()) {
+							frozen_players.insert(player.get_id());
+							if (player.get_freeze_source() != NULL) {
+								broadcast_player_died(&player);
 							}
 						}
 					}
@@ -933,6 +942,10 @@ void	Server::game_over(char winning_team) {
 	m_gates[1].reset();
 	m_game_start_time = 0;
 	m_players_have_spawned = false;
+	
+	string mapname = m_current_map.get_name();
+	m_current_map.clear();
+	load_map(mapname.c_str());
 }
 
 void	Server::start_game() {
@@ -940,6 +953,7 @@ void	Server::start_game() {
 	reset_player_scores();
 
 	m_players_have_spawned = true;
+	
 	m_current_map.reset();
 	
 	// Initialize the Game Logic

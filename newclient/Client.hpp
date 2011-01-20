@@ -66,7 +66,6 @@ namespace LM {
 		
 		void generate_player_update(uint32_t id, Packet* p);
 		void generate_weapon_fired(uint32_t weapon_id, uint32_t player_id);
-		void generate_gate_update(uint32_t player_id, char team, bool holding);
 		void generate_player_died(uint32_t died_id, uint32_t killer_id, bool killer_is_player);
 		void generate_player_jumped(uint32_t player_id, float angle);
 
@@ -127,6 +126,8 @@ namespace LM {
 
 		virtual void name_change(Player* player, const std::string& new_name);
 		virtual void team_change(Player* player, char new_team);
+
+		virtual void round_cleanup();
 
 		// Main loop: override for subclass behaviors, but call step inside
 		virtual void run();

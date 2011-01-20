@@ -104,7 +104,8 @@ uint64_t Client::step(uint64_t diff) {
 
 const char* Client::get_res_directory() const {
 	// TODO get from env
-	return LM_DATA_DIR;
+	const char* envdir = getenv("LM_DATA_DIR");
+	return envdir ? envdir : LM_DATA_DIR;
 }
 
 void Client::add_player(Player* player) {
@@ -149,18 +150,6 @@ void Client::update_gates() {
 	}
 	
 	char team = get_other_team(player->get_team());
-
-	if (m_logic->is_engaging_gate(m_player_id, team)) {
-		if (!m_engaging_gate) {
-			generate_gate_update(m_player_id, team, true);
-		}
-		m_engaging_gate = true;
-	} else {
-		if (m_engaging_gate) {
-			generate_gate_update(m_player_id, team, false);
-		}
-		m_engaging_gate = false;
-	}
 }
 
 void Client::attempt_firing() {
@@ -199,18 +188,6 @@ void Client::generate_weapon_fired(uint32_t weapon_id, uint32_t player_id) {
 	weapon_discharged.weapon_discharged.player_id = m_player_id;
 	weapon_discharged.weapon_discharged.extradata = "";
 	m_network.send_packet(&weapon_discharged);
-}
-
-void Client::generate_gate_update(uint32_t player_id, char team, bool holding) {
-	Packet gate_update(GATE_UPDATE_PACKET);
-	
-	gate_update.gate_update.acting_player_id = player_id;
-	gate_update.gate_update.team = team;
-	
-	// TODO: Fix this packet's construction to add the rest of the values, once the server is changed.
-	gate_update.gate_update.progress = (holding ? 1:0);
-	
-	m_network.send_reliable_packet(&gate_update);
 }
 
 void Client::generate_player_died(uint32_t killed_player_id, uint32_t killer_id, bool killer_is_player = false) {
@@ -379,8 +356,7 @@ void Client::new_round(const Packet& p) {
 void Client::round_over(const Packet& p) {
 	// TODO: We may need to do other things here, like update scores, etc.
 
-	delete m_logic;
-	m_logic = NULL;
+	round_cleanup();
 }
 
 void Client::welcome(const Packet& p) {
@@ -503,6 +479,13 @@ void Client::name_change(Player* player, const std::string& new_name) {
 
 void Client::team_change(Player* player, char new_team) {
 	player->set_team(new_team);
+}
+
+void Client::round_cleanup() {
+	set_map(NULL);
+
+	delete m_logic;
+	m_logic = NULL;
 }
 
 bool Client::running() const {
