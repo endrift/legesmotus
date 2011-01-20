@@ -120,22 +120,6 @@ string GuiClient::preload_font(const char* filename, int size, const ConvolveKer
 	return name;
 }
 
-void GuiClient::cleanup() {
-	set_map(NULL);
-
-	for (int i = 0; i < FONT_MAX; ++i) {
-		set_font(NULL, (FontUse)i);
-	}
-
-	for (map<int, Label*>::iterator iter = m_badges.begin(); iter != m_badges.end(); ++iter) {
-		delete iter->second;
-	}
-	m_badges.clear();
-
-	delete m_hud;
-	m_hud = NULL;
-}
-
 void GuiClient::set_font(Font* font, FontUse fontuse) {
 	Font* oldfont = m_fonts[fontuse];
 	if (font != NULL) {
@@ -269,6 +253,15 @@ void GuiClient::team_change(Player* player, char new_team) {
 	shadow->set_color(Hud::get_team_color(player->get_team(), Hud::COLOR_SHADOW));
 }
 
+void GuiClient::round_cleanup() {
+	for (map<int, Label*>::iterator iter = m_badges.begin(); iter != m_badges.end(); ++iter) {
+		delete iter->second;
+	}
+	m_badges.clear();
+
+	Client::round_cleanup();
+}
+
 void GuiClient::run() {
 	INFO("Beginning running GuiClient...");
 	set_running(true);
@@ -318,7 +311,7 @@ void GuiClient::run() {
 		last_time = current_time;
 	}
 
-	cleanup();
+	round_cleanup();
 }
 
 void GuiClient::update_gui() {
@@ -357,7 +350,14 @@ void GuiClient::system_event(const SystemEvent& event) {
 }
 
 void GuiClient::disconnect() {
-	cleanup();
+	for (int i = 0; i < FONT_MAX; ++i) {
+		set_font(NULL, (FontUse)i);
+	}
+
+	delete m_hud;
+	m_hud = NULL;
+
+	round_cleanup();
 
 	Client::disconnect();
 	

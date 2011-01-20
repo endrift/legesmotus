@@ -80,8 +80,6 @@ namespace LM {
 		void preload_image(const char* filename);
 		std::string preload_font(const char* filename, int size, const ConvolveKernel* kernel = NULL);
 
-		void cleanup();
-
 		void set_font(Font* font, FontUse fontuse);
 		Font* get_font(FontUse font);
 		Font* load_font(const char* filename, int size, const ConvolveKernel* kernel = NULL);
@@ -110,6 +108,7 @@ namespace LM {
 
 		virtual void name_change(Player* player, const std::string& new_name);
 		virtual void team_change(Player* player, char new_team);
+		virtual void round_cleanup();
 
 		virtual void run();
 		void update_gui();

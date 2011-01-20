@@ -127,6 +127,8 @@ namespace LM {
 		virtual void name_change(Player* player, const std::string& new_name);
 		virtual void team_change(Player* player, char new_team);
 
+		virtual void round_cleanup();
+
 		// Main loop: override for subclass behaviors, but call step inside
 		virtual void run();
 		

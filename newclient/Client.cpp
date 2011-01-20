@@ -109,7 +109,8 @@ uint64_t Client::step(uint64_t diff) {
 
 const char* Client::get_res_directory() const {
 	// TODO get from env
-	return LM_DATA_DIR;
+	const char* envdir = getenv("LM_DATA_DIR");
+	return envdir ? envdir : LM_DATA_DIR;
 }
 
 void Client::add_player(Player* player) {
@@ -366,8 +367,7 @@ void Client::new_round(const Packet& p) {
 void Client::round_over(const Packet& p) {
 	// TODO: We may need to do other things here, like update scores, etc.
 
-	delete m_logic;
-	m_logic = NULL;
+	round_cleanup();
 }
 
 void Client::welcome(const Packet& p) {
@@ -480,6 +480,13 @@ void Client::name_change(Player* player, const std::string& new_name) {
 
 void Client::team_change(Player* player, char new_team) {
 	player->set_team(new_team);
+}
+
+void Client::round_cleanup() {
+	set_map(NULL);
+
+	delete m_logic;
+	m_logic = NULL;
 }
 
 bool Client::running() const {
