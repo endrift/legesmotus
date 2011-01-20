@@ -197,6 +197,7 @@ PLAYER_DIED = 26 {
 	killer_type : int ; The type of object that killed the player
 	                  ; * 0 - Other player
 	                  ; * 1 - Map hazard
+	                  ; (As per PhysicsObject's get_type())
 }
 
 WEAPON_INFO = 28 {

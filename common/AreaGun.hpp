@@ -83,7 +83,7 @@ namespace LM {
 		
 		virtual Packet::WeaponDischarged* fire(b2World* physics, Player& player, Point start, float direction, Packet::WeaponDischarged* packet);
 		virtual void		was_fired(b2World* physics, Player& player, std::string extradata);
-		virtual void		hit(Player* hit_player, const Packet::PlayerHit* p);
+		virtual void		hit(Player* hit_player, Player* firing_player, const Packet::PlayerHit* p);
 		virtual void		hit_object(PhysicsObject* object, Shot* shot, b2Contact* contact);
 		
 		virtual void		reset();

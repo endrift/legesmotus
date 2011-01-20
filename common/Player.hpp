@@ -76,6 +76,7 @@ namespace LM {
 		b2World*	m_physics; // Box2D physics world pointer
 		bool		m_awaiting_detach; // Should we delete the attach joint as soon as possible?
 		std::vector<std::pair<b2Vec2, b2Vec2> > m_delayed_force; // Force to apply after the next update
+		PhysicsObject*	m_freeze_source; // Holds the most recent object that froze this player.
 	
 		virtual void update_location() { }
 
@@ -115,6 +116,7 @@ namespace LM {
 		long get_current_weapon_id() const { return m_current_weapon_id; }
 		b2Joint* get_attach_joint() const { return m_attach_joint; }
 		long get_freeze_time() const { return m_freeze_time; }
+		PhysicsObject* get_freeze_source() const { return m_freeze_source; }
 	
 		// Return true if this player has the same canonical name as the specified string.
 		// Name comparisons are case-insensitive.
@@ -141,7 +143,7 @@ namespace LM {
 		virtual void set_gun_rotation_degrees(float gun_rotation);
 		void set_gun_rotation_radians(float gun_rotation);
 		virtual void set_is_invisible(bool is_invisible);
-		virtual void set_is_frozen(bool is_frozen, int64_t freeze_time = 0);
+		virtual void set_is_frozen(bool is_frozen, int64_t freeze_time = 0, PhysicsObject* source = NULL);
 		virtual void set_freeze_time(long freeze_time);
 		virtual void set_is_grabbing_obstacle(bool);
 		virtual void set_current_weapon_id(long id);

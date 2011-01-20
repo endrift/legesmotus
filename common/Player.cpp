@@ -60,6 +60,7 @@ Player::Player(b2World* physics_world) {
 	m_attach_joint = NULL;
 	m_physics = NULL;
 	m_current_weapon_id = 0;
+	m_freeze_source = NULL;
 	
 	m_delayed_force.clear();
 	
@@ -231,7 +232,7 @@ void Player::update_physics() {
 			m_physics_body->SetAngularVelocity(-1.0 * MAX_ANGULAR_VELOCITY);
 		}
 		
-		for (int i = 0; i < m_delayed_force.size(); i++) {
+		for (unsigned int i = 0; i < m_delayed_force.size(); i++) {
 			apply_force(m_delayed_force[i].first, m_delayed_force[i].second);
 		}
 		m_delayed_force.clear();
@@ -310,16 +311,18 @@ void Player::set_is_invisible(bool is_invisible) {
 	m_is_invisible = is_invisible;
 }
 
-void Player::set_is_frozen(bool is_frozen, int64_t freeze_time) {
+void Player::set_is_frozen(bool is_frozen, int64_t freeze_time, PhysicsObject* source) {
 	if (is_frozen) {
 		if (!m_is_frozen || m_freeze_time == 0) {
 			m_freeze_time = freeze_time;
 			m_frozen_at = get_ticks();
 		}
 		set_is_grabbing_obstacle(false);
+		m_freeze_source = source;
 	} else {
 		m_freeze_time = 0;
 		m_frozen_at = 0;
+		m_freeze_source = NULL;
 	}
 
 	m_is_frozen = is_frozen;

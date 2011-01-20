@@ -406,12 +406,19 @@ void	Server::player_hit(const IPAddress& address, PacketReader& inbound_packet)
 		return;
 	}
 	
-	m_game_logic->get_weapon(weapon_id)->hit(shot_player, &hitdata);
+	bool already_frozen = shot_player->is_frozen();
+	
+	m_game_logic->get_weapon(weapon_id)->hit(shot_player, shooter, &hitdata);
 
 	// Inform the victim that he has been hit
 	PacketWriter		outbound_packet(PLAYER_HIT_PACKET);
 	outbound_packet << shooter_id << weapon_id << shot_player_id << has_effect << hitdata.extradata;
 	m_network.send_reliable_packet(shot_player->get_address(), outbound_packet);
+	
+	// Send a player_died packet if necessary.
+	if (shot_player->is_frozen() && !already_frozen) {
+		broadcast_player_died(shooter);
+	}
 }
 
 void	Server::player_died(const IPAddress& address, PacketReader& packet)
@@ -763,6 +770,9 @@ void	Server::run()
 {
 	m_is_running = true;
 	uint64_t last_logic_update = get_ticks();
+	
+	set<uint32_t> frozen_players;
+	
 	while (m_is_running) {
 		timeout_players();
 		m_network.resend_acks();
@@ -797,6 +807,7 @@ void	Server::run()
 
 		} else if (waiting_to_spawn()) {
 			if (time_until_spawn() == 0) {
+				frozen_players.clear();
 				start_game();
 			}
 		}
@@ -810,7 +821,21 @@ void	Server::run()
 				// Keep track of the extra time between updates.
 				last_logic_update -= extratime;
 				
-				// TODO: How can we send proper player_died packets?
+				// Check for newly-dead players:
+				for (PlayerMap::iterator it(m_players.begin()); it != m_players.end(); ++it) {
+					if (frozen_players.find(it->second.get_id()) != frozen_players.end()) {
+						if (!it->second.is_frozen()) {
+							frozen_players.erase(it->second.get_id());
+						}
+					} else {
+						if (it->second.is_frozen()) {
+							frozen_players.insert(it->second.get_id());
+							if (it->second.get_freeze_source() != NULL) {
+								broadcast_player_died(&it->second);
+							}
+						}
+					}
+				}
 			}
 		}
 		
@@ -1431,6 +1456,33 @@ void	Server::send_round_start_packet(const ServerPlayer* player) {
 	packet << gametime_left();
 	if (player) {
 		m_network.send_reliable_packet(player->get_address(), packet);
+	} else {
+		m_network.broadcast_reliable_packet(packet);
+	}
+}
+
+void	Server::broadcast_player_died(const ServerPlayer* dead_player, const ServerPlayer* except) {
+	PacketWriter	packet(PLAYER_DIED_PACKET);
+	
+	PhysicsObject* killer = dead_player->get_freeze_source();
+	if (killer == NULL) {
+		return;
+	}
+	
+	packet << dead_player->get_id();
+
+	if (killer->get_type() == MapObject::PLAYER) {
+		packet << (static_cast<Player*>(killer))->get_id();
+	} else {
+		packet << 0;
+	}
+	
+	packet << dead_player->get_freeze_time();
+	
+	packet << killer->get_type();
+	
+	if (except) {
+		m_network.send_reliable_packet(except->get_address(), packet);
 	} else {
 		m_network.broadcast_reliable_packet(packet);
 	}

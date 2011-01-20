@@ -86,19 +86,12 @@ uint64_t Client::step(uint64_t diff) {
 		set_curr_weapon(m_controller->get_weapon());
 	}
 	
-	bool already_frozen = player->is_frozen();
-	
 	// Step the GameLogic.
 	diff = m_logic->steps(diff);
 
 	Packet p;
 	generate_player_update(m_player_id, &p);
 	m_network.send_packet(&p);
-	
-	// Check if our player was killed by a map hazard this frame:
-	if (!already_frozen && player->is_frozen() && player->get_energy() == 0) {
-		generate_player_died(m_player_id, 0, false);
-	}
 	
 	// Check the weapon for hitting any players:
 	check_player_hits();
@@ -347,14 +340,13 @@ void Client::player_hit(const Packet& p) {
 		return;
 	}
 	
-	bool already_frozen = hit_player->is_frozen();
-	
-	m_logic->get_weapon(p.player_hit.weapon_id)->hit(hit_player, &p.player_hit);
-	
-	// Send a player_died packet if necessary.
-	if (p.player_hit.shot_player_id == m_player_id && hit_player->is_frozen() && !already_frozen) {
-		generate_player_died(p.player_hit.shot_player_id, p.player_hit.shooter_id, true);
+	Player* firing_player = m_logic->get_player(p.player_hit.shooter_id);
+	if (firing_player == NULL) {
+		WARN("Shot fired by player that doesn't exist: " << p.player_hit.shooter_id);
+		return;
 	}
+	
+	m_logic->get_weapon(p.player_hit.weapon_id)->hit(hit_player, firing_player, &p.player_hit);
 }
 
 void Client::new_round(const Packet& p) {
@@ -457,6 +449,11 @@ void Client::team_change(const Packet& p) {
 void Client::player_died(const Packet& p) {
 	//TODO: Do we need to do anything else here?
 	DEBUG("Player died: " << p.player_died.killed_player_id);
+	Player* player = get_player(p.player_died.killed_player_id);
+	if (player == NULL) {
+		return;
+	}
+	player->set_is_frozen(true, p.player_died.freeze_time);
 }
 
 void Client::weapon_info(const Packet& p) {

@@ -164,11 +164,11 @@ void AreaGun::was_fired(b2World* physics, Player& player, std::string extradata)
 	player.apply_force(b2Vec2(m_recoil * 100 * cos(M_PI + direction), m_recoil * 100 * sin(M_PI + direction)));
 	player.change_energy(-1 * m_energy_cost);
 	if (player.get_energy() <= 0) {
-		player.set_is_frozen(true, m_freeze_time);
+		player.set_is_frozen(true, m_freeze_time, &player);
 	}
 }
 
-void AreaGun::hit(Player* hit_player, const Packet::PlayerHit* p) {
+void AreaGun::hit(Player* hit_player, Player* firing_player, const Packet::PlayerHit* p) {
 	string extradata = *p->extradata.item;
 	stringstream s(extradata);
 	
@@ -305,7 +305,7 @@ Packet::PlayerHit* AreaGun::generate_next_hit_packet(Packet::PlayerHit* p, Playe
 	out << nextdata.angle << " " << to_physics(nextdata.point.x) << " " << to_physics(nextdata.point.y) << " " << actualdamage;
 	p->extradata = out.str();
 
-	hit(hit_player, p);
+	hit(hit_player, shooter, p);
 
 	return p;
 }

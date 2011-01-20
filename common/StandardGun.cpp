@@ -166,11 +166,11 @@ void StandardGun::was_fired(b2World* physics, Player& player, std::string extrad
 	player.apply_force(b2Vec2(m_recoil * 100 * cos(M_PI + direction), m_recoil * 100 * sin(M_PI + direction)));
 	player.change_energy(-1 * m_energy_cost);
 	if (player.get_energy() <= 0) {
-		player.set_is_frozen(true, m_freeze_time);
+		player.set_is_frozen(true, m_freeze_time, &player);
 	}
 }
 
-void StandardGun::hit(Player* hit_player, const Packet::PlayerHit* p) {
+void StandardGun::hit(Player* hit_player, Player* firing_player, const Packet::PlayerHit* p) {
 	string extradata = *p->extradata.item;
 	stringstream s(extradata);
 	
@@ -204,7 +204,7 @@ void StandardGun::hit(Player* hit_player, const Packet::PlayerHit* p) {
 		
 		// If player is damaged sufficiently, freeze them.
 		if (hit_player->get_energy() <= 0) {
-			hit_player->set_is_frozen(true, m_freeze_time);
+			hit_player->set_is_frozen(true, m_freeze_time, firing_player);
 		}
 	}
 }
@@ -300,7 +300,7 @@ Packet::PlayerHit* StandardGun::generate_next_hit_packet(Packet::PlayerHit* p, P
 			out << m_last_fired_dir << " " << nextdata.point.x << " " << nextdata.point.y << " " << actualdamage;
 			p->extradata = out.str();
 
-			hit(static_cast<Player*>(userdata), p);
+			hit(static_cast<Player*>(userdata), shooter, p);
 	
 			m_current_damage = m_current_damage * m_penetrates_players;
 			found_player = true;

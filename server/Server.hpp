@@ -141,6 +141,7 @@ namespace LM {
 		// Broadcast various packets (if player is NULL, broadcast to all players, otherwise send only to the one player)
 		void			send_new_round_packets(const ServerPlayer* player =NULL); // Also broadcasts game and weapon info
 		void			send_round_start_packet(const ServerPlayer* player =NULL);
+		void			broadcast_player_died(const ServerPlayer* dead_player, const ServerPlayer* except = NULL);
 
 		// Send all the relevant game parameters to the client (should be called at the beginning of each new game)
 		// If player is NULL, broadcast to all players, otherwise only to specific player
