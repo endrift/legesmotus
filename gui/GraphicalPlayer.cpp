@@ -178,7 +178,7 @@ void GraphicalPlayer::set_gun_rotation_degrees(float rotation) {
 	if (get_team() != 'A') {
 		handedness = false;
 	}
-	rotation -= get_rotation_degrees();
+		
 	rotation = get_normalized_angle(rotation);
 
 	if ((rotation > 90 && rotation < 270) || rotation < -90) {
