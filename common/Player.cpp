@@ -412,9 +412,13 @@ void Player::read_player_update(const Packet::PlayerUpdate& p) {
 	set_velocity(p.x_vel, p.y_vel);
 	set_rotation_degrees(p.rotation);
 	set_energy(p.energy);
-	set_gun_rotation_degrees(p.gun_rotation);
 	set_current_weapon_id(p.current_weapon_id);
 	set_is_frozen(p.flags->find_first_of('F') != string::npos, FOREVER);
+	
+	if (!is_frozen()) {
+		set_gun_rotation_degrees(p.gun_rotation);
+	}
+	
 	set_is_grabbing_obstacle(p.flags->find_first_of('G') != string::npos);
 	set_is_invisible(p.flags->find_first_of('I') != string::npos);
 	if (is_grabbing_obstacle() && m_physics_body != NULL) {

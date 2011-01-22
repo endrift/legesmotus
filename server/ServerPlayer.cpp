@@ -96,7 +96,9 @@ void ServerPlayer::read_update_packet (PacketReader& packet) {
 	//set_velocity(x_vel, y_vel);
 	//set_rotation_degrees(rotation);
 	//set_energy(energy);
-	set_gun_rotation_degrees(aim);
+	if (!is_frozen()) {
+		set_gun_rotation_degrees(aim);
+	}
 	set_current_weapon_id(current_weapon_id);
 	//set_is_invisible(flags.find_first_of('I') != string::npos);
 	//set_is_frozen(flags.find_first_of('F') != string::npos, FOREVER);

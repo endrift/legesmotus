@@ -286,8 +286,8 @@ void GuiClient::run() {
 	set_font(load_font("DustHomeMedium.ttf", 12, m_hud->get_shadow_kernel()), FONT_BADGE_SHADOW);
 
 	IPAddress host;
-	//resolve_hostname(host, "vulpes.ath.cx", 23668);
-	resolve_hostname(host, "localhost", 16877);
+	resolve_hostname(host, "vulpes.ath.cx", 23668);
+	//resolve_hostname(host, "localhost", 16877);
 	connect(host);
 	// XXX end testing code
 

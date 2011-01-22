@@ -140,8 +140,6 @@ namespace LM {
 		virtual void disengage(PhysicsObject* other) = 0;
 
 		virtual void init(MapReader* reader);
-		
-		virtual void reset() {};
 	};
 }
 
