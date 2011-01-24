@@ -82,11 +82,14 @@ GLESContext::GLESContext(int width, int height, bool genfb) {
 
 	if (!m_vbo) {
 		GLfloat vertices[] = {
-			0, 0, 0, 0, // BUFFER
+			// BUFFER
+			0, 0, 0, 0,
+			// vertex coords
 			-0.5f, -0.5f,
 			0.5f, -0.5f,
 			0.5f, 0.5f,
 			-0.5f, 0.5f,
+			// texture coords
 			0, 0,
 			1, 0,
 			1, 1,
@@ -107,7 +110,7 @@ GLESContext::GLESContext(int width, int height, bool genfb) {
 	LM_gl(DisableClientState, (LM_GL(TEXTURE_COORD_ARRAY)));
 	LM_gl(Viewport, (0, 0, width, height));
 	LM_gl(Scissor, (0, 0, width, height));
-	//LM_gl(Enable, (LM_GL(SCISSOR_TEST)));
+	LM_gl(Enable, (LM_GL(SCISSOR_TEST)));
 	LM_gl(Enable, (LM_GL(STENCIL_TEST)));
 	LM_gl(Enable, (LM_GL(BLEND)));
 	set_blend_mode(BLEND_NORMAL);
@@ -190,7 +193,7 @@ void GLESContext::unbind_rect() {
 }
 
 void GLESContext::draw_subimage(int width, int height, float tex_x, float tex_y, float tex_width, float tex_height) {
-	LM_gl(MatrixMode, (LM_GL(TEXTURE)));
+	set_active_texture();
 	LM_gl(LoadIdentity, ());
 
 	LM_gl(Translatef, (-tex_x/tex_width, -tex_y/tex_height, 0));
@@ -199,7 +202,7 @@ void GLESContext::draw_subimage(int width, int height, float tex_x, float tex_y,
 	LM_gl(DrawArrays, (LM_GL(TRIANGLE_FAN), 0, 4));
 
 	LM_gl(LoadIdentity, ());
-	LM_gl(MatrixMode, (LM_GL(MODELVIEW)));
+	set_active_graphics();
 }
 
 unsigned char* GLESContext::setup_texture(PixelFormat fmt, const unsigned char* data,
@@ -285,10 +288,10 @@ void GLESContext::reset_persp() {
 }
 
 void GLESContext::push_context() {
-	LM_gl(MatrixMode, (LM_GL(PROJECTION)));
+	set_active_camera();
 	push_transform();
 	reset_persp();
-	LM_gl(MatrixMode, (LM_GL(MODELVIEW)));
+	set_active_graphics();
 	push_transform();
 	LM_gl(LoadIdentity, ());
 
@@ -299,9 +302,9 @@ void GLESContext::push_context() {
 }
 
 void GLESContext::pop_context() {
-	LM_gl(MatrixMode, (LM_GL(PROJECTION)));
+	set_active_camera();
 	pop_transform();
-	LM_gl(MatrixMode, (LM_GL(MODELVIEW)));
+	set_active_graphics();
 	pop_transform();
 
 	m_last->make_active();
@@ -336,11 +339,15 @@ void GLESContext::set_active_graphics() {
 	LM_gl(MatrixMode, (LM_GL(MODELVIEW)));
 }
 
+void GLESContext::set_active_texture() {
+	LM_gl(MatrixMode, (LM_GL(TEXTURE)));
+}
+
 void GLESContext::load_identity() {
-	LM_gl(MatrixMode, (LM_GL(PROJECTION)));
+	set_active_camera();
 	reset_persp();
 
-	LM_gl(MatrixMode, (LM_GL(MODELVIEW)));
+	set_active_graphics();
 	LM_gl(LoadIdentity, ());
 }
 

@@ -147,6 +147,7 @@ namespace LM {
 
 		virtual void set_active_camera();
 		virtual void set_active_graphics();
+		void set_active_texture();
 
 		virtual void load_identity();
 		virtual void push_transform();
