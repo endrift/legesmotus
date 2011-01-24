@@ -32,6 +32,14 @@
 
 namespace LM {
 	class Widget : public Publisher {
+	public:
+		enum ColorType {
+			COLOR_PRIMARY,
+			COLOR_SECONDARY,
+
+			COLOR_MAX
+		};
+
 	private:
 		Widget* m_parent;
 		std::multimap<int, Widget*> m_children;
@@ -42,6 +50,8 @@ namespace LM {
 		float m_h;
 
 		bool m_drawable;
+
+		Color m_colors[COLOR_MAX];
 
 	public:
 		Widget(Widget* parent = NULL);
@@ -70,6 +80,10 @@ namespace LM {
 		float get_y() const;
 		float get_width() const;
 		float get_height() const;
+
+		void set_color(const Color& c, ColorType type = COLOR_PRIMARY);
+		// Caution: if set_color is used, the reference will be updated to the new color
+		const Color& get_color(ColorType type = COLOR_PRIMARY) const;
 
 		virtual void set_drawable(bool drawable);
 		bool is_drawable() const;

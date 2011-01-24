@@ -32,17 +32,19 @@ using namespace std;
 
 const float ProgressBar::CAP_WIDTH = 8.0f;
 const float ProgressBar::CAP_SEPARATOR = 5.0f;
-const float ProgressBar::SKEW = -0.2f;
+const float ProgressBar::SKEW = 0.2f;
 
 ProgressBar::ProgressBar(Widget* parent) : Widget(parent) {
 	m_progress = 0;
 	m_vertical = false;
+	m_flipped = false;
 }
 
 void ProgressBar::draw_section(float size, DrawContext* ctx) const {
 	float verts[8];
 	int odd;
 	float thick;
+	float skew = m_flipped ? -SKEW : SKEW;
 	if (m_vertical) {
 		thick = get_width();
 		odd = 0;
@@ -56,16 +58,16 @@ void ProgressBar::draw_section(float size, DrawContext* ctx) const {
 	verts[odd | 4] = thick;
 	verts[odd | 6] = thick;
 
-	if (SKEW < 0) {
-		verts[(odd ^ 1) | 0] = -thick*SKEW;
-		verts[(odd ^ 1) | 2] = size - thick*SKEW;
+	if (skew < 0) {
+		verts[(odd ^ 1) | 0] = -thick*skew;
+		verts[(odd ^ 1) | 2] = size - thick*skew;
 		verts[(odd ^ 1) | 4] = size;
 		verts[(odd ^ 1) | 6] = 0.0f;
 	} else {
 		verts[(odd ^ 1) | 0] = 0.0f;
 		verts[(odd ^ 1) | 2] = size;
-		verts[(odd ^ 1) | 4] = size + thick*SKEW;
-		verts[(odd ^ 1) | 6] = thick*SKEW;
+		verts[(odd ^ 1) | 4] = size + thick*skew;
+		verts[(odd ^ 1) | 6] = thick*skew;
 	}
 	
 	ctx->draw_polygon_fill(verts, 4);
@@ -79,8 +81,9 @@ float ProgressBar::get_progress() const {
 	return m_progress;
 }
 
-void ProgressBar::set_orientation(bool vert) {
+void ProgressBar::set_orientation(bool flip, bool vert) {
 	m_vertical = vert;
+	m_flipped = flip;
 }
 
 void ProgressBar::draw(DrawContext* ctx) const {
@@ -90,6 +93,7 @@ void ProgressBar::draw(DrawContext* ctx) const {
 	ctx->push_transform();
 	ctx->translate(get_x(), get_y());
 	if (progress_width >= skew_size) {
+		ctx->set_draw_color(get_color(COLOR_SECONDARY));
 		draw_section(CAP_WIDTH, ctx);
 
 		if (m_vertical) {
@@ -98,16 +102,35 @@ void ProgressBar::draw(DrawContext* ctx) const {
 			ctx->translate(CAP_WIDTH + CAP_SEPARATOR, 0);
 		}
 
-		draw_section(progress_width*m_progress, ctx);
+		ctx->set_draw_color(get_color(COLOR_PRIMARY));
+		if (m_flipped) {
+			if (m_vertical) {
+				ctx->translate(0, progress_width*(1.0f - m_progress));
+			} else {
+				ctx->translate(progress_width*(1.0f - m_progress), 0);
+			}
 
-		if (m_vertical) {
-			ctx->translate(0, progress_width + CAP_SEPARATOR);
+			draw_section(progress_width*m_progress, ctx);
+			
+			if (m_vertical) {
+				ctx->translate(0, progress_width*m_progress + CAP_SEPARATOR);
+			} else {
+				ctx->translate(progress_width*m_progress + CAP_SEPARATOR, 0);
+			}
 		} else {
-			ctx->translate(progress_width + CAP_SEPARATOR, 0);
+			draw_section(progress_width*m_progress, ctx);
+
+			if (m_vertical) {
+				ctx->translate(0, progress_width + CAP_SEPARATOR);
+			} else {
+				ctx->translate(progress_width + CAP_SEPARATOR, 0);
+			}
 		}
 
+		ctx->set_draw_color(get_color(COLOR_SECONDARY));
 		draw_section(CAP_WIDTH, ctx);
 	} else {
+		ctx->set_draw_color(get_color(COLOR_PRIMARY));
 		draw_section(progress_base*m_progress, ctx);
 	}
 	ctx->pop_transform();

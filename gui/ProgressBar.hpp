@@ -36,6 +36,7 @@ namespace LM {
 
 		float m_progress;
 		bool m_vertical;
+		bool m_flipped;
 
 		void draw_section(float size, DrawContext* ctx) const;
 
@@ -45,7 +46,7 @@ namespace LM {
 		void set_progress(float progress);
 		float get_progress() const;
 
-		void set_orientation(bool vert);
+		void set_orientation(bool flip, bool vert);
 
 		void draw(DrawContext* ctx) const;
 	};
