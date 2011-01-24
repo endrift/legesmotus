@@ -116,7 +116,7 @@ void Hud::draw_player_status(DrawContext* ctx) const {
 	points[1] = get_height();
 	points[2] = m_scale*0.35;
 	points[3] = get_height();
-	points[4] = m_scale*0.32;
+	points[4] = m_scale*0.31;
 	points[5] = get_height() - m_scale*0.2f;
 	points[6] = 0.0f;
 	points[7] = get_height() - m_scale*0.2f;

@@ -39,11 +39,12 @@ namespace LM {
 		enum {
 			NO_CHANGE        = 0x00,
 			JUMPING          = 0x01,
-			CHANGE_AIM       = 0x02,
-			CHANGE_WEAPON    = 0x04,
-			FIRE_WEAPON      = 0x08,
-			STOP_FIRE_WEAPON = 0x10,
-			SEND_MESSAGE     = 0x20
+			STOP_JUMPING     = 0x02,
+			CHANGE_AIM       = 0x04,
+			CHANGE_WEAPON    = 0x08,
+			FIRE_WEAPON      = 0x10,
+			STOP_FIRE_WEAPON = 0x20,
+			SEND_MESSAGE     = 0x40
 		};
 
 		virtual ~Controller() {}

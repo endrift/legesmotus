@@ -40,6 +40,7 @@ Client::Client() : m_network(this) {
 	m_curr_weapon = -1;
 	m_player_id = -1;
 	m_engaging_gate = false;
+	m_jumping = false;
 }
 
 Client::~Client() {
@@ -70,6 +71,14 @@ uint64_t Client::step(uint64_t diff) {
 	
 	// Handle jumping
 	if (changes & Controller::JUMPING) {
+		m_jumping = true;
+	}
+
+	if (changes & Controller::STOP_JUMPING) {
+		m_jumping = false;
+	}
+
+	if (m_jumping) {
 		m_logic->attempt_jump(m_player_id, m_controller->get_aim());
 	}
 	
