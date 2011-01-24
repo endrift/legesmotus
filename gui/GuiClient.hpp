@@ -98,6 +98,8 @@ namespace LM {
 
 		virtual void set_map(Map* map);
 
+		virtual void round_init(Map* map);
+		virtual void round_cleanup();
 	public:
 		GuiClient();
 		virtual ~GuiClient();
@@ -108,7 +110,6 @@ namespace LM {
 
 		virtual void name_change(Player* player, const std::string& new_name);
 		virtual void team_change(Player* player, char new_team);
-		virtual void round_cleanup();
 
 		virtual void run();
 		void update_gui();

@@ -38,6 +38,8 @@ namespace LM {
 		bool m_vertical;
 		bool m_flipped;
 		float m_skew;
+		float m_cap;
+		float m_spacer;
 
 		void draw_section(float size, DrawContext* ctx) const;
 
@@ -49,6 +51,7 @@ namespace LM {
 
 		void set_orientation(bool flip, bool vert);
 		void set_skew(float skew);
+		void set_cap_size(float cap, float spacer);
 
 		void draw(DrawContext* ctx) const;
 	};

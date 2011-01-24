@@ -30,8 +30,8 @@ using namespace LM;
 using namespace std;
 
 
-const float ProgressBar::CAP_WIDTH = 0.6f;
-const float ProgressBar::CAP_SEPARATOR = 0.4f;
+const float ProgressBar::CAP_WIDTH = 0.3f;
+const float ProgressBar::CAP_SEPARATOR = 0.2f;
 const float ProgressBar::SKEW = 0.2f;
 
 ProgressBar::ProgressBar(Widget* parent) : Widget(parent) {
@@ -39,6 +39,8 @@ ProgressBar::ProgressBar(Widget* parent) : Widget(parent) {
 	m_vertical = false;
 	m_flipped = false;
 	m_skew = SKEW;
+	m_cap = CAP_WIDTH;
+	m_spacer = CAP_SEPARATOR;
 }
 
 void ProgressBar::draw_section(float size, DrawContext* ctx) const {
@@ -91,12 +93,17 @@ void ProgressBar::set_skew(float skew) {
 	m_skew = skew;
 }
 
+void ProgressBar::set_cap_size(float cap, float spacer) {
+	m_cap = cap;
+	m_spacer = spacer;
+}
+
 void ProgressBar::draw(DrawContext* ctx) const {
 	float thick = m_vertical?get_width():get_height();
 	float skew_size = fabsf(m_skew) * thick;
 	float progress_base = m_vertical?get_height():get_width();
-	float cap_width = CAP_WIDTH * thick;
-	float cap_separator = CAP_SEPARATOR * thick;
+	float cap_width = m_cap * thick;
+	float cap_separator = m_spacer * thick;
 	float progress_width = progress_base - skew_size - (cap_width + cap_separator)*2.0f;
 	ctx->push_transform();
 	ctx->translate(get_x(), get_y());

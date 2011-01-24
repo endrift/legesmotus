@@ -23,6 +23,10 @@
  */
 
 #include "Hud.hpp"
+#include "GraphicalPlayer.hpp"
+#include "ProgressBar.hpp"
+#include "Label.hpp"
+#include "common/Weapon.hpp"
 
 using namespace LM;
 using namespace std;
@@ -72,9 +76,95 @@ const Color& Hud::get_team_color(char team, ColorType type) {
 }
 
 Hud::Hud(Widget* parent) : Widget(parent), m_shadow_kernel(m_shadow_convolve_data, m_shadow_convolve_width, m_shadow_convolve_height, 1) {
-	// Nothing to do
+	m_active_player = NULL;
+
+	m_player_status = new Widget(this);
+	m_health = new ProgressBar(m_player_status);
+	m_weapon = new ProgressBar(m_player_status);
+}
+
+void Hud::calc_scale() {
+	m_scale = min<float>(get_width(), get_height());
+
+	m_player_status->set_y(get_height() - m_scale*0.2f);
+
+	m_health->set_width(m_scale*0.2f);
+	m_health->set_height(m_scale*0.03f);
+	m_health->set_x(m_scale*0.11f);
+	m_health->set_y(m_scale*0.03f);
+
+	m_weapon->set_width(m_scale*0.2f);
+	m_weapon->set_height(m_scale*0.03f);
+	m_weapon->set_x(m_scale*0.12f);
+	m_weapon->set_y(m_scale*0.09f);
+}
+
+void Hud::set_bg_active(DrawContext* ctx) const {
+	ctx->set_blend_mode(DrawContext::BLEND_SUBTRACT);
+	ctx->set_draw_color(get_team_color(m_active_player->get_team(), COLOR_SHADOW));
+}
+
+void Hud::set_fg_active(DrawContext* ctx) const {
+	ctx->set_blend_mode(DrawContext::BLEND_NORMAL);
+	ctx->set_draw_color(get_team_color(m_active_player->get_team(), COLOR_BRIGHT));
+}
+
+void Hud::draw_player_status(DrawContext* ctx) const {
+	float points[8];
+
+	points[0] = 0.0f;
+	points[1] = get_height();
+	points[2] = m_scale*0.35;
+	points[3] = get_height();
+	points[4] = m_scale*0.32;
+	points[5] = get_height() - m_scale*0.2f;
+	points[6] = 0.0f;
+	points[7] = get_height() - m_scale*0.2f;
+
+	set_bg_active(ctx);
+	ctx->draw_polygon_fill(points, 4);
+
+	set_fg_active(ctx);
+	ctx->draw_stroke(points, 4, 0, m_scale*0.007f, true);
+
+	m_player_status->draw(ctx);
+}
+
+void Hud::set_player(GraphicalPlayer* player) {
+	m_active_player = player;
+
+	m_health->set_color(get_team_color(m_active_player->get_team(), COLOR_BRIGHT), COLOR_PRIMARY);
+	m_health->set_color(get_team_color(m_active_player->get_team(), COLOR_BRIGHT), COLOR_SECONDARY);
+
+	m_weapon->set_color(get_team_color(m_active_player->get_team(), COLOR_BRIGHT), COLOR_PRIMARY);
+	m_weapon->set_color(get_team_color(m_active_player->get_team(), COLOR_BRIGHT), COLOR_SECONDARY);
+}
+
+void Hud::set_width(float width) {
+	Widget::set_width(width);
+	calc_scale();
+}
+
+void Hud::set_height(float height) {
+	Widget::set_height(height);
+	calc_scale();
 }
 
 const ConvolveKernel* Hud::get_shadow_kernel() const {
 	return &m_shadow_kernel;
+}
+
+void Hud::update(const GameLogic* logic) {
+	if (m_active_player != NULL) {
+		m_health->set_progress(m_active_player->get_energy()/(float)Player::MAX_ENERGY);
+
+		const Weapon* weapon = logic->get_weapon(m_active_player->get_current_weapon_id());
+		m_weapon->set_progress((weapon->get_total_cooldown() - weapon->get_remaining_cooldown())/(float)weapon->get_total_cooldown());
+	}
+}
+
+void Hud::draw(DrawContext* ctx) const {
+	if (m_active_player != NULL) {
+		draw_player_status(ctx);
+	}
 }
