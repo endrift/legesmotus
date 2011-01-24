@@ -34,6 +34,8 @@ namespace LM {
 	class GraphicalPlayer;
 	class ProgressBar;
 	class Label;
+	class Font;
+	class ResourceCache;
 
 	class Hud : public Widget {
 	public:
@@ -58,11 +60,15 @@ namespace LM {
 		static const int m_shadow_convolve_width;
 		static const float m_shadow_convolve_data[];
 
+		ResourceCache* m_cache;
+
 		ConvolveKernel m_shadow_kernel;
 
 		GraphicalPlayer* m_active_player;
 
 		float m_scale;
+
+		Font* m_main_font;
 
 		Widget* m_player_status;
 		ProgressBar* m_health;
@@ -78,7 +84,8 @@ namespace LM {
 		void draw_player_status(DrawContext* ctx) const;
 
 	public:
-		Hud(Widget* parent = NULL);
+		Hud(ResourceCache* cache, Widget* parent = NULL);
+		~Hud();
 
 		void set_player(GraphicalPlayer* player);
 

@@ -78,7 +78,6 @@ namespace LM {
 
 		void preload();
 		void preload_image(const char* filename);
-		std::string preload_font(const char* filename, int size, const ConvolveKernel* kernel = NULL);
 
 		void set_font(Font* font, FontUse fontuse);
 		Font* get_font(FontUse font);

@@ -67,7 +67,7 @@ GuiClient::GuiClient() {
 	m_map = NULL;
 	m_player = NULL;
 
-	m_hud = new Hud(&m_root);
+	m_hud = new Hud(m_cache, &m_root);
 	m_hud->set_width(m_window->get_width());
 	m_hud->set_height(m_window->get_height());
 	set_font(load_font("DustHomeMedium.ttf", 12, m_hud->get_shadow_kernel()), FONT_BADGE_SHADOW);
@@ -117,14 +117,6 @@ void GuiClient::preload_image(const char* filename) {
 	m_preloaded_images.push_back(filename);
 }
 
-string GuiClient::preload_font(const char* filename, int size, const ConvolveKernel* kernel) {
-	Font font(filename, size, m_cache, false, kernel);
-	const string& name = font.get_id();
-	m_cache->increment<Font>(name);
-	m_preloaded_fonts.push_back(name);
-	return name;
-}
-
 void GuiClient::set_font(Font* font, FontUse fontuse) {
 	Font* oldfont = m_fonts[fontuse];
 	if (font != NULL) {
@@ -142,12 +134,9 @@ Font* GuiClient::get_font(FontUse font) {
 }
 
 Font* GuiClient::load_font(const char* filename, int size, const ConvolveKernel* kernel) {
-	string id = Font::lookup_id(filename, size, false, kernel);
-	Font* font = m_cache->get<Font>(id);
-	if (font == NULL) {
-		id = preload_font(filename, size, kernel);
-	}
-	return m_cache->get<Font>(id);
+	Font* font = m_cache->load_font(filename, size, kernel);
+	m_preloaded_fonts.push_back(font->get_id());
+	return font;
 }
 
 void GuiClient::set_sink(InputSink* input_sink) {

@@ -35,13 +35,14 @@ namespace LM {
 	class ResourceCache;
 	class Image;
 	class Font;
+	class ConvolveKernel;
 
 	class ResourceCache {
 	private:
 		// For convenience
 		template <typename T> class instance_map : public std::map<const std::string, std::pair<T*, int> > {};
 
-		DrawContext*	m_ctx;
+		DrawContext* m_ctx;
 
 		std::string m_root;
 
@@ -64,6 +65,8 @@ namespace LM {
 		template<typename T> void free_unused();
 
 		DrawContext::Image get_image_handle(const std::string& name, bool autogen = true);
+		
+		Font* load_font(const std::string& filename, int size, const ConvolveKernel* kernel = NULL);
 
 		void set_context(DrawContext* ctx);
 

@@ -27,6 +27,7 @@
 
 #include "common/Point.hpp"
 #include "common/Packet.hpp"
+#include "common/timer.hpp"
 #include "PhysicsObject.hpp"
 #include <cmath>
 #include <string>
@@ -112,7 +113,9 @@ namespace LM {
 		bool is_grabbing_obstacle() const { return m_is_grabbing_obstacle; }
 		long get_current_weapon_id() const { return m_current_weapon_id; }
 		b2Joint* get_attach_joint() const { return m_attach_joint; }
-		long get_freeze_time() const { return m_freeze_time; }
+		int get_freeze_time() const { return m_freeze_time; }
+		uint64_t get_frozen_at() const { return m_frozen_at; }
+		int get_remaining_freeze() const { return std::max<int>(0, m_frozen_at + m_freeze_time - get_ticks()); }
 	
 		// Return true if this player has the same canonical name as the specified string.
 		// Name comparisons are case-insensitive.
