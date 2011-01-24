@@ -30,21 +30,22 @@ using namespace LM;
 using namespace std;
 
 
-const float ProgressBar::CAP_WIDTH = 8.0f;
-const float ProgressBar::CAP_SEPARATOR = 5.0f;
+const float ProgressBar::CAP_WIDTH = 0.6f;
+const float ProgressBar::CAP_SEPARATOR = 0.4f;
 const float ProgressBar::SKEW = 0.2f;
 
 ProgressBar::ProgressBar(Widget* parent) : Widget(parent) {
 	m_progress = 0;
 	m_vertical = false;
 	m_flipped = false;
+	m_skew = SKEW;
 }
 
 void ProgressBar::draw_section(float size, DrawContext* ctx) const {
 	float verts[8];
 	int odd;
 	float thick;
-	float skew = m_flipped ? -SKEW : SKEW;
+	float skew = m_flipped ? -m_skew : m_skew;
 	if (m_vertical) {
 		thick = get_width();
 		odd = 0;
@@ -86,20 +87,27 @@ void ProgressBar::set_orientation(bool flip, bool vert) {
 	m_flipped = flip;
 }
 
+void ProgressBar::set_skew(float skew) {
+	m_skew = skew;
+}
+
 void ProgressBar::draw(DrawContext* ctx) const {
-	float skew_size = fabsf(SKEW) * (m_vertical?get_width():get_height());
+	float thick = m_vertical?get_width():get_height();
+	float skew_size = fabsf(m_skew) * thick;
 	float progress_base = m_vertical?get_height():get_width();
-	float progress_width = progress_base - skew_size - (CAP_WIDTH + CAP_SEPARATOR)*2.0f;
+	float cap_width = CAP_WIDTH * thick;
+	float cap_separator = CAP_SEPARATOR * thick;
+	float progress_width = progress_base - skew_size - (cap_width + cap_separator)*2.0f;
 	ctx->push_transform();
 	ctx->translate(get_x(), get_y());
 	if (progress_width >= skew_size) {
 		ctx->set_draw_color(get_color(COLOR_SECONDARY));
-		draw_section(CAP_WIDTH, ctx);
+		draw_section(cap_width, ctx);
 
 		if (m_vertical) {
-			ctx->translate(0, CAP_WIDTH + CAP_SEPARATOR);
+			ctx->translate(0, cap_width + cap_separator);
 		} else {
-			ctx->translate(CAP_WIDTH + CAP_SEPARATOR, 0);
+			ctx->translate(cap_width + cap_separator, 0);
 		}
 
 		ctx->set_draw_color(get_color(COLOR_PRIMARY));
@@ -113,22 +121,22 @@ void ProgressBar::draw(DrawContext* ctx) const {
 			draw_section(progress_width*m_progress, ctx);
 			
 			if (m_vertical) {
-				ctx->translate(0, progress_width*m_progress + CAP_SEPARATOR);
+				ctx->translate(0, progress_width*m_progress + cap_separator);
 			} else {
-				ctx->translate(progress_width*m_progress + CAP_SEPARATOR, 0);
+				ctx->translate(progress_width*m_progress + cap_separator, 0);
 			}
 		} else {
 			draw_section(progress_width*m_progress, ctx);
 
 			if (m_vertical) {
-				ctx->translate(0, progress_width + CAP_SEPARATOR);
+				ctx->translate(0, progress_width + cap_separator);
 			} else {
-				ctx->translate(progress_width + CAP_SEPARATOR, 0);
+				ctx->translate(progress_width + cap_separator, 0);
 			}
 		}
 
 		ctx->set_draw_color(get_color(COLOR_SECONDARY));
-		draw_section(CAP_WIDTH, ctx);
+		draw_section(cap_width, ctx);
 	} else {
 		ctx->set_draw_color(get_color(COLOR_PRIMARY));
 		draw_section(progress_base*m_progress, ctx);

@@ -32,16 +32,17 @@ int main(int argc, char *argv[]) {
 	gwin1.set_y(20);*/
 	ProgressBar p0(&w0);
 	p0.set_width(150);
-	p0.set_height(50);
+	p0.set_height(30);
 	p0.set_color(Color(0.0f, 0.0f, 1.0f), Widget::COLOR_PRIMARY);
 	p0.set_color(Color(0.5f, 0.5f, 1.0f), Widget::COLOR_SECONDARY);
 	p0.set_x(150);
 	ProgressBar p1(&w0);
 	p1.set_width(150);
-	p1.set_height(50);
+	p1.set_height(20);
 	p1.set_orientation(true, false);
 	p1.set_color(Color(1.0f, 0.0f, 0.0f), Widget::COLOR_PRIMARY);
 	p1.set_color(Color(1.0f, 0.5f, 0.5f), Widget::COLOR_SECONDARY);
+	p1.set_skew(1.0f);
 
 	ctx->set_root_widget(&w0);
 
