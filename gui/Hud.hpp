@@ -28,8 +28,15 @@
 #include "Widget.hpp"
 #include "common/misc.hpp"
 #include "ConvolveKernel.hpp"
+#include "common/GameLogic.hpp"
 
 namespace LM {
+	class GraphicalPlayer;
+	class ProgressBar;
+	class Label;
+	class Font;
+	class ResourceCache;
+
 	class Hud : public Widget {
 	public:
 		static const Color BLUE_BRIGHT;
@@ -53,12 +60,43 @@ namespace LM {
 		static const int m_shadow_convolve_width;
 		static const float m_shadow_convolve_data[];
 
+		ResourceCache* m_cache;
+
 		ConvolveKernel m_shadow_kernel;
 
+		GraphicalPlayer* m_active_player;
+
+		float m_scale;
+
+		Font* m_main_font;
+
+		Widget* m_player_status;
+		ProgressBar* m_health;
+		Label* m_health_label;
+		ProgressBar* m_weapon;
+		Label* m_weapon_label;
+
+		void calc_scale();
+
+		void set_bg_active(DrawContext* ctx) const;
+		void set_fg_active(DrawContext* ctx) const;
+
+		void draw_player_status(DrawContext* ctx) const;
+
 	public:
-		Hud(Widget* parent = NULL);
+		Hud(ResourceCache* cache, Widget* parent = NULL);
+		~Hud();
+
+		void set_player(GraphicalPlayer* player);
+
+		virtual void set_width(float width);
+		virtual void set_height(float height);
 
 		const ConvolveKernel* get_shadow_kernel() const;
+
+		void update(const GameLogic* logic);
+
+		void draw(DrawContext* ctx) const;
 	};
 }
 

@@ -32,7 +32,7 @@ GLESProgram::GLESProgram() {
 }
 
 GLESProgram::~GLESProgram() {
-	glDeleteProgram(m_program);
+	LM_gl(DeleteProgram, (m_program));
 }
 
 GLuint GLESProgram::program_number() {
@@ -44,86 +44,86 @@ GLuint GLESProgram::get_uniform(const std::string& name) {
 }
 
 void GLESProgram::attach_shader(PixelShader shader) {
-	glAttachShader(m_program, shader);
+	LM_gl(AttachShader, (m_program, shader));
 }
 
 void GLESProgram::detach_shader(PixelShader shader) {
-	glDetachShader(m_program, shader);
+	LM_gl(DetachShader, (m_program, shader));
 }
 
 void GLESProgram::link() {
-	glLinkProgram(m_program);
+	LM_gl(LinkProgram, (m_program));
 	GLint linked = 0;
-	glGetProgramiv(m_program, GL_COMPILE_STATUS, &linked);
+	LM_gl(GetProgramiv, (m_program, LM_GL(COMPILE_STATUS), &linked));
 	if (!linked) {
-		glGetProgramiv(m_program, GL_INFO_LOG_LENGTH, &linked);
+		LM_gl(GetProgramiv, (m_program, LM_GL(INFO_LOG_LENGTH), &linked));
 		char* log = new char[linked];
-		glGetProgramInfoLog(m_program, linked, &linked, log);
+		LM_gl(GetProgramInfoLog, (m_program, linked, &linked, log));
 		WARN("Shader linking failed: " << log);
 		delete[] log;
 	}
 }
 
 void GLESProgram::set_variable(const std::string& name, int x) {
-	glUniform1i(get_uniform(name), x);
+	LM_gl(Uniform1i, (get_uniform(name), x));
 }
 
 void GLESProgram::set_variable(const std::string& name, int x, int y) {
-	glUniform2i(get_uniform(name), x, y);
+	LM_gl(Uniform2i, (get_uniform(name), x, y));
 }
 
 void GLESProgram::set_variable(const std::string& name, int x, int y, int z) {
-	glUniform3i(get_uniform(name), x, y, z);
+	LM_gl(Uniform3i, (get_uniform(name), x, y, z));
 }
 
 void GLESProgram::set_variable(const std::string& name, int x, int y, int z, int w) {
-	glUniform4i(get_uniform(name), x, y, z, w);
+	LM_gl(Uniform4i, (get_uniform(name), x, y, z, w));
 }
 
 void GLESProgram::set_variable(const std::string& name, float x) {
-	glUniform1f(get_uniform(name), x);
+	LM_gl(Uniform1f, (get_uniform(name), x));
 }
 
 void GLESProgram::set_variable(const std::string& name, float x, float y) {
-	glUniform2f(get_uniform(name), x, y);
+	LM_gl(Uniform2f, (get_uniform(name), x, y));
 }
 
 void GLESProgram::set_variable(const std::string& name, float x, float y, float z) {
-	glUniform3f(get_uniform(name), x, y, z);
+	LM_gl(Uniform3f, (get_uniform(name), x, y, z));
 }
 
 void GLESProgram::set_variable(const std::string& name, float x, float y, float z, float w) {
-	glUniform4f(get_uniform(name), x, y, z, w);
+	LM_gl(Uniform4f, (get_uniform(name), x, y, z, w));
 }
 
 void GLESProgram::set_variable_1(const std::string& name, int count, int* v) {
-	glUniform1iv(get_uniform(name), count, v);
+	LM_gl(Uniform1iv, (get_uniform(name), count, v));
 }
 
 void GLESProgram::set_variable_2(const std::string& name, int count, int* v) {
-	glUniform2iv(get_uniform(name), count, v);
+	LM_gl(Uniform2iv, (get_uniform(name), count, v));
 }
 
 void GLESProgram::set_variable_3(const std::string& name, int count, int* v) {
-	glUniform3iv(get_uniform(name), count, v);
+	LM_gl(Uniform3iv, (get_uniform(name), count, v));
 }
 
 void GLESProgram::set_variable_4(const std::string& name, int count, int* v) {
-	glUniform4iv(get_uniform(name), count, v);
+	LM_gl(Uniform4iv, (get_uniform(name), count, v));
 }
 
 void GLESProgram::set_variable_1(const std::string& name, int count, float* v) {
-	glUniform1fv(get_uniform(name), count, v);
+	LM_gl(Uniform1fv, (get_uniform(name), count, v));
 }
 
 void GLESProgram::set_variable_2(const std::string& name, int count, float* v) {
-	glUniform2fv(get_uniform(name), count, v);
+	LM_gl(Uniform2fv, (get_uniform(name), count, v));
 }
 
 void GLESProgram::set_variable_3(const std::string& name, int count, float* v) {
-	glUniform3fv(get_uniform(name), count, v);
+	LM_gl(Uniform3fv, (get_uniform(name), count, v));
 }
 
 void GLESProgram::set_variable_4(const std::string& name, int count, float* v) {
-	glUniform4fv(get_uniform(name), count, v);
+	LM_gl(Uniform4fv, (get_uniform(name), count, v));
 }

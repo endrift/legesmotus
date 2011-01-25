@@ -46,6 +46,7 @@ namespace LM {
 		bool m_running;
 		
 		bool m_engaging_gate;
+		bool m_jumping;
 
 	protected:
 		// Networking, GameLogic calls, and base client updates are handled here
@@ -74,6 +75,9 @@ namespace LM {
 		uint32_t get_curr_weapon_id() const { return m_curr_weapon; };
 
 		virtual void set_map(Map* map);
+
+		virtual void round_init(Map* map);
+		virtual void round_cleanup();
 		
 		void send_quit();
 
@@ -126,8 +130,6 @@ namespace LM {
 
 		virtual void name_change(Player* player, const std::string& new_name);
 		virtual void team_change(Player* player, char new_team);
-
-		virtual void round_cleanup();
 
 		// Main loop: override for subclass behaviors, but call step inside
 		virtual void run();

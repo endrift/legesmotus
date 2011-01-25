@@ -1,5 +1,5 @@
 /*
- * gui/Bindings.hpp
+ * gui/ProgressBar.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,46 +22,38 @@
  * 
  */
 
-#ifndef LM_GUI_BINDINGS_HPP
-#define LM_GUI_BINDINGS_HPP
+#ifndef LM_GUI_PROGRESSBAR_HPP
+#define LM_GUI_PROGRESSBAR_HPP
 
-#include "input.hpp"
+#include "Widget.hpp"
 
 namespace LM {
-	class Bindings {
-	public:
-		enum ControlType {
-			CONTROL_NONE = 0,
-			CONTROL_JUMP,
-			CONTROL_STOP_JUMPING,
-			CONTROL_SET_WEAPON,
-			CONTROL_INCREMENT_WEAPON,
-			CONTROL_DECREMENT_WEAPON,
-			CONTROL_FIRE,
-			CONTROL_STOP_FIRE,
-			CONTROL_BEGIN_TYPING
-		};
-
-		struct ControlEvent {
-			ControlType type;
-			union {
-				struct {
-					int weapon_no;
-				} set_weapon;
-
-				struct {
-					bool is_team_only;
-				} typing;
-			};
-		};
-
+	class ProgressBar : public Widget {
 	private:
-		// TODO store bindings here
+		static const float CAP_WIDTH;
+		static const float CAP_SEPARATOR;
+		static const float SKEW;
+
+		float m_progress;
+		bool m_vertical;
+		bool m_flipped;
+		float m_skew;
+		float m_cap;
+		float m_spacer;
+
+		void draw_section(float size, DrawContext* ctx) const;
 
 	public:
-		ControlEvent process_event(const KeyEvent& event);
-		ControlEvent process_event(const MouseMotionEvent& event);
-		ControlEvent process_event(const MouseButtonEvent& event);
+		ProgressBar(Widget* parent = NULL);
+
+		void set_progress(float progress);
+		float get_progress() const;
+
+		void set_orientation(bool flip, bool vert);
+		void set_skew(float skew);
+		void set_cap_size(float cap, float spacer);
+
+		void draw(DrawContext* ctx) const;
 	};
 }
 

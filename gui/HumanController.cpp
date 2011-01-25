@@ -49,6 +49,9 @@ void HumanController::process_control(const Bindings::ControlEvent& event) {
 	case Bindings::CONTROL_JUMP:
 		m_changes[m_changeset ^ 1] |= JUMPING;
 		break;
+	case Bindings::CONTROL_STOP_JUMPING:
+		m_changes[m_changeset ^ 1] |= STOP_JUMPING;
+		break;
 	case Bindings::CONTROL_BEGIN_TYPING:
 		m_message.clear();
 		m_typing_message = true;
@@ -108,7 +111,7 @@ void HumanController::system_event(const SystemEvent& event) {
 }
 
 void HumanController::update(uint64_t diff, const GameLogic& state) {
-	m_changes[m_changeset] = 0;
+	m_changes[m_changeset] = NO_CHANGE;
 	m_changeset ^= 1;
 
 	int nweapons = state.list_weapons().size();

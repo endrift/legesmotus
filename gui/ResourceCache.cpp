@@ -42,10 +42,10 @@ ResourceCache::~ResourceCache() {
 	#ifdef LM_DEBUG
 	if (!m_instances_image.empty() || !m_instances_font.empty()) {
 		for (instance_map<Image>::const_iterator iter = m_instances_image.begin(); iter != m_instances_image.end(); ++iter) {
-			WARN(iter->first << " still live");
+			WARN(iter->first << " still live with count " << iter->second.second);
 		}
 		for (instance_map<Font>::const_iterator iter = m_instances_font.begin(); iter != m_instances_font.end(); ++iter) {
-			WARN(iter->first << " still live");
+			WARN(iter->first << " still live with count " << iter->second.second);
 		}
 		FATAL("Resources still in use while freeing cache");
 	}
@@ -81,6 +81,15 @@ DrawContext::Image ResourceCache::get_image_handle(const string& name, bool auto
 
 void ResourceCache::set_context(DrawContext* ctx) {
 	m_ctx = ctx;
+}
+
+Font* ResourceCache::load_font(const std::string& filename, int size, const ConvolveKernel* kernel) {
+	string id = Font::lookup_id(filename, size, false, kernel);
+	Font* font = get<Font>(id);
+	if (font == NULL) {
+		font = new Font(filename, size, this, false, kernel);
+	}
+	return get<Font>(id);
 }
 
 const string& ResourceCache::get_root() {

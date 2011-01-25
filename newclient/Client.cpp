@@ -40,6 +40,7 @@ Client::Client() : m_network(this) {
 	m_curr_weapon = -1;
 	m_player_id = -1;
 	m_engaging_gate = false;
+	m_jumping = false;
 }
 
 Client::~Client() {
@@ -70,6 +71,14 @@ uint64_t Client::step(uint64_t diff) {
 	
 	// Handle jumping
 	if (changes & Controller::JUMPING) {
+		m_jumping = true;
+	}
+
+	if (changes & Controller::STOP_JUMPING) {
+		m_jumping = false;
+	}
+
+	if (m_jumping) {
 		if (m_logic->attempt_jump(m_player_id, m_controller->get_aim())) {
 			generate_player_jumped(m_player_id, m_controller->get_aim());
 		}
@@ -224,6 +233,17 @@ void Client::set_map(Map* map) {
 	}
 }
 
+void Client::round_init(Map* map) {
+	// Nothing to do
+}
+
+void Client::round_cleanup() {
+	set_map(NULL);
+
+	delete m_logic;
+	m_logic = NULL;
+}
+
 void Client::send_quit() {
 	Packet leave(LEAVE_PACKET);
 	
@@ -351,6 +371,8 @@ void Client::new_round(const Packet& p) {
 		map->set_revision(p.new_round.map_revision);
 	}
 	m_logic->update_map();
+
+	round_init(map);
 }
 
 void Client::round_over(const Packet& p) {
@@ -479,13 +501,6 @@ void Client::name_change(Player* player, const std::string& new_name) {
 
 void Client::team_change(Player* player, char new_team) {
 	player->set_team(new_team);
-}
-
-void Client::round_cleanup() {
-	set_map(NULL);
-
-	delete m_logic;
-	m_logic = NULL;
 }
 
 bool Client::running() const {

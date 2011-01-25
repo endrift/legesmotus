@@ -31,6 +31,8 @@
 #ifdef __APPLE__
 #include <OpenGL/gl.h>
 #include <OpenGL/glext.h>
+//#include <OpenGLES/ES2/gl.h>
+//#include <OpenGLES/ES2/glext.h>
 #else
 #define GL_GLEXT_PROTOTYPES
 #include "GL/gl.h"
@@ -45,6 +47,25 @@
 #define GL_SRC2_ALPHA GL_SOURCE2_ALPHA
 #endif
 #endif
+
+#ifdef LM_DEBUG
+#define LM_gl(call, args) \
+	do {                  \
+		GLenum e;         \
+		gl ## call args;  \
+		e = glGetError(); \
+		if (e) {          \
+			WARN("OpenGL error: 0x" << hex << e); \
+		}                 \
+	} while(0)
+#else
+#define LM_gl(call, args) gl ## call args
+#endif
+
+#define LM_glEXT(call, args) LM_gl(call ## EXT, args)
+
+#define LM_GL(constant) GL_ ## constant
+#define LM_GL_EXT(constant) GL_ ## constant ## _EXT
 
 namespace LM {
 	class GLESContext : public DrawContext {
@@ -109,6 +130,8 @@ namespace LM {
 
 		void make_active();
 
+		void reset_persp();
+
 	public:
 		GLESContext(int width, int height, bool genfb = false);
 		virtual ~GLESContext();
@@ -124,6 +147,7 @@ namespace LM {
 
 		virtual void set_active_camera();
 		virtual void set_active_graphics();
+		void set_active_texture();
 
 		virtual void load_identity();
 		virtual void push_transform();

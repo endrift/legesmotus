@@ -40,6 +40,8 @@ Widget::Widget(Widget* parent) {
 	m_h = 0;
 
 	m_drawable = true;
+
+	set_color(Color::WHITE, COLOR_PRIMARY);
 }
 
 Widget::~Widget() {
@@ -175,6 +177,16 @@ float Widget::get_width() const {
 
 float Widget::get_height() const {
 	return m_h;
+}
+
+void Widget::set_color(const Color& c, ColorType type) {
+	ASSERT((unsigned long) type < COLOR_MAX);
+	m_colors[type] = c;
+}
+
+const Color& Widget::get_color(ColorType type) const {
+	ASSERT((unsigned long) type < COLOR_MAX);
+	return m_colors[type];
 }
 
 void Widget::set_drawable(bool drawable) {

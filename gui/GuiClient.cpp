@@ -57,6 +57,7 @@ GuiClient::GuiClient() {
 
 	m_window->set_root_widget(&m_root);
 	m_view = new GameView("gv", m_cache, m_window->get_width(), m_window->get_height(), 128, &m_root);
+	m_view->set_scale_base(1024);
 
 	m_debugdraw = new PhysicsDraw;
 	#ifdef LM_DEBUG
@@ -65,7 +66,11 @@ GuiClient::GuiClient() {
 
 	m_map = NULL;
 	m_player = NULL;
-	m_hud = NULL;
+
+	m_hud = new Hud(m_cache, &m_root);
+	m_hud->set_width(m_window->get_width());
+	m_hud->set_height(m_window->get_height());
+	set_font(load_font("DustHomeMedium.ttf", 12, m_hud->get_shadow_kernel()), FONT_BADGE_SHADOW);
 }
 
 GuiClient::~GuiClient() {
@@ -112,14 +117,6 @@ void GuiClient::preload_image(const char* filename) {
 	m_preloaded_images.push_back(filename);
 }
 
-string GuiClient::preload_font(const char* filename, int size, const ConvolveKernel* kernel) {
-	Font font(filename, size, m_cache, false, kernel);
-	const string& name = font.get_id();
-	m_cache->increment<Font>(name);
-	m_preloaded_fonts.push_back(name);
-	return name;
-}
-
 void GuiClient::set_font(Font* font, FontUse fontuse) {
 	Font* oldfont = m_fonts[fontuse];
 	if (font != NULL) {
@@ -137,12 +134,9 @@ Font* GuiClient::get_font(FontUse font) {
 }
 
 Font* GuiClient::load_font(const char* filename, int size, const ConvolveKernel* kernel) {
-	string id = Font::lookup_id(filename, size, false, kernel);
-	Font* font = m_cache->get<Font>(id);
-	if (font == NULL) {
-		id = preload_font(filename, size, kernel);
-	}
-	return m_cache->get<Font>(id);
+	Font* font = m_cache->load_font(filename, size, kernel);
+	m_preloaded_fonts.push_back(font->get_id());
+	return font;
 }
 
 void GuiClient::set_sink(InputSink* input_sink) {
@@ -190,6 +184,9 @@ void GuiClient::add_player(Player* player) {
 void GuiClient::set_own_player(uint32_t id) {
 	Client::set_own_player(id);
 	m_player = static_cast<GraphicalPlayer*>(get_player(id));
+	if (m_hud != NULL) {
+		m_hud->set_player(m_player);
+	}
 }
 
 void GuiClient::remove_player(uint32_t id, const std::string& reason) {
@@ -225,6 +222,19 @@ void GuiClient::set_map(Map* map) {
 	}
 }
 
+void GuiClient::round_init(Map* map) {
+	// XXX
+}
+
+void GuiClient::round_cleanup() {
+	for (map<int, Label*>::iterator iter = m_badges.begin(); iter != m_badges.end(); ++iter) {
+		delete iter->second;
+	}
+	m_badges.clear();
+
+	Client::round_cleanup();
+}
+
 GraphicalPlayer* GuiClient::make_player(const char* name, uint32_t id, char team) {
 	return new GraphicalPlayer(name, id, team, m_cache);
 }
@@ -256,15 +266,6 @@ void GuiClient::team_change(Player* player, char new_team) {
 	shadow->set_color(Hud::get_team_color(player->get_team(), Hud::COLOR_SHADOW));
 }
 
-void GuiClient::round_cleanup() {
-	for (map<int, Label*>::iterator iter = m_badges.begin(); iter != m_badges.end(); ++iter) {
-		delete iter->second;
-	}
-	m_badges.clear();
-
-	Client::round_cleanup();
-}
-
 void GuiClient::run() {
 	INFO("Beginning running GuiClient...");
 	set_running(true);
@@ -279,11 +280,8 @@ void GuiClient::run() {
 	aim.add_graphic(&crosshair);
 	aim.set_x(m_window->get_width()/2);
 	aim.set_y(m_window->get_height()/2);
-	m_view->set_scale_base(1024);
 	crosshair_bone.set_scale_x(m_view->get_scale()/4.0f);
 	crosshair_bone.set_scale_y(m_view->get_scale()/4.0f);
-	m_hud = new Hud(&m_root);
-	set_font(load_font("DustHomeMedium.ttf", 12, m_hud->get_shadow_kernel()), FONT_BADGE_SHADOW);
 
 	IPAddress host;
 	resolve_hostname(host, "vulpes.ath.cx", 23668);
@@ -327,6 +325,8 @@ void GuiClient::update_gui() {
 
 	// Move badges
 	realign_badges();
+
+	m_hud->update(get_game());
 }
 
 void GuiClient::key_pressed(const KeyEvent& event) {

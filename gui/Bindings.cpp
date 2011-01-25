@@ -33,38 +33,52 @@ Bindings::ControlEvent Bindings::process_event(const KeyEvent& event) {
 	ControlEvent e;
 	memset(&e, 0, sizeof(e));
 	e.type = CONTROL_NONE;
-	switch (event.type) {
-	case KEY_LETTER:
-		switch (event.character) {
-		case L'T':
-		case L't':
-			e.typing.is_team_only = true;
-		case L'Y':
-		case L'y':
-		case L'/':
-		case L'?':
-			e.type = CONTROL_BEGIN_TYPING;
-			break;
 
-		case L' ':
-			e.type = CONTROL_JUMP;
+	if (event.down) {
+		switch (event.type) {
+		case KEY_LETTER:
+			switch (event.raw) {
+			case L'T':
+			case L't':
+				e.typing.is_team_only = true;
+			case L'Y':
+			case L'y':
+			case L'/':
+			case L'?':
+				e.type = CONTROL_BEGIN_TYPING;
+				break;
+	
+			case L' ':
+				e.type = CONTROL_JUMP;
+				break;
+	
+			case L'1':
+			case L'2':
+			case L'3':
+			case L'4':
+			case L'5':
+			case L'6':
+			case L'7':
+			case L'8':
+				e.type = CONTROL_SET_WEAPON;
+				e.set_weapon.weapon_no = event.character - L'1';
+				break;
+			}
 			break;
-
-		case L'1':
-		case L'2':
-		case L'3':
-		case L'4':
-		case L'5':
-		case L'6':
-		case L'7':
-		case L'8':
-			e.type = CONTROL_SET_WEAPON;
-			e.set_weapon.weapon_no = event.character - L'1';
+		default:
 			break;
 		}
-		break;
-	default:
-		break;
+	} else {
+		switch (event.type) {
+		case KEY_LETTER:
+			switch (event.raw) {
+			case L' ':
+				e.type = CONTROL_STOP_JUMPING;
+				break;
+			}
+		default:
+			break;
+		}
 	}
 	return e;
 }
