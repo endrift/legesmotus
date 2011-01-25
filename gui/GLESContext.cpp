@@ -54,6 +54,8 @@ GLESContext::GLESContext(int width, int height, bool genfb) {
 	m_active_vbo = INVALID_VBO;
 
 	m_color = Color::WHITE;
+	m_color2 = Color::WHITE;
+	m_use_color2 = false;
 	m_last = NULL;
 
 	if (genfb) {
@@ -108,6 +110,7 @@ GLESContext::GLESContext(int width, int height, bool genfb) {
 
 	LM_gl(EnableClientState, (LM_GL(VERTEX_ARRAY)));
 	LM_gl(DisableClientState, (LM_GL(TEXTURE_COORD_ARRAY)));
+	LM_gl(DisableClientState, (LM_GL(COLOR_ARRAY)));
 	LM_gl(Viewport, (0, 0, width, height));
 	LM_gl(Scissor, (0, 0, width, height));
 	LM_gl(Enable, (LM_GL(SCISSOR_TEST)));
@@ -169,6 +172,12 @@ void GLESContext::reset_vbo() {
 void GLESContext::prepare_arc(float len, float xr, float yr, int fine) {
 	m_arc_vertices[0] = 0.0;
 	m_arc_vertices[1] = 0.0;
+	if (m_use_color2) {
+		m_arc_colors[0] = m_color.r;
+		m_arc_colors[1] = m_color.g;
+		m_arc_colors[2] = m_color.b;
+		m_arc_colors[3] = m_color.a;
+	}
 
 	if (fine > MAX_ARC_FINE) {
 		fine = MAX_ARC_FINE;
@@ -176,9 +185,16 @@ void GLESContext::prepare_arc(float len, float xr, float yr, int fine) {
 	for (int i = 0; i <= fine; ++i) {
 		m_arc_vertices[(i + 1)*2 + 0] = xr*cos(len*i*2.0*M_PI/fine);
 		m_arc_vertices[(i + 1)*2 + 1] = yr*sin(len*i*2.0*M_PI/fine);
+		if (m_use_color2) {
+			m_arc_colors[(i + 1)*4 + 0] = m_color2.r;
+			m_arc_colors[(i + 1)*4 + 1] = m_color2.g;
+			m_arc_colors[(i + 1)*4 + 2] = m_color2.b;
+			m_arc_colors[(i + 1)*4 + 3] = m_color2.a;
+		}
 	}
 	unbind_vbo();
 	LM_gl(VertexPointer, (2, LM_GL(FLOAT), 0, m_arc_vertices));
+	LM_gl(ColorPointer, (4, LM_GL(FLOAT), 0, m_arc_colors));
 }
 
 void GLESContext::bind_rect(float w, float h) {
@@ -440,9 +456,24 @@ void GLESContext::skew_y(float amount) {
 	LM_gl(MultMatrixf, (mat));
 }
 
-void GLESContext::set_draw_color(Color c) {
+void GLESContext::set_draw_color(const Color& c) {
 	LM_gl(Color4f, (c.r, c.g, c.b, c.a));
 	m_color = c;
+}
+
+void GLESContext::set_secondary_color(const Color& c) {
+	m_color2 = c;
+}
+
+void GLESContext::use_secondary_color(bool use) {
+	m_use_color2 = true;
+
+	if (use) {
+		LM_gl(EnableClientState, (LM_GL(COLOR_ARRAY)));
+	} else {	
+		LM_gl(DisableClientState, (LM_GL(COLOR_ARRAY)));
+		LM_gl(ColorPointer, (4, LM_GL(FLOAT), 0, 0));
+	}
 }
 
 void GLESContext::set_blend_mode(BlendMode m) {
@@ -537,6 +568,31 @@ void GLESContext::draw_arc_fill(float len, float xr, float yr, int fine) {
 void GLESContext::draw_arc_line(float len, float xr, float yr, int fine) {
 	prepare_arc(len, xr, yr, fine);
 	LM_gl(DrawArrays, (LM_GL(LINE_STRIP), 1, fine + 1));
+}
+
+void GLESContext::draw_ring_fill(float circumf, float major, float minor, int fine) {
+	if (fine*2 > MAX_ARC_FINE) {
+		fine = MAX_ARC_FINE >> 1;
+	}
+	for (int i = 0; i <= fine; ++i) {
+		m_arc_vertices[i*4 + 0] = major*cos(circumf*i*2.0*M_PI/fine);
+		m_arc_vertices[i*4 + 1] = major*sin(circumf*i*2.0*M_PI/fine);
+		m_arc_vertices[i*4 + 2] = minor*cos(circumf*i*2.0*M_PI/fine);
+		m_arc_vertices[i*4 + 3] = minor*sin(circumf*i*2.0*M_PI/fine);
+		if (m_use_color2) {
+			m_arc_colors[i*8 + 0] = m_color2.r;
+			m_arc_colors[i*8 + 1] = m_color2.g;
+			m_arc_colors[i*8 + 2] = m_color2.b;
+			m_arc_colors[i*8 + 3] = m_color2.a;
+			m_arc_colors[i*8 + 4] = m_color.r;
+			m_arc_colors[i*8 + 5] = m_color.g;
+			m_arc_colors[i*8 + 6] = m_color.b;
+			m_arc_colors[i*8 + 7] = m_color.a;
+		}
+	}
+	LM_gl(VertexPointer, (2, LM_GL(FLOAT), 0, m_arc_vertices));
+	LM_gl(ColorPointer, (4, LM_GL(FLOAT), 0, m_arc_colors));
+	LM_gl(DrawArrays, (LM_GL(QUAD_STRIP), 0, (fine+1)*2));
 }
 
 void GLESContext::draw_rect(float w, float h) {
@@ -732,8 +788,8 @@ void GLESContext::draw_bound_image(int width, int height) {
 }
 
 void GLESContext::draw_bound_image_region(int width, int height,
-										  float tex_x, float tex_y,
-										  float tex_width, float tex_height) {
+                                          float tex_x, float tex_y,
+                                          float tex_width, float tex_height) {
 	LM_gl(TexParameteri, (LM_GL(TEXTURE_2D), LM_GL(TEXTURE_WRAP_S), LM_GL(CLAMP_TO_EDGE)));
 	LM_gl(TexParameteri, (LM_GL(TEXTURE_2D), LM_GL(TEXTURE_WRAP_T), LM_GL(CLAMP_TO_EDGE)));
 	push_transform();
@@ -745,8 +801,8 @@ void GLESContext::draw_bound_image_region(int width, int height,
 }
 
 void GLESContext::draw_bound_image_tiled(int width, int height,
-										 float tex_x, float tex_y,
-										 float tex_width, float tex_height) {
+                                         float tex_x, float tex_y,
+                                         float tex_width, float tex_height) {
 	LM_gl(TexParameteri, (LM_GL(TEXTURE_2D), LM_GL(TEXTURE_WRAP_S), LM_GL(REPEAT)));
 	LM_gl(TexParameteri, (LM_GL(TEXTURE_2D), LM_GL(TEXTURE_WRAP_T), LM_GL(REPEAT)));
 	push_transform();
