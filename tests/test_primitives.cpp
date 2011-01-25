@@ -56,10 +56,11 @@ int main(int argc, char *argv[]) {
 
 		Point localpoints[3] = ppoints;
 
-		r = 0;//atan2(wx, -hy);
+		r = atan2(wx, -hy);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		ctx->set_draw_color(Color(1.0f, 1.0f, 1.0f, 0.5f));
+		ctx->set_secondary_color(Color(1.0f, 1.0f, 1.0f, 0.0f));
 		ctx->load_identity();
 		ctx->translate(150.0f, 150.0f);
 		ctx->scale(100.0f, 100.0f);
@@ -88,6 +89,10 @@ int main(int argc, char *argv[]) {
 		points[4] = localpoints[2].x;
 		points[5] = localpoints[2].y;
 		ctx->draw_stroke(points, 3, 0.0, 0.1, true);
+
+		ctx->use_secondary_color(true);
+		ctx->draw_ring_fill(1.0f, 1.0f, 0.5f, 32);
+		ctx->use_secondary_color(false);
 
 		SDL_GL_SwapBuffers();
 		SDL_Delay(6);

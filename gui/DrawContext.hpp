@@ -105,7 +105,9 @@ namespace LM {
 		virtual void	skew_x(float amount) = 0;
 		virtual void	skew_y(float amount) = 0;
 
-		virtual void	set_draw_color(Color c) = 0;
+		virtual void	set_draw_color(const Color& c) = 0;
+		virtual void	set_secondary_color(const Color& c) = 0;
+		virtual void	use_secondary_color(bool use) = 0;
 		virtual void	set_blend_mode(BlendMode m) = 0;
 
 		virtual const char* shader_directory() const = 0;
@@ -119,6 +121,7 @@ namespace LM {
 		virtual void	draw_arc(float circumf, float xr, float yr, int fine) = 0;
 		virtual void	draw_arc_fill(float circumf, float xr, float yr, int fine) = 0;
 		virtual void	draw_arc_line(float circumf, float xr, float yr, int fine) = 0;
+		virtual void	draw_ring_fill(float circumf, float major, float minor, int fine) = 0;
 
 		virtual void	draw_rect(float w, float h) = 0;
 		virtual void	draw_rect_fill(float w, float h) = 0;

@@ -89,6 +89,7 @@ namespace LM {
 		GLint m_height;
 
 		GLfloat	m_arc_vertices[2*(MAX_ARC_FINE + 2)];
+		GLfloat	m_arc_colors[4*(MAX_ARC_FINE + 2)];
 
 		// Buffer objects
 		GLuint m_fbo;
@@ -104,6 +105,8 @@ namespace LM {
 		GLuint	m_bound_img;
 		bool	m_img_bound;
 		Color	m_color;
+		Color	m_color2;
+		bool	m_use_color2;
 		BlendMode m_mode;
 
 		int		m_stencil_depth;
@@ -168,7 +171,9 @@ namespace LM {
 		virtual void skew_x(float amount);
 		virtual void skew_y(float amount);
 
-		virtual void set_draw_color(Color c);
+		virtual void set_draw_color(const Color& c);
+		virtual void set_secondary_color(const Color& c);
+		virtual void use_secondary_color(bool use);
 		virtual void set_blend_mode(BlendMode m);
 
 		virtual const char* shader_directory() const;
@@ -182,6 +187,7 @@ namespace LM {
 		virtual void draw_arc(float circumf, float xr, float yr, int fine);
 		virtual void draw_arc_fill(float circumf, float xr, float yr, int fine);
 		virtual void draw_arc_line(float circumf, float xr, float yr, int fine);
+		virtual void draw_ring_fill(float circumf, float minor, float major, int fine);
 
 		virtual void draw_rect(float w, float h);
 		virtual void draw_rect_fill(float w, float h);

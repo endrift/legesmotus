@@ -87,6 +87,9 @@ Hud::Hud(ResourceCache* cache, Widget* parent) : Widget(parent), m_shadow_kernel
 	m_player_status = new Widget(this);
 	m_health = new ProgressBar(m_player_status);
 	m_weapon = new ProgressBar(m_player_status);
+
+	m_health_label = NULL;
+	m_weapon_label = NULL;
 }
 
 Hud::~Hud() {
