@@ -29,6 +29,7 @@
 // TODO #include "common/Point.hpp"
 #include "DrawContext.hpp"
 #include "pubsub.hpp"
+#include "common/Iterator.hpp"
 
 namespace LM {
 	class Widget : public Publisher {
@@ -62,7 +63,7 @@ namespace LM {
 		void	add_child(Widget* child, int priority = 0);
 		void	remove_child(Widget* child);
 		void	clear_children();
-		const std::multimap<int, Widget*>& get_children();
+		Iterator<std::pair<int, Widget*> > list_children();
 
 		Widget*	top_child_at(float x, float y);
 		std::multimap<int, Widget*> children_at(float x, float y);

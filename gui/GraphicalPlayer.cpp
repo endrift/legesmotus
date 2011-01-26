@@ -62,7 +62,7 @@ GraphicalPlayer::GraphicalPlayer(const char* name, uint32_t id, char team, Resou
 	m_blur->attach_shader(m_blur_shader);
 	m_blur->link();
 	ctx->bind_shader_set(m_blur);
-	m_blur->set_variable("d", 0.01f);
+	m_blur->set_variable("d", 0.02f);
 	m_blur->set_variable("tex", 0);
 	m_blur->set_variable("ksize", 3);
 	ctx->unbind_shader_set();

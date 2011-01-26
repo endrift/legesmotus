@@ -31,6 +31,7 @@
 #include <vector>
 #include <utility>
 #include "common/MapObject.hpp"
+#include "common/Iterator.hpp"
 
 class b2World;
 
@@ -60,11 +61,19 @@ namespace LM {
 		~GameLogic();
 
 		void add_player(Player* player);
+		// XXX why does this have a return value?
 		Player* remove_player(uint32_t id);
+		Player* get_player(const uint32_t id);
+		const Player* get_player(const uint32_t id) const;
+		Iterator<std::pair<uint32_t, Player*> > list_players();
+		int num_players() const;
 		
 		void add_weapon(size_t index, Weapon* weapon);
 		void clear_weapons();
-		const std::vector<Weapon*>& list_weapons() const;
+		Weapon* get_weapon(const uint32_t id);
+		const Weapon* get_weapon(const uint32_t id) const;
+		Iterator<Weapon*> list_weapons();
+		int num_weapons() const;
 		
 		void update_map();
 		Map* get_map();
@@ -77,10 +86,6 @@ namespace LM {
 		// Run the number of steps for a period of time, and return the number of unused ticks
 		uint64_t steps(uint64_t ticks);
 
-		Player* get_player(const uint32_t id);
-		const Player* get_player(const uint32_t id) const;
-		Weapon* get_weapon(const uint32_t id);
-		const Weapon* get_weapon(const uint32_t id) const;
 		b2World* get_world();
 		
 		// Attempt to jump off an obstacle

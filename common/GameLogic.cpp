@@ -93,6 +93,32 @@ Player* GameLogic::remove_player(uint32_t id) {
 	return player;
 }
 
+Player* GameLogic::get_player(const uint32_t id) {
+	if (m_players.find(id) == m_players.end()) {
+		WARN("No player found for id: " << id);
+		return NULL;
+	}
+
+	return m_players[id];
+}
+
+const Player* GameLogic::get_player(const uint32_t id) const {
+	if (m_players.find(id) == m_players.end()) {
+		WARN("No player found for id: " << id);
+		return NULL;
+	}
+
+	return m_players.find(id)->second;
+}
+
+Iterator<pair<uint32_t, Player*> > GameLogic::list_players() {
+	return Iterator<pair<uint32_t, Player*> >(new StdMapIterator<uint32_t, Player*>(&m_players));
+}
+
+int GameLogic::num_players() const {
+	return m_players.size();
+}
+
 void GameLogic::add_weapon(size_t index, Weapon* weapon) {
 	while(index > m_weapons.size()) {
 		m_weapons.push_back(NULL);
@@ -113,8 +139,26 @@ void GameLogic::clear_weapons() {
 	m_weapons.clear();
 }
 
-const vector<Weapon*>& GameLogic::list_weapons() const {
-	return m_weapons;
+Weapon* GameLogic::get_weapon(const uint32_t id) {
+	if (id >= m_weapons.size()) {
+		return NULL;
+	}
+	return m_weapons.at(id);
+}
+
+const Weapon* GameLogic::get_weapon(const uint32_t id) const {
+	if (id >= m_weapons.size()) {
+		return NULL;
+	}
+	return m_weapons.at(id);
+}
+
+Iterator<Weapon*> GameLogic::list_weapons() {
+	return Iterator<Weapon*>(new StdVectorIterator<Weapon*>(&m_weapons));
+}
+
+int GameLogic::num_weapons() const {
+	return m_weapons.size();
 }
 
 void GameLogic::step() {
@@ -151,38 +195,6 @@ uint64_t GameLogic::steps(uint64_t ticks) {
 		step();
 	}
 	return modf(nsteps, &dummy)*(1000.0f*PHYSICS_TIMESTEP);
-}
-
-Player* GameLogic::get_player(const uint32_t id) {
-	if (m_players.find(id) == m_players.end()) {
-		WARN("No player found for id: " << id);
-		return NULL;
-	}
-
-	return m_players[id];
-}
-
-const Player* GameLogic::get_player(const uint32_t id) const {
-	if (m_players.find(id) == m_players.end()) {
-		WARN("No player found for id: " << id);
-		return NULL;
-	}
-
-	return m_players.find(id)->second;
-}
-
-Weapon* GameLogic::get_weapon(const uint32_t id) {
-	if (id >= m_weapons.size()) {
-		return NULL;
-	}
-	return m_weapons.at(id);
-}
-
-const Weapon*	GameLogic::get_weapon(const uint32_t id) const {
-	if (id >= m_weapons.size()) {
-		return NULL;
-	}
-	return m_weapons.at(id);
 }
 
 b2World* GameLogic::get_world() {

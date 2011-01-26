@@ -114,7 +114,7 @@ void HumanController::update(uint64_t diff, const GameLogic& state) {
 	m_changes[m_changeset] = NO_CHANGE;
 	m_changeset ^= 1;
 
-	int nweapons = state.list_weapons().size();
+	int nweapons = state.num_weapons();
 	if (m_wdelta) {
 		m_nextweapon += m_wdelta;
 		if (m_nextweapon < 0) {

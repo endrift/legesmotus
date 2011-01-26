@@ -98,8 +98,8 @@ void Widget::clear_children() {
 	}
 }
 
-const multimap<int, Widget*>& Widget::get_children() {
-	return m_children;
+Iterator<std::pair<int, Widget*> > Widget::list_children() {
+	return Iterator<pair<int, Widget*> >(new StdMultiMapIterator<int, Widget*>(&m_children));
 }
 
 Widget* Widget::top_child_at(float x, float y) {
