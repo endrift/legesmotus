@@ -53,23 +53,17 @@ Weapon*	Weapon::new_weapon (WeaponReader& data, ClientWeapon* clientpart) {
 	Weapon* weapon = NULL;
 
 	if (strcasecmp(weapon_type, "standard") == 0) {
-		INFO("Standard.");
 		weapon = new StandardGun(weapon_id);
 	} else if (strcasecmp(weapon_type, "spread") == 0) {
-		INFO("Spread.");
 		weapon = new StandardGun(weapon_id);
 	} else if (strcasecmp(weapon_type, "impact") == 0) {
-		INFO("Impact.");
 		weapon = new AreaGun(weapon_id);
 	} else if (strcasecmp(weapon_type, "thaw") == 0) {
-		INFO("Thaw.");
 		weapon = new StandardGun(weapon_id);
 	} else if (strcasecmp(weapon_type, "area") == 0) {
-		INFO("Area.");
 		weapon = new AreaGun(weapon_id);
 	//} else if (strcasecmp(weapon_type, "charge") == 0) { 
 	} else if (strcasecmp(weapon_type, "penetration") == 0)	{
-		INFO("Penetration.");
 		weapon = new StandardGun(weapon_id);
 	} else {
 		WARN("Error: unknown weapon type: " << weapon_type);

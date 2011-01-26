@@ -28,7 +28,7 @@
 #include "Widget.hpp"
 #include "common/misc.hpp"
 #include "ConvolveKernel.hpp"
-#include "newclient/GameLogic.hpp"
+#include "common/GameLogic.hpp"
 
 namespace LM {
 	class GraphicalPlayer;

@@ -79,7 +79,9 @@ uint64_t Client::step(uint64_t diff) {
 	}
 
 	if (m_jumping) {
-		m_logic->attempt_jump(m_player_id, m_controller->get_aim());
+		if (m_logic->attempt_jump(m_player_id, m_controller->get_aim())) {
+			generate_player_jumped(m_player_id, m_controller->get_aim());
+		}
 	}
 	
 	// Handle firing
@@ -93,19 +95,12 @@ uint64_t Client::step(uint64_t diff) {
 		set_curr_weapon(m_controller->get_weapon());
 	}
 	
-	bool already_frozen = player->is_frozen();
-	
 	// Step the GameLogic.
 	diff = m_logic->steps(diff);
 
 	Packet p;
 	generate_player_update(m_player_id, &p);
 	m_network.send_packet(&p);
-	
-	// Check if our player was killed by a map hazard this frame:
-	if (!already_frozen && player->is_frozen() && player->get_energy() == 0) {
-		generate_player_died(m_player_id, 0, false);
-	}
 	
 	// Check the weapon for hitting any players:
 	check_player_hits();
@@ -142,7 +137,8 @@ void Client::remove_player(uint32_t id) {
 }
 
 void Client::remove_player(uint32_t id, const string& reason) {
-	m_logic->remove_player(id);
+	Player* deleted_player = m_logic->remove_player(id);
+	delete deleted_player;
 }
 
 Player* Client::get_player(uint32_t id) {
@@ -163,24 +159,13 @@ void Client::update_gates() {
 	}
 	
 	char team = get_other_team(player->get_team());
-
-	if (m_logic->is_engaging_gate(m_player_id, team)) {
-		if (!m_engaging_gate) {
-			generate_gate_update(m_player_id, team, true);
-		}
-		m_engaging_gate = true;
-	} else {
-		if (m_engaging_gate) {
-			generate_gate_update(m_player_id, team, false);
-		}
-		m_engaging_gate = false;
-	}
 }
 
 void Client::attempt_firing() {
-	bool fired_successfully = m_logic->attempt_fire(m_player_id, m_curr_weapon, m_controller->get_aim());
+	Packet weapon_discharged(WEAPON_DISCHARGED_PACKET);
+	bool fired_successfully = m_logic->attempt_fire(m_player_id, m_curr_weapon, m_controller->get_aim(), &(weapon_discharged.weapon_discharged));
 	if (fired_successfully) {
-		generate_weapon_fired(m_curr_weapon, m_player_id);
+		m_network.send_packet(&weapon_discharged);
 	}
 }
 
@@ -214,18 +199,6 @@ void Client::generate_weapon_fired(uint32_t weapon_id, uint32_t player_id) {
 	m_network.send_packet(&weapon_discharged);
 }
 
-void Client::generate_gate_update(uint32_t player_id, char team, bool holding) {
-	Packet gate_update(GATE_UPDATE_PACKET);
-	
-	gate_update.gate_update.acting_player_id = player_id;
-	gate_update.gate_update.team = team;
-	
-	// TODO: Fix this packet's construction to add the rest of the values, once the server is changed.
-	gate_update.gate_update.progress = (holding ? 1:0);
-	
-	m_network.send_reliable_packet(&gate_update);
-}
-
 void Client::generate_player_died(uint32_t killed_player_id, uint32_t killer_id, bool killer_is_player = false) {
 	Packet player_died(PLAYER_DIED_PACKET);
 	player_died.player_died.killed_player_id = killed_player_id;
@@ -233,6 +206,13 @@ void Client::generate_player_died(uint32_t killed_player_id, uint32_t killer_id,
 	player_died.player_died.killer_type = (killer_is_player ? 0 : 1);
 	
 	m_network.send_reliable_packet(&player_died);
+}
+
+void Client::generate_player_jumped(uint32_t player_id, float angle) {
+	Packet player_jumped(PLAYER_JUMPED_PACKET);
+	player_jumped.player_jumped.player_id = player_id;
+	player_jumped.player_jumped.direction = angle;
+	m_network.send_reliable_packet(&player_jumped);
 }
 
 GameLogic* Client::get_game() {
@@ -323,21 +303,31 @@ void Client::connect(const IPAddress& server_address) {
 }
 
 void Client::player_update(const Packet& p) {
-	Player* player = get_player(p.player_update.player_id);
+	Packet::PlayerUpdate update = Packet::PlayerUpdate(p.player_update);
+	Player* player = get_player(update.player_id);
 	if (player == NULL) {
 		return;
 	}
-	player->read_player_update(p.player_update);
+	
+	// Don't let the server tell us which weapon our own player is using.
+	if (update.player_id == m_player_id) {
+		update.current_weapon_id = player->get_current_weapon_id();
+	}
+	
+	player->read_player_update(update);
 
 	// XXX if Weapon::select ever has side effects, we need to have a different way of updating the other players' weapons
-	Weapon* weapon = get_game()->get_weapon(p.player_update.current_weapon_id);
+	Weapon* weapon = get_game()->get_weapon(update.current_weapon_id);
 	if (weapon != NULL) {
 		weapon->select(player);
 	}
 }
 
 void Client::weapon_discharged(const Packet& p) {
-	// TODO: Make this do something???
+	Weapon* weapon = m_logic->get_weapon(p.weapon_discharged.weapon_id);
+	if (weapon != NULL) {
+		weapon->was_fired(m_logic->get_world(), *m_logic->get_player(p.weapon_discharged.player_id), *(p.weapon_discharged.extradata));
+	}
 }
 
 void Client::player_hit(const Packet& p) {
@@ -351,14 +341,13 @@ void Client::player_hit(const Packet& p) {
 		return;
 	}
 	
-	bool already_frozen = hit_player->is_frozen();
-	
-	m_logic->get_weapon(p.player_hit.weapon_id)->hit(hit_player, &p.player_hit);
-	
-	// Send a player_died packet if necessary.
-	if (p.player_hit.shot_player_id == m_player_id && hit_player->is_frozen() && !already_frozen) {
-		generate_player_died(p.player_hit.shot_player_id, p.player_hit.shooter_id, true);
+	Player* firing_player = m_logic->get_player(p.player_hit.shooter_id);
+	if (firing_player == NULL) {
+		WARN("Shot fired by player that doesn't exist: " << p.player_hit.shooter_id);
+		return;
 	}
+	
+	m_logic->get_weapon(p.player_hit.weapon_id)->hit(hit_player, firing_player, &p.player_hit);
 }
 
 void Client::new_round(const Packet& p) {
@@ -462,6 +451,16 @@ void Client::team_change(const Packet& p) {
 		return;
 	}
 	team_change(player, p.team_change.name);
+}
+
+void Client::player_died(const Packet& p) {
+	//TODO: Do we need to do anything else here?
+	DEBUG("Player died: " << p.player_died.killed_player_id);
+	Player* player = get_player(p.player_died.killed_player_id);
+	if (player == NULL) {
+		return;
+	}
+	player->set_is_frozen(true, p.player_died.freeze_time);
 }
 
 void Client::weapon_info(const Packet& p) {

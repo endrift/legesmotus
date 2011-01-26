@@ -114,7 +114,9 @@ void Gate::set_progress(float progress) {
 	
 	m_progress = progress;
 	
-	get_client_part()->set_scale_y(1.0f - progress);
+	if (get_client_part() != NULL) {
+		get_client_part()->set_scale_y(1.0f - progress);
+	}
 }
 
 void Gate::init(MapReader* reader) {

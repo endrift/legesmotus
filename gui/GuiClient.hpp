@@ -119,6 +119,8 @@ namespace LM {
 		virtual void system_event(const SystemEvent& event);
 		
 		virtual void disconnect();
+		
+		virtual void round_over(const Packet& p);
 	};
 }
 

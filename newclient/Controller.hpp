@@ -28,7 +28,7 @@
 #include <string>
 #include <stdint.h>
 
-#include "GameLogic.hpp"
+#include "common/GameLogic.hpp"
 
 namespace LM {
 	class Player;

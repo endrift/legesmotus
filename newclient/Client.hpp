@@ -67,8 +67,8 @@ namespace LM {
 		
 		void generate_player_update(uint32_t id, Packet* p);
 		void generate_weapon_fired(uint32_t weapon_id, uint32_t player_id);
-		void generate_gate_update(uint32_t player_id, char team, bool holding);
 		void generate_player_died(uint32_t died_id, uint32_t killer_id, bool killer_is_player);
+		void generate_player_jumped(uint32_t player_id, float angle);
 
 		GameLogic* get_game();
 		Weapon* get_curr_weapon();
@@ -122,7 +122,7 @@ namespace LM {
 		//virtual void map_info(const Packet& p);
 		//virtual void map_object(const Packet& p);
 		//virtual void game_param(const Packet& p);
-		//virtual void player_died(const Packet& p);
+		virtual void player_died(const Packet& p);
 		virtual void weapon_info(const Packet& p);
 		virtual void round_start(const Packet& p);
 		virtual void spawn(const Packet& p);

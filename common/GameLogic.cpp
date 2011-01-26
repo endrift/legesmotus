@@ -66,6 +66,12 @@ Map* GameLogic::get_map() {
 	return m_map;
 }
 
+Map* GameLogic::unregister_map() {
+	Map* old_map = m_map;
+	m_map = NULL;
+	return old_map;
+}
+
 const Map* GameLogic::get_map() const {
 	return m_map;
 }
@@ -81,10 +87,10 @@ void GameLogic::add_player(Player* player) {
 	m_players[player->get_id()] = player;
 }
 
-void GameLogic::remove_player(uint32_t id) {
+Player* GameLogic::remove_player(uint32_t id) {
 	Player* player = m_players[id];
 	m_players.erase(id);
-	delete player;
+	return player;
 }
 
 void GameLogic::add_weapon(size_t index, Weapon* weapon) {
@@ -183,11 +189,11 @@ b2World* GameLogic::get_world() {
 	return m_physics;
 }
 
-void GameLogic::attempt_jump(uint32_t player_id, float angle) {
+bool GameLogic::attempt_jump(uint32_t player_id, float angle) {
 	Player* player = get_player(player_id);
 	
 	if (player == NULL) {
-		return;
+		return false;
 	}
 
 	if (player->is_grabbing_obstacle() && !player->is_frozen() && !player->is_invisible()) {
@@ -195,10 +201,12 @@ void GameLogic::attempt_jump(uint32_t player_id, float angle) {
 	
 		player->apply_force(b2Vec2(JUMP_STRENGTH * cos(angle), JUMP_STRENGTH  * sin(angle)));
 		player->apply_torque(-1*(JUMP_ROTATION/2.0f) + (float)rand()/(float)RAND_MAX * JUMP_ROTATION);
+		return true;
 	}
+	return false;
 }
 
-bool GameLogic::attempt_fire(uint32_t player_id, uint32_t weapon_id, float angle) {
+bool GameLogic::attempt_fire(uint32_t player_id, uint32_t weapon_id, float angle, Packet::WeaponDischarged* packet) {
 	Weapon* weapon = get_weapon(weapon_id);
 	Player* player = get_player(player_id);
 	
@@ -210,7 +218,7 @@ bool GameLogic::attempt_fire(uint32_t player_id, uint32_t weapon_id, float angle
 		return false;
 	}
 	
-	weapon->fire(m_physics, *player, player->get_position(), angle);
+	weapon->fire(m_physics, *player, player->get_position(), angle, packet);
 	return true;
 }
 

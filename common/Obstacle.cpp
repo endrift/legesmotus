@@ -79,7 +79,7 @@ MapObject::CollisionResult Obstacle::collide(PhysicsObject* other, b2Contact* co
 		
 		if ((m_team == 0 || player->get_team() != m_team) && !player->is_frozen()) {
 			if (m_freeze_on_hit != 0) {
-				player->set_is_frozen(true, m_freeze_on_hit);
+				player->set_is_frozen(true, m_freeze_on_hit, this);
 				player->apply_force(b2Vec2(m_repel_velocity * repel_normal.x, m_repel_velocity * repel_normal.y));
 			}
 		
@@ -89,7 +89,7 @@ MapObject::CollisionResult Obstacle::collide(PhysicsObject* other, b2Contact* co
 		
 				// Freeze 'em if they're dead.
 				if (player->get_energy() == 0) {
-					player->set_is_frozen(true, m_freeze_time);
+					player->set_is_frozen(true, m_freeze_time, this);
 					player->apply_force(b2Vec2(m_repel_velocity * repel_normal.x, m_repel_velocity * repel_normal.y));
 					m_last_damage_time = 0;
 				}
@@ -123,8 +123,9 @@ void Obstacle::interact(PhysicsObject* other, b2Contact* contact) {
 
 		// Freeze 'em if they're dead.
 		if (player->get_energy() == 0) {
-			player->set_is_frozen(true, m_freeze_time);
-			player->apply_force(b2Vec2(m_repel_velocity * repel_normal.x, m_repel_velocity * repel_normal.y));
+			player->set_is_frozen(true, m_freeze_time, this);
+			player->set_is_grabbing_obstacle(false);
+			player->apply_delayed_force(b2Vec2(m_repel_velocity * repel_normal.x, m_repel_velocity * repel_normal.y));
 			m_last_damage_time = 0;
 		}
 	}

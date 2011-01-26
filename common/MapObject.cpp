@@ -131,5 +131,9 @@ b2Shape* MapObject::make_bounding_shape(const std::string& shape_string) {
 void MapObject::init(MapReader* reader) {
 	if (m_clientpart != NULL) {
 		m_clientpart->read(reader, this);
+	} else {
+		// XXX: We shouldn't have to do this, but for now we have to read the graphic name to get it out of the way.
+		string graphic_name;
+		(*reader) >> graphic_name;
 	}
 }

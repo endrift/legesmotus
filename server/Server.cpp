@@ -39,6 +39,8 @@
 #include "common/PathManager.hpp"
 #include "common/timer.hpp"
 #include "common/Version.hpp"
+#include "common/GameLogic.hpp"
+#include "common/Weapon.hpp"
 #include <string>
 #include <cstdlib>
 #include <cstring>
@@ -66,6 +68,8 @@ Server::Server (ServerConfig& config, PathManager& path_manager) : m_config(conf
 
 	m_team_count[0] = m_team_count[1] = 0;
 	m_team_score[0] = m_team_score[1] = 0;
+	
+	m_game_logic = NULL;
 }
 
 void	Server::player_update(const IPAddress& address, PacketReader& inbound_packet)
@@ -85,7 +89,7 @@ void	Server::player_update(const IPAddress& address, PacketReader& inbound_packe
 		// Re-broadcast the packet to all _other_ players
 		PacketWriter	outbound_packet(PLAYER_UPDATE_PACKET);
 		player->write_update_packet(outbound_packet);
-		broadcast_packet_except(outbound_packet, player_id);
+		m_network.broadcast_packet(outbound_packet);
 	}
 }
 
@@ -370,11 +374,18 @@ void	Server::command_server(uint32_t player_id, const char* command) {
 void	Server::player_hit(const IPAddress& address, PacketReader& inbound_packet)
 {
 	uint32_t shooter_id;
-	string weapon_name;
+	int weapon_id;
 	uint32_t shot_player_id;
 	bool has_effect;
 
-	inbound_packet >> shooter_id >> weapon_name >> shot_player_id >> has_effect;
+	inbound_packet >> shooter_id >> weapon_id >> shot_player_id >> has_effect;
+		
+	Packet::PlayerHit hitdata = Packet::PlayerHit();
+	hitdata.shooter_id = shooter_id;
+	hitdata.weapon_id = weapon_id;
+	hitdata.shot_player_id = shot_player_id;
+	hitdata.has_effect = has_effect;
+	hitdata.extradata = inbound_packet.get_rest();
 
 	if (!is_authorized(address, shooter_id)) {
 		return;
@@ -389,11 +400,25 @@ void	Server::player_hit(const IPAddress& address, PacketReader& inbound_packet)
 
 	// Tell the current game mode that this player was shot
 	has_effect = m_game_mode->player_shot(*shooter, *shot_player);
+	
+	if (shot_player == NULL) {
+		WARN("Shot hit player that doesn't exist: " << shot_player_id);
+		return;
+	}
+	
+	bool already_frozen = shot_player->is_frozen();
+	
+	m_game_logic->get_weapon(weapon_id)->hit(shot_player, shooter, &hitdata);
 
 	// Inform the victim that he has been hit
 	PacketWriter		outbound_packet(PLAYER_HIT_PACKET);
-	outbound_packet << shooter_id << weapon_name << shot_player_id << has_effect << inbound_packet;
+	outbound_packet << shooter_id << weapon_id << shot_player_id << has_effect << hitdata.extradata;
 	m_network.send_reliable_packet(shot_player->get_address(), outbound_packet);
+	
+	// Send a player_died packet if necessary.
+	if (shot_player->is_frozen() && !already_frozen) {
+		broadcast_player_died(shooter);
+	}
 }
 
 void	Server::player_died(const IPAddress& address, PacketReader& packet)
@@ -424,12 +449,21 @@ void	Server::weapon_discharged(const IPAddress& address, PacketReader& inbound_p
 {
 	// Just broadcast this packet to all other players
 	uint32_t		shooter_id;
-	inbound_packet >> shooter_id;
+	int			weapon_id;
+	string			extradata;
+	inbound_packet >> shooter_id >> weapon_id >> extradata;
 
 	if (is_authorized(address, shooter_id)) {
 		// Re-broadcast the packet to all _other_ players
 		PacketWriter	outbound_packet(WEAPON_DISCHARGED_PACKET);
-		outbound_packet << shooter_id << inbound_packet;
+		outbound_packet << shooter_id << weapon_id << extradata;
+		
+		// Tell the game logic that there was a weapon fired.
+		Weapon* weapon = m_game_logic->get_weapon(weapon_id);
+		if (weapon != NULL) {
+			weapon->was_fired(m_game_logic->get_world(), *m_game_logic->get_player(shooter_id), extradata);
+		}
+		
 		broadcast_packet_except(outbound_packet, shooter_id);
 	}
 }
@@ -568,6 +602,11 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 		// Spawn this player frozen
 		spawn_player(new_player, m_params.late_join_delay);
 	}
+	
+	// Add the player to our Game Logic, if necessary:
+	if (m_game_logic != NULL) {
+		m_game_logic->add_player(&new_player);
+	}
 }
 
 void	Server::info(const IPAddress& address, PacketReader& request_packet) {
@@ -579,6 +618,22 @@ void	Server::info(const IPAddress& address, PacketReader& request_packet) {
 	PacketWriter	response_packet(INFO_server_PACKET);
 	response_packet << scan_id << scan_start_time << PROTOCOL_VERSION << COMPAT_VERSION << m_current_map.get_name() << m_team_count[0] << m_team_count[1] << m_params.max_players << get_ticks() << gametime_left() << m_server_name << m_server_location;
 	m_network.send_packet(address, response_packet);
+}
+
+void	Server::player_jumped(const IPAddress& address, PacketReader& packet) {
+	uint32_t	player_id;
+	float		direction;
+	packet >> player_id >> direction;
+	
+	if (is_authorized(address, player_id)) {
+		// Re-broadcast the packet to all _other_ players
+		PacketWriter	outbound_packet(PLAYER_JUMPED_PACKET);
+		outbound_packet << player_id << direction;
+		
+		m_game_logic->attempt_jump(player_id, direction);
+		
+		broadcast_packet_except(outbound_packet, player_id);
+	}
 }
 
 // Reset the scores for all players, broadcasting score updates for each one
@@ -628,6 +683,11 @@ void	Server::remove_player(ServerPlayer& player, const char* leave_message) {
 	const uint32_t	player_id = player.get_id();
 
 	m_timeout_queue.erase(player.get_timeout_queue_position());
+
+	// Remove this player from the game logic
+	if (m_game_logic != NULL) {
+		m_game_logic->remove_player(player_id);
+	}
 
 	// Broadcast to the game that this player has left
 	PacketWriter	leave_packet(LEAVE_PACKET);
@@ -709,6 +769,10 @@ void	Server::start()
 void	Server::run()
 {
 	m_is_running = true;
+	uint64_t last_logic_update = get_ticks();
+	
+	set<uint32_t> frozen_players;
+	
 	while (m_is_running) {
 		timeout_players();
 		m_network.resend_acks();
@@ -743,7 +807,44 @@ void	Server::run()
 
 		} else if (waiting_to_spawn()) {
 			if (time_until_spawn() == 0) {
+				frozen_players.clear();
 				start_game();
+			}
+		}
+		
+		uint64_t diff = get_ticks() - last_logic_update;
+		if (diff > 10) {
+			last_logic_update = get_ticks();
+			if (m_game_logic != NULL) {
+				uint64_t extratime = m_game_logic->steps(diff);
+				
+				// Keep track of the extra time between updates.
+				last_logic_update -= extratime;
+				
+				// Check for newly-dead players or players engaging gates:
+				for (PlayerMap::iterator it(m_players.begin()); it != m_players.end(); ++it) {
+					ServerPlayer& player = it->second;
+					// Check for gates
+					char team = get_other_team(player. get_team());
+					bool is_engaged = m_game_logic->is_engaging_gate(player.get_id(), team);
+					if (get_gate(team).set_engagement(is_engaged, player.get_id())) {
+						report_gate_status(team, is_engaged ? 1 : -1, player.get_id());
+					}
+				
+					// Check for frozen
+					if (frozen_players.find(player.get_id()) != frozen_players.end()) {
+						if (!player.is_frozen()) {
+							frozen_players.erase(player.get_id());
+						}
+					} else {
+						if (player.is_frozen()) {
+							frozen_players.insert(player.get_id());
+							if (player.get_freeze_source() != NULL) {
+								broadcast_player_died(&player);
+							}
+						}
+					}
+				}
 			}
 		}
 		
@@ -815,6 +916,9 @@ void	Server::broadcast_reliable_packet_except(const PacketWriter& packet, uint32
 
 void	Server::new_game() {
 	m_game_start_time = get_ticks();
+	
+	delete_game_logic();
+	
 	m_players_have_spawned = false;
 	m_gates[0].reset();
 	m_gates[1].reset();
@@ -838,6 +942,10 @@ void	Server::game_over(char winning_team) {
 	m_gates[1].reset();
 	m_game_start_time = 0;
 	m_players_have_spawned = false;
+	
+	string mapname = m_current_map.get_name();
+	m_current_map.clear();
+	load_map(mapname.c_str());
 }
 
 void	Server::start_game() {
@@ -845,9 +953,27 @@ void	Server::start_game() {
 	reset_player_scores();
 
 	m_players_have_spawned = true;
+	
 	m_current_map.reset();
+	
+	// Initialize the Game Logic
+	delete_game_logic();
+	m_game_logic = new GameLogic(&m_current_map);
+	
+	const std::list<WeaponReader>&	const_weapons(m_weapon_set.get_weapons());
+	std::list<WeaponReader> weapons(const_weapons);
+	size_t index = 0;
+
+	for (std::list<WeaponReader>::iterator it(weapons.begin()); it != weapons.end(); ++it) {
+		Weapon* weapon = Weapon::new_weapon(*it);
+		m_game_logic->add_weapon(index, weapon);
+		index++;
+	}
+	
+	m_game_logic->update_map();
 
 	for (PlayerMap::iterator it(m_players.begin()); it != m_players.end(); ++it) {
+		m_game_logic->add_player(&(it->second));
 		spawn_player(it->second);
 	}
 
@@ -865,6 +991,16 @@ void	Server::spawn_waiting_players() {
 bool	Server::spawn_player(ServerPlayer& player, uint64_t freeze_time) {
 	if (const Spawnpoint* point = m_current_map.next_spawnpoint(player.get_team())) {
 		player.set_spawnpoint(point);
+		player.set_position(point->get_point());
+		player.set_velocity(point->get_initial_velocity());
+		player.set_is_grabbing_obstacle(point->is_grabbing_obstacle());
+		player.set_is_invisible(false);
+		if (freeze_time == 0) {
+			player.set_is_frozen(false);
+			player.set_energy(Player::MAX_ENERGY);
+		} else {
+			player.set_is_frozen(true, freeze_time);
+		}
 		send_spawn_packet(player, point, true, freeze_time);
 		return true;
 	} else {
@@ -945,6 +1081,19 @@ void	Server::report_gate_status(char team, int change_in_players, uint32_t actin
 	} else {
 		// This is a general update - it is sent often, so reliability isn't important
 		m_network.broadcast_packet(packet);
+	}
+}
+
+void Server::delete_game_logic() {
+	if (m_game_logic != NULL) {
+		m_game_logic->unregister_map();
+		for (PlayerMap::iterator players(m_players.begin()); players != m_players.end(); ++players) {
+			players->second.set_attach_joint(NULL);
+			players->second.set_is_invisible(true);
+			m_game_logic->remove_player(players->second.get_id());
+		}
+		delete m_game_logic;
+		m_game_logic = NULL;
 	}
 }
 
@@ -1322,6 +1471,33 @@ void	Server::send_round_start_packet(const ServerPlayer* player) {
 	packet << gametime_left();
 	if (player) {
 		m_network.send_reliable_packet(player->get_address(), packet);
+	} else {
+		m_network.broadcast_reliable_packet(packet);
+	}
+}
+
+void	Server::broadcast_player_died(const ServerPlayer* dead_player, const ServerPlayer* except) {
+	PacketWriter	packet(PLAYER_DIED_PACKET);
+	
+	PhysicsObject* killer = dead_player->get_freeze_source();
+	if (killer == NULL) {
+		return;
+	}
+	
+	packet << dead_player->get_id();
+
+	if (killer->get_type() == MapObject::PLAYER) {
+		packet << (static_cast<Player*>(killer))->get_id();
+	} else {
+		packet << 0;
+	}
+	
+	packet << dead_player->get_freeze_time();
+	
+	packet << killer->get_type();
+	
+	if (except) {
+		m_network.send_reliable_packet(except->get_address(), packet);
 	} else {
 		m_network.broadcast_reliable_packet(packet);
 	}

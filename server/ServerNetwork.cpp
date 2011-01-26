@@ -84,6 +84,20 @@ void	ServerNetwork::broadcast_reliable_packet(const PacketWriter& packet, const 
 	}
 }
 
+void	ServerNetwork::broadcast_reliable_packet(Packet* packet, const IPAddress* exclude_peer) {
+	AckManager::PacketHandle	ack_handle(m_ack_manager.add_broadcast_packet(*packet));
+
+	for (std::map<IPAddress, Peer>::iterator it(m_peers.begin()); it != m_peers.end(); ++it) {
+		if (exclude_peer && *exclude_peer == it->first) {
+			continue;
+		}
+
+		PacketHeader header = PacketHeader(packet->type, it->second.next_sequence_no++, it->second.connection_id);
+		send_packet_to(it->first, packet);
+		m_ack_manager.add_broadcast_recipient(ack_handle, it->first, header);
+	}
+}
+
 bool	ServerNetwork::receive_packets(uint32_t timeout) {
 #ifndef __WIN32
 	// Now is an ideal time to handle signals, so unblock all signals
@@ -214,6 +228,10 @@ void	ServerNetwork::process_packet(const IPAddress& address, PacketReader& reade
 
 	case PLAYER_DIED_PACKET:
 		m_server.player_died(address, reader);
+		break;
+		
+	case PLAYER_JUMPED_PACKET:
+		m_server.player_jumped(address, reader);
 		break;
 	}
 }

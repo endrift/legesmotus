@@ -227,8 +227,8 @@ void GraphicalPlayer::set_is_invisible(bool invisible) {
 	m_graphic_root.set_drawable(!invisible);
 }
 
-void GraphicalPlayer::set_is_frozen(bool is_frozen, int64_t freeze_time) {
-	Player::set_is_frozen(is_frozen, freeze_time);
+void GraphicalPlayer::set_is_frozen(bool is_frozen, int64_t freeze_time, PhysicsObject* source) {
+	Player::set_is_frozen(is_frozen, freeze_time, source);
 	Graphic* graphic = m_graphic_root.get_texture();
 	if (is_frozen) {
 		graphic->set_shader_set(m_blur);

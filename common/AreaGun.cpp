@@ -90,7 +90,7 @@ bool AreaGun::parse_param(const char* param_string) {
 	return true;
 }
 
-void AreaGun::fire(b2World* physics, Player& player, Point start, float direction) {
+Packet::WeaponDischarged* AreaGun::fire(b2World* physics, Player& player, Point start, float direction, Packet::WeaponDischarged* packet) {
 	m_physics = physics;
 	
 	m_last_fired_time = get_ticks();
@@ -101,18 +101,11 @@ void AreaGun::fire(b2World* physics, Player& player, Point start, float directio
 	
 		if (m_current_ammo == 0) {
 			// Out of ammo
-			return;
+			return NULL;
 		}
 		--m_current_ammo;
 	}
 	
-	// Apply recoil and energy cost if necessary.
-	player.apply_force(b2Vec2(m_recoil * 100 * cos(M_PI + direction), m_recoil * 100 * sin(M_PI + direction)));
-	player.change_energy(-1 * m_energy_cost);
-	if (player.get_energy() <= 0) {
-		player.set_is_frozen(true, m_freeze_time);
-	}
-		
 	float currdirection = direction;
 	
 	b2BodyDef body_def;
@@ -135,7 +128,7 @@ void AreaGun::fire(b2World* physics, Player& player, Point start, float directio
 	
 	if (m_area == NULL) {
 		WARN("No area for AreaGun that should have a bounding area.");
-		return;
+		return NULL;
 	}
 	
 	b2FixtureDef areadef;
@@ -147,9 +140,35 @@ void AreaGun::fire(b2World* physics, Player& player, Point start, float directio
 	newbody->CreateFixture(&areadef);
 	
 	newbody->SetUserData((void*)m_shot);
+	
+	packet->player_id = player.get_id();
+	packet->weapon_id = get_id();
+	std::stringstream out;
+	out << start.x << " " << start.y << " " << direction;
+	packet->extradata = out.str();
+	
+	was_fired(physics, player, out.str());
+	
+	return packet;
 }
 
-void AreaGun::hit(Player* hit_player, const Packet::PlayerHit* p) {
+void AreaGun::was_fired(b2World* physics, Player& player, std::string extradata) {
+	stringstream s(extradata);
+	float start_x;
+	float start_y;
+	float direction;
+	
+	s >> start_x >> start_y >> direction;
+	
+	// Apply recoil and energy cost if necessary.
+	player.apply_force(b2Vec2(m_recoil * 100 * cos(M_PI + direction), m_recoil * 100 * sin(M_PI + direction)));
+	player.change_energy(-1 * m_energy_cost);
+	if (player.get_energy() <= 0) {
+		player.set_is_frozen(true, m_freeze_time, &player);
+	}
+}
+
+void AreaGun::hit(Player* hit_player, Player* firing_player, const Packet::PlayerHit* p) {
 	string extradata = *p->extradata.item;
 	stringstream s(extradata);
 	
@@ -286,7 +305,7 @@ Packet::PlayerHit* AreaGun::generate_next_hit_packet(Packet::PlayerHit* p, Playe
 	out << nextdata.angle << " " << to_physics(nextdata.point.x) << " " << to_physics(nextdata.point.y) << " " << actualdamage;
 	p->extradata = out.str();
 
-	hit(hit_player, p);
+	hit(hit_player, shooter, p);
 
 	return p;
 }

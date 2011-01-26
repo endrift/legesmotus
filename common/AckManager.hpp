@@ -106,6 +106,7 @@ namespace LM {
 		// It returns an opaque PacketHandle object.
 		// Add each recipient of the broadcast packet by calling add_broadcast_recipient with the PacketHandle object.
 		PacketHandle	add_broadcast_packet(const std::string& data);
+		PacketHandle	add_broadcast_packet(const Packet& packet);
 		void		add_broadcast_recipient(PacketHandle, const IPAddress& peer_addr, const PacketHeader& header);
 
 		// Call ack() when an ACK is received from the given peer for the given sequence number

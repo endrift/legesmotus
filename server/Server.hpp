@@ -47,6 +47,7 @@ namespace LM {
 	class PathManager;
 	class IPAddress;
 	class ServerConfig;
+	class GameLogic;
 	
 	class Server {
 	public:
@@ -90,7 +91,8 @@ namespace LM {
 		ServerPlayer::Queue	m_timeout_queue;	// A list of players in the order in which they will timeout
 		int			m_team_count[2];	// [0] = # of players on team A  [1] == # of players on team B
 		int			m_team_score[2];	// [0] = team A's score  [1] = team B's score
-	
+		
+		GameLogic*		m_game_logic;
 	
 		//
 		// Meta server stuff
@@ -116,6 +118,9 @@ namespace LM {
 		void			report_gate_status(char team, int change_in_players, uint32_t acting_player_id);
 	
 	
+		// Game logic stuff:
+		void			delete_game_logic();
+	
 		//
 		// Network Helpers
 		//
@@ -136,6 +141,7 @@ namespace LM {
 		// Broadcast various packets (if player is NULL, broadcast to all players, otherwise send only to the one player)
 		void			send_new_round_packets(const ServerPlayer* player =NULL); // Also broadcasts game and weapon info
 		void			send_round_start_packet(const ServerPlayer* player =NULL);
+		void			broadcast_player_died(const ServerPlayer* dead_player, const ServerPlayer* except = NULL);
 
 		// Send all the relevant game parameters to the client (should be called at the beginning of each new game)
 		// If player is NULL, broadcast to all players, otherwise only to specific player
@@ -272,6 +278,7 @@ namespace LM {
 		void		map_info_packet(const IPAddress& address, PacketReader& packet);
 		void		hole_punch_packet(const IPAddress& address, PacketReader& packet);
 		void		player_died(const IPAddress& address, PacketReader& packet);
+		void		player_jumped(const IPAddress& address, PacketReader& packet);
 
 		void		excessive_packet_drop(const IPAddress& address);
 	

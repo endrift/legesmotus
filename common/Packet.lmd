@@ -197,6 +197,7 @@ PLAYER_DIED = 26 {
 	killer_type : int ; The type of object that killed the player
 	                  ; * 0 - Other player
 	                  ; * 1 - Map hazard
+	                  ; (As per PhysicsObject's get_type())
 }
 
 WEAPON_INFO = 28 {
@@ -215,4 +216,9 @@ SPAWN = 30 {
 	is_grabbing_obstacle : bool ; Did the player spawn grabbing an obstacle?
 	is_alive : bool ; Was the player alive when he spawned?
 	freeze_time : uint64_t ; For how long (if at all) will the player be frozen?
+}
+
+PLAYER_JUMPED = 31 {
+	player_id : uint32_t ; The ID of the player who jumped.
+	direction : float ; The angle of the jump.
 }

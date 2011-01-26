@@ -163,6 +163,9 @@ void GuiClient::remove_badge(Player* player) {
 void GuiClient::realign_badges() {
 	for (map<int, Label*>::iterator iter = m_badges.begin(); iter != m_badges.end(); ++iter) {
 		Player* player = get_game()->get_player(iter->first);
+		if (player == NULL) {
+			continue;
+		}
 		Point new_point = m_view->world_to_view(Point(player->get_x(), player->get_y()));
 		iter->second->set_x(new_point.x);
 		iter->second->set_y(new_point.y - 64.0f*m_view->get_scale());
@@ -281,7 +284,8 @@ void GuiClient::run() {
 	crosshair_bone.set_scale_y(m_view->get_scale()/4.0f);
 
 	IPAddress host;
-	resolve_hostname(host, "endrift.com", 16876);
+	resolve_hostname(host, "endrift.com", 16875);
+	//resolve_hostname(host, "localhost", 16877);
 	connect(host);
 	// XXX end testing code
 
@@ -362,4 +366,10 @@ void GuiClient::disconnect() {
 	Client::disconnect();
 	
 	INFO("Disconnected.");
+}
+
+void GuiClient::round_over(const Packet& p) {
+	round_cleanup();
+	
+	Client::round_over(p);
 }
