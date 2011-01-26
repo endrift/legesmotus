@@ -284,7 +284,6 @@ void GuiClient::run() {
 	crosshair_bone.set_scale_y(m_view->get_scale()/4.0f);
 
 	IPAddress host;
-	//resolve_hostname(host, "vulpes.ath.cx", 23668);
 	resolve_hostname(host, "endrift.com", 16875);
 	//resolve_hostname(host, "localhost", 16877);
 	connect(host);

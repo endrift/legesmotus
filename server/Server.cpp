@@ -997,6 +997,7 @@ bool	Server::spawn_player(ServerPlayer& player, uint64_t freeze_time) {
 		player.set_is_invisible(false);
 		if (freeze_time == 0) {
 			player.set_is_frozen(false);
+			player.set_energy(Player::MAX_ENERGY);
 		} else {
 			player.set_is_frozen(true, freeze_time);
 		}
