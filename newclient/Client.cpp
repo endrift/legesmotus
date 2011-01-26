@@ -331,6 +331,10 @@ void Client::weapon_discharged(const Packet& p) {
 }
 
 void Client::player_hit(const Packet& p) {
+	if (m_logic == NULL) {
+		return;
+	}
+
 	Player* hit_player = m_logic->get_player(p.player_hit.shot_player_id);
 	if (hit_player == NULL) {
 		WARN("Shot hit player that doesn't exist: " << p.player_hit.shot_player_id);
@@ -403,6 +407,11 @@ void Client::announce(const Packet& p) {
 void Client::gate_update(const Packet& p) {
 	char team = p.gate_update.team;
 	float progress = p.gate_update.progress;
+	
+	if (m_logic == NULL) {
+		return;
+	}
+	
 	m_logic->update_gate_progress(team, progress);
 	
 	// TODO: In graphical client, this will need to update many other things, probably (graphics, etc.).
@@ -459,7 +468,7 @@ void Client::weapon_info(const Packet& p) {
 	DEBUG("Weapon: " << p.weapon_info.index);
 	Weapon* weapon = make_weapon(wr);
 	
-	if (weapon != NULL) {
+	if (weapon != NULL && m_logic != NULL) {
 		DEBUG(weapon->get_name() << ", " << weapon->get_id());
 		m_logic->add_weapon(p.weapon_info.index, weapon);
 		if (m_curr_weapon == -1) {
