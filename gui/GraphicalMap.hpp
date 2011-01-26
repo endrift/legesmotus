@@ -29,8 +29,6 @@
 #include "GraphicContainer.hpp"
 #include "GraphicalMapObject.hpp"
 
-#define GraphicalMap NewGraphicalMap
-
 namespace LM {
 	class ResourceCache;
 

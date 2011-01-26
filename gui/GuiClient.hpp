@@ -26,7 +26,7 @@
 #define LM_GUI_GUICLIENT_HPP
 
 #include "common/misc.hpp"
-#include "newclient/Client.hpp"
+#include "client/Client.hpp"
 #include "GraphicalPlayer.hpp"
 #include "GraphicalMap.hpp"
 #include "GraphicalWeapon.hpp"

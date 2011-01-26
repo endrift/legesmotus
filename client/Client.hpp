@@ -1,5 +1,5 @@
 /*
- * newclient/Client.hpp
+ * client/Client.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 

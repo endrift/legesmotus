@@ -34,8 +34,6 @@
 #include "common/PhysicsObject.hpp"
 #include "common/Point.hpp"
 
-#define AreaGun NewAreaGun
-
 namespace LM {
 	struct HitPlayer {
 		Player* player;

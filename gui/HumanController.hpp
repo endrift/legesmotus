@@ -25,7 +25,7 @@
 #ifndef LM_GUI_HUMANCONTROLLER_HPP
 #define LM_GUI_HUMANCONTROLLER_HPP
 
-#include "newclient/Controller.hpp"
+#include "client/Controller.hpp"
 #include "InputSink.hpp"
 #include "Bindings.hpp"
 #include <string>

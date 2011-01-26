@@ -22,8 +22,8 @@
  * 
  */
 
-#ifndef LM_COMMON_StandardGun_HPP
-#define LM_COMMON_StandardGun_HPP
+#ifndef LM_COMMON_STANDARDGUN_HPP
+#define LM_COMMON_STANDARDGUN_HPP
 
 #include "common/Weapon.hpp"
 #include "common/StringTokenizer.hpp"
@@ -31,8 +31,6 @@
 #include <stdint.h>
 #include "common/physics.hpp"
 #include <vector>
-
-#define StandardGun NewStandardGun
 
 class b2World;
 

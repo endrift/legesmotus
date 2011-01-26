@@ -30,8 +30,6 @@
 #include <memory>
 #include <stdint.h>
 
-#define Obstacle NewObstacle
-
 class b2Body;
 class b2World;
 class b2Shape;

@@ -27,8 +27,6 @@
 
 #include "MapObject.hpp"
 
-#define Decoration NewDecoration
-
 class b2Shape;
 class b2World;
 

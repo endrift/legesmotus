@@ -1,5 +1,5 @@
 /*
- * newclient/GameLogic.hpp
+ * common/GameLogic.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 

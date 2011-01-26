@@ -31,8 +31,6 @@
 #include <stdint.h>
 #include "common/misc.hpp"
 
-#define ForceField NewForceField
-
 class b2Body;
 class b2World;
 class b2Shape;
