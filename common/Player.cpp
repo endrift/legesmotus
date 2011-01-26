@@ -241,7 +241,6 @@ void Player::update_physics() {
 	if (m_is_frozen) {
 		if (m_freeze_time >= 0 && m_freeze_time < (long)(get_ticks() - m_frozen_at)) {
 			set_is_frozen(false);
-			set_energy(MAX_ENERGY);
 		}
 	}
 }
@@ -323,6 +322,10 @@ void Player::set_is_frozen(bool is_frozen, int64_t freeze_time, PhysicsObject* s
 		m_freeze_time = 0;
 		m_frozen_at = 0;
 		m_freeze_source = NULL;
+		
+		if (get_energy() == 0) {
+			set_energy(MAX_ENERGY);
+		}
 	}
 
 	m_is_frozen = is_frozen;
