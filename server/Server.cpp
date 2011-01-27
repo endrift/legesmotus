@@ -918,6 +918,7 @@ void	Server::new_game() {
 	m_game_start_time = get_ticks();
 	
 	delete_game_logic();
+	m_game_logic = new GameLogic(&m_current_map);
 	
 	m_players_have_spawned = false;
 	m_gates[0].reset();
@@ -955,10 +956,6 @@ void	Server::start_game() {
 	m_players_have_spawned = true;
 	
 	m_current_map.reset();
-	
-	// Initialize the Game Logic
-	delete_game_logic();
-	m_game_logic = new GameLogic(&m_current_map);
 	
 	const std::list<WeaponReader>&	const_weapons(m_weapon_set.get_weapons());
 	std::list<WeaponReader> weapons(const_weapons);
@@ -1268,11 +1265,23 @@ void	Server::map_info_packet(const IPAddress& address, PacketReader& request_pac
 template<class T> void Server::broadcast_param(const ServerPlayer* player, const char* param_name, const T& param_value) {
 	PacketWriter	packet(GAME_PARAM_PACKET);
 	packet << param_name << param_value;
+	
+	// Get the string version, for passing to the GameLogic. Ugly, but it works.
+	stringstream out;
+	out << param_value;
+	string string_value = out.str();
+	
 	if (player) {
 		m_network.send_reliable_packet(player->get_address(), packet);
 	} else {
 		m_network.broadcast_reliable_packet(packet);
 	}
+	
+	if (m_game_logic == NULL) {
+		return;
+	}
+
+	m_game_logic->set_param(param_name, string_value);
 }
 
 void	Server::broadcast_params(const ServerPlayer* player) {

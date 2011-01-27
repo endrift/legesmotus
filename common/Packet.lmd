@@ -182,6 +182,7 @@ MAP_OBJECT = 23 {
 
 GAME_PARAM = 24 {
 	param_name : string ; The name of the parameter that has changed
+	param_value : string ; The parameter value
 	//value : (unrepresentable) ; New value - depends on the parameter that changed (this packet is unpacked by the GameParameters class) 
 }
 

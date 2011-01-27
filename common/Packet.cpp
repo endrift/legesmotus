@@ -342,10 +342,12 @@ static void unmarshal_MAP_OBJECT(PacketReader& r, Packet* p) {
 
 static void marshal_GAME_PARAM(PacketWriter& w, Packet* p) {
 	w << p->game_param.param_name;
+	w << p->game_param.param_value;
 }
 
 static void unmarshal_GAME_PARAM(PacketReader& r, Packet* p) {
 	r >> p->game_param.param_name;
+	r >> p->game_param.param_value;
 }
 
 static void marshal_HOLE_PUNCH(PacketWriter& w, Packet* p) {
@@ -596,6 +598,7 @@ Packet::Packet(const Packet& other) {
 
 	case GAME_PARAM_PACKET:
 		game_param.param_name = *other.game_param.param_name;
+		game_param.param_value = *other.game_param.param_value;
 		break;
 
 	case HOLE_PUNCH_PACKET:
@@ -741,6 +744,7 @@ Packet::~Packet() {
 
 	case GAME_PARAM_PACKET:
 		delete game_param.param_name.item;
+		delete game_param.param_value.item;
 		break;
 
 	case HOLE_PUNCH_PACKET:

@@ -61,6 +61,8 @@ Player::Player(b2World* physics_world) {
 	m_physics = NULL;
 	m_current_weapon_id = 0;
 	m_freeze_source = NULL;
+	m_last_recharge_time = 0;
+	m_last_damage_time = 0;
 	
 	m_delayed_force.clear();
 	
@@ -90,6 +92,11 @@ Player::Player(const char* name, uint32_t id, char team, float x, float y, float
 	m_attach_joint = NULL;
 	m_physics = NULL;
 	m_current_weapon_id = 0;
+	m_freeze_source = NULL;
+	m_last_recharge_time = 0;
+	m_last_damage_time = 0;
+	
+	m_delayed_force.clear();
 	
 	if (physics_world != NULL) {
 		m_physics = physics_world;
@@ -166,6 +173,12 @@ void Player::add_score(int score_increase) {
 }
 
 void Player::set_energy(int energy) {
+	if (energy > m_energy) {
+		m_last_recharge_time = get_ticks();
+	} else if (energy < m_energy) {
+		m_last_damage_time = get_ticks();	
+	}
+
 	m_energy = energy;
 	if (m_energy > MAX_ENERGY) {
 		m_energy = MAX_ENERGY;
@@ -175,6 +188,12 @@ void Player::set_energy(int energy) {
 }
 
 void Player::change_energy(int energy_change) {
+	if (energy_change > 0) {
+		m_last_recharge_time = get_ticks();
+	} else {
+		m_last_damage_time = get_ticks();	
+	}
+
 	set_energy(m_energy + energy_change);
 }
 

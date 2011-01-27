@@ -44,7 +44,14 @@ GameLogic::GameLogic(Map* map) {
 	
 	m_physics->SetContactListener(this);
 	
+	m_energy_recharge = 1;
+	m_energy_recharge_rate = 150;
+	m_energy_recharge_delay = 300;
+	m_recharge_continuously = false;
+	m_jump_velocity = 250.0f;
+	
 	m_weapons.clear();
+	m_params.clear();
 }
 
 GameLogic::~GameLogic() {
@@ -161,6 +168,14 @@ int GameLogic::num_weapons() const {
 	return m_weapons.size();
 }
 
+string GameLogic::get_param(string name) const {
+	if (m_params.find(name) == m_params.end()) {
+		return "";
+	}
+
+	return m_params.find(name)->second;
+}
+
 void GameLogic::step() {
 	for (map<uint32_t, Player*>::iterator iter = m_players.begin(); iter != m_players.end(); ++iter) {
 		Player* player = iter->second;
@@ -184,6 +199,15 @@ void GameLogic::step() {
 			pair<b2Body*, b2JointDef*> this_joint_pair = m_joints_to_create.back();
 			create_contact_joint(this_joint_pair.first, this_joint_pair.second);
 			m_joints_to_create.pop_back();
+		}
+		
+		// Recharge energy if necessary.
+		if (player->is_frozen() || !player->is_damaged() || player->get_last_recharge_time() > get_ticks() - m_energy_recharge_rate) {
+			continue;
+		}
+		
+		if (m_recharge_continuously || player->get_last_damage_time() < get_ticks() - m_energy_recharge_delay) {
+			player->change_energy(m_energy_recharge);
 		}
 	}
 }
@@ -211,7 +235,7 @@ bool GameLogic::attempt_jump(uint32_t player_id, float angle) {
 	if (player->is_grabbing_obstacle() && !player->is_frozen() && !player->is_invisible()) {
 		player->set_is_grabbing_obstacle(false);
 	
-		player->apply_force(b2Vec2(JUMP_STRENGTH * cos(angle), JUMP_STRENGTH  * sin(angle)));
+		player->apply_force(b2Vec2(m_jump_velocity * cos(angle), m_jump_velocity * sin(angle)));
 		player->apply_torque(-1*(JUMP_ROTATION/2.0f) + (float)rand()/(float)RAND_MAX * JUMP_ROTATION);
 		return true;
 	}
@@ -263,6 +287,24 @@ bool GameLogic::is_engaging_gate(uint32_t player_id, char team) const {
 	}
 	
 	return gate->is_engaged_by(player);
+}
+
+void GameLogic::set_param(string param_name, string param_value) {
+	m_params[param_name] = param_value;
+
+	if (param_name == "recharge") {
+		m_energy_recharge = atoi(param_value.c_str());
+	} else if (param_name == "recharge_rate") {
+		m_energy_recharge_rate = atoi(param_value.c_str());
+	} else if (param_name == "recharge_delay") {
+		m_energy_recharge_delay = atoi(param_value.c_str());
+	} else if (param_name == "recharge_continuously") {
+		if (param_value == "true") {
+			m_recharge_continuously = true;
+		} else {
+			m_recharge_continuously = false;
+		}
+	}
 }
 
 void GameLogic::create_contact_joint(b2Body* body1, b2JointDef* joint_def) {

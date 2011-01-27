@@ -40,10 +40,10 @@ namespace LM {
 	class Weapon;
 
 	class GameLogic : public b2ContactListener {
+	
 	const static float PHYSICS_TIMESTEP = 1.0f / 60.0f;
 	const static int VEL_ITERATIONS = 10;
 	const static int POS_ITERATIONS = 10;
-	const static float JUMP_STRENGTH = 250.0f;
 	const static float JUMP_ROTATION = 15.0f;
 	
 	private:
@@ -51,6 +51,13 @@ namespace LM {
 		Map* m_map;
 		b2World* m_physics;
 		std::vector<Weapon*> m_weapons;
+		std::map<std::string, std::string> m_params;
+		
+		int m_energy_recharge;
+		uint64_t m_energy_recharge_rate;
+		uint64_t m_energy_recharge_delay;
+		bool m_recharge_continuously;
+		float m_jump_velocity;
 		
 		std::vector< std::pair<b2Body*, b2JointDef*> > m_joints_to_create;
 		
@@ -74,6 +81,9 @@ namespace LM {
 		const Weapon* get_weapon(const uint32_t id) const;
 		Iterator<Weapon*> list_weapons();
 		int num_weapons() const;
+		
+		std::string get_param(std::string name) const;
+		std::map<std::string, std::string> get_params() const { return m_params; }
 		
 		void update_map();
 		Map* get_map();
@@ -99,6 +109,9 @@ namespace LM {
 		
 		// Check if a player is engaging a gate
 		virtual bool is_engaging_gate(uint32_t player_id, char team) const;
+		
+		// Set game parameters
+		virtual void set_param(std::string param_name, std::string param_value);
 		
 		// Physics helper methods
 		virtual void create_contact_joint(b2Body* body1, b2JointDef* joint_def);

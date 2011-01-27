@@ -78,6 +78,8 @@ namespace LM {
 		bool		m_awaiting_detach; // Should we delete the attach joint as soon as possible?
 		std::vector<std::pair<b2Vec2, b2Vec2> > m_delayed_force; // Force to apply after the next update
 		PhysicsObject*	m_freeze_source; // Holds the most recent object that froze this player.
+		uint64_t	m_last_recharge_time; // Holds the most recent time this player was recharged.
+		uint64_t	m_last_damage_time; // Holds the most recent time this player was damaged.
 	
 		virtual void update_location() { }
 
@@ -118,6 +120,8 @@ namespace LM {
 		b2Joint* get_attach_joint() const { return m_attach_joint; }
 		int get_freeze_time() const { return m_freeze_time; }
 		uint64_t get_frozen_at() const { return m_frozen_at; }
+		uint64_t get_last_recharge_time() const { return m_last_recharge_time; }
+		uint64_t get_last_damage_time() const { return m_last_damage_time; }
 		int get_remaining_freeze() const { return std::max<int>(0, m_frozen_at + m_freeze_time - get_ticks()); }
 		PhysicsObject* get_freeze_source() const { return m_freeze_source; }
 	
@@ -132,7 +136,7 @@ namespace LM {
 		virtual void set_score(int score);
 		virtual void add_score(int score_increase);	// Increase the player's score by the given amount
 		virtual void set_energy(int energy);
-		virtual void change_energy(int energy_increase);// Increase the player's energy by the given amount
+		virtual void change_energy(int energy_increase);	// Increase the player's energy by the given amount
 		void set_x(float x);
 		void set_y(float y);
 		virtual void set_position(float x, float y);

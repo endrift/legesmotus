@@ -41,6 +41,9 @@ Client::Client() : m_network(this) {
 	m_player_id = -1;
 	m_engaging_gate = false;
 	m_jumping = false;
+	
+	m_weapon_switch_time = 0;
+	m_weapon_switch_delay = 300;
 }
 
 Client::~Client() {
@@ -92,6 +95,9 @@ uint64_t Client::step(uint64_t diff) {
 	// Handle weapon switching
 	if (changes & Controller::CHANGE_WEAPON) {
 		INFO("Setting weapon to ID " << m_controller->get_weapon());
+		if (m_controller->get_weapon() != get_curr_weapon()->get_id()) {
+			m_weapon_switch_time = get_ticks();
+		}
 		set_curr_weapon(m_controller->get_weapon());
 	}
 	
@@ -105,9 +111,6 @@ uint64_t Client::step(uint64_t diff) {
 	// Check the weapon for hitting any players:
 	check_player_hits();
 	
-	// Check gates for any updates/changes.
-	update_gates();
-
 	return diff;
 }
 
@@ -148,20 +151,11 @@ Player* Client::get_player(uint32_t id) {
 	return m_logic->get_player(id);
 }
 
-void Client::update_gates() {
-	if (m_logic == NULL) {
-		return;
-	}
-	
-	Player* player = m_logic->get_player(m_player_id);
-	if (player == NULL) {
-		return;
-	}
-	
-	char team = get_other_team(player->get_team());
-}
-
 void Client::attempt_firing() {
+	if (get_weapon_switch_delay_remaining() > 0) {
+		return;
+	}
+	
 	Packet weapon_discharged(WEAPON_DISCHARGED_PACKET);
 	bool fired_successfully = m_logic->attempt_fire(m_player_id, m_curr_weapon, m_controller->get_aim(), &(weapon_discharged.weapon_discharged));
 	if (fired_successfully) {
@@ -451,6 +445,22 @@ void Client::team_change(const Packet& p) {
 		return;
 	}
 	team_change(player, p.team_change.name);
+}
+
+void Client::game_param(const Packet& p) {
+	string param_name = *(p.game_param.param_name);
+	string param_value = *(p.game_param.param_value);
+	
+	// Pass the param down to the game logic, in case it needs it.
+	if (m_logic == NULL) {
+		return;
+	}
+
+	m_logic->set_param(param_name, param_value);
+	
+	if (param_name == "weapon_switch_delay") {
+		m_weapon_switch_delay = atoi(param_value.c_str());
+	}
 }
 
 void Client::player_died(const Packet& p) {

@@ -27,6 +27,7 @@
 
 #include "ClientNetwork.hpp"
 #include "common/Packet.hpp"
+#include "common/timer.hpp"
 
 namespace LM {
 	class Player;
@@ -42,6 +43,9 @@ namespace LM {
 		uint32_t m_player_id;
 		ClientNetwork m_network;
 		long m_curr_weapon;
+		
+		uint64_t m_weapon_switch_time;
+		uint64_t m_weapon_switch_delay;
 
 		bool m_running;
 		
@@ -61,7 +65,6 @@ namespace LM {
 
 		Player* get_player(uint32_t id);
 		
-		void update_gates();
 		void attempt_firing();
 		void check_player_hits();
 		
@@ -73,6 +76,7 @@ namespace LM {
 		GameLogic* get_game();
 		Weapon* get_curr_weapon();
 		uint32_t get_curr_weapon_id() const { return m_curr_weapon; };
+		int get_weapon_switch_delay_remaining() const { int remaining = m_weapon_switch_delay - (get_ticks() - m_weapon_switch_time); return remaining > 0 ? remaining : 0;}
 
 		virtual void set_map(Map* map);
 
@@ -121,7 +125,7 @@ namespace LM {
 		//virtual void upgrade_available(const Packet& p);
 		//virtual void map_info(const Packet& p);
 		//virtual void map_object(const Packet& p);
-		//virtual void game_param(const Packet& p);
+		virtual void game_param(const Packet& p);
 		virtual void player_died(const Packet& p);
 		virtual void weapon_info(const Packet& p);
 		virtual void round_start(const Packet& p);

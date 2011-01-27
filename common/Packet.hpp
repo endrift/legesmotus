@@ -231,6 +231,7 @@ namespace LM {
 
 		struct GameParam {
 			TypeWrapper<std::string> param_name;
+			TypeWrapper<std::string> param_value;
 		};
 
 		struct HolePunch {

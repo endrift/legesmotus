@@ -46,6 +46,13 @@ namespace LM {
 	class Hud;
 
 	class GuiClient : public Client, public InputSink {
+	
+	enum RadarMode {
+		RADAR_OFF,
+		RADAR_AURAL,	// only players who have fired recently are displayed
+		RADAR_ON
+	};
+	
 	private:
 		enum FontUse {
 			FONT_BADGE = 0,
@@ -53,6 +60,10 @@ namespace LM {
 
 			FONT_MAX
 		};
+
+		RadarMode m_radar_mode;
+		float m_radar_scale;
+		uint64_t m_radar_blip_duration;
 
 		Window* m_window;
 		HumanController* m_gcontrol;
@@ -121,6 +132,7 @@ namespace LM {
 		virtual void disconnect();
 		
 		virtual void round_over(const Packet& p);
+		virtual void game_param(const Packet& p);
 	};
 }
 

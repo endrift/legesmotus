@@ -52,7 +52,7 @@ void 	GameParameters::reset() {
 	autobalance_teams = false;
 	recharge_amount = 1;
 	recharge_rate = 150;
-	recharge_delay = 0;
+	recharge_delay = 300;
 	recharge_continuously = false;
 	jump_velocity = 6.0;
 	weapon_switch_delay = 300;
