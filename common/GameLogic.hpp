@@ -82,8 +82,8 @@ namespace LM {
 		Iterator<Weapon*> list_weapons();
 		int num_weapons() const;
 		
-		std::string get_param(std::string name) const;
-		std::map<std::string, std::string> get_params() const { return m_params; }
+		const std::string& get_param(std::string name) const;
+		const std::map<std::string, std::string>& get_params() const { return m_params; }
 		
 		void update_map();
 		Map* get_map();

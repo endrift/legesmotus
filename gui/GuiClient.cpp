@@ -67,10 +67,6 @@ GuiClient::GuiClient() {
 	m_map = NULL;
 	m_player = NULL;
 
-	m_radar_mode = RADAR_ON;
-	m_radar_scale = 0.1;
-	m_radar_blip_duration = 1000;
-
 	m_hud = new Hud(m_cache, &m_root);
 	m_hud->set_width(m_window->get_width());
 	m_hud->set_height(m_window->get_height());
@@ -274,6 +270,7 @@ void GuiClient::run() {
 	INFO("Beginning running GuiClient...");
 	set_running(true);
 	// XXX testing code
+	// XXX move crosshairs to HUD?
 	Bone crosshair_bone;
 	GraphicContainer aim(false, &m_root);
 	Sprite crosshair(m_cache->get<Image>("aim.png"));
@@ -288,8 +285,7 @@ void GuiClient::run() {
 	crosshair_bone.set_scale_y(m_view->get_scale()/4.0f);
 
 	IPAddress host;
-	//resolve_hostname(host, "endrift.com", 16875);
-	resolve_hostname(host, "localhost", 16877);
+	resolve_hostname(host, "endrift.com", 16876);
 	connect(host);
 	// XXX end testing code
 
@@ -307,9 +303,8 @@ void GuiClient::run() {
 		// Fudge the current time so that the remaining time between steps is accounted for
 		current_time -= step(diff);
 
-		// XXX move to client, game logic
+		// XXX move to HUD?
 		crosshair_bone.set_rotation(m_gcontrol->get_aim() * RADIANS_TO_DEGREES);
-		// XXX end
 
 		update_gui();
 
@@ -381,26 +376,19 @@ void GuiClient::round_over(const Packet& p) {
 void GuiClient::game_param(const Packet& p) {
 	Client::game_param(p);
 	
-	string param_name = *(p.game_param.param_name);
-	string param_value = *(p.game_param.param_value);
+	string param_name = *p.game_param.param_name;
+	string param_value = *p.game_param.param_value;
 	
 	if (param_name == "radar_mode") {
-		int mode = atoi(param_value.c_str());
-		if (mode == RADAR_OFF) {
-			m_radar_mode = RADAR_OFF;
-		} else if (mode == RADAR_ON) {
-			m_radar_mode = RADAR_ON;
-		} else if (mode == RADAR_AURAL) {
-			m_radar_mode = RADAR_AURAL;
-		} else {
+		Hud::RadarMode mode = (Hud::RadarMode) atoi(param_value.c_str());
+		if (mode >= Hud::RADAR_MAX) {
 			WARN("Unknown radar mode: " << mode);
+		} else {
+			m_hud->set_radar_mode(mode);
 		}
 	} else if (param_name == "radar_scale") {
-		m_radar_scale = atof(param_value.c_str());
-		if (m_radar_scale < 0) {
-			m_radar_scale = 0;
-		}
+		m_hud->set_radar_scale(atof(param_value.c_str()));
 	} else if (param_name == "radar_blip_duration") {
-		m_radar_blip_duration = atoi(param_value.c_str());
+		m_hud->set_radar_blip_duration(strtoull(param_value.c_str(), NULL, 10));
 	}
 }

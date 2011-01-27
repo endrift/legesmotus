@@ -30,6 +30,8 @@
 #include "ConvolveKernel.hpp"
 #include "common/GameLogic.hpp"
 
+#include <list>
+
 namespace LM {
 	class GraphicalPlayer;
 	class ProgressBar;
@@ -47,10 +49,21 @@ namespace LM {
 		static const Color RED_SHADOW;
 		static const Color RED_DARK;
 
+		static const Color DISABLED;
+
 		enum ColorType {
 			COLOR_BRIGHT,
 			COLOR_SHADOW,
 			COLOR_DARK
+		};
+
+		// XXX put this somewhere that ACTUALLY MAKES SENSE (in common somewhere)
+		enum RadarMode {
+			RADAR_OFF,
+			RADAR_AURAL,	// only players who have fired recently are displayed
+			RADAR_ON,
+
+			RADAR_MAX
 		};
 
 		static const Color& get_team_color(char team, ColorType type);
@@ -60,6 +73,12 @@ namespace LM {
 		static const int m_shadow_convolve_width;
 		static const float m_shadow_convolve_data[];
 
+		struct RadarBlip {
+			char team;
+			bool frozen;
+			uint64_t end_time;
+		};
+
 		ResourceCache* m_cache;
 
 		ConvolveKernel m_shadow_kernel;
@@ -67,6 +86,11 @@ namespace LM {
 		GraphicalPlayer* m_active_player;
 
 		float m_scale;
+
+		RadarMode m_radar_mode;
+		float m_radar_scale;
+		uint64_t m_radar_blip_duration;
+		std::list<RadarBlip> m_radar;
 
 		Font* m_main_font;
 
@@ -88,6 +112,11 @@ namespace LM {
 		~Hud();
 
 		void set_player(GraphicalPlayer* player);
+
+		void reset_radar();
+		void set_radar_mode(RadarMode mode);
+		void set_radar_scale(float scale);
+		void set_radar_blip_duration(uint64_t duration);
 
 		virtual void set_width(float width);
 		virtual void set_height(float height);

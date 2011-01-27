@@ -168,9 +168,11 @@ int GameLogic::num_weapons() const {
 	return m_weapons.size();
 }
 
-string GameLogic::get_param(string name) const {
+const string& GameLogic::get_param(string name) const {
+	static string null_param("");
+
 	if (m_params.find(name) == m_params.end()) {
-		return "";
+		return null_param;
 	}
 
 	return m_params.find(name)->second;

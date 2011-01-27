@@ -41,6 +41,8 @@ const Color Hud::RED_BRIGHT(0xFF, 0xFA, 0xFA);
 const Color Hud::RED_SHADOW(0x42, 0x55, 0x5E);
 const Color Hud::RED_DARK(0xB5, 0x8B, 0x79);
 
+const Color Hud::DISABLED(0.4f, 0.4f, 0.4f);
+
 const int Hud::m_shadow_convolve_height = 5;
 const int Hud::m_shadow_convolve_width = 5;
 const float Hud::m_shadow_convolve_data[] = {
@@ -90,6 +92,8 @@ Hud::Hud(ResourceCache* cache, Widget* parent) : Widget(parent), m_shadow_kernel
 
 	m_health_label = NULL;
 	m_weapon_label = NULL;
+
+	reset_radar();
 }
 
 Hud::~Hud() {
@@ -179,6 +183,24 @@ void Hud::set_player(GraphicalPlayer* player) {
 	m_weapon_label->set_color(get_team_color(m_active_player->get_team(), COLOR_BRIGHT));
 }
 
+void Hud::reset_radar() {
+	m_radar_mode = RADAR_ON;
+	m_radar_scale = 0.1;
+	m_radar_blip_duration = 1000;
+}
+
+void Hud::set_radar_mode(RadarMode mode) {
+	m_radar_mode = mode;
+}
+
+void Hud::set_radar_scale(float scale) {
+	m_radar_scale = scale;
+}
+
+void Hud::set_radar_blip_duration(uint64_t duration) {
+	m_radar_blip_duration = 1000;
+}
+
 void Hud::set_width(float width) {
 	Widget::set_width(width);
 	calc_scale();
@@ -196,7 +218,7 @@ const ConvolveKernel* Hud::get_shadow_kernel() const {
 void Hud::update(const GameLogic* logic) {
 	if (m_active_player != NULL) {
 		if (m_active_player->is_frozen()) {
-			m_health->set_color(Color(0.4f, 0.4f, 0.4f, 1.0f), COLOR_PRIMARY);
+			m_health->set_color(DISABLED, COLOR_PRIMARY);
 
 			m_health->set_progress(1.0f - m_active_player->get_remaining_freeze()/(float)m_active_player->get_freeze_time());
 		} else {
@@ -206,7 +228,16 @@ void Hud::update(const GameLogic* logic) {
 		}
 
 		const Weapon* weapon = logic->get_weapon(m_active_player->get_current_weapon_id());
-		m_weapon->set_progress(1.0f - weapon->get_remaining_cooldown()/(float)weapon->get_total_cooldown());
+
+		if (false /* TODO magically get weapon switch delay from client??? */) {
+			m_weapon->set_color(DISABLED, COLOR_PRIMARY);
+
+			// TODO more magic
+		} else {
+			m_weapon->set_color(get_team_color(m_active_player->get_team(), COLOR_BRIGHT), COLOR_PRIMARY);
+
+			m_weapon->set_progress(1.0f - weapon->get_remaining_cooldown()/(float)weapon->get_total_cooldown());
+		}
 	}
 }
 
