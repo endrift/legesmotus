@@ -96,7 +96,6 @@ namespace LM {
 		virtual void remove_player(uint32_t id, const std::string& reason);
 
 		virtual void set_map(Map* map);
-		virtual void set_param(std::string param_name, std::string param_value);
 
 		virtual void round_init(Map* map);
 		virtual void round_cleanup();
@@ -110,6 +109,8 @@ namespace LM {
 
 		virtual void name_change(Player* player, const std::string& new_name);
 		virtual void team_change(Player* player, char new_team);
+
+		virtual void set_param(const std::string& param_name, const std::string& param_value);
 
 		virtual void run();
 		void update_gui();

@@ -280,7 +280,7 @@ void Client::set_curr_weapon(uint32_t id) {
 	}
 }
 
-void Client::set_param(string param_name, string param_value) {
+void Client::set_param(const string& param_name, const string& param_value) {
 	// Pass the param down to the game logic, in case it needs it.
 	if (m_logic == NULL) {
 		return;

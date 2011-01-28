@@ -266,6 +266,23 @@ void GuiClient::team_change(Player* player, char new_team) {
 	shadow->set_color(Hud::get_team_color(player->get_team(), Hud::COLOR_SHADOW));
 }
 
+void GuiClient::set_param(const string& param_name, const string& param_value) {
+	Client::set_param(param_name, param_value);
+	
+	if (param_name == "radar_mode") {
+		Hud::RadarMode mode = (Hud::RadarMode) atoi(param_value.c_str());
+		if (mode >= Hud::RADAR_MAX) {
+			WARN("Unknown radar mode: " << mode);
+		} else {
+			m_hud->set_radar_mode(mode);
+		}
+	} else if (param_name == "radar_scale") {
+		m_hud->set_radar_scale(atof(param_value.c_str()));
+	} else if (param_name == "radar_blip_duration") {
+		m_hud->set_radar_blip_duration(strtoull(param_value.c_str(), NULL, 10));
+	}
+}
+
 void GuiClient::run() {
 	INFO("Beginning running GuiClient...");
 	set_running(true);
@@ -371,21 +388,4 @@ void GuiClient::round_over(const Packet& p) {
 	round_cleanup();
 	
 	Client::round_over(p);
-}
-
-void GuiClient::set_param(string param_name, string param_value) {
-	Client::set_param(param_name, param_value);
-	
-	if (param_name == "radar_mode") {
-		Hud::RadarMode mode = (Hud::RadarMode) atoi(param_value.c_str());
-		if (mode >= Hud::RADAR_MAX) {
-			WARN("Unknown radar mode: " << mode);
-		} else {
-			m_hud->set_radar_mode(mode);
-		}
-	} else if (param_name == "radar_scale") {
-		m_hud->set_radar_scale(atof(param_value.c_str()));
-	} else if (param_name == "radar_blip_duration") {
-		m_hud->set_radar_blip_duration(strtoull(param_value.c_str(), NULL, 10));
-	}
 }
