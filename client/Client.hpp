@@ -95,6 +95,7 @@ namespace LM {
 
 		void set_controller(Controller* controller);
 		virtual void set_curr_weapon(uint32_t id);
+		virtual void set_param(std::string param_name, std::string param_value);
 
 		void set_running(bool running);
 		bool running() const;

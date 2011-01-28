@@ -373,11 +373,8 @@ void GuiClient::round_over(const Packet& p) {
 	Client::round_over(p);
 }
 
-void GuiClient::game_param(const Packet& p) {
-	Client::game_param(p);
-	
-	string param_name = *p.game_param.param_name;
-	string param_value = *p.game_param.param_value;
+void GuiClient::set_param(string param_name, string param_value) {
+	Client::set_param(param_name, param_value);
 	
 	if (param_name == "radar_mode") {
 		Hud::RadarMode mode = (Hud::RadarMode) atoi(param_value.c_str());

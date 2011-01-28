@@ -280,6 +280,19 @@ void Client::set_curr_weapon(uint32_t id) {
 	}
 }
 
+void Client::set_param(string param_name, string param_value) {
+	// Pass the param down to the game logic, in case it needs it.
+	if (m_logic == NULL) {
+		return;
+	}
+
+	m_logic->set_param(param_name, param_value);
+	
+	if (param_name == "weapon_switch_delay") {
+		m_weapon_switch_delay = atoi(param_value.c_str());
+	}
+}
+
 void Client::set_running(bool running) {
 	m_running = running;
 }
@@ -451,16 +464,7 @@ void Client::game_param(const Packet& p) {
 	string param_name = *(p.game_param.param_name);
 	string param_value = *(p.game_param.param_value);
 	
-	// Pass the param down to the game logic, in case it needs it.
-	if (m_logic == NULL) {
-		return;
-	}
-
-	m_logic->set_param(param_name, param_value);
-	
-	if (param_name == "weapon_switch_delay") {
-		m_weapon_switch_delay = atoi(param_value.c_str());
-	}
+	set_param(param_name, param_value);
 }
 
 void Client::player_died(const Packet& p) {

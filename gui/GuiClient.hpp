@@ -96,6 +96,7 @@ namespace LM {
 		virtual void remove_player(uint32_t id, const std::string& reason);
 
 		virtual void set_map(Map* map);
+		virtual void set_param(std::string param_name, std::string param_value);
 
 		virtual void round_init(Map* map);
 		virtual void round_cleanup();
@@ -121,7 +122,6 @@ namespace LM {
 		virtual void disconnect();
 		
 		virtual void round_over(const Packet& p);
-		virtual void game_param(const Packet& p);
 	};
 }
 
