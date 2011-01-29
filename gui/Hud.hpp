@@ -44,17 +44,20 @@ namespace LM {
 		static const Color BLUE_BRIGHT;
 		static const Color BLUE_SHADOW;
 		static const Color BLUE_DARK;
+		static const Color BLUE_BLIP;
 
 		static const Color RED_BRIGHT;
 		static const Color RED_SHADOW;
 		static const Color RED_DARK;
+		static const Color RED_BLIP;
 
 		static const Color DISABLED;
 
 		enum ColorType {
 			COLOR_BRIGHT,
 			COLOR_SHADOW,
-			COLOR_DARK
+			COLOR_DARK,
+			COLOR_BLIP
 		};
 
 		// XXX put this somewhere that ACTUALLY MAKES SENSE (in common somewhere)
@@ -77,9 +80,12 @@ namespace LM {
 		static const float STROKE_WIDTH;
 
 		struct RadarBlip {
+			// Do not use Player* in here, in case it gets deleted
+			uint32_t id;
 			char team;
 			bool frozen;
 			uint64_t end_time;
+			Point loc;
 		};
 
 		ResourceCache* m_cache;
@@ -95,6 +101,7 @@ namespace LM {
 		float m_radar_scale;
 		uint64_t m_radar_blip_duration;
 		std::list<RadarBlip> m_radar;
+		Point m_radar_center;
 
 		Font* m_main_font;
 
@@ -112,6 +119,8 @@ namespace LM {
 		void draw_player_status(DrawContext* ctx) const;
 		void draw_game_status(DrawContext* ctx) const;
 		void draw_radar(DrawContext* ctx) const;
+		void update_radar(ConstIterator<std::pair<uint32_t, Player*> > players);
+		RadarBlip make_blip(const Player* player);
 
 	public:
 		Hud(ResourceCache* cache, Widget* parent = NULL);

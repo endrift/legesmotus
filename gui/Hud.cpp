@@ -36,10 +36,12 @@ using namespace std;
 const Color Hud::BLUE_BRIGHT(0xFA, 0xFA, 0xFF);
 const Color Hud::BLUE_SHADOW(0x5E, 0x55, 0x42);
 const Color Hud::BLUE_DARK(0x79, 0x8B, 0xB5);
+const Color Hud::BLUE_BLIP(0x9A, 0xB1, 0xE6);
 
 const Color Hud::RED_BRIGHT(0xFF, 0xFA, 0xFA);
 const Color Hud::RED_SHADOW(0x42, 0x55, 0x5E);
 const Color Hud::RED_DARK(0xB5, 0x8B, 0x79);
+const Color Hud::RED_BLIP(0xE6, 0xB1, 0x9A);
 
 const Color Hud::DISABLED(0.4f, 0.4f, 0.4f);
 
@@ -66,6 +68,8 @@ const Color& Hud::get_team_color(char team, ColorType type) {
 			return BLUE_SHADOW;
 		case COLOR_DARK:
 			return BLUE_DARK;
+		case COLOR_BLIP:
+			return BLUE_BLIP;
 		}
 		break;
 	case 'B':
@@ -76,6 +80,8 @@ const Color& Hud::get_team_color(char team, ColorType type) {
 			return RED_SHADOW;
 		case COLOR_DARK:
 			return RED_DARK;
+		case COLOR_BLIP:
+			return RED_BLIP;
 		}
 		break;
 	}
@@ -213,15 +219,46 @@ void Hud::draw_radar(DrawContext* ctx) const {
 	set_bg_active(ctx);
 	ctx->draw_arc_fill(1.0f, m_scale*0.17f, m_scale*0.17f, 32);
 
-	set_fg_active(ctx);
-
 	// Clip off draw area
 	ctx->start_clip();
 	ctx->draw_arc(1.0f, m_scale*0.15f, m_scale*0.15f, 32);
 	ctx->finish_clip();
-	
+
 	ctx->invert_clip();
-	// TODO draw blips
+
+	// Draw blips
+	ctx->set_secondary_color(Color::BLACK);
+	ctx->set_blend_mode(DrawContext::BLEND_SCREEN);
+	ctx->use_secondary_color(true);
+
+	ctx->translate(-m_radar_center.x*m_radar_scale, -m_radar_center.y*m_radar_scale);
+	for (list<RadarBlip>::const_iterator blips = m_radar.begin(); blips != m_radar.end(); ++blips) {
+		Color c = get_team_color(blips->team, COLOR_BLIP);
+
+		switch (m_radar_mode) {
+		case RADAR_ON:
+			if (blips->frozen) {
+				c.a = 0.5f;
+			}
+			break;
+
+		case RADAR_AURAL:
+			STUB(Hud::draw_radar);
+			break;
+
+		default:
+			break;
+		}
+
+		ctx->set_draw_color(c);
+		ctx->translate(blips->loc.x*m_radar_scale, blips->loc.y*m_radar_scale);
+		ctx->draw_arc_fill(1.0f, m_scale*0.01f, m_scale*0.01f, 8);
+		ctx->translate(-blips->loc.x*m_radar_scale, -blips->loc.y*m_radar_scale);
+	}
+	ctx->translate(m_radar_center.x*m_radar_scale, m_radar_center.y*m_radar_scale);
+
+	ctx->use_secondary_color(false);
+
 	ctx->invert_clip();
 
 	// Clean up clip
@@ -230,6 +267,7 @@ void Hud::draw_radar(DrawContext* ctx) const {
 	ctx->draw_rect_fill(m_scale*0.30f, m_scale*0.30f);
 	ctx->finish_clip();
 
+	set_fg_active(ctx);
 	ctx->draw_ring_fill(1.0f, m_scale*(0.17f - STROKE_WIDTH), m_scale*0.17f, 32);
 
 	ctx->set_secondary_color(get_team_color(m_active_player->get_team(), COLOR_BRIGHT));
@@ -240,6 +278,36 @@ void Hud::draw_radar(DrawContext* ctx) const {
 	ctx->use_secondary_color(false);
 
 	ctx->pop_transform();
+}
+
+void Hud::update_radar(ConstIterator<pair<uint32_t, Player*> > players) {
+	list<RadarBlip>::iterator blips = m_radar.begin();
+	while (players.has_more()) {
+		pair<uint32_t, Player*> p = players.next();
+
+		if (blips != m_radar.end() && blips->id > p.second->get_id()) {
+			// We passed by one...
+			blips = m_radar.erase(blips);
+		}
+
+		if (blips == m_radar.end() || blips->id < p.second->get_id()) {
+			RadarBlip blip = make_blip(p.second);
+			m_radar.insert(blips, blip);
+		} else if (blips->id == p.second->get_id()) {
+			*blips = make_blip(p.second);
+			++blips;
+		}
+	}
+}
+
+Hud::RadarBlip Hud::make_blip(const Player* player) {
+	RadarBlip blip;
+	blip.id = player->get_id();
+	blip.team = player->get_team();
+	blip.frozen = player->is_frozen();
+	blip.end_time = 0;
+	blip.loc = player->get_position();
+	return blip;
 }
 
 void Hud::set_player(GraphicalPlayer* player) {
@@ -259,10 +327,11 @@ void Hud::reset_radar() {
 	m_radar_mode = RADAR_ON;
 	m_radar_scale = 0.1;
 	m_radar_blip_duration = 1000;
+	m_radar.clear();
 }
 
 void Hud::set_radar_mode(RadarMode mode) {
-	m_radar_mode = mode;
+	//m_radar_mode = mode;
 }
 
 void Hud::set_radar_scale(float scale) {
@@ -316,6 +385,10 @@ void Hud::update(const GameLogic* logic) {
 
 			m_weapon->set_progress(1.0f - weapon->get_remaining_cooldown()/(float)weapon->get_total_cooldown());
 		}
+
+		m_radar_center = m_active_player->get_position();
+
+		update_radar(logic->list_players());
 	}
 }
 
@@ -326,6 +399,9 @@ void Hud::draw(DrawContext* ctx) const {
 		}
 
 		draw_game_status(ctx);
-		draw_radar(ctx);
+
+		if (m_radar_mode != RADAR_OFF) {
+			draw_radar(ctx);
+		}
 	}
 }

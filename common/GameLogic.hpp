@@ -73,6 +73,7 @@ namespace LM {
 		Player* get_player(const uint32_t id);
 		const Player* get_player(const uint32_t id) const;
 		Iterator<std::pair<uint32_t, Player*> > list_players();
+		ConstIterator<std::pair<uint32_t, Player*> > list_players() const;
 		int num_players() const;
 		
 		void add_weapon(size_t index, Weapon* weapon);
@@ -80,6 +81,7 @@ namespace LM {
 		Weapon* get_weapon(const uint32_t id);
 		const Weapon* get_weapon(const uint32_t id) const;
 		Iterator<Weapon*> list_weapons();
+		ConstIterator<Weapon*> list_weapons() const;
 		int num_weapons() const;
 		
 		const std::string& get_param(std::string name) const;

@@ -122,6 +122,10 @@ Iterator<pair<uint32_t, Player*> > GameLogic::list_players() {
 	return Iterator<pair<uint32_t, Player*> >(new StdMapIterator<uint32_t, Player*>(&m_players));
 }
 
+ConstIterator<pair<uint32_t, Player*> > GameLogic::list_players() const {
+	return ConstIterator<pair<uint32_t, Player*> >(new ConstStdMapIterator<uint32_t, Player*>(&m_players));
+}
+
 int GameLogic::num_players() const {
 	return m_players.size();
 }
@@ -162,6 +166,10 @@ const Weapon* GameLogic::get_weapon(const uint32_t id) const {
 
 Iterator<Weapon*> GameLogic::list_weapons() {
 	return Iterator<Weapon*>(new StdVectorIterator<Weapon*>(&m_weapons));
+}
+
+ConstIterator<Weapon*> GameLogic::list_weapons() const {
+	return ConstIterator<Weapon*>(new ConstStdVectorIterator<Weapon*>(&m_weapons));
 }
 
 int GameLogic::num_weapons() const {
