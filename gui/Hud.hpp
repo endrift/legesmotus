@@ -69,9 +69,12 @@ namespace LM {
 		static const Color& get_team_color(char team, ColorType type);
 
 	private:
-		static const int m_shadow_convolve_height;
-		static const int m_shadow_convolve_width;
-		static const float m_shadow_convolve_data[];
+		static const int SHADOW_CONVOLVE_WIDTH;
+		static const int SHADOW_CONVOLVE_HEIGHT;
+		static const float SHADOW_CONVOLVE_DATA[];
+
+		static const float EDGE_SLOPE;
+		static const float STROKE_WIDTH;
 
 		struct RadarBlip {
 			char team;
@@ -86,6 +89,7 @@ namespace LM {
 		GraphicalPlayer* m_active_player;
 
 		float m_scale;
+		bool m_game_exists;
 
 		RadarMode m_radar_mode;
 		float m_radar_scale;
@@ -106,6 +110,8 @@ namespace LM {
 		void set_fg_active(DrawContext* ctx) const;
 
 		void draw_player_status(DrawContext* ctx) const;
+		void draw_game_status(DrawContext* ctx) const;
+		void draw_radar(DrawContext* ctx) const;
 
 	public:
 		Hud(ResourceCache* cache, Widget* parent = NULL);

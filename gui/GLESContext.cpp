@@ -45,6 +45,7 @@ GLESContext::GLESContext(int width, int height, bool genfb) {
 	m_height = height;
 
 	m_stencil_depth = 0;
+	m_stencil_func = 0;
 	m_stencil_type = LM_GL(GEQUAL);
 
 	m_bound_img = 0;
@@ -406,8 +407,8 @@ void GLESContext::finish_clip() {
 
 void GLESContext::invert_clip() {
 	if (m_stencil_type == LM_GL(GEQUAL)) {
-		m_stencil_type = LM_GL(LEQUAL);
-	} else if (m_stencil_type == LM_GL(LEQUAL)) {
+		m_stencil_type = LM_GL(LESS);
+	} else if (m_stencil_type == LM_GL(LESS)) {
 		m_stencil_type = LM_GL(GEQUAL);
 	}
 
@@ -590,6 +591,8 @@ void GLESContext::draw_ring_fill(float circumf, float major, float minor, int fi
 			m_arc_colors[i*8 + 7] = m_color.a;
 		}
 	}
+
+	unbind_vbo();
 	LM_gl(VertexPointer, (2, LM_GL(FLOAT), 0, m_arc_vertices));
 	LM_gl(ColorPointer, (4, LM_GL(FLOAT), 0, m_arc_colors));
 	LM_gl(DrawArrays, (LM_GL(QUAD_STRIP), 0, (fine+1)*2));

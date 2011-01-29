@@ -43,15 +43,18 @@ const Color Hud::RED_DARK(0xB5, 0x8B, 0x79);
 
 const Color Hud::DISABLED(0.4f, 0.4f, 0.4f);
 
-const int Hud::m_shadow_convolve_height = 5;
-const int Hud::m_shadow_convolve_width = 5;
-const float Hud::m_shadow_convolve_data[] = {
+const int Hud::SHADOW_CONVOLVE_WIDTH = 5;
+const int Hud::SHADOW_CONVOLVE_HEIGHT = 5;
+const float Hud::SHADOW_CONVOLVE_DATA[] = {
 	0.0f, 1.0f, 1.0f, 1.0f, 0.0f,
 	1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
 	1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
 	0.0f, 1.0f, 1.0f, 1.0f, 0.0f,
 	0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
 };
+
+const float Hud::EDGE_SLOPE = 0.2f;
+const float Hud::STROKE_WIDTH = 0.007f;
 
 const Color& Hud::get_team_color(char team, ColorType type) {
 	switch (team) {
@@ -79,7 +82,7 @@ const Color& Hud::get_team_color(char team, ColorType type) {
 	return Color::BLACK;
 }
 
-Hud::Hud(ResourceCache* cache, Widget* parent) : Widget(parent), m_shadow_kernel(m_shadow_convolve_data, m_shadow_convolve_width, m_shadow_convolve_height, 1) {
+Hud::Hud(ResourceCache* cache, Widget* parent) : Widget(parent), m_shadow_kernel(SHADOW_CONVOLVE_DATA, SHADOW_CONVOLVE_WIDTH, SHADOW_CONVOLVE_HEIGHT, 1) {
 	m_cache = cache;
 
 	m_main_font = NULL;
@@ -113,12 +116,12 @@ void Hud::calc_scale() {
 
 	m_player_status->set_y(get_height() - m_scale*0.2f);
 
-	m_health->set_width(m_scale*0.2f);
+	m_health->set_width(m_scale*0.18f);
 	m_health->set_height(m_scale*0.03f);
 	m_health->set_x(m_scale*0.11f);
 	m_health->set_y(m_scale*0.03f);
 
-	m_weapon->set_width(m_scale*0.2f);
+	m_weapon->set_width(m_scale*0.18f);
 	m_weapon->set_height(m_scale*0.03f);
 	m_weapon->set_x(m_scale*0.12f);
 	m_weapon->set_y(m_scale*0.09f);
@@ -154,33 +157,102 @@ void Hud::set_fg_active(DrawContext* ctx) const {
 void Hud::draw_player_status(DrawContext* ctx) const {
 	float points[8];
 
-	points[0] = 0.0f;
-	points[1] = get_height();
-	points[2] = m_scale*0.35;
-	points[3] = get_height();
-	points[4] = m_scale*0.31;
-	points[5] = get_height() - m_scale*0.2f;
-	points[6] = 0.0f;
-	points[7] = get_height() - m_scale*0.2f;
+	points[0] = -m_scale*0.01f;
+	points[1] = get_height() - m_scale*0.2f;
+
+	points[2] = m_scale*(0.35f - 0.21f*EDGE_SLOPE);
+	points[3] = get_height() - m_scale*0.2f;
+
+	points[4] = m_scale*0.35f;
+	points[5] = get_height() + m_scale*0.01f;
+
+	points[6] = -m_scale*0.01f;
+	points[7] = get_height() + m_scale*0.01f;
 
 	set_bg_active(ctx);
 	ctx->draw_polygon_fill(points, 4);
 
 	set_fg_active(ctx);
-	ctx->draw_stroke(points, 4, 0, m_scale*0.007f, true);
+	ctx->draw_stroke(points, 4, 0, m_scale*STROKE_WIDTH, true);
 
 	m_player_status->draw(ctx);
+}
+
+void Hud::draw_game_status(DrawContext* ctx) const {
+	float points[8];
+
+	points[0] = -m_scale*0.16f;
+	points[1] = m_scale*0.01f;
+
+	points[2] = -m_scale*(0.16f - 0.17f*EDGE_SLOPE);
+	points[3] = -m_scale*0.16f;
+
+	points[4] = m_scale*(0.16f - 0.17f*EDGE_SLOPE);
+	points[5] = -m_scale*0.16f;
+
+	points[6] = m_scale*0.16f;
+	points[7] = m_scale*0.01f;
+
+	ctx->translate(get_width()*0.5f, get_height());
+
+	set_bg_active(ctx);
+	ctx->draw_polygon_fill(points, 4);
+
+	set_fg_active(ctx);
+	ctx->draw_stroke(points, 4, 0, m_scale*STROKE_WIDTH, true);
+
+	// TODO draw actual status
+
+	ctx->translate(-get_width()*0.5f, -get_height());
+}
+
+void Hud::draw_radar(DrawContext* ctx) const {
+	ctx->push_transform();
+	ctx->translate(get_width() - m_scale*0.15f, get_height() - m_scale*0.15f);
+
+	set_bg_active(ctx);
+	ctx->draw_arc_fill(1.0f, m_scale*0.17f, m_scale*0.17f, 32);
+
+	set_fg_active(ctx);
+
+	// Clip off draw area
+	ctx->start_clip();
+	ctx->draw_arc(1.0f, m_scale*0.15f, m_scale*0.15f, 32);
+	ctx->finish_clip();
+	
+	ctx->invert_clip();
+	// TODO draw blips
+	ctx->invert_clip();
+
+	// Clean up clip
+	ctx->start_clip();
+	ctx->clip_sub();
+	ctx->draw_rect_fill(m_scale*0.30f, m_scale*0.30f);
+	ctx->finish_clip();
+
+	ctx->draw_ring_fill(1.0f, m_scale*(0.17f - STROKE_WIDTH), m_scale*0.17f, 32);
+
+	ctx->set_secondary_color(get_team_color(m_active_player->get_team(), COLOR_BRIGHT));
+	ctx->set_draw_color(Color::BLACK);
+	ctx->use_secondary_color(true);
+
+	ctx->draw_ring_fill(1.0f, m_scale*0.15f, m_scale*0.1f, 32);
+	ctx->use_secondary_color(false);
+
+	ctx->pop_transform();
 }
 
 void Hud::set_player(GraphicalPlayer* player) {
 	m_active_player = player;
 
-	m_health->set_color(get_team_color(m_active_player->get_team(), COLOR_BRIGHT), COLOR_SECONDARY);
-	m_health_label->set_color(get_team_color(m_active_player->get_team(), COLOR_BRIGHT));
-
-	m_weapon->set_color(get_team_color(m_active_player->get_team(), COLOR_BRIGHT), COLOR_PRIMARY);
-	m_weapon->set_color(get_team_color(m_active_player->get_team(), COLOR_BRIGHT), COLOR_SECONDARY);
-	m_weapon_label->set_color(get_team_color(m_active_player->get_team(), COLOR_BRIGHT));
+	if (m_active_player != NULL) {
+		m_health->set_color(get_team_color(m_active_player->get_team(), COLOR_BRIGHT), COLOR_SECONDARY);
+		m_health_label->set_color(get_team_color(m_active_player->get_team(), COLOR_BRIGHT));
+	
+		m_weapon->set_color(get_team_color(m_active_player->get_team(), COLOR_BRIGHT), COLOR_PRIMARY);
+		m_weapon->set_color(get_team_color(m_active_player->get_team(), COLOR_BRIGHT), COLOR_SECONDARY);
+		m_weapon_label->set_color(get_team_color(m_active_player->get_team(), COLOR_BRIGHT));
+	}
 }
 
 void Hud::reset_radar() {
@@ -216,6 +288,12 @@ const ConvolveKernel* Hud::get_shadow_kernel() const {
 }
 
 void Hud::update(const GameLogic* logic) {
+	m_game_exists = logic != NULL;
+	if (!m_game_exists) {
+		m_active_player = NULL;
+		return;
+	}
+
 	if (m_active_player != NULL) {
 		if (m_active_player->is_frozen()) {
 			m_health->set_color(DISABLED, COLOR_PRIMARY);
@@ -242,7 +320,12 @@ void Hud::update(const GameLogic* logic) {
 }
 
 void Hud::draw(DrawContext* ctx) const {
-	if (m_active_player != NULL) {
-		draw_player_status(ctx);
+	if (m_game_exists) {
+		if (m_active_player != NULL) {
+			draw_player_status(ctx);
+		}
+
+		draw_game_status(ctx);
+		draw_radar(ctx);
 	}
 }

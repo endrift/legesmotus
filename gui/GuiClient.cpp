@@ -277,7 +277,7 @@ void GuiClient::set_param(const string& param_name, const string& param_value) {
 			m_hud->set_radar_mode(mode);
 		}
 	} else if (param_name == "radar_scale") {
-		m_hud->set_radar_scale(atof(param_value.c_str()));
+		m_hud->set_radar_scale(m_view->get_scale() * atof(param_value.c_str()));
 	} else if (param_name == "radar_blip_duration") {
 		m_hud->set_radar_blip_duration(strtoull(param_value.c_str(), NULL, 10));
 	}
