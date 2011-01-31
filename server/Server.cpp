@@ -918,7 +918,7 @@ void	Server::new_game() {
 	m_game_start_time = get_ticks();
 	
 	delete_game_logic();
-	m_game_logic = new GameLogic(&m_current_map);
+	//m_game_logic = new GameLogic(&m_current_map);
 	
 	m_players_have_spawned = false;
 	m_gates[0].reset();
@@ -957,7 +957,6 @@ void	Server::start_game() {
 	
 	m_current_map.reset();
 
-	// XXX why did I have to put this back?
 	delete_game_logic();
 	m_game_logic = new GameLogic(&m_current_map);
 
@@ -969,6 +968,12 @@ void	Server::start_game() {
 		Weapon* weapon = Weapon::new_weapon(*it);
 		m_game_logic->add_weapon(index, weapon);
 		index++;
+	}
+	
+	map<string, string> params = m_params.get_params();
+	for (std::map<string, string>::iterator it(params.begin()); it != params.end(); ++it) {
+		//DEBUG("Param: " << it->first << ", " << it->second);
+		m_game_logic->set_param(it->first, it->second);
 	}
 	
 	m_game_logic->update_map();
@@ -1289,15 +1294,10 @@ template<class T> void Server::broadcast_param(const ServerPlayer* player, const
 }
 
 void	Server::broadcast_params(const ServerPlayer* player) {
-	broadcast_param(player, "radar_mode", m_params.radar_mode);
-	broadcast_param(player, "radar_scale", m_params.radar_scale);
-	broadcast_param(player, "radar_blip_duration", m_params.radar_blip_duration);
-	broadcast_param(player, "recharge_amount", m_params.recharge_amount);
-	broadcast_param(player, "recharge_rate", m_params.recharge_rate);
-	broadcast_param(player, "recharge_delay", m_params.recharge_delay);
-	broadcast_param(player, "recharge_continuously", m_params.recharge_continuously);
-	broadcast_param(player, "jump_velocity", m_params.jump_velocity);
-	broadcast_param(player, "weapon_switch_delay", m_params.weapon_switch_delay);
+	map<string, string> params = m_params.get_params();
+	for (std::map<string, string>::iterator it(params.begin()); it != params.end(); ++it) {
+		broadcast_param(player, it->first.c_str(), it->second);
+	}
 }
 
 void	Server::hole_punch_packet(const IPAddress& address, PacketReader& packet) {

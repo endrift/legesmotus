@@ -29,6 +29,9 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string>
+#include <map>
+
+// TODO: This class is not very good. We should rewrite it entirely to make it more of a string->string map.
 
 namespace LM {
 	class StringTokenizer;
@@ -48,6 +51,9 @@ namespace LM {
 	};
 
 	class GameParameters {
+	private:
+		void update_params();
+	
 	public:
 		// All times and delays are in milliseconds
 
@@ -74,7 +80,9 @@ namespace LM {
 		uint64_t	weapon_switch_delay;	// How long does it take to switch weapons?
 		bool		late_spawn_frozen;	// Players who join mid round spawn frozen?
 		std::string	weapon_set;
-
+		
+		std::map<std::string, std::string> m_params;	// A redundant map of string->string for each param, to work with the newer style of dealing with parameters.
+		
 		GameParameters() { reset(); }
 
 		void		init_from_config(const ConfigManager& config);
@@ -82,6 +90,8 @@ namespace LM {
 		bool		process_param_packet(PacketReader& packet);
 
 		void		reset();
+		
+		const std::map<std::string, std::string>& get_params();
 	};
 
 	std::ostream&		operator<<(std::ostream&, GameMode);

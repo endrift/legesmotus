@@ -58,6 +58,8 @@ void 	GameParameters::reset() {
 	weapon_switch_delay = 300;
 	late_spawn_frozen = true;
 	weapon_set = "standard";
+	
+	update_params();
 }
 
 void	GameParameters::init_from_config(const ConfigManager& config) {
@@ -84,10 +86,12 @@ void	GameParameters::init_from_config(const ConfigManager& config) {
 	if (config.has("weapon_switch_delay"))	weapon_switch_delay = config.get<uint64_t>("weapon_switch_delay");
 	if (config.has("late_spawn_frozen"))	late_spawn_frozen = config.get<bool>("late_spawn_frozen");
 	if (config.has("weapon_set"))		weapon_set = config.get<string>("weapon_set");
+	
+	update_params();
 }
 
-bool	GameParameters::process_param_packet(PacketReader& packet) {
-	string		param_name;
+bool GameParameters::process_param_packet(PacketReader& packet) {
+	string param_name;
 	packet >> param_name;
 
 	if (param_name == "radar_mode") {
@@ -111,25 +115,41 @@ bool	GameParameters::process_param_packet(PacketReader& packet) {
 	} else {
 		return false;
 	}
+	update_params();
 	return true;
 }
 
-ostream&	LM::operator<<(ostream& out, GameMode mode) {
+void GameParameters::update_params() {
+	// XXX: This method is ugly, and should be changed when this class is changed to use the map more effectively.
+
+	m_params.clear();
+	stringstream s;
+	s << max_players << " " << gate_open_time << " " << gate_close_time << " " << gate_stick_time << " " << freeze_time << " " << friendly_fire << " " << game_timeout << " " << game_mode << " " << radar_mode << " " << radar_scale << " " << radar_blip_duration << " " << game_start_delay << " " << late_join_delay << " " << team_change_period << " " << autobalance_teams << " " << recharge_amount << " " << recharge_rate << " " << recharge_delay << " " << recharge_continuously << " " << jump_velocity << " " << weapon_switch_delay << " " << late_spawn_frozen << " " << weapon_set;
+	
+	s >> m_params["max_players"] >> m_params["gate_open_time"] >> m_params["gate_close_time"] >> m_params["gate_stick_time"] >> m_params["freeze_time"] >> m_params["friendly_fire"] >> m_params["game_timeout"] >> m_params["game_mode"] >> m_params["radar_mode"] >> m_params["radar_scale"] >> m_params["radar_blip_duration"] >> m_params["game_start_delay"] >> m_params["late_join_delay"] >> m_params["team_change_period"] >> m_params["autobalance_teams"] >> m_params["recharge_amount"] >> m_params["recharge_rate"] >> m_params["recharge_delay"] >> m_params["recharge_continuously"] >> m_params["jump_velocity"] >> m_params["weapon_switch_delay"] >> m_params["late_spawn_frozen"] >> m_params["weapon_set"];
+}
+
+const std::map<std::string, std::string>& GameParameters::get_params() {
+	update_params();
+	return m_params;
+}
+
+ostream& LM::operator<<(ostream& out, GameMode mode) {
 	return out << format_game_mode(mode);
 }
 
-ostream&	LM::operator<<(ostream& out, RadarMode mode) {
+ostream& LM::operator<<(ostream& out, RadarMode mode) {
 	return out << format_radar_mode(mode);
 }
 
-istream&	LM::operator>>(istream& in, GameMode& mode) {
+istream& LM::operator>>(istream& in, GameMode& mode) {
 	string	str;
 	in >> str;
 	mode = parse_game_mode(str.c_str());
 	return in;
 }
 
-istream&	LM::operator>>(istream& in, RadarMode& mode) {
+istream& LM::operator>>(istream& in, RadarMode& mode) {
 	string	str;
 	in >> str;
 	mode = parse_radar_mode(str.c_str());
@@ -137,7 +157,7 @@ istream&	LM::operator>>(istream& in, RadarMode& mode) {
 }
 
 
-GameMode	LM::parse_game_mode(const char* str) {
+GameMode LM::parse_game_mode(const char* str) {
 	if (str) {
 		if (strcasecmp(str, "CLASSIC") == 0)	return CLASSIC;
 		if (strcasecmp(str, "DEATHMATCH") == 0)	return DEATHMATCH;
@@ -148,7 +168,7 @@ GameMode	LM::parse_game_mode(const char* str) {
 	return CLASSIC;
 }
 
-RadarMode	LM::parse_radar_mode(const char* str) {
+RadarMode LM::parse_radar_mode(const char* str) {
 	if (str) {
 		if (strcasecmp(str, "ON") == 0)		return RADAR_ON;
 		if (strcasecmp(str, "OFF") == 0)	return RADAR_OFF;
@@ -158,7 +178,7 @@ RadarMode	LM::parse_radar_mode(const char* str) {
 	return RADAR_OFF;
 }
 
-const char*	LM::format_game_mode(GameMode mode) {
+const char* LM::format_game_mode(GameMode mode) {
 	switch (mode) {
 	case CLASSIC:	return "CLASSIC";
 	case DEATHMATCH:return "DEATHMATCH";
@@ -168,7 +188,7 @@ const char*	LM::format_game_mode(GameMode mode) {
 	return "";
 }
 
-const char*	LM::format_radar_mode(RadarMode mode) {
+const char* LM::format_radar_mode(RadarMode mode) {
 	switch (mode) {
 	case RADAR_ON:		return "ON";
 	case RADAR_OFF:		return "OFF";
@@ -177,12 +197,12 @@ const char*	LM::format_radar_mode(RadarMode mode) {
 	return "";
 }
 
-StringTokenizer&	LM::operator>>(StringTokenizer& tokenize, GameMode& mode) {
+StringTokenizer& LM::operator>>(StringTokenizer& tokenize, GameMode& mode) {
 	mode = parse_game_mode(tokenize.get_next());
 	return tokenize;
 }
 
-StringTokenizer&	LM::operator>>(StringTokenizer& tokenize, RadarMode& mode) {
+StringTokenizer& LM::operator>>(StringTokenizer& tokenize, RadarMode& mode) {
 	mode = parse_radar_mode(tokenize.get_next());
 	return tokenize;
 }
