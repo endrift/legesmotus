@@ -44,7 +44,7 @@ void 	GameParameters::reset() {
 	game_timeout = 0; // No timeout
 	game_mode = CLASSIC;
 	radar_mode = RADAR_ON;
-	radar_scale = 0.1;
+	radar_scale = 0.1f;
 	radar_blip_duration = 1000;
 	game_start_delay = 5000;
 	late_join_delay = 5000;
@@ -54,7 +54,7 @@ void 	GameParameters::reset() {
 	recharge_rate = 150;
 	recharge_delay = 300;
 	recharge_continuously = false;
-	jump_velocity = 6.0;
+	jump_velocity = 250.0f;
 	weapon_switch_delay = 300;
 	late_spawn_frozen = true;
 	weapon_set = "standard";

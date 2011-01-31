@@ -461,8 +461,8 @@ void Client::team_change(const Packet& p) {
 }
 
 void Client::game_param(const Packet& p) {
-	string param_name = *(p.game_param.param_name);
-	string param_value = *(p.game_param.param_value);
+	string param_name = *p.game_param.param_name;
+	string param_value = *p.game_param.param_value;
 	
 	set_param(param_name, param_value);
 }

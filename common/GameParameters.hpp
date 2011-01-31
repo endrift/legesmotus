@@ -60,7 +60,7 @@ namespace LM {
 		uint64_t	game_timeout;		// 0 for no timeout
 		GameMode	game_mode;		// NOT YET IMPLEMENTED
 		RadarMode	radar_mode;
-		double		radar_scale;
+		float		radar_scale;
 		uint64_t	radar_blip_duration;	// in aural mode, how long do blips appear?
 		uint64_t	game_start_delay;
 		uint64_t	late_join_delay;
@@ -70,7 +70,7 @@ namespace LM {
 		uint64_t	recharge_rate;		// How often to recharge energy
 		uint64_t	recharge_delay;		// How much long to wait after being damaged before recharging
 		uint64_t	recharge_continuously;	// Keep recharging, even when actively taking damage?
-		double		jump_velocity;		// Magnitude of velocity when jumping off an obstacle
+		float		jump_velocity;		// Magnitude of velocity when jumping off an obstacle
 		uint64_t	weapon_switch_delay;	// How long does it take to switch weapons?
 		bool		late_spawn_frozen;	// Players who join mid round spawn frozen?
 		std::string	weapon_set;

@@ -956,7 +956,11 @@ void	Server::start_game() {
 	m_players_have_spawned = true;
 	
 	m_current_map.reset();
-	
+
+	// XXX why did I have to put this back?
+	delete_game_logic();
+	m_game_logic = new GameLogic(&m_current_map);
+
 	const std::list<WeaponReader>&	const_weapons(m_weapon_set.get_weapons());
 	std::list<WeaponReader> weapons(const_weapons);
 	size_t index = 0;

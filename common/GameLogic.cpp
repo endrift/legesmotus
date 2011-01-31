@@ -210,7 +210,7 @@ void GameLogic::step() {
 			create_contact_joint(this_joint_pair.first, this_joint_pair.second);
 			m_joints_to_create.pop_back();
 		}
-		
+
 		// Recharge energy if necessary.
 		if (player->is_frozen() || !player->is_damaged() || player->get_last_recharge_time() > get_ticks() - m_energy_recharge_rate) {
 			continue;
@@ -314,6 +314,8 @@ void GameLogic::set_param(string param_name, string param_value) {
 		} else {
 			m_recharge_continuously = false;
 		}
+	} else if (param_name == "jump_velocity") {
+		m_jump_velocity = atof(param_value.c_str());
 	}
 }
 
