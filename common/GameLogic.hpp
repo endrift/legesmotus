@@ -84,7 +84,7 @@ namespace LM {
 		ConstIterator<Weapon*> list_weapons() const;
 		int num_weapons() const;
 		
-		const std::string& get_param(std::string name) const;
+		const std::string& get_param(const std::string& name) const;
 		const std::map<std::string, std::string>& get_params() const { return m_params; }
 		
 		void update_map();
@@ -113,7 +113,7 @@ namespace LM {
 		virtual bool is_engaging_gate(uint32_t player_id, char team) const;
 		
 		// Set game parameters
-		virtual void set_param(std::string param_name, std::string param_value);
+		virtual void set_param(const std::string& param_name, const std::string& param_value);
 		
 		// Physics helper methods
 		virtual void create_contact_joint(b2Body* body1, b2JointDef* joint_def);

@@ -312,13 +312,13 @@ void GuiClient::run() {
 		uint64_t diff = current_time - last_time;
 
 		m_input->update();
+
+		// Fudge the current time so that the remaining time between steps is accounted for
+		current_time -= step(diff);
 		
 		if (!running()) {
 			break;
 		}
-
-		// Fudge the current time so that the remaining time between steps is accounted for
-		current_time -= step(diff);
 
 		// XXX move to HUD?
 		crosshair_bone.set_rotation(m_gcontrol->get_aim() * RADIANS_TO_DEGREES);

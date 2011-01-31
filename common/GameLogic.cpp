@@ -176,7 +176,7 @@ int GameLogic::num_weapons() const {
 	return m_weapons.size();
 }
 
-const string& GameLogic::get_param(string name) const {
+const string& GameLogic::get_param(const string& name) const {
 	static string null_param("");
 
 	if (m_params.find(name) == m_params.end()) {
@@ -299,7 +299,7 @@ bool GameLogic::is_engaging_gate(uint32_t player_id, char team) const {
 	return gate->is_engaged_by(player);
 }
 
-void GameLogic::set_param(string param_name, string param_value) {
+void GameLogic::set_param(const string& param_name, const string& param_value) {
 	m_params[param_name] = param_value;
 
 	if (param_name == "recharge") {
