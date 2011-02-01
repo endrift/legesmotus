@@ -111,6 +111,9 @@ namespace LM {
 		ProgressBar* m_weapon;
 		Label* m_weapon_label;
 
+		ProgressBar* m_our_gate;
+		ProgressBar* m_their_gate;
+
 		void calc_scale();
 
 		void set_bg_active(DrawContext* ctx) const;

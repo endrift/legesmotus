@@ -119,6 +119,10 @@ void Gate::set_progress(float progress) {
 	}
 }
 
+float Gate::get_progress() const {
+	return m_progress;
+}
+
 void Gate::init(MapReader* reader) {
 	while (reader->has_more()) {
 		string param_string;

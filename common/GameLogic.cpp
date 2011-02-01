@@ -283,6 +283,21 @@ void GameLogic::update_gate_progress(char team, float progress) {
 	gate->set_progress(progress);
 }
 
+float GameLogic::get_gate_progress(char team) const {
+	const Map* map = get_map();
+	
+	if (map == NULL) {
+		return 0.0f;
+	}
+	
+	const Gate* gate = map->get_gate(team);
+	if (gate == NULL) {
+		return 0.0f;
+	}
+	
+	return gate->get_progress();
+}
+
 bool GameLogic::is_engaging_gate(uint32_t player_id, char team) const {
 	const Map* map = get_map();
 	const Player* player = get_player(player_id);

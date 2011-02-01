@@ -63,6 +63,8 @@ namespace LM {
 		char get_team() const { return m_team; }
 		
 		void set_progress(float progress);
+		float get_progress() const;
+
 		float get_length() const { return m_length; }
 		float get_width() const { return m_width; }
 		

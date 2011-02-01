@@ -108,6 +108,7 @@ namespace LM {
 		
 		// Update the states of the gates
 		virtual void update_gate_progress(char team, float progress);
+		float get_gate_progress(char team) const;
 		
 		// Check if a player is engaging a gate
 		virtual bool is_engaging_gate(uint32_t player_id, char team) const;

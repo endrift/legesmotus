@@ -102,11 +102,17 @@ Hud::Hud(ResourceCache* cache, Widget* parent) : Widget(parent), m_shadow_kernel
 	m_health_label = NULL;
 	m_weapon_label = NULL;
 
+	m_our_gate = new ProgressBar(this);
+	m_their_gate = new ProgressBar(this);
+
+	m_our_gate->set_orientation(true, false);
+
 	reset_radar();
 }
 
 Hud::~Hud() {
 	delete m_player_status;
+	delete m_our_gate;
 	
 	if (m_main_font != NULL) {
 		m_cache->decrement<Font>(m_main_font->get_id());
@@ -131,6 +137,16 @@ void Hud::calc_scale() {
 	m_weapon->set_height(m_scale*0.03f);
 	m_weapon->set_x(m_scale*0.12f);
 	m_weapon->set_y(m_scale*0.09f);
+
+	m_our_gate->set_width(m_scale*0.15f);
+	m_our_gate->set_height(m_scale*0.04f);
+	m_our_gate->set_x(-m_scale*0.13f);
+	m_our_gate->set_cap_size(0.2f, 0.3f);
+
+	m_their_gate->set_width(m_scale*0.15f);
+	m_their_gate->set_height(m_scale*0.04f);
+	m_their_gate->set_x(-m_scale*0.02f);
+	m_their_gate->set_cap_size(0.2f, 0.3f);
 
 	// XXX move font name
 	delete m_health_label;
@@ -207,9 +223,39 @@ void Hud::draw_game_status(DrawContext* ctx) const {
 	set_fg_active(ctx);
 	ctx->draw_stroke(points, 4, 0, m_scale*STROKE_WIDTH, true);
 
-	// TODO draw actual status
+	// Draw gates (with clipping)
+	ctx->translate(0.0f, -m_scale*0.09f);
 
-	ctx->translate(-get_width()*0.5f, -get_height());
+	ctx->translate(m_scale*0.006f, m_scale*0.02f);
+	ctx->start_clip();
+	ctx->draw_rect_fill(m_scale*0.028f, m_scale*0.04f);
+	ctx->finish_clip();
+	ctx->translate(-m_scale*0.006f, -m_scale*0.02f);
+
+	m_our_gate->draw(ctx);
+
+	ctx->translate(-m_scale*0.006f, m_scale*0.02f);
+	ctx->start_clip();
+	ctx->clip_sub();
+	ctx->draw_rect_fill(m_scale*0.08f, m_scale*0.04f);
+	ctx->clip_add();
+	ctx->draw_rect_fill(m_scale*0.028f, m_scale*0.04f);
+	ctx->finish_clip();
+	ctx->translate(m_scale*0.006f, -m_scale*0.02f);
+
+	m_their_gate->draw(ctx);
+	
+	ctx->translate(0.0f, m_scale*0.02f);
+	ctx->start_clip();
+	ctx->clip_sub();
+	ctx->draw_rect_fill(m_scale*0.05f, m_scale*0.04f);
+	ctx->finish_clip();
+
+	set_fg_active(ctx);
+	ctx->draw_rect_fill(m_scale*0.004f, m_scale*0.04f);
+	ctx->translate(0.0f, -m_scale*0.02f);
+
+	ctx->translate(-get_width()*0.5f, m_scale*0.09f - get_height());
 }
 
 void Hud::draw_radar(DrawContext* ctx) const {
@@ -320,6 +366,12 @@ void Hud::set_player(GraphicalPlayer* player) {
 		m_weapon->set_color(get_team_color(m_active_player->get_team(), COLOR_BRIGHT), COLOR_PRIMARY);
 		m_weapon->set_color(get_team_color(m_active_player->get_team(), COLOR_BRIGHT), COLOR_SECONDARY);
 		m_weapon_label->set_color(get_team_color(m_active_player->get_team(), COLOR_BRIGHT));
+
+		m_our_gate->set_color(get_team_color(m_active_player->get_team(), COLOR_BLIP), COLOR_PRIMARY);
+		m_our_gate->set_color(get_team_color(m_active_player->get_team(), COLOR_BLIP), COLOR_SECONDARY);
+
+		m_their_gate->set_color(get_team_color(m_active_player->get_team() == 'A' ? 'B' : 'A', COLOR_BLIP), COLOR_PRIMARY);
+		m_their_gate->set_color(get_team_color(m_active_player->get_team() == 'A' ? 'B' : 'A', COLOR_BLIP), COLOR_SECONDARY);
 	}
 }
 
@@ -389,7 +441,11 @@ void Hud::update(const GameLogic* logic) {
 		m_radar_center = m_active_player->get_position();
 
 		update_radar(logic->list_players());
+
+		m_our_gate->set_progress(1.0f - logic->get_gate_progress(m_active_player->get_team()));
+		m_their_gate->set_progress(1.0f - logic->get_gate_progress(m_active_player->get_team() == 'A' ? 'B' : 'A'));
 	}
+
 }
 
 void Hud::draw(DrawContext* ctx) const {
