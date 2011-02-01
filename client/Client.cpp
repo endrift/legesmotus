@@ -331,6 +331,10 @@ void Client::player_update(const Packet& p) {
 }
 
 void Client::weapon_discharged(const Packet& p) {
+	if (m_logic == NULL) {
+		return;
+	}
+	
 	Weapon* weapon = m_logic->get_weapon(p.weapon_discharged.weapon_id);
 	if (weapon != NULL) {
 		weapon->was_fired(m_logic->get_world(), *m_logic->get_player(p.weapon_discharged.player_id), *(p.weapon_discharged.extradata));
