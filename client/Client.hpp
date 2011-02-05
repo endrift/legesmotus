@@ -49,7 +49,6 @@ namespace LM {
 
 		bool m_running;
 		
-		bool m_engaging_gate;
 		bool m_jumping;
 
 	protected:

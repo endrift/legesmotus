@@ -39,7 +39,6 @@ Client::Client() : m_network(this) {
 	m_logic = NULL;
 	m_curr_weapon = -1;
 	m_player_id = -1;
-	m_engaging_gate = false;
 	m_jumping = false;
 	
 	m_weapon_switch_time = 0;
@@ -165,6 +164,10 @@ void Client::attempt_firing() {
 
 void Client::check_player_hits() {
 	Weapon* weapon = m_logic->get_weapon(m_curr_weapon);
+	if (weapon == NULL) {
+		return;
+	}
+	
 	Packet p(PLAYER_HIT_PACKET);
 	Packet::PlayerHit* player_hit = weapon->generate_next_hit_packet(&p.player_hit, m_logic->get_player(m_player_id));
 	while (player_hit != NULL) {
