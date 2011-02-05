@@ -65,9 +65,14 @@ uint64_t LM::utc_time() {
 	return usec/10000000ULL - 11644473600ULL;
 }
 
+void LM::msleep(uint64_t millis) {
+	Sleep(millis);
+}
+
 #else
 
 #include <sys/time.h>
+#include <unistd.h>
 
 namespace {
 	struct TimeOfDay {
@@ -88,6 +93,10 @@ uint64_t LM::get_ticks() {
 uint64_t LM::utc_time() {
 	const TimeOfDay	now;
 	return now.tv.tv_sec;
+}
+
+void LM::msleep(uint64_t millis) {
+	usleep(millis*1000);
 }
 
 #endif
