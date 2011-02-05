@@ -110,7 +110,7 @@ void HumanController::mouse_clicked(const MouseButtonEvent& event) {
 void HumanController::system_event(const SystemEvent& event) {
 }
 
-void HumanController::update(uint64_t diff, const GameLogic& state) {
+void HumanController::update(uint64_t diff, const GameLogic& state, int player_id) {
 	m_changes[m_changeset] = NO_CHANGE;
 	m_changeset ^= 1;
 

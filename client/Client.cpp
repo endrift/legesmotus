@@ -64,7 +64,7 @@ uint64_t Client::step(uint64_t diff) {
 	}
 
 	// FIXME: the client sees too many steps if diff is not a multiple of PHYSICS_TIMESTEP
-	m_controller->update(diff, *m_logic);
+	m_controller->update(diff, *m_logic, m_player_id);
 	
 	int changes = m_controller->get_changes();
 

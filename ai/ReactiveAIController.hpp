@@ -48,7 +48,7 @@ namespace LM {
 	public:
 		ReactiveAIController();
 		
-		virtual void update(uint64_t diff, const GameLogic& state);
+		virtual void update(uint64_t diff, const GameLogic& state, int player_id);
 
 		virtual int get_changes() const;
 		virtual float get_aim() const;

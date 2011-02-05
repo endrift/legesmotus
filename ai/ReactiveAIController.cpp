@@ -65,7 +65,7 @@ void ReactiveAIController::update_gun() {
 	}
 }
 
-void ReactiveAIController::update(uint64_t diff, const GameLogic& state) {
+void ReactiveAIController::update(uint64_t diff, const GameLogic& state, int player_id) {
 	m_changes[m_changeset] = NO_CHANGE;
 	m_changeset ^= 1;
 	

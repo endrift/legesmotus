@@ -65,7 +65,7 @@ namespace LM {
 		virtual void mouse_clicked(const MouseButtonEvent& event);
 		virtual void system_event(const SystemEvent& event);
 
-		virtual void update(uint64_t diff, const GameLogic& state);
+		virtual void update(uint64_t diff, const GameLogic& state, int player_id);
 
 		virtual int get_changes() const;
 		virtual float get_aim() const;

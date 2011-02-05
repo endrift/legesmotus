@@ -49,7 +49,7 @@ namespace LM {
 
 		virtual ~Controller() {}
 
-		virtual void update(uint64_t diff, const GameLogic& state) = 0;
+		virtual void update(uint64_t diff, const GameLogic& state, int player_id) = 0;
 
 		virtual int get_changes() const = 0;
 		virtual float get_aim() const = 0;
