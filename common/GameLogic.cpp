@@ -240,6 +240,10 @@ b2World* GameLogic::get_world() {
 	return m_physics;
 }
 
+const b2World* GameLogic::get_world() const {
+	return m_physics;
+}
+
 bool GameLogic::attempt_jump(uint32_t player_id, float angle) {
 	Player* player = get_player(player_id);
 	

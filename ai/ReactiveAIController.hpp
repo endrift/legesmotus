@@ -27,23 +27,37 @@
 
 #include "client/Controller.hpp"
 #include <string>
+#include "common/physics.hpp"
 
 namespace LM {
-	class ReactiveAIController : public Controller {
+	class ReactiveAIController : public Controller, public b2RayCastCallback {
 	
 	private:
 		const static float MAX_AIM_VEL;
 		const static unsigned int AIM_TOLERANCE;
+		const static float BASE_AIM_UNCERTAINTY;
+		const static float QUICK_AIM_CHANGE_ERROR;
+		const static unsigned int VISION_RADIUS;
+		const static unsigned int JUMP_DELAY;
+		const static unsigned int GUN_ANGLE_CHANGE_RATE;
 	
 		int m_changes[2];
 		int m_changeset;
 		
 		float m_wanted_aim; // Radians
 		float m_curr_aim; // Radians
+		float m_aim_inaccuracy; // Radians
 		
-		void find_desired_aim(const GameLogic& state);
+		void find_desired_aim(const GameLogic& state, uint32_t player_id);
 		
-		void update_gun();
+		float update_gun(); // Returns the absolute value of the difference between desired and actual angle.
+		
+		float check_player_visible(const b2World* world, const Player* start_player, const Player* other_player); // Returns the distance to the player, or -1 if not visible.
+		
+		// For ray casts:
+		uint32_t		m_ray_hit_player;	// The ID of the closest player hit by the ray, -1 if none or if a wall is in the way.
+		float			m_ray_shortest_dist;	// The shortest distance seen in this ray cast.
+		Point			m_ray_start;		// The starting point of the ray cast.
 
 	public:
 		ReactiveAIController();
@@ -58,6 +72,9 @@ namespace LM {
 		virtual std::wstring get_message() const;
 		virtual bool message_is_team_only() const;
 		virtual void received_message(const Player* p, const std::wstring& message);
+		
+		// Box2D Physics Callbacks
+		float32 ReportFixture(b2Fixture* fixture, const b2Vec2& point, const b2Vec2& normal, float32 fraction);
 	};
 }
 

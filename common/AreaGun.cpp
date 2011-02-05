@@ -328,13 +328,6 @@ float32 AreaGun::ReportFixture(b2Fixture* fixture, const b2Vec2& point, const b2
 	
 	PhysicsObject* hitobj = static_cast<PhysicsObject*>(body->GetUserData());
 	
-	if (hitobj->get_type() == PhysicsObject::MAP_OBJECT) {
-		MapObject* object = static_cast<MapObject*>(hitobj);
-		if (!object->is_collidable()) {
-			return 1;
-		}
-	}
-	
 	Point end = Point(point.x, point.y);
 	Point start = Point(to_physics(m_shot->get_center().x), to_physics(m_shot->get_center().y));
 	float dist = (end-start).get_magnitude();
@@ -342,6 +335,13 @@ float32 AreaGun::ReportFixture(b2Fixture* fixture, const b2Vec2& point, const b2
 		return 1;
 	}
 	m_shortest_dist = dist;
+	
+	if (hitobj->get_type() == PhysicsObject::MAP_OBJECT) {
+		MapObject* object = static_cast<MapObject*>(hitobj);
+		if (!object->is_collidable()) {
+			return 1;
+		}
+	}
 	
 	if (hitobj->get_type() == PhysicsObject::PLAYER) {
 		Player* hitplayer = static_cast<Player*>(hitobj);

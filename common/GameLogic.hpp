@@ -99,6 +99,7 @@ namespace LM {
 		uint64_t steps(uint64_t ticks);
 
 		b2World* get_world();
+		const b2World* get_world() const;
 		
 		// Attempt to jump off an obstacle
 		virtual bool attempt_jump(uint32_t player_id, float angle);

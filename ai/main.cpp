@@ -43,7 +43,7 @@ extern "C" int main(int argc, char* argv[]) {
 	ReactiveAIController controller;
 	game.set_controller(&controller);
 	IPAddress host;
-	resolve_hostname(host, "localhost", 16877);
+	resolve_hostname(host, "endrift.com", 16876);
 	game.connect(host);
 	game.run();
 
