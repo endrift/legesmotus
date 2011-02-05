@@ -538,7 +538,15 @@ void Client::run() {
 	uint64_t last_time = get_ticks();
 	while (true) { // TODO need a way to quit
 		uint64_t current_time = get_ticks();
-		step(current_time - last_time);
+		// Fudge the current time so that the remaining time between steps is accounted for
+		current_time -= step(current_time - last_time);
+		
+		// XXX: can we determine what FPS we are trying to lock at, rather than always using 60?
+		if ((get_ticks() - last_time) < 17) {
+			// XXX: replace with code that works on all platforms.
+			msleep((17 - (get_ticks() - last_time)));
+		}
+		
 		last_time = current_time;
 	}
 }

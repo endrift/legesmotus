@@ -95,7 +95,12 @@ void GameLogic::add_player(Player* player) {
 }
 
 Player* GameLogic::remove_player(uint32_t id) {
-	Player* player = m_players[id];
+	Player* player = get_player(id);
+	
+	if (player == NULL) {
+		return NULL;
+	}
+	
 	m_players.erase(id);
 	return player;
 }

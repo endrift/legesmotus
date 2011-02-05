@@ -88,7 +88,7 @@ INSTALL_TARGETS = $(addprefix install-,$(TARGETS))
 ifneq ($(ARCH),universal)
 
 SRC_PKG = common server client gui
-AUX_PKG = tests serverscanner metaserver
+AUX_PKG = tests serverscanner metaserver ai
 ALL_PKG = $(SRC_PKG) $(AUX_PKG)
 
 default: $(TARGETS)
@@ -106,6 +106,8 @@ server: common
 client: common
 
 gui: common client
+
+ai: common client
 
 serverscanner: common
 
