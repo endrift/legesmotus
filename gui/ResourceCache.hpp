@@ -135,10 +135,12 @@ namespace LM {
 	template<typename T>
 	void ResourceCache::free_unused() {
 		instance_map<T>& instances = get_instances<T>();
-		for (typename instance_map<T>::iterator iter = instances.begin(); iter != instances.end(); ++iter) {
+		for (typename instance_map<T>::iterator iter = instances.begin(); iter != instances.end();) {
 			if (iter->second.second <= 0) {
 				delete iter->second.first;
-				instances.erase(iter);
+				instances.erase(iter++);
+			} else {
+				++iter;
 			}
 		}
 	}

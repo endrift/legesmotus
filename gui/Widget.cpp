@@ -82,10 +82,11 @@ void Widget::add_child(Widget* child, int priority) {
 void Widget::remove_child(Widget* child) {
 	if (child != NULL) {
 		child->m_parent = NULL;
-		for (multimap<int, Widget*>::iterator iter = m_children.begin(); iter != m_children.end(); ++iter) {
+		for (multimap<int, Widget*>::iterator iter = m_children.begin(); iter != m_children.end();) {
 			if (iter->second == child) {
-				// Return the iterator to delete, but decrement iterator so it's not invalidated
-				m_children.erase(iter--);
+				m_children.erase(iter++);
+			} else {
+				++iter;
 			}
 		}
 	}

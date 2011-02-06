@@ -3,7 +3,7 @@
    / /  / _ \/ _` |/ _ \/ __|  /    \ / _ \| __| | | / __|  
   / /__|  __/ (_| |  __/\__ \ / /\/\ \ (_) | |_| |_| \__ \  
   \____/\___|\__, |\___||___/ \/    \/\___/ \__|\__,_|___/  
-             |___/                             v 0.4.0-svn  
+             |___/                             v 0.5.0-svn  
 
         Andrew Ayer | Nathan Partlan | Jeffrey Pfau         
 
@@ -71,12 +71,13 @@ The following libraries must be installed in order to build the common code for 
 
  Box2D 2.1
 
-The following libraries must be installed in order to build and run the Leges Motus client:
+The following libraries must be installed in order to build and run the Leges Motus graphical client:
 
  FreeType 2
  SDL 1.2
  SDL_image 1.2
  OpenGL
+ GLEW (Windows only)
 
 The following libraries are bundled with the source and statically linked at compile time:
 
