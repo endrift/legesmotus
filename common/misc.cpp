@@ -42,7 +42,6 @@ const Version LM::COMPAT_VERSION(0, 5, 0);
 #ifdef __WIN32
 
 #include <Windows.h>
-#include <Shlobj.h>
 #include <stdio.h>
 #include <io.h>
 

@@ -148,7 +148,7 @@ else
   # We're bulding the client
   # We need graphics libraries
   ifeq ($(MACHINE),Windows)
-   LIBS_GL = -lopengl32
+   LIBS_GL = -lopengl32 -lglew32
   else
    # Generic Unix
    ifneq ($(shell ls /usr/lib/libGL.so 2>/dev/null),)

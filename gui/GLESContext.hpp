@@ -33,19 +33,19 @@
 #include <OpenGL/glext.h>
 //#include <OpenGLES/ES2/gl.h>
 //#include <OpenGLES/ES2/glext.h>
+#elif defined(__WIN32)
+#include <GL/glew.h>
+/*#define GL_SRC0_RGB GL_SOURCE0_RGB
+#define GL_SRC1_RGB GL_SOURCE1_RGB
+#define GL_SRC2_RGB GL_SOURCE2_RGB
+#define GL_SRC0_ALPHA GL_SOURCE0_ALPHA
+#define GL_SRC1_ALPHA GL_SOURCE1_ALPHA
+#define GL_SRC2_ALPHA GL_SOURCE2_ALPHA*/
 #else
 #define GL_GLEXT_PROTOTYPES
 #include "GL/gl.h"
 #include "GL/glu.h"
 #include "GL/glext.h"
-#ifdef __WIN32
-#define GL_SRC0_RGB GL_SOURCE0_RGB
-#define GL_SRC1_RGB GL_SOURCE1_RGB
-#define GL_SRC2_RGB GL_SOURCE2_RGB
-#define GL_SRC0_ALPHA GL_SOURCE0_ALPHA
-#define GL_SRC1_ALPHA GL_SOURCE1_ALPHA
-#define GL_SRC2_ALPHA GL_SOURCE2_ALPHA
-#endif
 #endif
 
 #ifdef LM_DEBUG

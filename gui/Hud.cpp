@@ -111,9 +111,6 @@ Hud::Hud(ResourceCache* cache, Widget* parent) : Widget(parent), m_shadow_kernel
 }
 
 Hud::~Hud() {
-	delete m_player_status;
-	delete m_our_gate;
-	
 	if (m_main_font != NULL) {
 		m_cache->decrement<Font>(m_main_font->get_id());
 	}

@@ -58,7 +58,7 @@ Obstacle::Obstacle(Point position, ClientMapObject* clientpart) : MapObject(posi
 
 MapObject::CollisionResult Obstacle::get_collision_result(PhysicsObject* other, b2Contact* contact) {
 	if (!m_is_collidable) {
-		return IGNORE;
+		return NO_COLLISION;
 	}
 
 	if (m_is_slippery) {

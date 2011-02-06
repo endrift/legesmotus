@@ -59,6 +59,15 @@ GLESContext::GLESContext(int width, int height, bool genfb) {
 	m_use_color2 = false;
 	m_last = NULL;
 
+#ifdef __WIN32
+	static bool glew = false;
+	if (!glew) {
+		GLenum err = glewInit();
+		glew = err == GLEW_OK;
+		ASSERT(glew);
+	}
+#endif
+
 	if (genfb) {
 		LM_glEXT(GenFramebuffers, (1, &m_fbo));
 		LM_glEXT(GenRenderbuffers, (1, &m_stencil_rbo));

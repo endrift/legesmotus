@@ -30,11 +30,14 @@
 #include "common/Weapon.hpp"
 #include "common/MapObject.hpp"
 #include "common/misc.hpp"
+#include <ctime>
 
 using namespace LM;
 using namespace std;
 
 GameLogic::GameLogic(Map* map) {
+	// XXX don't do this here, it breaks encapsulation
+	// XXX we probably shouldn't be using rand() at all actually
 	srand(time(NULL));
 	m_map = map;
 	m_physics = NULL;
@@ -385,14 +388,14 @@ MapObject::CollisionResult GameLogic::collide(PhysicsObject* userdata1, PhysicsO
 	if (userdata1->get_type() == PhysicsObject::PLAYER) {
 		Player* player = static_cast<Player*>(userdata1);
 		if (player->is_invisible()) {
-			return MapObject::IGNORE;
+			return MapObject::NO_COLLISION;
 		}
 	}
 	
 	if (userdata2->get_type() == PhysicsObject::PLAYER) {
 		Player* player = static_cast<Player*>(userdata2);
 		if (player->is_invisible()) {
-			return MapObject::IGNORE;
+			return MapObject::NO_COLLISION;
 		}
 	}
 	
@@ -411,7 +414,7 @@ MapObject::CollisionResult GameLogic::collide(PhysicsObject* userdata1, PhysicsO
 		MapObject* object = static_cast<MapObject*>(userdata1);
 		result1 = object->get_collision_result(userdata2, contact);
 		
-		if (isnew && result1 != MapObject::IGNORE) {
+		if (isnew && result1 != MapObject::NO_COLLISION) {
 			object->collide(userdata2, contact);
 		}
 		
@@ -429,7 +432,7 @@ MapObject::CollisionResult GameLogic::collide(PhysicsObject* userdata1, PhysicsO
 		MapObject* object = static_cast<MapObject*>(userdata2);
 		result2 = object->get_collision_result(userdata1, contact);
 		
-		if (isnew && result2 != MapObject::IGNORE) {
+		if (isnew && result2 != MapObject::NO_COLLISION) {
 			object->collide(userdata1, contact);
 		}
 		
@@ -442,8 +445,8 @@ MapObject::CollisionResult GameLogic::collide(PhysicsObject* userdata1, PhysicsO
 		}
 	}
 	
-	if (result1 == MapObject::IGNORE || result2 == MapObject::IGNORE) {
-		return MapObject::IGNORE;
+	if (result1 == MapObject::NO_COLLISION || result2 == MapObject::NO_COLLISION) {
+		return MapObject::NO_COLLISION;
 	}
 	
 	if (result1 == MapObject::BOUNCE || result2 == MapObject::BOUNCE) {
@@ -475,7 +478,7 @@ void GameLogic::BeginContact(b2Contact* contact) {
 	
 	// Perform extra collision actions, check if we should ignore this collision:
 	MapObject::CollisionResult result = collide(userdata1, userdata2, contact, true, false);
-	if (result == MapObject::IGNORE) {
+	if (result == MapObject::NO_COLLISION) {
 		contact->SetEnabled(false);
 		return;
 	}
@@ -511,7 +514,7 @@ void GameLogic::EndContact(b2Contact* contact) {
 	PhysicsObject* userdata2 = static_cast<PhysicsObject*>(body2->GetUserData());
 
 	// Perform extra collision actions, check if we should ignore this collision:
-	if (collide(userdata1, userdata2, contact, false, true) == MapObject::IGNORE) {
+	if (collide(userdata1, userdata2, contact, false, true) == MapObject::NO_COLLISION) {
 		contact->SetEnabled(false);
 		return;
 	}
@@ -536,7 +539,7 @@ void GameLogic::PreSolve(b2Contact* contact, const b2Manifold* old_manifold) {
 	PhysicsObject* userdata2 = static_cast<PhysicsObject*>(body2->GetUserData());
 
 	// Perform extra collision actions, check if we should ignore this collision:
-	if (collide(userdata1, userdata2, contact, false, false) == MapObject::IGNORE) {
+	if (collide(userdata1, userdata2, contact, false, false) == MapObject::NO_COLLISION) {
 		contact->SetEnabled(false);
 		return;
 	}

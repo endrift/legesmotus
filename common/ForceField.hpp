@@ -76,8 +76,8 @@ namespace LM {
 		virtual bool is_engaged() const { return false; }
 		virtual bool shot(Player* shooter, Point point_hit, float direction) { return false; }
 		
-		virtual CollisionResult get_collision_result(PhysicsObject* other, b2Contact* contact) { return IGNORE; }
-		virtual CollisionResult collide(PhysicsObject* other, b2Contact* contact) { return IGNORE; }
+		virtual CollisionResult get_collision_result(PhysicsObject* other, b2Contact* contact) { return NO_COLLISION; }
+		virtual CollisionResult collide(PhysicsObject* other, b2Contact* contact) { return NO_COLLISION; }
 		virtual void interact(PhysicsObject* other, b2Contact* contact);
 		virtual void disengage(PhysicsObject* other) { m_last_damage_time = 0; }
 		virtual void init(MapReader* reader);

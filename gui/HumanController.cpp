@@ -31,6 +31,8 @@ using namespace std;
 
 HumanController::HumanController() {
 	m_changeset = 0;
+	m_changes[0] = NO_CHANGE;
+	m_changes[1] = NO_CHANGE;
 	m_typing_message = false;
 
 	m_weapon = 0;

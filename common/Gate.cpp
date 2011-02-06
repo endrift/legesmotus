@@ -70,7 +70,7 @@ void Gate::initialize_physics(b2World* world) {
 MapObject::CollisionResult Gate::get_collision_result(PhysicsObject* other, b2Contact* contact) {
 	if (other->get_type() != PhysicsObject::PLAYER) {
 		// Nothing special. Return.
-		return IGNORE;
+		return NO_COLLISION;
 	}
 	
 	Player* player = static_cast<Player*>(other);
@@ -80,7 +80,7 @@ MapObject::CollisionResult Gate::get_collision_result(PhysicsObject* other, b2Co
 		m_is_engaged = true;
 	}
 	
-	return IGNORE;
+	return NO_COLLISION;
 }
 
 MapObject::CollisionResult Gate::collide(PhysicsObject* other, b2Contact* contact) {

@@ -57,7 +57,7 @@ namespace LM {
 
 	public:
 		enum CollisionResult {
-			IGNORE = 0,
+			NO_COLLISION = 0,
 			BOUNCE = 1,
 			GRAB = 2
 		};

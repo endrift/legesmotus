@@ -73,10 +73,11 @@ namespace LM {
 	};
 
 	enum KeyModifier {
-		MOD_SHIFT = 1,
-		MOD_CONTROL = 2,
-		MOD_ALT = 4,
-		MOD_META = 8
+		// Note: MOD_* are #defined on Windows and KMOD_* are #defined in SDL; tread lightly
+		KM_SHIFT = 1,
+		KM_CONTROL = 2,
+		KM_ALT = 4,
+		KM_META = 8
 	};
 
 	enum MouseButton {
