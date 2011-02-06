@@ -449,12 +449,13 @@ void Hud::draw(DrawContext* ctx) const {
 	if (m_game_exists) {
 		if (m_active_player != NULL) {
 			draw_player_status(ctx);
-		}
 
-		draw_game_status(ctx);
-
-		if (m_radar_mode != RADAR_OFF) {
-			draw_radar(ctx);
+			// FIXME be able to run the HUD when there isn't an active player
+			draw_game_status(ctx);
+	
+			if (m_radar_mode != RADAR_OFF) {
+				draw_radar(ctx);
+			}
 		}
 	}
 }

@@ -87,7 +87,6 @@ const string& Configuration::global_dir() {
 #ifdef __WIN32
 		cfg = ".\\";
 #else
-		// TODO make this a build flag
 		cfg = LM_CONFIG_DIR "/";
 #endif
 	}
