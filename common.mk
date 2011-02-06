@@ -34,7 +34,7 @@ ifneq ($(NO_UPGRADE_NAG),)
  CFLAGS += -DLM_NO_UPGRADE_NAG
 endif
 
-CFLAGS += -DLM_DATA_DIR=\"$(DATADIR)\" -DLM_VERSION="\"$(VERSION)\""
+CFLAGS += -DLM_DATA_DIR=\"$(DATADIR)\" -DLM_VERSION="\"$(VERSION)\"" -DLM_CONFIG_DIR="\"$(SYSCONFDIR)\""
 
 MACHINE ?= $(shell uname -s)
 # Windows is the only supported platform that doesn't have uname

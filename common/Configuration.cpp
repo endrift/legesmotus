@@ -79,7 +79,7 @@ const string& Configuration::global_dir() {
 		cfg = ".\\";
 #else
 		// TODO make this a build flag
-		cfg = "/etc/legesmotus/";
+		cfg = LM_CONFIG_DIR "/";
 #endif
 	}
 

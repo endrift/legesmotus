@@ -16,6 +16,7 @@ then
 fi
 
 prefix=/usr/local
+sysconfdir=/etc/legesmotus
 sound=1
 nobundle=1
 universal=1
@@ -40,6 +41,7 @@ display_help () {
 	echo "  --mandir=DIR             Install manual pages at DIR [default: PREFIX/man]"
 	echo "  --datadir=DIR            Install data files at DIR [default: PREFIX/share/games/legesmotus]"
 	echo "  --sharedir=DIR           Install shared files at DIR [default: PREFIX/share]"
+	echo "  --sysconfdir=DIR         Install configuration files at DIR [default: /etc/legesmotus]"
 	echo "  --disable-sound          Disable sound support in this build"
 	echo "  --disable-upgrade-check  Disable upgrade checking in this build"
 	echo "  --disable-client         Disable building the client"
@@ -114,6 +116,9 @@ do
 		;;
 	--sharedir=*)
 		sharedir="`echo "$arg" | cut -f2 -d=`"
+		;;
+	--sysconfdir=*)
+		sysconfdir="`echo "$arg" | cut -f2 -d=`"
 		;;
 	--debug)
 		debug=1
@@ -345,6 +350,7 @@ echo "BINDIR = \"${bindir}\"" >> config.mk
 echo "MANDIR = \"${mandir}\"" >> config.mk
 echo "DATADIR = \"${datadir}\"" >> config.mk
 echo "SHAREDIR = \"${sharedir}\"" >> config.mk
+echo "SYSCONFDIR = \"${sysconfdir}\"" >> config.mk
 echo "TARGETS =${targets}" >> config.mk
 
 if [ $sound -ne 0 ]
