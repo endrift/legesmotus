@@ -76,8 +76,11 @@ The following libraries must be installed in order to build and run the Leges Mo
  FreeType 2
  SDL 1.2
  SDL_image 1.2
- SDL_mixer 1.2 (optional)
  OpenGL
+
+The following libraries are bundled with the source and statically linked at compile time:
+
+ SimpleIni 4.13 © 2006-2010, Brodie Thiesfield
 
 All of these are bundled in the Windows and Mac OS X packages, except for OpenGL, which should already be installed on the system.  No additional libraries are needed to build or run the server.
 

@@ -4,7 +4,8 @@ LIBSRCS := Map.cpp Exception.cpp Player.cpp Polygon.cpp Point.cpp Shape.cpp Circ
 	GameParameters.cpp WeaponReader.cpp WeaponFile.cpp UDPSocket.cpp UDPPacket.cpp IPAddress.cpp PacketQueue.cpp \
 	AckManager.cpp CommonNetwork.cpp PacketHeader.cpp PathManager.cpp ConfigManager.cpp Version.cpp MapObject.cpp \
 	ClientMapObject.cpp Decoration.cpp Obstacle.cpp Gate.cpp ForceField.cpp PhysicsObject.cpp Packet.cpp \
-	StandardGun.cpp AreaGun.cpp Weapon.cpp physics.cpp Shot.cpp ClientWeapon.cpp GameLogic.cpp Iterator.cpp
+	StandardGun.cpp AreaGun.cpp Weapon.cpp physics.cpp Shot.cpp ClientWeapon.cpp GameLogic.cpp Iterator.cpp \
+	Configuration.cpp
 LIBRARY := ../liblmcommon.a
 
 include $(BASEDIR)/common.mk

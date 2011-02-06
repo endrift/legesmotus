@@ -89,6 +89,8 @@
 // Signals to the program that it should clean up and exit; implemented elsewhere
 extern "C" void clean_exit();
 
+#define CHECKED_CALL(obj, call, dflt) ((obj) == NULL ? dflt : (obj)->call)
+
 namespace LM {
 	class Version;
 
@@ -112,13 +114,13 @@ namespace LM {
 	};
 
 	// remove all leading and trailing spaces of given string
-	void		strip_leading_trailing_spaces(std::string& str);
+	void strip_leading_trailing_spaces(std::string& str);
 
 	// condense all whitespace in the string to a single space character
 	// (leading and trailing whitespace is removed)
-	void		condense_whitespace(std::string& str, int (*my_isspace)(int) =isspace, char replacement =' ');
+	void condense_whitespace(std::string& str, int (*my_isspace)(int) =isspace, char replacement =' ');
 
-	inline int	istab(int c) { return c == '\t'; }
+	inline int istab(int c) { return c == '\t'; }
 
 	// Sanitize/canonicalize a player name
 	// Does the following things:
@@ -126,23 +128,25 @@ namespace LM {
 	//  Collapse multiple sequences of whitespace into one space
 	//  Remove all control characters
 	//  Limit the name to MAX_NAME_LENGTH characters (as defined in network.hpp)
-	void		sanitize_player_name(std::string& str);
+	void sanitize_player_name(std::string& str);
 
 	// Daemonize the program (not on Windows)
-	void		daemonize();
+	void daemonize();
 
 	// Drop privileges to the given user/group (not on Windows)
 	// Either username or groupname may be NULL
-	void		drop_privileges(const char* username, const char* groupname);
+	void drop_privileges(const char* username, const char* groupname);
 
 	// Determine whether the program has terminal output
-	bool		has_terminal_output();
+	bool has_terminal_output();
 
 	// Scan the given directory and populate the given list with the name of every file and directory in the given directory
-	bool		scan_directory(std::list<std::string>& filenames, const char* directory);
+	bool scan_directory(std::list<std::string>& filenames, const char* directory);
 
-	template<class T> inline const T& make_empty ()
-	{
+	// wchar_t to float
+	float wtof(const wchar_t* str);
+
+	template<class T> inline const T& make_empty() {
 		static const T empty_obj;
 		return empty_obj;
 	}

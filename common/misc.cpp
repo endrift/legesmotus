@@ -30,6 +30,7 @@
 #include <cstring>
 #include <cctype>
 #include <sstream>
+#include <wchar.h>
 
 // See .hpp file for extensive comments.
 
@@ -41,40 +42,41 @@ const Version LM::COMPAT_VERSION(0, 5, 0);
 #ifdef __WIN32
 
 #include <Windows.h>
+#include <Shlobj.h>
 #include <stdio.h>
 #include <io.h>
 
-string	LM::get_username() {
+string LM::get_username() {
 	char username[64];
 	DWORD unlen = sizeof(username);
-	if (GetUserName(username,&unlen)) {
+	if (GetUserName(username, &unlen)) {
 		return string(username);
 	} else {
 		return "Bill";
 	}
 }
 
-void	LM::daemonize() {
+void LM::daemonize() {
 	throw Exception("Sorry, daemonization not supported on Windows.");
 }
 
-void	LM::drop_privileges(const char* username, const char* groupname) {
+void LM::drop_privileges(const char* username, const char* groupname) {
 	throw Exception("Sorry, privilege dropping is not supported on Windows.");
 }
 
-bool	LM::has_terminal_output() {
+bool LM::has_terminal_output() {
 	return _isatty(_fileno(stdout));
 }
 
-bool	LM::scan_directory(list<string>& filenames, const char* directory) {
-	string			full_directory(directory);
+bool LM::scan_directory(list<string>& filenames, const char* directory) {
+	string full_directory(directory);
 	if (full_directory[full_directory.size() - 1] != '\\') {
 		full_directory += "\\";
 	}
 	full_directory += "*";
 
-	WIN32_FIND_DATA		file_data;
-	HANDLE			find_handle = FindFirstFile(full_directory.c_str(), &file_data);
+	WIN32_FIND_DATA file_data;
+	HANDLE find_handle = FindFirstFile(full_directory.c_str(), &file_data);
 	if (find_handle == INVALID_HANDLE_VALUE) {
 		return GetLastError() == ERROR_FILE_NOT_FOUND;
 	}
@@ -86,9 +88,13 @@ bool	LM::scan_directory(list<string>& filenames, const char* directory) {
 		}
 	} while (FindNextFile(find_handle, &file_data));
 
-	bool			success = GetLastError() == ERROR_NO_MORE_FILES;
+	bool success = GetLastError() == ERROR_NO_MORE_FILES;
 	FindClose(find_handle);
 	return success;
+}
+
+float LM::wtof(const wchar_t* str) {
+	return _wtof(str);
 }
 
 
@@ -104,7 +110,7 @@ bool	LM::scan_directory(list<string>& filenames, const char* directory) {
 #include <errno.h>
 #include <dirent.h>
 
-string	LM::get_username() {
+string LM::get_username() {
 	if (struct passwd* pw = getpwuid(getuid())) {
 		return pw->pw_name;
 	} else {
@@ -112,9 +118,9 @@ string	LM::get_username() {
 	}
 }
 
-void	LM::daemonize() {
+void LM::daemonize() {
 	// Fork, and exit the parent process
-	pid_t	pid = fork();
+	pid_t pid = fork();
 	if (pid < 0) {
 		throw Exception(strerror(errno));
 	} else if (pid > 0) {
@@ -155,13 +161,13 @@ void	LM::daemonize() {
 	setsid();
 }
 
-void	LM::drop_privileges(const char* username, const char* groupname) {
+void LM::drop_privileges(const char* username, const char* groupname) {
 	if (!username && !groupname) {
 		return;
 	}
 
-	struct passwd*		usr = NULL;
-	struct group*		grp = NULL;
+	struct passwd* usr = NULL;
+	struct group* grp = NULL;
 	if (username) {
 		errno = 0;
 		if (!(usr = getpwnam(username))) {
@@ -197,11 +203,11 @@ void	LM::drop_privileges(const char* username, const char* groupname) {
 	}
 }
 
-bool	LM::has_terminal_output() {
+bool LM::has_terminal_output() {
 	return isatty(1);
 }
 
-bool	LM::scan_directory(list<string>& filenames, const char* directory) {
+bool LM::scan_directory(list<string>& filenames, const char* directory) {
 	struct dirent**	files;
 	int		nfiles = scandir(directory, &files, NULL, NULL);
 	if (nfiles < 0) {
@@ -218,6 +224,10 @@ bool	LM::scan_directory(list<string>& filenames, const char* directory) {
 	free(files);
 
 	return true;
+}
+
+float LM::wtof(const wchar_t* str) {
+	return wcstof(str, NULL);
 }
 
 #endif
@@ -246,7 +256,7 @@ Color::Color(int r, int g, int b, int a) {
 const Color Color::WHITE(1.0f, 1.0f, 1.0f);
 const Color Color::BLACK(0.0f, 0.0f, 0.0f);
 
-void	LM::strip_leading_trailing_spaces(string& str) {
+void LM::strip_leading_trailing_spaces(string& str) {
 	string::size_type startpos = str.find_first_not_of(" \t");
 	string::size_type endpos = str.find_last_not_of(" \t");
 	if (startpos != string::npos && endpos != string::npos) {
@@ -256,7 +266,7 @@ void	LM::strip_leading_trailing_spaces(string& str) {
 	}
 }
 
-void	LM::condense_whitespace(string& str, int (*my_isspace)(int), char replacement) {
+void LM::condense_whitespace(string& str, int (*my_isspace)(int), char replacement) {
 	const char*	p = str.c_str();
 
 	// Skip leading whitespace
@@ -264,8 +274,8 @@ void	LM::condense_whitespace(string& str, int (*my_isspace)(int), char replaceme
 		++p;
 	}
 
-	string		new_str;
-	bool		is_in_whitespace = false;
+	string new_str;
+	bool is_in_whitespace = false;
 	while (*p) {
 		char	c = *p++;
 		if (my_isspace(c)) {
@@ -284,7 +294,7 @@ void	LM::condense_whitespace(string& str, int (*my_isspace)(int), char replaceme
 	str.swap(new_str);
 }
 
-void	LM::sanitize_player_name(string& name) {
+void LM::sanitize_player_name(string& name) {
 	const char*	p = name.c_str();
 
 	// Skip leading whitespace
@@ -292,10 +302,10 @@ void	LM::sanitize_player_name(string& name) {
 		++p;
 	}
 
-	string		new_name;
-	bool		is_in_whitespace = false;
+	string new_name;
+	bool is_in_whitespace = false;
 	while (*p && new_name.size() < MAX_NAME_LENGTH) {
-		char	c = *p++;
+		char c = *p++;
 		if (isspace(c)) {
 			// Whitespace - skip it for now
 			is_in_whitespace = true;
@@ -314,4 +324,3 @@ void	LM::sanitize_player_name(string& name) {
 
 	name.swap(new_name);
 }
-
