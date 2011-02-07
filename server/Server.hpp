@@ -86,7 +86,6 @@ namespace LM {
 		std::auto_ptr<GameModeHelper>	m_game_mode;
 		std::vector<GateStatus>	m_gates;		// [0] = Team A's gate  [1] = Team B's gate
 		uint64_t		m_game_start_time;	// Time at which the game started
-		bool			m_players_have_spawned;	// True if any players have spawned
 		ServerPlayer::Queue	m_waiting_players;	// Players who have joined after start of round and are waiting to spawn
 		ServerPlayer::Queue	m_timeout_queue;	// A list of players in the order in which they will timeout
 		int			m_team_count[2];	// [0] = # of players on team A  [1] == # of players on team B
@@ -119,6 +118,7 @@ namespace LM {
 	
 	
 		// Game logic stuff:
+		bool			round_in_progress() const;
 		void			delete_game_logic();
 	
 		//

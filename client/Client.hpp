@@ -80,6 +80,7 @@ namespace LM {
 		virtual void set_map(Map* map);
 
 		virtual void round_init(Map* map);
+		virtual void round_started();
 		virtual void round_cleanup();
 		
 		void send_quit();
@@ -98,6 +99,7 @@ namespace LM {
 
 		void set_running(bool running);
 		bool running() const;
+		bool round_in_progress() const;
 
 		void connect(const IPAddress& server_address);
 

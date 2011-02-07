@@ -94,7 +94,7 @@ uint64_t Client::step(uint64_t diff) {
 	// Handle weapon switching
 	if (changes & Controller::CHANGE_WEAPON) {
 		INFO("Setting weapon to ID " << m_controller->get_weapon());
-		if (m_controller->get_weapon() != get_curr_weapon()->get_id()) {
+		if (m_controller->get_weapon() != m_curr_weapon) {
 			m_weapon_switch_time = get_ticks();
 		}
 		set_curr_weapon(m_controller->get_weapon());
@@ -139,6 +139,10 @@ void Client::remove_player(uint32_t id) {
 }
 
 void Client::remove_player(uint32_t id, const string& reason) {
+	if (m_logic == NULL) {
+		return;
+	}
+	
 	Player* deleted_player = m_logic->remove_player(id);
 	delete deleted_player;
 }
@@ -231,11 +235,15 @@ void Client::set_map(Map* map) {
 }
 
 void Client::round_init(Map* map) {
-	// Nothing to do
+	// Do nothing.
 }
 
 void Client::round_cleanup() {
 	set_map(NULL);
+
+	if (m_logic != NULL) {
+		m_logic->round_ended();
+	}
 
 	delete m_logic;
 	m_logic = NULL;
@@ -338,9 +346,15 @@ void Client::weapon_discharged(const Packet& p) {
 		return;
 	}
 	
+	Player* player = m_logic->get_player(p.weapon_discharged.player_id);
+	if (player == NULL) {
+		WARN("Player " << p.weapon_discharged.player_id << " fired, but does not exist.");
+		return;
+	}
+	
 	Weapon* weapon = m_logic->get_weapon(p.weapon_discharged.weapon_id);
 	if (weapon != NULL) {
-		weapon->was_fired(m_logic->get_world(), *m_logic->get_player(p.weapon_discharged.player_id), *(p.weapon_discharged.extradata));
+		weapon->was_fired(m_logic->get_world(), *player, *(p.weapon_discharged.extradata));
 	}
 }
 
@@ -501,7 +515,16 @@ void Client::weapon_info(const Packet& p) {
 }
 
 void Client::round_start(const Packet& p) {
-	STUB(Client::round_start);
+	round_started();
+}
+
+void Client::round_started() {
+	if (m_logic == NULL) {
+		WARN("Round started, but there's no game logic!");
+		return;
+	}
+
+	m_logic->round_started();
 }
 
 void Client::spawn(const Packet& p) {
@@ -537,6 +560,14 @@ bool Client::running() const {
 	return m_running;
 }
 
+bool Client::round_in_progress() const {
+	if (m_logic == NULL) {
+		return false;
+	}
+
+	return m_logic->round_in_progress();
+}
+
 void Client::run() {
 	uint64_t last_time = get_ticks();
 	while (true) { // TODO need a way to quit
@@ -560,7 +591,11 @@ void Client::disconnect() {
 	}
 	
 	set_running(false);
-
+	
+	if (m_logic != NULL) {
+		m_logic->round_ended();
+	}
+	
 	delete m_logic;
 	m_logic = NULL;
 }

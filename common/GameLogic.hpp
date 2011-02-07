@@ -59,6 +59,9 @@ namespace LM {
 		bool m_recharge_continuously;
 		float m_jump_velocity;
 		
+		bool m_round_in_progress;
+		uint64_t m_round_start_time;
+		
 		std::vector< std::pair<b2Body*, b2JointDef*> > m_joints_to_create;
 		
 		float get_dist(b2Vec2 point1, b2Vec2 point2);
@@ -91,6 +94,12 @@ namespace LM {
 		Map* get_map();
 		const Map* get_map() const;
 		Map* unregister_map();
+		
+		void round_started();
+		void round_ended();
+		
+		bool round_in_progress() const;
+		uint64_t get_round_start_time() const; // Value is only valid if round_in_progress() is true.
 		
 		// Run the next step of the game logic.
 		void step();

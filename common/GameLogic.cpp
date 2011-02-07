@@ -53,6 +53,8 @@ GameLogic::GameLogic(Map* map) {
 	m_recharge_continuously = false;
 	m_jump_velocity = 250.0f;
 	
+	m_round_in_progress = false;
+	
 	m_weapons.clear();
 	m_params.clear();
 }
@@ -80,6 +82,27 @@ Map* GameLogic::unregister_map() {
 	Map* old_map = m_map;
 	m_map = NULL;
 	return old_map;
+}
+
+void GameLogic::round_started() {
+	m_round_in_progress = true;
+	m_round_start_time = get_ticks();
+}
+
+void GameLogic::round_ended() {
+	m_round_in_progress = false;
+}
+	
+bool GameLogic::round_in_progress() const {
+	return m_round_in_progress;
+}
+
+uint64_t GameLogic::get_round_start_time() const {
+	if (round_in_progress()) {
+		return 0;
+	}
+
+	return m_round_start_time;
 }
 
 const Map* GameLogic::get_map() const {

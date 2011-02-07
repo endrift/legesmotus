@@ -59,7 +59,6 @@ Server::Server (ServerConfig& config, PathManager& path_manager) : m_config(conf
 	m_next_player_id = 1;
 	m_is_running = false;
 	m_game_start_time = 0;
-	m_players_have_spawned = false;
 
 	m_register_with_metaserver = true;
 	m_last_metaserver_contact_time = 0;
@@ -168,7 +167,7 @@ void	Server::team_change(const IPAddress& address, PacketReader& packet)
 	}
 
 	// Make sure the player isn't changing teams too soon
-	if (m_players_have_spawned && player->get_team_change_time() >= m_game_start_time && get_ticks() - player->get_team_change_time() < m_params.team_change_period) {
+	if (round_in_progress() && player->get_team_change_time() >= m_game_start_time && get_ticks() - player->get_team_change_time() < m_params.team_change_period) {
 		// TODO: use a REJECT packet instead of sending a system message
 		send_system_message(*player, "You are changing teams too often.  Please wait a bit and try again.");
 		return;
@@ -180,7 +179,7 @@ void	Server::team_change(const IPAddress& address, PacketReader& packet)
 		return;
 	}
 
-	if (m_players_have_spawned) {
+	if (round_in_progress()) {
 		player->set_team_change_time();
 	}
 
@@ -193,7 +192,7 @@ void	Server::change_team(ServerPlayer& player, char new_team, bool respawn_playe
 	player.set_team(new_team);
 	++m_team_count[new_team - 'A'];
 
-	if (respawn_player && m_players_have_spawned) {
+	if (respawn_player && round_in_progress()) {
 		if (respawn_immediately) {
 			spawn_player(player);
 		} else {
@@ -579,7 +578,7 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 		// Tell the player about the game
 		send_new_round_packets(&new_player);
 
-		if (m_players_have_spawned) {
+		if (round_in_progress()) {
 			if (!m_params.late_spawn_frozen && m_params.late_join_delay != numeric_limits<uint64_t>::max()) {
 				// Add the player to the spawn queue
 				m_waiting_players.push_back(&new_player);
@@ -598,7 +597,7 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 	announce_packet << new_player.get_id() << new_player.get_name() << new_player.get_team();
 	m_network.broadcast_reliable_packet(announce_packet);
 
-	if (m_players_have_spawned && m_params.late_spawn_frozen && m_params.late_join_delay != numeric_limits<uint64_t>::max()) {
+	if (round_in_progress() && m_params.late_spawn_frozen && m_params.late_join_delay != numeric_limits<uint64_t>::max()) {
 		// Spawn this player frozen
 		spawn_player(new_player, m_params.late_join_delay);
 	}
@@ -781,7 +780,7 @@ void	Server::run()
 			register_with_metaserver();
 		}
 
-		if (m_players_have_spawned && !m_players.empty()) {
+		if (round_in_progress() && !m_players.empty()) {
 			// Update the status of the gates
 			if (get_gate('A').update()) {
 				report_gate_status('A', 0, 0);
@@ -918,9 +917,7 @@ void	Server::new_game() {
 	m_game_start_time = get_ticks();
 	
 	delete_game_logic();
-	//m_game_logic = new GameLogic(&m_current_map);
 	
-	m_players_have_spawned = false;
 	m_gates[0].reset();
 	m_gates[1].reset();
 	m_waiting_players.clear(); // Waiting players get cleared out and put in general queue...
@@ -941,8 +938,9 @@ void	Server::game_over(char winning_team) {
 	m_network.broadcast_reliable_packet(packet);
 	m_gates[0].reset();
 	m_gates[1].reset();
+	
 	m_game_start_time = 0;
-	m_players_have_spawned = false;
+	m_game_logic->round_ended();
 	
 	string mapname = m_current_map.get_name();
 	m_current_map.clear();
@@ -952,8 +950,6 @@ void	Server::game_over(char winning_team) {
 void	Server::start_game() {
 	// Only reset player scores when players spawn, so players have an opportunity between rounds to check the leader board for the prior round
 	reset_player_scores();
-
-	m_players_have_spawned = true;
 	
 	m_current_map.reset();
 
@@ -982,6 +978,8 @@ void	Server::start_game() {
 		m_game_logic->add_player(&(it->second));
 		spawn_player(it->second);
 	}
+	
+	m_game_logic->round_started();
 
 	// Send the round start packet
 	send_round_start_packet();
@@ -1060,7 +1058,7 @@ uint32_t	Server::server_sleep_time() const {
 		}
 	 }
 
-	if (m_players_have_spawned) {
+	if (round_in_progress()) {
 		// Take into account gate changes, and gate status updates
 		sleep_time = std::min(sleep_time, get_gate('A').next_update_time());
 		sleep_time = std::min(sleep_time, get_gate('B').next_update_time());
@@ -1090,6 +1088,14 @@ void	Server::report_gate_status(char team, int change_in_players, uint32_t actin
 	}
 }
 
+bool Server::round_in_progress() const {
+	if (m_game_logic == NULL) {
+		return false;
+	}
+
+	return m_game_logic->round_in_progress();
+}
+
 void Server::delete_game_logic() {
 	if (m_game_logic != NULL) {
 		m_game_logic->unregister_map();
@@ -1104,11 +1110,11 @@ void Server::delete_game_logic() {
 }
 
 bool	Server::waiting_to_spawn() const {
-	return (!m_players_have_spawned && !m_players.empty()) ||
-		(m_players_have_spawned && !m_waiting_players.empty());
+	return (!round_in_progress() && !m_players.empty()) ||
+		(round_in_progress() && !m_waiting_players.empty());
 }
 uint64_t Server::time_until_spawn() const {
-	if (!m_players_have_spawned && !m_players.empty()) {
+	if (!round_in_progress() && !m_players.empty()) {
 		// Game has not started yet, but players have joined.
 		// All players spawn m_params.game_start_delay ms after the first player joined
 		uint64_t	time_elapsed = get_ticks() - m_game_start_time;
@@ -1118,7 +1124,7 @@ uint64_t Server::time_until_spawn() const {
 			return 0;
 		}
 
-	} else if (m_players_have_spawned && !m_waiting_players.empty()) {
+	} else if (round_in_progress() && !m_waiting_players.empty()) {
 		// Game has started, and there are players queued up to join.
 		// When does the first one spawn?
 		return m_waiting_players.front()->time_until_spawn(m_params.late_join_delay);
@@ -1127,8 +1133,8 @@ uint64_t Server::time_until_spawn() const {
 }
 
 uint64_t Server::time_since_spawn() const {
-	if (m_players_have_spawned) {
-		return get_ticks() - m_game_start_time - m_params.game_start_delay;
+	if (round_in_progress()) {
+		return get_ticks() - m_game_logic->get_round_start_time();
 	}
 	return 0;
 }
@@ -1440,7 +1446,7 @@ void	Server::send_new_round_packets(const ServerPlayer* player) {
 
 	PacketWriter	packet(NEW_ROUND_PACKET);
 	packet << m_current_map.get_name() << m_current_map.get_revision() << m_current_map.get_width() << m_current_map.get_height();
-	if (m_players_have_spawned) {
+	if (round_in_progress()) {
 		// Round already in progress
 		packet << 1 << m_params.late_join_delay;
 	} else {

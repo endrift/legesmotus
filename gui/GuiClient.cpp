@@ -184,7 +184,7 @@ void GuiClient::add_player(Player* player) {
 void GuiClient::set_own_player(uint32_t id) {
 	Client::set_own_player(id);
 	m_player = static_cast<GraphicalPlayer*>(get_player(id));
-	if (m_hud != NULL) {
+	if (m_hud != NULL && round_in_progress()) {
 		m_hud->set_player(m_player);
 	}
 }
@@ -223,7 +223,13 @@ void GuiClient::set_map(Map* map) {
 }
 
 void GuiClient::round_init(Map* map) {
-	// XXX
+	// For now, do nothing.
+}
+
+void GuiClient::round_started() {
+	if (m_hud != NULL && m_player != NULL) {
+		m_hud->set_player(m_player);
+	}
 }
 
 void GuiClient::round_cleanup() {
@@ -231,6 +237,10 @@ void GuiClient::round_cleanup() {
 		delete iter->second;
 	}
 	m_badges.clear();
+	
+	if (m_hud != NULL) {
+		m_hud->set_player(NULL);
+	}
 
 	Client::round_cleanup();
 }

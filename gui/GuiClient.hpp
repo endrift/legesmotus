@@ -98,6 +98,7 @@ namespace LM {
 		virtual void set_map(Map* map);
 
 		virtual void round_init(Map* map);
+		virtual void round_started();
 		virtual void round_cleanup();
 	public:
 		GuiClient();
