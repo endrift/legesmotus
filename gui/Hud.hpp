@@ -93,6 +93,7 @@ namespace LM {
 		ConvolveKernel m_shadow_kernel;
 
 		GraphicalPlayer* m_active_player;
+		char m_active_team;
 
 		float m_scale;
 		bool m_game_exists;
@@ -130,6 +131,7 @@ namespace LM {
 		~Hud();
 
 		void set_player(GraphicalPlayer* player);
+		void set_team(char team);
 
 		void reset_radar();
 		void set_radar_mode(RadarMode mode);

@@ -49,7 +49,7 @@ GuiClient::GuiClient() {
 	int depth = m_config->get_int(L"GameWindow", L"depth", 24);
 	int flags = 0;
 	flags |= m_config->get_bool(L"GameWindow", L"vsync", true)?Window::FLAG_VSYNC:0;
-	flags |= m_config->get_bool(L"GameWindow", L"fullscreen", true)?Window::FLAG_FULLSCREEN:0;
+	flags |= m_config->get_bool(L"GameWindow", L"fullscreen")?Window::FLAG_FULLSCREEN:0;
 	m_window = SDLWindow::get_instance(width, height, depth, flags);
 	m_cache = new ResourceCache(get_res_directory(), m_window->get_context());
 	m_input = new SDLInputDriver;
@@ -194,8 +194,12 @@ void GuiClient::add_player(Player* player) {
 void GuiClient::set_own_player(uint32_t id) {
 	Client::set_own_player(id);
 	m_player = static_cast<GraphicalPlayer*>(get_player(id));
-	if (m_hud != NULL && round_in_progress()) {
-		m_hud->set_player(m_player);
+	if (m_hud != NULL) {
+		m_hud->set_team(m_player->get_team());
+
+		if (round_in_progress()) {
+			m_hud->set_player(m_player);
+		}
 	}
 }
 

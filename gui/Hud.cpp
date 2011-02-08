@@ -165,12 +165,12 @@ void Hud::calc_scale() {
 
 void Hud::set_bg_active(DrawContext* ctx) const {
 	ctx->set_blend_mode(DrawContext::BLEND_SUBTRACT);
-	ctx->set_draw_color(get_team_color(m_active_player->get_team(), COLOR_SHADOW));
+	ctx->set_draw_color(get_team_color(m_active_team, COLOR_SHADOW));
 }
 
 void Hud::set_fg_active(DrawContext* ctx) const {
 	ctx->set_blend_mode(DrawContext::BLEND_SCREEN);
-	ctx->set_draw_color(get_team_color(m_active_player->get_team(), COLOR_BRIGHT));
+	ctx->set_draw_color(get_team_color(m_active_team, COLOR_BRIGHT));
 }
 
 void Hud::draw_player_status(DrawContext* ctx) const {
@@ -313,7 +313,7 @@ void Hud::draw_radar(DrawContext* ctx) const {
 	set_fg_active(ctx);
 	ctx->draw_ring_fill(1.0f, m_scale*(0.17f - STROKE_WIDTH), m_scale*0.17f, 32);
 
-	ctx->set_secondary_color(get_team_color(m_active_player->get_team(), COLOR_BRIGHT));
+	ctx->set_secondary_color(get_team_color(m_active_team, COLOR_BRIGHT));
 	ctx->set_draw_color(Color::BLACK);
 	ctx->use_secondary_color(true);
 
@@ -355,21 +355,23 @@ Hud::RadarBlip Hud::make_blip(const Player* player) {
 
 void Hud::set_player(GraphicalPlayer* player) {
 	m_active_player = player;
+}
 
-	if (m_active_player != NULL) {
-		m_health->set_color(get_team_color(m_active_player->get_team(), COLOR_BRIGHT), COLOR_SECONDARY);
-		m_health_label->set_color(get_team_color(m_active_player->get_team(), COLOR_BRIGHT));
-	
-		m_weapon->set_color(get_team_color(m_active_player->get_team(), COLOR_BRIGHT), COLOR_PRIMARY);
-		m_weapon->set_color(get_team_color(m_active_player->get_team(), COLOR_BRIGHT), COLOR_SECONDARY);
-		m_weapon_label->set_color(get_team_color(m_active_player->get_team(), COLOR_BRIGHT));
+void Hud::set_team(char team) {
+	m_active_team = team;
 
-		m_our_gate->set_color(get_team_color(m_active_player->get_team(), COLOR_BLIP), COLOR_PRIMARY);
-		m_our_gate->set_color(get_team_color(m_active_player->get_team(), COLOR_BLIP), COLOR_SECONDARY);
+	m_health->set_color(get_team_color(m_active_team, COLOR_BRIGHT), COLOR_SECONDARY);
+	m_health_label->set_color(get_team_color(m_active_team, COLOR_BRIGHT));
 
-		m_their_gate->set_color(get_team_color(m_active_player->get_team() == 'A' ? 'B' : 'A', COLOR_BLIP), COLOR_PRIMARY);
-		m_their_gate->set_color(get_team_color(m_active_player->get_team() == 'A' ? 'B' : 'A', COLOR_BLIP), COLOR_SECONDARY);
-	}
+	m_weapon->set_color(get_team_color(m_active_team, COLOR_BRIGHT), COLOR_PRIMARY);
+	m_weapon->set_color(get_team_color(m_active_team, COLOR_BRIGHT), COLOR_SECONDARY);
+	m_weapon_label->set_color(get_team_color(m_active_team, COLOR_BRIGHT));
+
+	m_our_gate->set_color(get_team_color(m_active_team, COLOR_BLIP), COLOR_PRIMARY);
+	m_our_gate->set_color(get_team_color(m_active_team, COLOR_BLIP), COLOR_SECONDARY);
+
+	m_their_gate->set_color(get_team_color(m_active_team == 'A' ? 'B' : 'A', COLOR_BLIP), COLOR_PRIMARY);
+	m_their_gate->set_color(get_team_color(m_active_team == 'A' ? 'B' : 'A', COLOR_BLIP), COLOR_SECONDARY);
 }
 
 void Hud::reset_radar() {
@@ -436,26 +438,24 @@ void Hud::update(const GameLogic* logic) {
 		}
 
 		m_radar_center = m_active_player->get_position();
-
-		update_radar(logic->list_players());
-
-		m_our_gate->set_progress(1.0f - logic->get_gate_progress(m_active_player->get_team()));
-		m_their_gate->set_progress(1.0f - logic->get_gate_progress(m_active_player->get_team() == 'A' ? 'B' : 'A'));
 	}
 
+	update_radar(logic->list_players());
+
+	m_our_gate->set_progress(1.0f - logic->get_gate_progress(m_active_team));
+	m_their_gate->set_progress(1.0f - logic->get_gate_progress(m_active_team == 'A' ? 'B' : 'A'));
 }
 
 void Hud::draw(DrawContext* ctx) const {
 	if (m_game_exists) {
 		if (m_active_player != NULL) {
 			draw_player_status(ctx);
+		}
 
-			// FIXME be able to run the HUD when there isn't an active player
-			draw_game_status(ctx);
-	
-			if (m_radar_mode != RADAR_OFF) {
-				draw_radar(ctx);
-			}
+		draw_game_status(ctx);
+
+		if (m_radar_mode != RADAR_OFF) {
+			draw_radar(ctx);
 		}
 	}
 }
