@@ -33,6 +33,7 @@ extern "C" {
 
 #include "client/Client.hpp"
 #include "common/network.hpp"
+#include "common/Configuration.hpp"
 #include "ai/ReactiveAIController.hpp"
 
 using namespace LM;
@@ -41,9 +42,11 @@ using namespace std;
 extern "C" int main(int argc, char* argv[]) {
 	Client game;
 	ReactiveAIController controller;
+	Configuration config("ai.ini");
 	game.set_controller(&controller);
 	IPAddress host;
-	resolve_hostname(host, "endrift.com", 16876);
+	const char* server = config.get_string("Network", "server", "endrift.com:16876");
+	resolve_hostname(host, server);
 	game.connect(host);
 	game.run();
 
