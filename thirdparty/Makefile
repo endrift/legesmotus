@@ -4,7 +4,7 @@ LIBRARY := ../libthirdparty.a
 
 include $(BASEDIR)/common.mk
 
-$(LIBOBJS):
+mkdir:
 	mkdir -p $(dir $(LIBOBJS))
 
 all: mkdir $(LIBRARY)
