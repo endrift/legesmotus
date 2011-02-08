@@ -68,7 +68,7 @@ const string& Configuration::local_dir() {
 			cfg = pw->pw_dir;
 			cfg += "/.legesmotus/";
 			int err = mkdir(cfg.c_str(), 0775);
-			if (err && err != EEXIST) {
+			if (err && errno != EEXIST) {
 				WARN("Couldn't create config directory");
 			}
 		} else {

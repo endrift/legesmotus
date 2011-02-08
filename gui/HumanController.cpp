@@ -122,7 +122,13 @@ void HumanController::update(uint64_t diff, const GameLogic& state, int player_i
 		if (m_nextweapon < 0) {
 			m_nextweapon += nweapons;
 		}
-		m_nextweapon %= nweapons;
+
+		if (nweapons > 0) {
+			m_nextweapon %= nweapons;
+		} else {
+			m_nextweapon = 0;
+		}
+
 		m_wdelta = 0;
 	} else if (m_nextweapon >= nweapons) {
 		m_nextweapon = m_weapon;
