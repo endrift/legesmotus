@@ -130,39 +130,36 @@ Packet::WeaponDischarged* StandardGun::fire(b2World* physics, Player& player, Po
 	for (int i = 0; i < m_nbr_projectiles; i++) {
 		float endx = start.x + m_max_range * cos(currdirection);
 		float endy = start.y + m_max_range * sin(currdirection);
-	
+
 		m_objects_penetrated = 0;
 		m_current_damage = m_damage;
-		
+
 		m_hit_data.push_back(vector<HitData>());
 		physics->RayCast(this, b2Vec2(to_physics(start.x), to_physics(start.y)), b2Vec2(to_physics(endx), to_physics(endy)));
 		if (!m_hit_data.back().empty()) {
 			sort(m_hit_data.back().begin(), m_hit_data.back().end(), compare_hit_data);
 		}
-		
+
 		currdirection += m_angle/(m_nbr_projectiles - 1.0);
 	}
 	
 	packet->player_id = player.get_id();
 	packet->weapon_id = get_id();
-	std::stringstream out;
-	out << start.x << " " << start.y << " " << direction;
-	packet->extradata = out.str();
+	packet->start_x = start.x;
+	packet->start_y = start.y;
+	// FIXME make this variable length
+	packet->end_x = start.x;
+	packet->end_y = start.y;
+	packet->direction = direction;
 	
-	was_fired(physics, player, out.str());
+	was_fired(physics, player, direction);
 	
 	return packet;
 }
 
-void StandardGun::was_fired(b2World* physics, Player& player, std::string extradata) {
-	stringstream s(extradata);
-	float start_x;
-	float start_y;
-	float direction;
-	
-	s >> start_x >> start_y >> direction;
-	
+void StandardGun::was_fired(b2World* physics, Player& player, float direction) {
 	// Apply recoil and energy cost if necessary.
+	// FIXME this appears to be repeated code in all Weapons
 	player.apply_force(b2Vec2(m_recoil * 100 * cos(M_PI + direction), m_recoil * 100 * sin(M_PI + direction)));
 	player.change_energy(-1 * m_energy_cost);
 	if (player.get_energy() <= 0) {

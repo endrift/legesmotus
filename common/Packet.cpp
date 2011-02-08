@@ -45,13 +45,21 @@ static void unmarshal_PLAYER_UPDATE(PacketReader& r, Packet* p) {
 static void marshal_WEAPON_DISCHARGED(PacketWriter& w, Packet* p) {
 	w << p->weapon_discharged.player_id;
 	w << p->weapon_discharged.weapon_id;
-	w << p->weapon_discharged.extradata;
+	w << p->weapon_discharged.direction;
+	w << p->weapon_discharged.start_x;
+	w << p->weapon_discharged.start_y;
+	w << p->weapon_discharged.end_x;
+	w << p->weapon_discharged.end_y;
 }
 
 static void unmarshal_WEAPON_DISCHARGED(PacketReader& r, Packet* p) {
 	r >> p->weapon_discharged.player_id;
 	r >> p->weapon_discharged.weapon_id;
-	r >> p->weapon_discharged.extradata;
+	r >> p->weapon_discharged.direction;
+	r >> p->weapon_discharged.start_x;
+	r >> p->weapon_discharged.start_y;
+	r >> p->weapon_discharged.end_x;
+	r >> p->weapon_discharged.end_y;
 }
 
 static void marshal_PLAYER_HIT(PacketWriter& w, Packet* p) {
@@ -450,7 +458,11 @@ Packet::Packet(const Packet& other) {
 	case WEAPON_DISCHARGED_PACKET:
 		weapon_discharged.player_id = other.weapon_discharged.player_id;
 		weapon_discharged.weapon_id = other.weapon_discharged.weapon_id;
-		weapon_discharged.extradata = *other.weapon_discharged.extradata;
+		weapon_discharged.direction = other.weapon_discharged.direction;
+		weapon_discharged.start_x = other.weapon_discharged.start_x;
+		weapon_discharged.start_y = other.weapon_discharged.start_y;
+		weapon_discharged.end_x = other.weapon_discharged.end_x;
+		weapon_discharged.end_y = other.weapon_discharged.end_y;
 		break;
 
 	case PLAYER_HIT_PACKET:
@@ -648,7 +660,6 @@ Packet::~Packet() {
 		break;
 
 	case WEAPON_DISCHARGED_PACKET:
-		delete weapon_discharged.extradata.item;
 		break;
 
 	case PLAYER_HIT_PACKET:

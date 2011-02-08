@@ -143,24 +143,20 @@ Packet::WeaponDischarged* AreaGun::fire(b2World* physics, Player& player, Point 
 	
 	packet->player_id = player.get_id();
 	packet->weapon_id = get_id();
-	std::stringstream out;
-	out << start.x << " " << start.y << " " << direction;
-	packet->extradata = out.str();
+	packet->start_x = start.x;
+	packet->start_y = start.y;
+	packet->end_x = start.x;
+	packet->end_y = start.y;
+	packet->direction = direction;
 	
-	was_fired(physics, player, out.str());
+	was_fired(physics, player, direction);
 	
 	return packet;
 }
 
-void AreaGun::was_fired(b2World* physics, Player& player, std::string extradata) {
-	stringstream s(extradata);
-	float start_x;
-	float start_y;
-	float direction;
-	
-	s >> start_x >> start_y >> direction;
-	
+void AreaGun::was_fired(b2World* physics, Player& player, float direction) {
 	// Apply recoil and energy cost if necessary.
+	// FIXME this appears to be repeated code in all Weapons
 	player.apply_force(b2Vec2(m_recoil * 100 * cos(M_PI + direction), m_recoil * 100 * sin(M_PI + direction)));
 	player.change_energy(-1 * m_energy_cost);
 	if (player.get_energy() <= 0) {

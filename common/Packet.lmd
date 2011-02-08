@@ -33,7 +33,11 @@ PLAYER_UPDATE = 1 {
 WEAPON_DISCHARGED = 2 {
 	player_id : uint32_t ; ID of the player who fired the weapon
 	weapon_id : uint32_t ; The ID of the weapon that was fired
-	extradata : string ; Additional data that should be passed to the specific weapon class
+	direction : float ; The firing direction
+	start_x : float ; The start x coordinate
+	start_y : float ; The start y coordinate
+	end_x : float ; The end x coordinate
+	end_y : float ; The end y coordinate
 }
 
 PLAYER_HIT = 3 {

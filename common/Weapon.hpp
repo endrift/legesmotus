@@ -63,7 +63,7 @@ namespace LM {
 		// When the current player (player) fires this weapon:
 		//  direction is in radians
 		virtual Packet::WeaponDischarged* fire(b2World* physics, Player& player, Point start, float direction, Packet::WeaponDischarged* packet) = 0;
-		virtual void		was_fired(b2World* physics, Player& player, std::string extradata) = 0;
+		virtual void		was_fired(b2World* physics, Player& player, float direction) = 0;
 		
 		// When another player (player) fires this weapon:
 		//virtual void		discharged(Player& player, StringTokenizer& data) = 0;

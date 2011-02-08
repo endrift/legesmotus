@@ -83,7 +83,11 @@ namespace LM {
 		struct WeaponDischarged {
 			uint32_t player_id;
 			uint32_t weapon_id;
-			TypeWrapper<std::string> extradata;
+			float direction;
+			float start_x;
+			float start_y;
+			float end_x;
+			float end_y;
 		};
 
 		struct PlayerHit {

@@ -457,10 +457,12 @@ void	Server::player_died(const IPAddress& address, PacketReader& packet)
 void	Server::weapon_discharged(const IPAddress& address, PacketReader& inbound_packet)
 {
 	// Just broadcast this packet to all other players
-	uint32_t		shooter_id;
-	int			weapon_id;
-	string			extradata;
-	inbound_packet >> shooter_id >> weapon_id >> extradata;
+	uint32_t shooter_id;
+	int weapon_id;
+	float direction;
+	float start_x, start_y;
+	float end_x, end_y;
+	inbound_packet >> shooter_id >> weapon_id >> direction >> start_x >> start_y >> end_x >> end_y;
 
 	if (!is_authorized(address, shooter_id)) {
 		return;
@@ -473,13 +475,13 @@ void	Server::weapon_discharged(const IPAddress& address, PacketReader& inbound_p
 	
 	// Re-broadcast the packet to all _other_ players
 	PacketWriter	outbound_packet(WEAPON_DISCHARGED_PACKET);
-	outbound_packet << shooter_id << weapon_id << extradata;
+	outbound_packet << shooter_id << weapon_id << direction << start_x << start_y << end_x << end_y;
 	
 	// Tell the game logic that there was a weapon fired.
 	Weapon* weapon = m_game_logic->get_weapon(weapon_id);
 	Player* shooter = m_game_logic->get_player(shooter_id);
 	if (weapon != NULL && shooter != NULL) {
-		weapon->was_fired(m_game_logic->get_world(), *shooter, extradata);
+		weapon->was_fired(m_game_logic->get_world(), *shooter, direction);
 	}
 	
 	broadcast_packet_except(outbound_packet, shooter_id);

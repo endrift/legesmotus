@@ -200,10 +200,9 @@ void Client::generate_player_update(uint32_t id, Packet* p) {
 
 void Client::generate_weapon_fired(uint32_t weapon_id, uint32_t player_id) {
 	Packet weapon_discharged(WEAPON_DISCHARGED_PACKET);
-	//weapon_discharged.type = WEAPON_DISCHARGED_PACKET;
 	weapon_discharged.weapon_discharged.weapon_id = m_curr_weapon;
 	weapon_discharged.weapon_discharged.player_id = m_player_id;
-	weapon_discharged.weapon_discharged.extradata = "";
+
 	m_network.send_packet(&weapon_discharged);
 }
 
@@ -373,7 +372,7 @@ void Client::weapon_discharged(const Packet& p) {
 	
 	Weapon* weapon = m_logic->get_weapon(p.weapon_discharged.weapon_id);
 	if (weapon != NULL) {
-		weapon->was_fired(m_logic->get_world(), *player, *(p.weapon_discharged.extradata));
+		weapon->was_fired(m_logic->get_world(), *player, p.weapon_discharged.direction);
 	}
 }
 
