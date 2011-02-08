@@ -25,6 +25,7 @@
 #include "ReactiveAIController.hpp"
 #include "common/PhysicsObject.hpp"
 #include <cstdlib>
+#include "common/team.hpp"
 
 using namespace LM;
 using namespace std;
@@ -33,8 +34,7 @@ const float ReactiveAIController::MAX_AIM_VEL = .04f;
 const unsigned int ReactiveAIController::AIM_TOLERANCE = .01f;
 const float ReactiveAIController::BASE_AIM_UNCERTAINTY = .2f;
 const float ReactiveAIController::QUICK_AIM_CHANGE_ERROR = .1f;
-const unsigned int ReactiveAIController::VISION_RADIUS = 1000;
-const unsigned int ReactiveAIController::JUMP_DELAY = 60;
+const unsigned int ReactiveAIController::VISION_RADIUS = 700;
 const unsigned int ReactiveAIController::GUN_ANGLE_CHANGE_RATE = 60;
 
 ReactiveAIController::ReactiveAIController() {
@@ -44,6 +44,8 @@ ReactiveAIController::ReactiveAIController() {
 	
 	m_wanted_aim = 0;
 	m_curr_aim = 0;
+	m_enemy_gate = 0;
+	m_aim_reason = JUMP;
 }
 
 void ReactiveAIController::find_desired_aim(const GameLogic& state, uint32_t player_id) {
@@ -56,7 +58,6 @@ void ReactiveAIController::find_desired_aim(const GameLogic& state, uint32_t pla
 	}
 	
 	// Find the nearest enemy.
-	// TODO: Make this respect actual vision - use ray casts to determine if we can "see" them.
 	ConstIterator<std::pair<uint32_t, Player*> > it=state.list_players();
 	while(it.has_more()) {
 		std::pair<uint32_t, Player*> next = it.next();
@@ -78,16 +79,31 @@ void ReactiveAIController::find_desired_aim(const GameLogic& state, uint32_t pla
 		if (dist > -1) {
 			closestenemy = currplayer;
 			closestdist = dist;
-		} 
+		}
 	}
 	
-	// Find the angle to turn towards the enemy.
-	if (closestdist < VISION_RADIUS) {
-		double x_dist;
-		double y_dist;
-		x_dist = closestenemy->get_x() - my_player->get_x();
-		y_dist = closestenemy->get_y() - my_player->get_y();
+	// Check if we can see the enemy's gate:
+	m_enemy_gate = state.get_map()->get_gate(get_other_team(my_player->get_team()));
+	
+	float dist = -1;
+	if (m_enemy_gate != NULL) {
+		dist = check_gate_visible(state.get_world(), my_player, m_enemy_gate);
+	}
+	
+	if (dist > -1 && dist < VISION_RADIUS && 
+			!state.is_engaging_gate(my_player->get_id(), get_other_team(my_player->get_team())) && 
+			my_player->is_grabbing_obstacle()) {
+		Point gate_pos = m_enemy_gate->get_position();
+		float x_dist = gate_pos.x - my_player->get_x();
+		float y_dist = gate_pos.y - my_player->get_y();
+		m_wanted_aim = atan2(y_dist, x_dist);
+		m_aim_reason = JUMP;
+	} else if (closestdist < VISION_RADIUS) {
+		// Find the angle to turn towards the enemy.
+		float x_dist = closestenemy->get_x() - my_player->get_x();
+		float y_dist = closestenemy->get_y() - my_player->get_y();
 		m_wanted_aim = atan2(y_dist, x_dist) + m_aim_inaccuracy;
+		m_aim_reason = FIRE;
 		
 		if (rand()%(GUN_ANGLE_CHANGE_RATE/2) == 1) {
 			float aimdiff = fabs(m_curr_aim - m_wanted_aim);
@@ -100,7 +116,17 @@ void ReactiveAIController::find_desired_aim(const GameLogic& state, uint32_t pla
 		// For now, just randomly aim somewhere.
 		// XXX: Can we lock this to framerate better?
 		if (rand()%GUN_ANGLE_CHANGE_RATE == 1) {
-			m_wanted_aim = to_radians(rand()%360 - 180);
+			// 1/5th chance to jump towards the gate, even if we can't see it.
+			if (rand() % 5 == 1) {
+				Point gate_pos = m_enemy_gate->get_position();
+				float x_dist = gate_pos.x - my_player->get_x();
+				float y_dist = gate_pos.y - my_player->get_y();
+				m_wanted_aim = atan2(y_dist, x_dist);
+				m_aim_reason = JUMP;
+			} else {
+				m_wanted_aim = to_radians(rand()%360 - 180);
+				m_aim_reason = JUMP;
+			}
 		}
 	}
 }
@@ -124,7 +150,50 @@ float ReactiveAIController::update_gun() {
 	return fabs(m_curr_aim - m_wanted_aim);
 }
 
+float ReactiveAIController::check_gate_visible(const b2World* physics, const Player* start_player, const Gate* gate) {
+	// XXX: Question - is there a way to avoid all this repeated code.
+
+	m_ray_start = Point(to_physics(start_player->get_x()), to_physics(start_player->get_y()));
+
+	m_ray_gate_team = 0;
+	m_ray_shortest_dist = -1;
+	
+	Point gate_pos = gate->get_position();
+	
+	// Perform the first raycast, at the center of the gate.
+	physics->RayCast(this, b2Vec2(m_ray_start.x, m_ray_start.y), b2Vec2(to_physics(gate_pos.x), to_physics(gate_pos.y)));
+	
+	const b2Shape* shape = gate->get_bounding_shape();
+	if (shape->GetType() == b2Shape::e_polygon) {
+		const b2PolygonShape* polyshape = static_cast<const b2PolygonShape*>(shape);
+		int index = 0;
+		while (m_ray_gate_team != gate->get_team() && index < polyshape->GetVertexCount()) {
+			b2Vec2 vertex = polyshape->GetVertex(index);
+		
+			float x = to_physics(gate_pos.x) + vertex.x * cos(to_radians(gate->get_rotation()));
+			float y = to_physics(gate_pos.y) + vertex.y * sin(to_radians(gate->get_rotation()));
+			
+			m_ray_shortest_dist = -1;
+			physics->RayCast(this, b2Vec2(m_ray_start.x, m_ray_start.y), b2Vec2(x, y));
+			if (m_ray_gate_team == gate->get_team()) {
+				break;
+			}
+			index++;
+		}
+	}
+	
+	float shortest_dist = to_game(m_ray_shortest_dist);
+	
+	if (m_ray_gate_team != gate->get_team() || shortest_dist > VISION_RADIUS) {
+		return -1;
+	}
+	
+	return shortest_dist;
+}
+
 float ReactiveAIController::check_player_visible(const b2World* physics, const Player* start_player, const Player* other_player) {
+	// XXX: Question - is there a way to avoid all this repeated code.	
+	
 	m_ray_start = Point(to_physics(start_player->get_x()), to_physics(start_player->get_y()));
 
 	m_ray_hit_player = -1;
@@ -185,17 +254,20 @@ void ReactiveAIController::update(uint64_t diff, const GameLogic& state, int pla
 	
 	// XXX: For now, we fire even if we're aiming to jump instead of to attack a player.
 	if (aimdiff <= AIM_TOLERANCE) {
-		m_changes[m_changeset ^ 1] |= FIRE_WEAPON;
-	}
-	
-	// Determine whether to jump.
-	// XXX: Testing code: For now, just jump like crazy!
-	if (rand()%JUMP_DELAY == 1) {
-		m_changes[m_changeset ^ 1] |= JUMPING;
+		if (m_aim_reason == FIRE) {
+			m_changes[m_changeset ^ 1] |= FIRE_WEAPON;
+			m_changes[m_changeset ^ 1] |= STOP_JUMPING;
+		} else {
+			// Determine whether to jump.
+			if (state.is_engaging_gate(player_id, get_other_team(my_player->get_team()))) {
+				m_changes[m_changeset ^ 1] |= STOP_JUMPING;
+			} else {
+				m_changes[m_changeset ^ 1] |= JUMPING;
+			}
+		}
 	} else {
 		m_changes[m_changeset ^ 1] |= STOP_JUMPING;
 	}
-	// XXX: End testing code.
 }
 
 int ReactiveAIController::get_changes() const {
@@ -237,11 +309,11 @@ float32 ReactiveAIController::ReportFixture(b2Fixture* fixture, const b2Vec2& po
 		return 0;
 	}
 	
+	PhysicsObject* hitobj = static_cast<PhysicsObject*>(body->GetUserData());
+	
 	if (fixture->IsSensor()) {
 		return 1;
 	}
-	
-	PhysicsObject* hitobj = static_cast<PhysicsObject*>(body->GetUserData());
 	
 	Point end = Point(point.x, point.y);
 	float dist = (end-m_ray_start).get_magnitude();
@@ -253,9 +325,18 @@ float32 ReactiveAIController::ReportFixture(b2Fixture* fixture, const b2Vec2& po
 	
 	if (hitobj->get_type() == PhysicsObject::MAP_OBJECT) {
 		MapObject* object = static_cast<MapObject*>(hitobj);
+		
+		if (hitobj == m_enemy_gate) {
+			m_ray_gate_team = m_enemy_gate->get_team();
+		} else {
+			m_ray_gate_team = 0;
+		}
+		
 		if (!object->is_collidable()) {
 			return 1;
 		}
+	} else {
+		m_ray_gate_team = 0;
 	}
 	
 	if (hitobj->get_type() == PhysicsObject::PLAYER) {

@@ -38,8 +38,12 @@ namespace LM {
 		const static float BASE_AIM_UNCERTAINTY;
 		const static float QUICK_AIM_CHANGE_ERROR;
 		const static unsigned int VISION_RADIUS;
-		const static unsigned int JUMP_DELAY;
 		const static unsigned int GUN_ANGLE_CHANGE_RATE;
+		
+		enum AimReason {
+			JUMP,
+			FIRE
+		};
 	
 		int m_changes[2];
 		int m_changeset;
@@ -47,17 +51,21 @@ namespace LM {
 		float m_wanted_aim; // Radians
 		float m_curr_aim; // Radians
 		float m_aim_inaccuracy; // Radians
+		AimReason m_aim_reason; // Why are we aiming towards the desired location?
 		
 		void find_desired_aim(const GameLogic& state, uint32_t player_id);
 		
 		float update_gun(); // Returns the absolute value of the difference between desired and actual angle.
 		
 		float check_player_visible(const b2World* world, const Player* start_player, const Player* other_player); // Returns the distance to the player, or -1 if not visible.
+		float check_gate_visible(const b2World* physics, const Player* start_player, const Gate* gate); // Returns the distance to the gate, or -1 if not visible.
 		
 		// For ray casts:
 		uint32_t		m_ray_hit_player;	// The ID of the closest player hit by the ray, -1 if none or if a wall is in the way.
 		float			m_ray_shortest_dist;	// The shortest distance seen in this ray cast.
 		Point			m_ray_start;		// The starting point of the ray cast.
+		char			m_ray_gate_team;	// The team of the gate that was hit, if any.
+		const Gate*		m_enemy_gate;		// The other team's gate.
 
 	public:
 		ReactiveAIController();
