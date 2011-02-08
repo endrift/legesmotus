@@ -113,6 +113,15 @@ int SDLInputDriver::update() {
 				}
 			}
 
+			if (ks->unicode) {
+				m_held[ks->sym] = ke.character;
+			} else if (ke.type == KEY_LETTER) {
+				if (m_held.find(ks->sym) != m_held.end()) {
+					ke.character = m_held[ks->sym];
+					m_held.erase(m_held.find(ks->sym));
+				}
+			}
+
 			register_event(ke);
 			++updates;
 			break;

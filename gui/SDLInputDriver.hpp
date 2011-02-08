@@ -26,9 +26,12 @@
 #define LM_GUI_SDLINPUTDRIVER_HPP
 
 #include "InputDriver.hpp"
+#include <map>
 
 namespace LM {
 	class SDLInputDriver : public InputDriver {
+	private:
+		std::map<long, long> m_held;
 	public:
 		SDLInputDriver();
 
