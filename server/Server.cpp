@@ -389,6 +389,11 @@ void	Server::player_hit(const IPAddress& address, PacketReader& inbound_packet)
 	if (!is_authorized(address, shooter_id)) {
 		return;
 	}
+	
+	// If the round is not in progress, don't pass this along.
+	if (!round_in_progress()) {
+		return;
+	}
 
 	ServerPlayer* shooter = get_player(shooter_id);
 	ServerPlayer* shot_player = get_player(shot_player_id);
@@ -407,7 +412,12 @@ void	Server::player_hit(const IPAddress& address, PacketReader& inbound_packet)
 	
 	bool already_frozen = shot_player->is_frozen();
 	
-	m_game_logic->get_weapon(weapon_id)->hit(shot_player, shooter, &hitdata);
+	Weapon* weapon = m_game_logic->get_weapon(weapon_id);
+	if (weapon != NULL) {
+		weapon->hit(shot_player, shooter, &hitdata);
+	} else {
+		WARN("Weapon " << weapon_id << " supposedly hit player, but that weapon does not exist!");
+	}
 
 	// Inform the victim that he has been hit
 	PacketWriter		outbound_packet(PLAYER_HIT_PACKET);
@@ -452,19 +462,27 @@ void	Server::weapon_discharged(const IPAddress& address, PacketReader& inbound_p
 	string			extradata;
 	inbound_packet >> shooter_id >> weapon_id >> extradata;
 
-	if (is_authorized(address, shooter_id)) {
-		// Re-broadcast the packet to all _other_ players
-		PacketWriter	outbound_packet(WEAPON_DISCHARGED_PACKET);
-		outbound_packet << shooter_id << weapon_id << extradata;
-		
-		// Tell the game logic that there was a weapon fired.
-		Weapon* weapon = m_game_logic->get_weapon(weapon_id);
-		if (weapon != NULL) {
-			weapon->was_fired(m_game_logic->get_world(), *m_game_logic->get_player(shooter_id), extradata);
-		}
-		
-		broadcast_packet_except(outbound_packet, shooter_id);
+	if (!is_authorized(address, shooter_id)) {
+		return;
 	}
+	
+	// If the round is not in progress, don't pass this along, because it is invalid.
+	if (!round_in_progress()) {
+		return;
+	}
+	
+	// Re-broadcast the packet to all _other_ players
+	PacketWriter	outbound_packet(WEAPON_DISCHARGED_PACKET);
+	outbound_packet << shooter_id << weapon_id << extradata;
+	
+	// Tell the game logic that there was a weapon fired.
+	Weapon* weapon = m_game_logic->get_weapon(weapon_id);
+	Player* shooter = m_game_logic->get_player(shooter_id);
+	if (weapon != NULL && shooter != NULL) {
+		weapon->was_fired(m_game_logic->get_world(), *shooter, extradata);
+	}
+	
+	broadcast_packet_except(outbound_packet, shooter_id);
 }
 
 
@@ -629,7 +647,9 @@ void	Server::player_jumped(const IPAddress& address, PacketReader& packet) {
 		PacketWriter	outbound_packet(PLAYER_JUMPED_PACKET);
 		outbound_packet << player_id << direction;
 		
-		m_game_logic->attempt_jump(player_id, direction);
+		if (m_game_logic != NULL) {
+			m_game_logic->attempt_jump(player_id, direction);
+		}
 		
 		broadcast_packet_except(outbound_packet, player_id);
 	}
