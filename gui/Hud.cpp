@@ -36,12 +36,12 @@ using namespace std;
 const Color Hud::BLUE_BRIGHT(0xFA, 0xFA, 0xFF);
 const Color Hud::BLUE_SHADOW(0x5E, 0x55, 0x42);
 const Color Hud::BLUE_DARK(0x79, 0x8B, 0xB5);
-const Color Hud::BLUE_BLIP(0x9A, 0xB1, 0xE6);
+const Color Hud::BLUE_BLIP(0xAB, 0xC3, 0xFB);
 
 const Color Hud::RED_BRIGHT(0xFF, 0xFA, 0xFA);
 const Color Hud::RED_SHADOW(0x42, 0x55, 0x5E);
 const Color Hud::RED_DARK(0xB5, 0x8B, 0x79);
-const Color Hud::RED_BLIP(0xE6, 0xB1, 0x9A);
+const Color Hud::RED_BLIP(0xFB, 0xC3, 0xAB);
 
 const Color Hud::DISABLED(0.4f, 0.4f, 0.4f);
 
@@ -325,10 +325,14 @@ void Hud::draw_radar(DrawContext* ctx) const {
 
 void Hud::update_radar(ConstIterator<pair<uint32_t, Player*> > players) {
 	list<RadarBlip>::iterator blips = m_radar.begin();
+	if (!players.has_more()) {
+		m_radar.clear();
+	}
+
 	while (players.has_more()) {
 		pair<uint32_t, Player*> p = players.next();
 
-		if (blips != m_radar.end() && blips->id > p.second->get_id()) {
+		while (blips != m_radar.end() && blips->id > p.second->get_id()) {
 			// We passed by one...
 			blips = m_radar.erase(blips);
 		}
@@ -340,6 +344,10 @@ void Hud::update_radar(ConstIterator<pair<uint32_t, Player*> > players) {
 			*blips = make_blip(p.second);
 			++blips;
 		}
+	}
+
+	while (blips != m_radar.end()) {
+		blips = m_radar.erase(blips);
 	}
 }
 
