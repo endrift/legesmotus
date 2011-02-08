@@ -44,12 +44,12 @@ using namespace std;
 GuiClient::GuiClient() {
 	// TODO move elsewhere
 	m_config = new Configuration("gui.ini");
-	int width = m_config->get_int(L"GameWindow", L"width", 800);
-	int height = m_config->get_int(L"GameWindow", L"height", 600);
-	int depth = m_config->get_int(L"GameWindow", L"depth", 24);
+	int width = m_config->get_int("GameWindow", "width", 800);
+	int height = m_config->get_int("GameWindow", "height", 600);
+	int depth = m_config->get_int("GameWindow", "depth", 24);
 	int flags = 0;
-	flags |= m_config->get_bool(L"GameWindow", L"vsync", true)?Window::FLAG_VSYNC:0;
-	flags |= m_config->get_bool(L"GameWindow", L"fullscreen")?Window::FLAG_FULLSCREEN:0;
+	flags |= m_config->get_bool("GameWindow", "vsync", true)?Window::FLAG_VSYNC:0;
+	flags |= m_config->get_bool("GameWindow", "fullscreen")?Window::FLAG_FULLSCREEN:0;
 	m_window = SDLWindow::get_instance(width, height, depth, flags);
 	m_cache = new ResourceCache(get_res_directory(), m_window->get_context());
 	m_input = new SDLInputDriver;
@@ -68,7 +68,7 @@ GuiClient::GuiClient() {
 	m_view->set_scale_base(1024);
 
 	m_debugdraw = new PhysicsDraw;
-	if (m_config->get_bool(L"Debug", L"physics_overlay")) {
+	if (m_config->get_bool("Debug", "physics_overlay")) {
 		m_view->add_child(m_debugdraw, GameView::OVERLAY);
 	}
 
@@ -326,7 +326,9 @@ void GuiClient::run() {
 	crosshair_bone.set_scale_y(m_view->get_scale()/4.0f);
 
 	IPAddress host;
-	resolve_hostname(host, "endrift.com", 16876);
+	const char* server = m_config->get_string("Debug", "autoconnect_server", "endrift.com:16876");
+	resolve_hostname(host, server);
+	INFO("Connecting to " << server);
 	connect(host);
 	// XXX end testing code
 

@@ -32,31 +32,31 @@
 namespace LM {
 	class Configuration {
 	private:
-		CSimpleIniW* m_local;
-		CSimpleIniW* m_global;
+		CSimpleIniA* m_local;
+		CSimpleIniA* m_global;
 
 	public:
 		static const std::string& local_dir();
 		static const std::string& global_dir();
-		static bool key_exists(CSimpleIniW* dict, const wchar_t* section, const wchar_t* key);
+		static bool key_exists(CSimpleIniA* dict, const char* section, const char* key);
 
 		Configuration();
 		Configuration(const std::string& filename);
 		~Configuration();
 		
-		bool local_key_exists(const wchar_t* section, const wchar_t* key) const;
-		bool global_key_exists(const wchar_t* section, const wchar_t* key) const;
-		bool key_exists(const wchar_t* section, const wchar_t* key) const;
+		bool local_key_exists(const char* section, const char* key) const;
+		bool global_key_exists(const char* section, const char* key) const;
+		bool key_exists(const char* section, const char* key) const;
 
-		const wchar_t* get_string(const wchar_t* section, const wchar_t* key, const wchar_t* dflt = NULL) const;
-		int get_int(const wchar_t* section, const wchar_t* key, int dflt = NULL) const;
-		bool get_bool(const wchar_t* section, const wchar_t* key, bool dflt = NULL) const;
-		float get_float(const wchar_t* section, const wchar_t* key, float dflt = NULL) const;
+		const char* get_string(const char* section, const char* key, const char* dflt = NULL) const;
+		int get_int(const char* section, const char* key, int dflt = NULL) const;
+		bool get_bool(const char* section, const char* key, bool dflt = NULL) const;
+		float get_float(const char* section, const char* key, float dflt = NULL) const;
 
-		void set_string(const wchar_t* section, const wchar_t* key, const wchar_t* val);
-		void set_int(const wchar_t* section, const wchar_t* key, int val);
-		void set_bool(const wchar_t* section, const wchar_t* key, bool val);
-		void set_float(const wchar_t* section, const wchar_t* key, float val);
+		void set_string(const char* section, const char* key, const char* val);
+		void set_int(const char* section, const char* key, int val);
+		void set_bool(const char* section, const char* key, bool val);
+		void set_float(const char* section, const char* key, float val);
 
 		bool save(const std::string& filename) const;
 	};

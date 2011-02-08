@@ -94,24 +94,24 @@ const string& Configuration::global_dir() {
 	return cfg;
 }
 
-bool Configuration::key_exists(CSimpleIniW* dict, const wchar_t* section, const wchar_t* key) {
+bool Configuration::key_exists(CSimpleIniA* dict, const char* section, const char* key) {
 	if (dict == NULL) {
 		return false;
 	}
 
-	const CSimpleIniW::TKeyVal* keys = dict->GetSection(section);
+	const CSimpleIniA::TKeyVal* keys = dict->GetSection(section);
 
 	return keys != NULL && (keys->find(key) != keys->end());
 }
 
 Configuration::Configuration() {
-	m_local = new CSimpleIniW(true);
+	m_local = new CSimpleIniA(true);
 	m_global = NULL;
 }
 
 Configuration::Configuration(const std::string& filename) {
-	m_local = new CSimpleIniW(true);
-	m_global = new CSimpleIniW(true);
+	m_local = new CSimpleIniA(true);
+	m_global = new CSimpleIniA(true);
 
 	// TODO error checking
 	m_local->LoadFile((local_dir() + filename).c_str());
@@ -123,41 +123,41 @@ Configuration::~Configuration() {
 	delete m_global;
 }
 
-bool Configuration::local_key_exists(const wchar_t* section, const wchar_t* key) const {
+bool Configuration::local_key_exists(const char* section, const char* key) const {
 	return key_exists(m_local, section, key);
 }
 
-bool Configuration::global_key_exists(const wchar_t* section, const wchar_t* key) const {
+bool Configuration::global_key_exists(const char* section, const char* key) const {
 	return key_exists(m_global, section, key);
 }
 
-bool Configuration::key_exists(const wchar_t* section, const wchar_t* key) const {
+bool Configuration::key_exists(const char* section, const char* key) const {
 	return global_key_exists(section, key) || local_key_exists(section, key);
 }
 
-const wchar_t* Configuration::get_string(const wchar_t* section, const wchar_t* key, const wchar_t* dflt) const {
+const char* Configuration::get_string(const char* section, const char* key, const char* dflt) const {
 	if (local_key_exists(section, key)) {
 		return m_local->GetValue(section, key, dflt);
 	}
 	return m_global->GetValue(section, key, dflt);
 }
 
-int Configuration::get_int(const wchar_t* section, const wchar_t* key, int dflt) const {
+int Configuration::get_int(const char* section, const char* key, int dflt) const {
 	if (local_key_exists(section, key)) {
 		return m_local->GetLongValue(section, key, dflt);
 	}
 	return m_global->GetLongValue(section, key, dflt);
 }
 
-bool Configuration::get_bool(const wchar_t* section, const wchar_t* key, bool dflt) const {
+bool Configuration::get_bool(const char* section, const char* key, bool dflt) const {
 	if (local_key_exists(section, key)) {
 		return m_local->GetBoolValue(section, key, dflt);
 	}
 	return m_global->GetBoolValue(section, key, dflt);
 }
 
-float Configuration::get_float(const wchar_t* section, const wchar_t* key, float dflt) const {
-	const wchar_t* val = m_local->GetValue(section, key);
+float Configuration::get_float(const char* section, const char* key, float dflt) const {
+	const char* val = m_local->GetValue(section, key);
 
 	if (val == NULL) {
 		val = m_global->GetValue(section, key);
@@ -166,6 +166,6 @@ float Configuration::get_float(const wchar_t* section, const wchar_t* key, float
 		return dflt;
 	}
 
-	return wtof(val);
+	return atof(val);
 }
 
