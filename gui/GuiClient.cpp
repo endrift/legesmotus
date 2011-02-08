@@ -68,7 +68,7 @@ GuiClient::GuiClient() {
 	m_view->set_scale_base(1024);
 
 	m_debugdraw = new PhysicsDraw;
-	if (m_config->get_bool(L"GameWindow", L"debug_overlay")) {
+	if (m_config->get_bool(L"Debug", L"physics_overlay")) {
 		m_view->add_child(m_debugdraw, GameView::OVERLAY);
 	}
 
