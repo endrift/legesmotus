@@ -785,7 +785,7 @@ Packet::~Packet() {
 
 void Packet::clear() {
 	void* base = &header;
-	memset(base, 0, sizeof(*this) - offsetof(Packet, header));
+	memset(base, 0, sizeof(*this) - (long(base) - long(this)));
 }
 void Packet::marshal() {
 	PacketWriter w(type, header);
