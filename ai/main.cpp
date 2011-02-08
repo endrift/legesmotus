@@ -44,7 +44,7 @@ extern "C" int main(int argc, char* argv[]) {
 	ReactiveAIController controller;
 	Configuration config("ai.ini");
 	game.set_controller(&controller);
-	gmae.set_config(&config);
+	game.set_config(&config);
 	IPAddress host;
 	const char* server = config.get_string("Network", "server", "endrift.com:16876");
 	resolve_hostname(host, server);
