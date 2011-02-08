@@ -44,6 +44,7 @@ namespace LM {
 	class Label;
 	class ConvolveKernel;
 	class Hud;
+	class Configuration;
 
 	class GuiClient : public Client, public InputSink {
 	private:
@@ -60,7 +61,8 @@ namespace LM {
 		InputDriver* m_input;
 		GameView* m_view;
 		Widget m_root;
-		PhysicsDraw *m_debugdraw;
+		PhysicsDraw* m_debugdraw;
+		Configuration* m_config;
 
 		GraphicalPlayer* m_player;
 		GraphicalMap* m_map;
@@ -70,7 +72,6 @@ namespace LM {
 		std::vector<std::string> m_preloaded_fonts;
 
 		Hud* m_hud;
-
 		std::map<int, Label*> m_badges;
 
 		// XXX how much of this should be moved to a new class?

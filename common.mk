@@ -10,6 +10,7 @@ VERSION = 0.5.0-svn
 
 # These may be overridden by config.mk
 DATADIR = data
+SYSCONFDIR = config
 #UNIVERSAL = 1
 #NOBUNDLE = 1
 
@@ -65,7 +66,7 @@ ifeq ($(ARCHS),)
     IS_X64 = $(shell lipo `sdl-config --prefix`/lib/libSDL.a -verify_arch x86_64 && echo x86_64)
     IS_X86 = $(shell lipo `sdl-config --prefix`/lib/libSDL.a -verify_arch i386 && echo i386)
     IS_PPC = $(shell lipo `sdl-config --prefix`/lib/libSDL.a -verify_arch ppc && echo ppc)
-    ifeq ($(UNIVERSAL),)
+    ifeq ($(UNIVERSAL)$(DEBUG),)
      ARCHS += $(IS_PPC) $(IS_X64) $(IS_X86)
     else
      ifneq ($(IS_X64),)
@@ -222,6 +223,9 @@ endif
 %.cpp.o: %.cpp %.cpp.d
 	$(CXX) -c $(CXXFLAGS) $< -o $@
 
+%.c.o: %.c %.c.d
+	$(CC) -c $(CXXFLAGS) $< -o $@
+
 %.m.o: %.m %.m.d
 	$(CC) -c $(CFLAGS) $< -o $@
 
@@ -230,6 +234,9 @@ endif
 
 %.cpp.d: %.cpp
 	$(CXX) -M $(CXXFLAGS) $< | sed -e 's,^\([^:]*\)\.o:,\1.o $@:,' > $@
+
+%.c.d: %.c
+	$(CC) -M $(CFLAGS) $< | sed -e 's,^\([^:]*\)\.o:,\1.o $@:,' > $@
 
 %.m.d: %.m
 	$(CC) -M $(CFLAGS) $< | sed -e 's,^\([^:]*\)\.o:,\1.o $@:,' > $@

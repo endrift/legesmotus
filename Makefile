@@ -87,19 +87,23 @@ INSTALL_TARGETS = $(addprefix install-,$(TARGETS))
 
 ifneq ($(ARCH),universal)
 
-SRC_PKG = common server client gui
-AUX_PKG = tests serverscanner metaserver ai
-ALL_PKG = $(SRC_PKG) $(AUX_PKG)
+SRC_PKG := common server client gui
+AUX_PKG := tests serverscanner metaserver ai thirdparty
+ALL_PKG := $(SRC_PKG) $(AUX_PKG)
+
+.PHONY: $(ALL_PKG)
 
 default: $(TARGETS)
 
-legesmotus: client
+legesmotus: gui
 
 lmserver: server
 
 $(ALL_PKG):
 	+@mkdir -p $@
 	+@$(MAKE) -C $@ -f $(BASEDIR)/$@/Makefile BASEDIR="../../.." SUBDIR="$@" TARGETS="$(TARGETS)" $(TARGET)
+
+common: thirdparty
 
 server: common
 

@@ -30,6 +30,7 @@
 #include "HumanController.hpp"
 #include "common/Weapon.hpp"
 #include "common/timer.hpp"
+#include "common/Configuration.hpp"
 #include "Window.hpp"
 #include "Bone.hpp"
 #include "common/math.hpp"
@@ -42,12 +43,19 @@ using namespace std;
 
 GuiClient::GuiClient() {
 	// TODO move elsewhere
-	m_window = SDLWindow::get_instance(1280, 800, 24, Window::FLAG_VSYNC);
+	m_config = new Configuration("gui.ini");
+	int width = m_config->get_int(L"GameWindow", L"width", 800);
+	int height = m_config->get_int(L"GameWindow", L"height", 600);
+	int depth = m_config->get_int(L"GameWindow", L"depth", 24);
+	int flags = 0;
+	flags |= m_config->get_bool(L"GameWindow", L"vsync", true)?Window::FLAG_VSYNC:0;
+	flags |= m_config->get_bool(L"GameWindow", L"fullscreen", true)?Window::FLAG_FULLSCREEN:0;
+	m_window = SDLWindow::get_instance(width, height, depth, flags);
 	m_cache = new ResourceCache(get_res_directory(), m_window->get_context());
 	m_input = new SDLInputDriver;
 	m_input->set_sink(this);
 	m_gcontrol = new HumanController; // XXX we don't necessarily want one
-	m_gcontrol->set_viewport_size(m_window->get_width(), m_window->get_height());
+	m_gcontrol->set_viewport_size(width, height);
 	set_sink(m_gcontrol);
 	set_controller(m_gcontrol);
 
@@ -56,20 +64,20 @@ GuiClient::GuiClient() {
 	preload();
 
 	m_window->set_root_widget(&m_root);
-	m_view = new GameView("gv", m_cache, m_window->get_width(), m_window->get_height(), 128, &m_root);
+	m_view = new GameView("gv", m_cache, width, height, 128, &m_root);
 	m_view->set_scale_base(1024);
 
 	m_debugdraw = new PhysicsDraw;
-	#ifdef LM_DEBUG
-	m_view->add_child(m_debugdraw, GameView::OVERLAY);
-	#endif
+	if (m_config->get_bool(L"GameWindow", L"debug_overlay")) {
+		m_view->add_child(m_debugdraw, GameView::OVERLAY);
+	}
 
 	m_map = NULL;
 	m_player = NULL;
 
 	m_hud = new Hud(m_cache, &m_root);
-	m_hud->set_width(m_window->get_width());
-	m_hud->set_height(m_window->get_height());
+	m_hud->set_width(width);
+	m_hud->set_height(height);
 	set_font(load_font("DustHomeMedium.ttf", 12, m_hud->get_shadow_kernel()), FONT_BADGE_SHADOW);
 }
 
@@ -84,7 +92,9 @@ GuiClient::~GuiClient() {
 
 	delete m_cache;
 	delete m_input;
+	delete m_debugdraw;
 	delete m_view;
+	delete m_config;
 
 	// Clean up associations to prevent deletion failures
 	m_root.set_parent(NULL);

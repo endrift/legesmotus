@@ -9,13 +9,12 @@ LIBRARY := ../liblmgui.a
 
 include $(BASEDIR)/common.mk
 
-# Stopgap measure until client separated out
-CXXFLAGS += $(CLIENTFLAGS) $(shell freetype-config --cflags)
+CXXFLAGS += $(CLIENTFLAGS)
 CXXFLAGS += -I../client
 
 all: $(LIBRARY) legesmotus
 
-legesmotus: $(BINOBJS) $(LIBRARY) ../liblmclient.a ../liblmcommon.a
+legesmotus: $(BINOBJS) $(LIBRARY) ../liblmclient.a ../liblmcommon.a ../libthirdparty.a
 	$(CXX) $(LDFLAGS) -o legesmotus $^ $(CLIENTLIBS)
 
 clean: common-clean
