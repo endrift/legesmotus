@@ -35,11 +35,14 @@
 using namespace LM;
 using namespace std;
 
+const uint64_t Client::MAX_CONTINUOUS_JUMP_FREQUENCY = 500;
+
 Client::Client() : m_network(this) {
 	m_logic = NULL;
 	m_curr_weapon = -1;
 	m_player_id = -1;
 	m_jumping = false;
+	m_last_jump_time = 0;
 	
 	m_weapon_switch_time = 0;
 	m_weapon_switch_delay = 300;
@@ -78,11 +81,13 @@ uint64_t Client::step(uint64_t diff) {
 
 	if (changes & Controller::STOP_JUMPING) {
 		m_jumping = false;
+		m_last_jump_time = 0;
 	}
 
-	if (m_jumping) {
+	if (m_jumping && m_last_jump_time < get_ticks() - MAX_CONTINUOUS_JUMP_FREQUENCY) {
 		if (m_logic->attempt_jump(m_player_id, m_controller->get_aim())) {
 			generate_player_jumped(m_player_id, m_controller->get_aim());
+			m_last_jump_time = get_ticks();
 		}
 	}
 	

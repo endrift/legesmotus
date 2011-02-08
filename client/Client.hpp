@@ -38,12 +38,15 @@ namespace LM {
 
 	class Client : public PacketReceiver {
 	private:
+		const static uint64_t MAX_CONTINUOUS_JUMP_FREQUENCY;
+	
 		Controller* m_controller;
 		GameLogic* m_logic;
 		uint32_t m_player_id;
 		ClientNetwork m_network;
 		long m_curr_weapon;
 		
+		uint64_t m_last_jump_time;
 		uint64_t m_weapon_switch_time;
 		uint64_t m_weapon_switch_delay;
 
