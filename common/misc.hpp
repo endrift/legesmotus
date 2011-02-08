@@ -146,6 +146,9 @@ namespace LM {
 	// wchar_t to float
 	float wtof(const wchar_t* str);
 
+	std::wstring utf8_to_wide(const std::string& utf8);
+	std::string wide_to_utf8(const std::wstring& wide);
+
 	template<class T> inline const T& make_empty() {
 		static const T empty_obj;
 		return empty_obj;

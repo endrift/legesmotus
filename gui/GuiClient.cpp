@@ -44,6 +44,7 @@ using namespace std;
 GuiClient::GuiClient() {
 	// TODO move elsewhere
 	m_config = new Configuration("gui.ini");
+	set_config(m_config);
 	int width = m_config->get_int("GameWindow", "width", 800);
 	int height = m_config->get_int("GameWindow", "height", 600);
 	int depth = m_config->get_int("GameWindow", "depth", 24);

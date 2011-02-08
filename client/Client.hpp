@@ -35,6 +35,7 @@ namespace LM {
 	class Controller;
 	class GameLogic;
 	class Weapon;
+	class Configuration;
 
 	class Client : public PacketReceiver {
 	private:
@@ -45,7 +46,8 @@ namespace LM {
 		uint32_t m_player_id;
 		ClientNetwork m_network;
 		long m_curr_weapon;
-		
+		Configuration* m_config;
+
 		uint64_t m_last_jump_time;
 		uint64_t m_weapon_switch_time;
 		uint64_t m_weapon_switch_delay;
@@ -97,6 +99,11 @@ namespace LM {
 		virtual Weapon* make_weapon(WeaponReader& weapon_data);
 
 		void set_controller(Controller* controller);
+		void set_config(Configuration* config);
+
+		const Configuration* get_config() const;
+		Configuration* get_config();
+
 		virtual void set_curr_weapon(uint32_t id);
 		virtual void set_param(const std::string& param_name, const std::string& param_value);
 

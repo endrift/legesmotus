@@ -30,20 +30,22 @@
 #include "common/misc.hpp"
 #include "common/team.hpp"
 #include "common/Weapon.hpp"
+#include "common/Configuration.hpp"
 #include <iostream>
 
 using namespace LM;
 using namespace std;
 
-const uint64_t Client::MAX_CONTINUOUS_JUMP_FREQUENCY = 500;
+const uint64_t Client::MAX_CONTINUOUS_JUMP_FREQUENCY = 200;
 
 Client::Client() : m_network(this) {
 	m_logic = NULL;
 	m_curr_weapon = -1;
 	m_player_id = -1;
+	m_config = NULL;
 	m_jumping = false;
 	m_last_jump_time = 0;
-	
+
 	m_weapon_switch_time = 0;
 	m_weapon_switch_delay = 300;
 }
@@ -277,8 +279,20 @@ Weapon* Client::make_weapon(WeaponReader& weapon_data) {
 	return Weapon::new_weapon(weapon_data);
 }
 
+void Client::set_config(Configuration* config) {
+	m_config = config;
+}
+
 void Client::set_controller(Controller* controller) {
 	m_controller = controller;
+}
+
+const Configuration* Client::get_config() const {
+	return m_config;
+}
+
+Configuration* Client::get_config() {
+	return m_config;
 }
 
 void Client::set_curr_weapon(uint32_t id) {
@@ -318,7 +332,7 @@ void Client::connect(const IPAddress& server_address) {
 		Packet join(JOIN_PACKET);
 		join.join.protocol_number = PROTOCOL_VERSION;
 		join.join.compat_version = COMPAT_VERSION;
-		join.join.name = "Foo";
+		join.join.name = get_config()->get_string("Player", "name", get_username().c_str());
 		join.join.team = 0;
 
 		m_network.send_reliable_packet(&join);
