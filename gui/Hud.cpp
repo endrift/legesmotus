@@ -272,7 +272,6 @@ void Hud::draw_radar(DrawContext* ctx) const {
 	// Draw blips
 	ctx->set_secondary_color(Color::BLACK);
 	ctx->set_blend_mode(DrawContext::BLEND_SCREEN);
-	ctx->use_secondary_color(true);
 
 	ctx->translate(-m_radar_center.x*m_radar_scale, -m_radar_center.y*m_radar_scale);
 	for (list<RadarBlip>::const_iterator blips = m_radar.begin(); blips != m_radar.end(); ++blips) {
@@ -295,12 +294,13 @@ void Hud::draw_radar(DrawContext* ctx) const {
 
 		ctx->set_draw_color(c);
 		ctx->translate(blips->loc.x*m_radar_scale, blips->loc.y*m_radar_scale);
-		ctx->draw_arc_fill(1.0f, m_scale*0.01f, m_scale*0.01f, 8);
+		ctx->draw_arc_fill(1.0f, m_scale*0.004f, m_scale*0.004f, 16);
+		ctx->use_secondary_color(true);
+		ctx->draw_ring_fill(1.0f, m_scale*0.01f, m_scale*0.004f, 16);
+		ctx->use_secondary_color(false);
 		ctx->translate(-blips->loc.x*m_radar_scale, -blips->loc.y*m_radar_scale);
 	}
 	ctx->translate(m_radar_center.x*m_radar_scale, m_radar_center.y*m_radar_scale);
-
-	ctx->use_secondary_color(false);
 
 	ctx->invert_clip();
 

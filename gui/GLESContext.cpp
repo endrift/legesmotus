@@ -89,7 +89,7 @@ GLESContext::GLESContext(int width, int height, bool genfb) {
 		m_stencil_rbo = 0;
 		m_fbo_tex = 0;
 
-		LM_glEXT(BindFramebuffer, (LM_GL(FRAMEBUFFER), 0));
+		LM_glEXT(BindFramebuffer, (LM_GL_EXT(FRAMEBUFFER), 0));
 	}
 
 	if (!m_vbo) {
