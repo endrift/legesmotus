@@ -14,7 +14,7 @@ CXXFLAGS += -I../client
 
 all: $(LIBRARY) legesmotus
 
-legesmotus: $(BINOBJS) $(LIBRARY) ../liblmclient.a ../liblmcommon.a ../libthirdparty.a
+legesmotus: $(BINOBJS) $(LIBRARY) ../liblmclient.a ../liblmcommon.a
 	$(CXX) $(LDFLAGS) -o legesmotus $^ $(CLIENTLIBS)
 
 clean: common-clean
