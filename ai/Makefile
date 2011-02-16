@@ -1,5 +1,5 @@
 BASEDIR = ..
-LIBSRCS := ReactiveAIController.cpp
+LIBSRCS := ReactiveAIController.cpp StateTranslator.cpp
 BINSRCS := main.cpp
 LIBRARY := ../liblmai.a
 
