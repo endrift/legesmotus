@@ -33,7 +33,7 @@ fi
 
 (./tools/make_map_file "$@" > "$mapfile") || exit $?
 
-svn add "$mapfile" >/dev/null
+git add "$mapfile" >/dev/null
 
 print -u2 "Done writing map file to ${mapfile}"
 print -u2 "The background, wall, and gate sprites have been laid out."

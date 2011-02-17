@@ -69,8 +69,8 @@ using namespace std;
 EOF
 
 print "Adding $hfile..."
-svn add "$hfile"
+git add "$hfile"
 print "Adding $cfile..."
-svn add "$cfile"
+git add "$cfile"
 
 print "Make sure you add ${classname}.o to the OBJS variable in the Makefile."
