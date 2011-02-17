@@ -3,7 +3,7 @@
    / /  / _ \/ _` |/ _ \/ __|  /    \ / _ \| __| | | / __|  
   / /__|  __/ (_| |  __/\__ \ / /\/\ \ (_) | |_| |_| \__ \  
   \____/\___|\__, |\___||___/ \/    \/\___/ \__|\__,_|___/  
-             |___/                             v 0.5.0-svn  
+             |___/                             v 0.5.0-git  
 
         Andrew Ayer | Nathan Partlan | Jeffrey Pfau         
 
@@ -166,30 +166,26 @@ ON THE INTERNET
 
 Home Page (News, Screenshots, Wiki): http://legesmotus.endrift.com/
 Project Page (Downloads):            http://sourceforge.net/projects/legesmotus/
-Trac Page (Bugs):                    http://sourceforge.net/apps/trac/legesmotus/
+Trac Page (Bugs):                    http://legesmotus.endrift.com/trac/
 IRC Channel:                         irc.freenode.net #legesmotus
-Subversion Repository:               https://legesmotus.svn.sourceforge.net/svnroot/legesmotus
+Subversion Repository:               http://github.com/jpfau/legesmotus/
 
 For bugs and feature requests, visit Trac.  For immediate help or to try to find a game, stop by our IRC channel.  For documentation, visit the wiki.
 
 
 ORGANIZATION
 
-The code is divided into five components, located in the following directories:
+The code is divided into separate components, located in the following directories:
 
-	common         Common code for both client and server
-	client         The client
+	common         Common code for the executables
+	client         The common client code
+	gui            The graphical client
 	server         The server
 	serverscanner  A command line tool for scanning a metaserver
 	metaserver     The metaserver (running a metaserver is not recommended)
+	ai             An experimental AI client
 
-The data for the program are located in the data directory, and are divided into five parts:
-
-	data/fonts    Fonts
-	data/maps     Maps
-	data/sounds   Sounds
-	data/sprites  Sprites
-	data/weapons  Weapon configurations
+The data for the program are located in the data directory, and the default configuration files are located in the config directory
 
 
 ADVANCED BUILDING
