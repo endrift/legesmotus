@@ -80,8 +80,8 @@ namespace LM {
 		std::string m_supersection;
 
 	public:
-		StateTranslator(Configuration* config);
-		float get_value(const std::list<std::pair<const char*, float> >& vars);
+		StateTranslator(Configuration* config, const std::string& section);
+		float get_value(const std::string& subsection, const std::list<std::pair<const char*, float> >& vars);
 	};
 }
 

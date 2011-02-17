@@ -74,28 +74,33 @@ float StateTranslator::Functor::operator()(float input) const {
 	}
 }
 
-StateTranslator::StateTranslator(Configuration* config) {
+StateTranslator::StateTranslator(Configuration* config, const string& section) {
 	m_config = config;
+	m_supersection = section;
 }
 
-float StateTranslator::get_value(const list<pair<const char*, float> >& vars) {
+float StateTranslator::get_value(const string& subsection, const list<pair<const char*, float> >& vars) {
 	float running_sum;
 	float running_coeff;
+	stringstream s("Vars");
+	if (!m_supersection.empty()) {
+		s << m_supersection << ".";
+	}
+	if (!subsection.empty()) {
+		s << subsection << ".";
+	}
 	for (list<pair<const char*, float> >::const_iterator iter = vars.begin(); iter != vars.end(); ++iter) {
 		TranslationNode n;
 		float part;
 		if (m_cache.find(iter->first) != m_cache.end()) {
 			n = m_cache[iter->first];
 		} else {
-			stringstream s("Vars");
-			if (!m_supersection.empty()) {
-				s << m_supersection << ".";
-			}
-			s << iter->first;
-			n.coeff = m_config->get_float(s.str().c_str(), "coeff");
-			const char* combine = m_config->get_string(s.str().c_str(), "combine", "add");
-			const char* function = m_config->get_string(s.str().c_str(), "function", "ident");
-			bool hasop2 = m_config->key_exists(s.str().c_str(), "operand");
+			stringstream k(s.str());
+			k << iter->first;
+			n.coeff = m_config->get_float(k.str().c_str(), "coeff");
+			const char* combine = m_config->get_string(k.str().c_str(), "combine", "add");
+			const char* function = m_config->get_string(k.str().c_str(), "function", "ident");
+			bool hasop2 = m_config->key_exists(k.str().c_str(), "operand");
 
 			if (strcmp(combine, "void") == 0) {
 				n.combine = VOID;
@@ -133,7 +138,7 @@ float StateTranslator::get_value(const list<pair<const char*, float> >& vars) {
 			}
 
 			if (hasop2) {
-				n.func = Functor(f, m_config->get_float(s.str().c_str(), "operand"));
+				n.func = Functor(f, m_config->get_float(k.str().c_str(), "operand"));
 			} else {
 				n.func = Functor(f);
 			}
