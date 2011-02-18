@@ -41,6 +41,7 @@
 #include "common/Version.hpp"
 #include "common/GameLogic.hpp"
 #include "common/Weapon.hpp"
+#include "config.h"
 #include <string>
 #include <cstdlib>
 #include <cstring>

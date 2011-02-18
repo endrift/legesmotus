@@ -1,2 +1,3 @@
 #define LM_DATA_DIR "@LM_DATA_DIR@"
 #define LM_CONFIG_DIR "@LM_CONFIG_DIR@"
+#define LM_VERSION "@LM_VERSION@"

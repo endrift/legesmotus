@@ -1,12 +1,3 @@
-if(CMAKE_HOST_APPLE)
-
-if(LM_BUNDLE)
-else()
-set($ENV{SDLDIR} /opt/local)
-endif()
-
-endif()
-
 find_package(SDL REQUIRED)
 include_directories(${SDL_INCLUDE_DIR})
 set(LIBS ${LIBS} ${SDLMAIN_LIBRARY} ${SDL_LIBRARY})
@@ -63,8 +54,15 @@ add_library(lmgui
 
 add_executable(legesmotus WIN32 main.cpp)
 
-if(${CMAKE_HOST_APPLE})
+if(CMAKE_HOST_APPLE)
 set_target_properties(legesmotus PROPERTIES LINK_FLAGS -Wl,-framework,Cocoa)
+if(LM_BUNDLE)
+set_target_properties(legesmotus PROPERTIES MACOSX_BUNDLE ON)
+set_target_properties(legesmotus PROPERTIES MACOSX_BUNDLE_ICON_FILE legesmotus.icns)
+set_target_properties(legesmotus PROPERTIES MACOSX_BUNDLE_SHORT_VERSION_STRING "${LM_VERSION}")
+set_target_properties(legesmotus PROPERTIES MACOSX_BUNDLE_LONG_VERSION_STRING "${LM_VERSION}")
+set_target_properties(legesmotus PROPERTIES MACOSX_BUNDLE_BUNDLE_VERSION "${LM_VERSION}")
+endif()
 endif()
 
 target_link_libraries(legesmotus lmgui lmclient lmcommon ${LIBS} Box2D)
