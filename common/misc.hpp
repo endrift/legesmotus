@@ -28,6 +28,7 @@
 #include <string>
 #include <list>
 #include <ctype.h>
+#include "config.h"
 
 #define _S(x) #x
 #define STRING(x) _S(x)

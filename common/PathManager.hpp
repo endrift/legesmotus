@@ -27,6 +27,7 @@
 
 #include <cstring>
 #include <cstdio>
+#include "config.h"
 
 namespace LM {
 	class PathManager {
