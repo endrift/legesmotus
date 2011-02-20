@@ -1,5 +1,4 @@
-BASEDIR = ..
-LIBSRCS := ReactiveAIController.cpp StateTranslator.cpp FuzzyLogic.cpp
+LIBSRCS := ReactiveAIController.cpp StateTranslator.cpp AI.cpp FuzzyLogic.cpp
 BINSRCS := main.cpp
 LIBRARY := ../liblmai.a
 
