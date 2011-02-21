@@ -1,4 +1,4 @@
-LIBSRCS := ReactiveAIController.cpp StateTranslator.cpp AI.cpp FuzzyLogic.cpp
+LIBSRCS := ReactiveAIController.cpp StateTranslator.cpp AI.cpp FuzzyLogic.cpp FuzzyCategory.cpp
 BINSRCS := main.cpp
 LIBRARY := ../liblmai.a
 

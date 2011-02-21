@@ -25,6 +25,8 @@
 #include "FuzzyLogic.hpp"
 #include "common/misc.hpp"
 
+#include <sstream>
+
 using namespace LM;
 using namespace std;
 
@@ -33,10 +35,10 @@ FuzzyLogic::Terminal::Terminal(int cat, int id) {
 	m_id = id;
 }
 
-float FuzzyLogic::Terminal::apply(const map<int, map<int, float> >& values) const {
+float FuzzyLogic::Terminal::apply(const map<pair<int, int>, float>& values) const {
 	// TODO make this return a default?
-	ASSERT(values.find(m_cat) != values.end() && values.find(m_cat)->second.find(m_id) != values.find(m_cat)->second.end());
-	return values.find(m_cat)->second.find(m_id)->second;
+	ASSERT(values.find(make_pair(m_cat, m_id)) != values.end());
+	return values.find(make_pair(m_cat, m_id))->second;
 }
 
 FuzzyLogic::And::And(const Rule* lhs, const Rule* rhs) {
@@ -49,7 +51,7 @@ FuzzyLogic::And::~And() {
 	delete m_rhs;
 }
 
-float FuzzyLogic::And::apply(const map<int, map<int, float> >& values) const {
+float FuzzyLogic::And::apply(const map<pair<int, int>, float>& values) const {
 	return min<float>(m_lhs->apply(values), m_rhs->apply(values));
 }
 
@@ -63,7 +65,7 @@ FuzzyLogic::Or::~Or() {
 	delete m_rhs;
 }
 
-float FuzzyLogic::Or::apply(const map<int, map<int, float> >& values) const {
+float FuzzyLogic::Or::apply(const map<pair<int, int>, float>& values) const {
 	return max<float>(m_lhs->apply(values), m_rhs->apply(values));
 }
 
@@ -75,10 +77,66 @@ FuzzyLogic::Not::~Not() {
 	delete m_op;
 }
 
-float FuzzyLogic::Not::apply(const map<int, map<int, float> >& values) const {
+float FuzzyLogic::Not::apply(const map<pair<int, int>, float>& values) const {
 	return 1.0f - m_op->apply(values);
 }
 
-void FuzzyLogic::add_bin(int cat, int id, float height, float start, float end, float grade_width) {
-	m_bins[cat][id] = (Bin){ start, end, height, grade_width };
+int FuzzyLogic::add_category(const char* name) {
+	m_cats.push_back(FuzzyCategory());
+	return m_cats.size() - 1;
+}
+
+FuzzyCategory* FuzzyLogic::get_category(int cat) {
+	if (m_cats.size() <= (size_t) cat) {
+		return NULL;
+	}
+	return &m_cats[cat];
+}
+
+bool FuzzyLogic::load(Configuration* config, const string& section) {
+	stringstream s("FuzzyLogic");
+	s << "." << section << ".bins";
+
+	ConstIterator<pair<const char*, const char*> > citer = config->get_section(s.str().c_str());
+	// TODO put this category somewhere
+	FuzzyCategory cat;
+	FuzzyCategory::Bin last_bin;
+	const char* last_bin_name = "";
+	size_t last_bin_len = 0;
+	while (citer.has_more()) {
+		pair<const char*, const char*> citem = citer.next();
+		const char* bin_dot = strchr(citem.first, '.');
+		if (bin_dot == NULL) {
+			// This is not a bin
+			WARN("Fuzzy logic configuration found a non-bin: " << s.str() << "." << citem.first);
+			continue;
+		}
+
+		// These are guaranteed to be in order, so we can do this
+		if (strncmp(last_bin_name, citem.first, bin_dot - citem.first)) {
+			// Guarantee it's not null
+			if (last_bin_name[0]) {
+				// TODO take this output somewhere
+				cat.add_bin(last_bin);
+			}
+			last_bin.clear();
+			last_bin_name = citem.first;
+			last_bin_len = bin_dot - citem.first;
+		}
+
+		++bin_dot;
+		if(strcmp(bin_dot, "start") == 0) {
+			last_bin.start = atof(citem.second);
+		} else if (strcmp(bin_dot, "end") == 0) {
+			last_bin.end = atof(citem.second);
+		} else if (strcmp(bin_dot, "grade") == 0) {
+			last_bin.grade_width = atof(citem.second);
+		} else {
+			WARN("Fuzzy logic configuration contains unknown attribute: " << s.str() << "." << citem.first);
+		}
+	}
+	cat.add_bin(last_bin);
+
+	// TODO return false if it fails
+	return true;
 }

@@ -25,7 +25,10 @@
 #ifndef LM_AI_FUZZYLOGIC_HPP
 #define LM_AI_FUZZYLOGIC_HPP
 
+#include "FuzzyCategory.hpp"
+#include "common/Configuration.hpp"
 #include <map>
+#include <vector>
 
 namespace LM {
 	class FuzzyLogic {
@@ -33,18 +36,17 @@ namespace LM {
 		class Rule {
 		public:
 			virtual ~Rule() {}
-			// Takes a map of pair<category, bin> to value and returns a value for that category
-			virtual float apply(const std::map<int, std::map<int, float> >& values) const = 0;
+			virtual float apply(const std::map<std::pair<int, int>, float>& values) const = 0;
 		};
 
 		class Terminal : public Rule {
 		private:
-			int m_cat;
 			int m_id;
+			int m_cat;
 
 		public:
 			Terminal(int cat, int id);
-			virtual float apply(const std::map<int, std::map<int, float> >& values) const;
+			virtual float apply(const std::map<std::pair<int, int>, float>& values) const;
 		};
 
 		class And : public Rule {
@@ -55,7 +57,7 @@ namespace LM {
 		public:
 			And(const Rule* lhs, const Rule* rhs);
 			virtual ~And();
-			virtual float apply(const std::map<int, std::map<int, float> >& values) const;
+			virtual float apply(const std::map<std::pair<int, int>, float>& values) const;
 		};
 
 		class Or : public Rule {
@@ -66,7 +68,7 @@ namespace LM {
 		public:
 			Or(const Rule* lhs, const Rule* rhs);
 			virtual ~Or();
-			virtual float apply(const std::map<int, std::map<int, float> >& values) const;
+			virtual float apply(const std::map<std::pair<int, int>, float>& values) const;
 		};
 
 		class Not : public Rule {
@@ -76,24 +78,17 @@ namespace LM {
 		public:
 			Not(const Rule* op);
 			virtual ~Not();
-			virtual float apply(const std::map<int, std::map<int, float> >& values) const;
+			virtual float apply(const std::map<std::pair<int, int>, float>& values) const;
 		};
 
 	private:
-		struct Bin {
-			float start;
-			float end;
-			float height;
-			float grade_width;
-		};
-
-		std::map<int, std::map<int, Bin> > m_bins;
+		std::vector<FuzzyCategory> m_cats;
 
 	public:
-		// Add bin id to category cat
-		void add_bin(int cat, int id, float height, float start, float end, float grade_width);
-		// Apply values in the categories to the appropriate bins and return the results for each bin category and bin
-		void apply(std::map<int, float> values, std::map<int, std::map<int, float> >* results) const;
+		int add_category(const char* name);
+		FuzzyCategory* get_category(int cat);
+
+		bool load(Configuration* config, const std::string& section);
 	};
 }
 
