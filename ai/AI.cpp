@@ -65,8 +65,6 @@ const list<pair<const char*, float> >& AI::get_vars() {
 	Gate* other_enemy_gate = m_logic->get_map()->get_gate(get_other_team(m_other_player->get_team()));
 	Gate* other_allied_gate = m_logic->get_map()->get_gate(m_other_player->get_team());
 	
-	m_varlist.push_back(make_pair("is_active", is_active(m_player)));
-	m_varlist.push_back(make_pair("other_is_active", is_active(m_other_player)));
 	m_varlist.push_back(make_pair("dist_to_other", dist_between_players(m_player, m_other_player)));
 	m_varlist.push_back(make_pair("dist_to_my_gate", dist_to_own_gate(m_player)));
 	m_varlist.push_back(make_pair("dist_to_enemy_gate", dist_to_enemy_gate(m_player)));
@@ -74,17 +72,12 @@ const list<pair<const char*, float> >& AI::get_vars() {
 	m_varlist.push_back(make_pair("other_dist_to_own_gate", dist_to_own_gate(m_other_player)));
 	m_varlist.push_back(make_pair("holding_gate", holding_gate(m_player)));
 	m_varlist.push_back(make_pair("other_holding_gate", holding_gate(m_other_player)));
-	m_varlist.push_back(make_pair("grabbing_wall", grabbing_wall(m_player)));
-	m_varlist.push_back(make_pair("other_grabbing_wall", grabbing_wall(m_other_player)));
-	m_varlist.push_back(make_pair("my_energy", player_energy(m_player)));
-	m_varlist.push_back(make_pair("other_energy", player_energy(m_other_player)));
 	m_varlist.push_back(make_pair("my_energy_percent", energy_percent(m_player)));
 	m_varlist.push_back(make_pair("other_energy_percent", energy_percent(m_other_player)));
-	m_varlist.push_back(make_pair("can_fire", can_fire(m_player)));
-	m_varlist.push_back(make_pair("other_can_fire", can_fire(m_other_player)));
 	m_varlist.push_back(make_pair("gun_cooldown", gun_cooldown(m_player)));
-	m_varlist.push_back(make_pair("other_gun_cooldown", gun_cooldown(m_other_player)));
 	m_varlist.push_back(make_pair("gun_angle_to_other", gun_angle_to_player(m_player, m_other_player)));
+	m_varlist.push_back(make_pair("time_to_impact", time_to_impact(m_player)));
+	m_varlist.push_back(make_pair("other_time_to_impact", time_to_impact(m_other_player)));
 	m_varlist.push_back(make_pair("can_see_other", can_see_player(m_player, m_other_player)));
 	m_varlist.push_back(make_pair("can_see_enemy_gate", can_see_gate(m_player, enemy_gate)));
 	m_varlist.push_back(make_pair("can_see_my_gate", can_see_gate(m_player, allied_gate)));
@@ -99,10 +92,6 @@ float AI::get_fuzzy_input_value(StateTranslator* translator, const std::string& 
 }
 
 // Utility methods for get_vars():
-
-float AI::is_active(Player* player) const {
-	return (player->is_frozen() || player->is_invisible()) ? 0 : 1;
-}
 
 float AI::dist_between_players(Player* first, Player* second) const {
 	return (first->get_position() - second->get_position()).get_magnitude();
@@ -119,29 +108,12 @@ float AI::dist_to_enemy_gate(Player* player) const {
 }
 
 float AI::holding_gate(Player* player) const {
-	return m_logic->is_engaging_gate(player->get_id(), get_other_team(player->get_team())) ? 1 : 0;
-}
-
-float AI::grabbing_wall(Player* player) const {
-	return player->is_grabbing_obstacle() ? 1 : 0;
-}
-
-float AI::player_energy(Player* player) const {
-	return player->get_energy();
+	Gate* enemy_gate = m_logic->get_map()->get_gate(get_other_team(player->get_team()));
+	return m_logic->is_engaging_gate(player->get_id(), get_other_team(player->get_team())) ? enemy_gate->get_progress() : 0;
 }
 
 float AI::energy_percent(Player* player) const {
-	return (((float)player->get_energy()) / Player::MAX_ENERGY) * 100;
-}
-
-float AI::can_fire(Player* player) const {
-	Weapon* weapon = m_logic->get_weapon(player->get_current_weapon_id());
-	
-	if (weapon == NULL) {
-		return 0;
-	}
-	
-	return (player->is_frozen() || weapon->get_remaining_cooldown() > 0 || player->is_invisible()) ? 0 : 1;
+	return (((float)player->get_energy()) / Player::MAX_ENERGY);
 }
 
 float AI::gun_cooldown(Player* player) const {
@@ -159,6 +131,48 @@ float AI::gun_angle_to_player(Player* player, Player* other) const {
 	float y_dist = other->get_y() - player->get_y();
 	float wanted_angle = atan2(y_dist, x_dist);
 	return fabs(wanted_angle - player->get_gun_rotation_radians());
+}
+
+float AI::time_to_impact(Player* player) {
+	if (grabbing_wall(player)) {
+		return 0;
+	}
+
+	b2Vec2 ray_start = b2Vec2(to_physics(player->get_x()), to_physics(player->get_y()));
+	float wanted_angle = atan2(player->get_y_vel(), player->get_x_vel());
+	
+	float found_distance = 0;
+	
+	// Perform the first raycast, from the center of the player.
+	do_ray_cast(ray_start, wanted_angle, -1.0f, player);
+	
+	found_distance = m_ray_cast.shortest_dist;
+
+	b2Body* body = player->get_physics_body();
+	// XXX: Do we just want to use the first fixture?
+	b2Fixture* fixture = &body->GetFixtureList()[0];
+	b2Shape* shape = fixture->GetShape();
+	if (shape->GetType() == b2Shape::e_polygon) {
+		b2PolygonShape* polyshape = static_cast<b2PolygonShape*>(shape);
+		int index = 0;
+		while (index < polyshape->GetVertexCount()) {			
+			b2Vec2 vertex = polyshape->GetVertex(index);
+		
+			float x_start = to_physics(player->get_x()) + vertex.x * cos(player->get_rotation_radians());
+			float y_start = to_physics(player->get_y()) + vertex.y * sin(player->get_rotation_radians());
+			b2Vec2 start = b2Vec2(x_start, y_start);
+			
+			do_ray_cast(start, wanted_angle, -1.0f, player);
+			
+			if (m_ray_cast.shortest_dist < found_distance) {
+				found_distance = m_ray_cast.shortest_dist;
+			}
+			
+			index++;
+		}
+	}
+	
+	return to_game(found_distance) / player->get_velocity().get_magnitude();
 }
 
 float AI::can_see_player(Player* player, Player* other_player, float max_radius) {
@@ -201,15 +215,15 @@ float AI::can_see_player(Player* player, Player* other_player, float max_radius)
 	
 	PhysicsObject* hitobj = m_ray_cast.closest_object;
 	if (hitobj->get_type() != PhysicsObject::PLAYER || to_game(m_ray_cast.shortest_dist) > max_radius) {
-		return 0;
+		return numeric_limits<float>::max();
 	}
 	
 	Player* hitplayer = static_cast<Player*>(hitobj);
 	if (hitplayer->get_id() != other_player->get_id()) {
-		return 0;
+		return numeric_limits<float>::max();
 	}
 	
-	return 1;
+	return m_ray_cast.shortest_dist;
 }
 
 float AI::can_see_gate(Player* player, Gate* gate, float max_radius) {
@@ -250,10 +264,10 @@ float AI::can_see_gate(Player* player, Gate* gate, float max_radius) {
 	
 	PhysicsObject* hitobj = m_ray_cast.closest_object;
 	if (hitobj->get_type() != PhysicsObject::MAP_OBJECT || to_game(m_ray_cast.shortest_dist) > max_radius || hitobj != gate) {
-		return 0;
+		return numeric_limits<float>::max();
 	}
 	
-	return 1;
+	return to_game(m_ray_cast.shortest_dist);
 }
 
 float AI::do_ray_cast(b2Vec2& start_point, float direction, float distance = -1, PhysicsObject* starting_object = NULL) {
@@ -276,6 +290,16 @@ float AI::do_ray_cast(b2Vec2& start_point, float direction, float distance = -1,
 	world->RayCast(this, start_point, m_ray_cast.ray_end);
 	
 	return m_ray_cast.shortest_dist;
+}
+
+// Boolean getters that could be useful
+
+bool AI::is_active(Player* player) const {
+	return !(player->is_frozen() || player->is_invisible());
+}
+
+bool AI::grabbing_wall(Player* player) const {
+	return player->is_grabbing_obstacle();
 }
 
 float32 AI::ReportFixture(b2Fixture* fixture, const b2Vec2& point, const b2Vec2& normal, float32 fraction) {

@@ -73,20 +73,39 @@ namespace LM {
 		float do_ray_cast(b2Vec2& start_point, float direction, float distance, PhysicsObject* starting_object);
 		
 		// Begin methods used to get various data that can be passed to the Fuzzy Logic system.
-		float is_active(Player* player) const;
+		
+		// Distance between players, in game (not physics) units
 		float dist_between_players(Player* first, Player* second) const;
+		
+		// Distance to the gate, in game (not physics) units
 		float dist_to_own_gate(Player* player) const;
 		float dist_to_enemy_gate(Player* player) const;
+		
+		// Gate progress, from 0 to 1, if the enemy is holding the gate, 0 otherwise.
 		float holding_gate(Player* player) const;
-		float grabbing_wall(Player* player) const;
-		float player_energy(Player* player) const;
+		
+		// Percent (0-1) of energy the enemy player has
 		float energy_percent(Player* player) const;
-		float can_fire(Player* player) const;
+		
+		// Amount of cooldown (milliseconds) remaining on the player's gun. NOTE: Only valid for your own player
 		float gun_cooldown(Player* player) const;
+		
+		// Magnitude of angle difference between current gun rotation and rotation to hit enemy
 		float gun_angle_to_player(Player* player, Player* other) const;
+		
+		// Distance to nearest object that could be hit by the player divided by the player's velocity
+		// Note: if the object that could be hit is moving, this will not check whether it will actually hit
+		float time_to_impact(Player* player);
+		
+		// Distance to the player/gate (game units, not physics), if it can be seen, or max float value if not.
 		float can_see_player(Player* player, Player* other_player, float max_radius = -1);
 		float can_see_gate(Player* player, Gate* gate, float max_radius = -1);
+		
 		// End data-retrieval methods.
+		
+		// Boolean methods that could be necessary, but cannot be converted into floating point values:
+		bool is_active(Player* player) const;
+		bool grabbing_wall(Player* player) const;
 		
 		// Box2D Physics Callbacks
 		float32 ReportFixture(b2Fixture* fixture, const b2Vec2& point, const b2Vec2& normal, float32 fraction);
