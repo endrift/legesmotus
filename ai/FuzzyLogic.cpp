@@ -81,9 +81,15 @@ float FuzzyLogic::Not::apply(const map<pair<int, int>, float>& values) const {
 	return 1.0f - m_op->apply(values);
 }
 
-int FuzzyLogic::add_category(const char* name) {
+FuzzyLogic::FuzzyLogic(const string& section) : m_section(section) {
+	// Nothing to do
+}
+
+int FuzzyLogic::add_category(const string& name) {
+	int id = m_cats.size();
+	m_cat_ids[name] = id;
 	m_cats.push_back(FuzzyCategory());
-	return m_cats.size() - 1;
+	return id;
 }
 
 FuzzyCategory* FuzzyLogic::get_category(int cat) {
@@ -93,13 +99,23 @@ FuzzyCategory* FuzzyLogic::get_category(int cat) {
 	return &m_cats[cat];
 }
 
-bool FuzzyLogic::load(Configuration* config, const string& section) {
+int FuzzyLogic::get_category_id(const string& name) const {
+	ASSERT(m_cat_ids.find(name) != m_cat_ids.end());
+	return m_cat_ids.find(name)->second;
+}
+
+bool FuzzyLogic::load_category(Configuration* config, const string& category) {
 	stringstream s("FuzzyLogic");
-	s << "." << section << ".bins";
+	s << ".";
+	if (!m_section.empty()) {
+		s << m_section << ".";
+	}
+	s << category << ".bins";
 
 	ConstIterator<pair<const char*, const char*> > citer = config->get_section(s.str().c_str());
-	// TODO put this category somewhere
-	FuzzyCategory cat;
+	FuzzyCategory* cat = get_category(add_category(category));
+	ASSERT(cat != NULL);
+
 	FuzzyCategory::Bin last_bin;
 	const char* last_bin_name = "";
 	size_t last_bin_len = 0;
@@ -116,8 +132,7 @@ bool FuzzyLogic::load(Configuration* config, const string& section) {
 		if (strncmp(last_bin_name, citem.first, bin_dot - citem.first)) {
 			// Guarantee it's not null
 			if (last_bin_name[0]) {
-				// TODO take this output somewhere
-				cat.add_bin(last_bin);
+				cat->add_bin(last_bin_name, last_bin);
 			}
 			last_bin.clear();
 			last_bin_name = citem.first;
@@ -135,8 +150,7 @@ bool FuzzyLogic::load(Configuration* config, const string& section) {
 			WARN("Fuzzy logic configuration contains unknown attribute: " << s.str() << "." << citem.first);
 		}
 	}
-	cat.add_bin(last_bin);
+	cat->add_bin(last_bin_name, last_bin);
 
-	// TODO return false if it fails
 	return true;
 }

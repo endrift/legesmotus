@@ -83,12 +83,17 @@ namespace LM {
 
 	private:
 		std::vector<FuzzyCategory> m_cats;
+		std::map<std::string, int> m_cat_ids;
+		std::string m_section;
 
 	public:
-		int add_category(const char* name);
-		FuzzyCategory* get_category(int cat);
+		FuzzyLogic(const std::string& section);
 
-		bool load(Configuration* config, const std::string& section);
+		int add_category(const std::string& name);
+		FuzzyCategory* get_category(int cat);
+		int get_category_id(const std::string& name) const;
+
+		bool load_category(Configuration* config, const std::string& category);
 	};
 }
 

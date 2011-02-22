@@ -33,13 +33,21 @@ void FuzzyCategory::Bin::clear() {
 	grade_width = 0.0f;
 }
 
-int FuzzyCategory::add_bin(float start, float end, float grade_width) {
-	return add_bin((Bin){ start, end, grade_width });
+int FuzzyCategory::add_bin(const string& id, float start, float end, float grade_width) {
+	return add_bin(id, (Bin){ start, end, grade_width });
 }
 
-int FuzzyCategory::add_bin(const Bin& bin) {
-	m_bins.push_back(bin);
-	return m_bins.size() - 1;
+int FuzzyCategory::add_bin(const string& id, const Bin& bin) {
+	if (m_ids.find(id) != m_ids.end()) {
+		int int_id = m_ids[id];
+		m_bins[int_id] = bin;
+		return int_id;
+	} else {
+		int int_id = m_bins.size();
+		m_ids[id] = int_id;
+		m_bins.push_back(bin);
+		return int_id;
+	}
 }
 
 void FuzzyCategory::apply(float value, vector<float>* results) const {

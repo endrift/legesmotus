@@ -26,6 +26,8 @@
 #define LM_AI_FUZZYCATEGORY_HPP
 
 #include <vector>
+#include <map>
+#include <string>
 
 namespace LM {
 	class FuzzyCategory {
@@ -41,9 +43,11 @@ namespace LM {
 	private:
 		std::vector<Bin> m_bins;
 
+		std::map<std::string, int> m_ids;
+
 	public:
-		int add_bin(float start, float end, float grade_width);
-		int add_bin(const Bin& bin);
+		int add_bin(const std::string& id, float start, float end, float grade_width);
+		int add_bin(const std::string& id, const Bin& bin);
 		void apply(float value, std::vector<float>* results) const;
 	};
 }
