@@ -23,6 +23,7 @@
  */
 
 #include "FuzzyCategory.hpp"
+#include "common/misc.hpp"
 
 using namespace LM;
 using namespace std;
@@ -50,10 +51,16 @@ int FuzzyCategory::add_bin(const string& id, const Bin& bin) {
 	}
 }
 
-void FuzzyCategory::apply(float value, vector<float>* results) const {
-	results->clear();
+int FuzzyCategory::get_bin_id(const string& name) const {
+	ASSERT(m_ids.find(name) != m_ids.end());
+	return m_ids.find(name)->second;
+}
 
-	for (vector<Bin>::const_iterator iter = m_bins.begin(); iter != m_bins.end(); ++iter) {
+void FuzzyCategory::apply(float value, FuzzyEnvironment::Subenv results) const {
+	results.clear();
+
+	int i = 0;
+	for (vector<Bin>::const_iterator iter = m_bins.begin(); iter != m_bins.end(); ++iter, ++i) {
 		float result = 0.0f;
 		const Bin& b = *iter;
 		if (value >= b.start) {
@@ -65,6 +72,6 @@ void FuzzyCategory::apply(float value, vector<float>* results) const {
 		} else if (value >= b.start - b.grade_width) {
 			result = (value - b.start + b.grade_width)/b.grade_width;
 		}
-		results->push_back(result);
+		results.set(i, result);
 	}
 }

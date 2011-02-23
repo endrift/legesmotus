@@ -26,6 +26,7 @@
 #define LM_AI_FUZZYLOGIC_HPP
 
 #include "FuzzyCategory.hpp"
+#include "FuzzyEnvironment.hpp"
 #include "common/Configuration.hpp"
 #include <map>
 #include <vector>
@@ -36,7 +37,7 @@ namespace LM {
 		class Rule {
 		public:
 			virtual ~Rule() {}
-			virtual float apply(const std::map<std::pair<int, int>, float>& values) const = 0;
+			virtual float apply(const FuzzyEnvironment& values) const = 0;
 		};
 
 		class Terminal : public Rule {
@@ -46,7 +47,7 @@ namespace LM {
 
 		public:
 			Terminal(int cat, int id);
-			virtual float apply(const std::map<std::pair<int, int>, float>& values) const;
+			virtual float apply(const FuzzyEnvironment& values) const;
 		};
 
 		class And : public Rule {
@@ -57,7 +58,7 @@ namespace LM {
 		public:
 			And(const Rule* lhs, const Rule* rhs);
 			virtual ~And();
-			virtual float apply(const std::map<std::pair<int, int>, float>& values) const;
+			virtual float apply(const FuzzyEnvironment& values) const;
 		};
 
 		class Or : public Rule {
@@ -68,7 +69,7 @@ namespace LM {
 		public:
 			Or(const Rule* lhs, const Rule* rhs);
 			virtual ~Or();
-			virtual float apply(const std::map<std::pair<int, int>, float>& values) const;
+			virtual float apply(const FuzzyEnvironment& values) const;
 		};
 
 		class Not : public Rule {
@@ -78,22 +79,35 @@ namespace LM {
 		public:
 			Not(const Rule* op);
 			virtual ~Not();
-			virtual float apply(const std::map<std::pair<int, int>, float>& values) const;
+			virtual float apply(const FuzzyEnvironment& values) const;
 		};
 
 	private:
 		std::vector<FuzzyCategory> m_cats;
 		std::map<std::string, int> m_cat_ids;
+
+		std::vector<Rule*> m_rules;
+		std::map<std::string, int> m_rule_ids;
+
 		std::string m_section;
 
 	public:
 		FuzzyLogic(const std::string& section);
+		~FuzzyLogic();
 
 		int add_category(const std::string& name);
 		FuzzyCategory* get_category(int cat);
+		const FuzzyCategory* get_category(int cat) const;
 		int get_category_id(const std::string& name) const;
 
 		bool load_category(Configuration* config, const std::string& category);
+
+		int add_rule(const std::string& name, Rule* rule);
+		int get_rule_id(const std::string& name) const;
+
+		void apply(FuzzyEnvironment* env);
+
+		Terminal* make_terminal(const std::string& cat, const std::string& id) const;
 	};
 }
 

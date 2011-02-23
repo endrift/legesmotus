@@ -35,10 +35,8 @@ FuzzyLogic::Terminal::Terminal(int cat, int id) {
 	m_id = id;
 }
 
-float FuzzyLogic::Terminal::apply(const map<pair<int, int>, float>& values) const {
-	// TODO make this return a default?
-	ASSERT(values.find(make_pair(m_cat, m_id)) != values.end());
-	return values.find(make_pair(m_cat, m_id))->second;
+float FuzzyLogic::Terminal::apply(const FuzzyEnvironment& values) const {
+	return values.get(m_cat, m_id);
 }
 
 FuzzyLogic::And::And(const Rule* lhs, const Rule* rhs) {
@@ -51,7 +49,7 @@ FuzzyLogic::And::~And() {
 	delete m_rhs;
 }
 
-float FuzzyLogic::And::apply(const map<pair<int, int>, float>& values) const {
+float FuzzyLogic::And::apply(const FuzzyEnvironment& values) const {
 	return min<float>(m_lhs->apply(values), m_rhs->apply(values));
 }
 
@@ -65,7 +63,7 @@ FuzzyLogic::Or::~Or() {
 	delete m_rhs;
 }
 
-float FuzzyLogic::Or::apply(const map<pair<int, int>, float>& values) const {
+float FuzzyLogic::Or::apply(const FuzzyEnvironment& values) const {
 	return max<float>(m_lhs->apply(values), m_rhs->apply(values));
 }
 
@@ -77,12 +75,18 @@ FuzzyLogic::Not::~Not() {
 	delete m_op;
 }
 
-float FuzzyLogic::Not::apply(const map<pair<int, int>, float>& values) const {
+float FuzzyLogic::Not::apply(const FuzzyEnvironment& values) const {
 	return 1.0f - m_op->apply(values);
 }
 
 FuzzyLogic::FuzzyLogic(const string& section) : m_section(section) {
 	// Nothing to do
+}
+
+FuzzyLogic::~FuzzyLogic() {
+	for (vector<Rule*>::iterator iter = m_rules.begin(); iter != m_rules.end(); ++iter) {
+		delete *iter;
+	}
 }
 
 int FuzzyLogic::add_category(const string& name) {
@@ -93,6 +97,13 @@ int FuzzyLogic::add_category(const string& name) {
 }
 
 FuzzyCategory* FuzzyLogic::get_category(int cat) {
+	if (m_cats.size() <= (size_t) cat) {
+		return NULL;
+	}
+	return &m_cats[cat];
+}
+
+const FuzzyCategory* FuzzyLogic::get_category(int cat) const {
 	if (m_cats.size() <= (size_t) cat) {
 		return NULL;
 	}
@@ -153,4 +164,25 @@ bool FuzzyLogic::load_category(Configuration* config, const string& category) {
 	cat->add_bin(last_bin_name, last_bin);
 
 	return true;
+}
+
+int FuzzyLogic::add_rule(const string& name, Rule* rule) {
+	int id = m_rules.size();
+	m_rule_ids[name] = id;
+	m_rules.push_back(rule);
+	return id;
+}
+
+int FuzzyLogic::get_rule_id(const string& name) const {
+	ASSERT(m_rule_ids.find(name) != m_rule_ids.end());
+	return m_rule_ids.find(name)->second;
+}
+
+void FuzzyLogic::apply(FuzzyEnvironment* env) {
+	STUB(FuzzyLogic::apply);
+}
+
+FuzzyLogic::Terminal* FuzzyLogic::make_terminal(const string& cat, const string& id) const {
+	int cat_id = get_category_id(cat);
+	return new Terminal(cat_id, get_category(cat_id)->get_bin_id(id));
 }

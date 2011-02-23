@@ -1,5 +1,5 @@
 /*
- * ai/FuzzyCategory.hpp
+ * ai/FuzzyEnvironment.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,36 +22,42 @@
  * 
  */
 
-#ifndef LM_AI_FUZZYCATEGORY_HPP
-#define LM_AI_FUZZYCATEGORY_HPP
+#ifndef LM_AI_FUZZYENVIRONMENT_HPP
+#define LM_AI_FUZZYENVIRONMENT_HPP
 
-#include "FuzzyEnvironment.hpp"
-#include <vector>
 #include <map>
-#include <string>
 
 namespace LM {
-	class FuzzyCategory {
+	class FuzzyEnvironment {
 	public:
-		struct Bin {
-			float start;
-			float end;
-			float grade_width;
+		class Subenv {
+		private:
+			FuzzyEnvironment* m_e;
+			int m_cat;
+
+		public:
+			Subenv(FuzzyEnvironment* parent, int category);
+
+			void set(int id, float value);
+			float get(int id) const;
 
 			void clear();
 		};
 
 	private:
-		std::vector<Bin> m_bins;
-
-		std::map<std::string, int> m_ids;
+		std::map<int, std::map<int, float> > m_env;
+		std::map<int, std::map<long, float> > m_input;
 
 	public:
-		int add_bin(const std::string& id, float start, float end, float grade_width);
-		int add_bin(const std::string& id, const Bin& bin);
-		int get_bin_id(const std::string& name) const;
+		void set(int cat, int id, float value);
+		float get(int cat, int id) const;
 
-		void apply(float value, FuzzyEnvironment::Subenv env) const;
+		void set_input(int cat, float value);
+		void set_input(int cat, const std::map<long, float>& values);
+
+		void clear(int cat);
+
+		Subenv subset(int cat);
 	};
 }
 
