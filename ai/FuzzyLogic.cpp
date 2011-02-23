@@ -178,8 +178,15 @@ int FuzzyLogic::get_rule_id(const string& name) const {
 	return m_rule_ids.find(name)->second;
 }
 
-void FuzzyLogic::apply(FuzzyEnvironment* env) {
-	STUB(FuzzyLogic::apply);
+void FuzzyLogic::apply(FuzzyEnvironment* env) const {
+	int i = 0;
+	for (vector<FuzzyCategory>::const_iterator iter = m_cats.begin(); iter != m_cats.end(); ++iter, ++i) {
+		FuzzyEnvironment::Subenv subenv = env->subset(i);
+		ConstIterator<pair<long, float> > vals = subenv.get_input();
+		while (vals.has_more()) {
+			iter->apply(vals.next().second, subenv);
+		}
+	}
 }
 
 FuzzyLogic::Terminal* FuzzyLogic::make_terminal(const string& cat, const string& id) const {

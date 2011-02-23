@@ -105,7 +105,7 @@ namespace LM {
 		int add_rule(const std::string& name, Rule* rule);
 		int get_rule_id(const std::string& name) const;
 
-		void apply(FuzzyEnvironment* env);
+		void apply(FuzzyEnvironment* env) const;
 
 		Terminal* make_terminal(const std::string& cat, const std::string& id) const;
 	};

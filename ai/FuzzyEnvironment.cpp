@@ -40,6 +40,10 @@ float FuzzyEnvironment::Subenv::get(int id) const {
 	return m_e->get(m_cat, id);
 }
 
+ConstIterator<pair<long, float> > FuzzyEnvironment::Subenv::get_input() const {
+	return m_e->get_input(m_cat);
+}
+
 void FuzzyEnvironment::Subenv::clear() {
 	m_e->clear(m_cat);
 }
@@ -57,8 +61,12 @@ void FuzzyEnvironment::set_input(int cat, float value) {
 	m_input[cat][0] = value;
 }
 
-void FuzzyEnvironment::set_input(int cat, const map<long, float>& values) {
-	m_input[cat] = values;
+void FuzzyEnvironment::set_input(int cat, const map<long, float>& input) {
+	m_input[cat] = input;
+}
+
+ConstIterator<pair<long, float> > FuzzyEnvironment::get_input(int cat) const {
+	return ConstIterator<pair<long, float> >(new ConstStdMapIterator<long, float>(&m_input.find(cat)->second));
 }
 
 void FuzzyEnvironment::clear(int cat) {

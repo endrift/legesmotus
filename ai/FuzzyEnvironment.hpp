@@ -26,6 +26,7 @@
 #define LM_AI_FUZZYENVIRONMENT_HPP
 
 #include <map>
+#include "common/Iterator.hpp"
 
 namespace LM {
 	class FuzzyEnvironment {
@@ -41,6 +42,8 @@ namespace LM {
 			void set(int id, float value);
 			float get(int id) const;
 
+			ConstIterator<std::pair<long, float> > get_input() const;
+
 			void clear();
 		};
 
@@ -53,7 +56,8 @@ namespace LM {
 		float get(int cat, int id) const;
 
 		void set_input(int cat, float value);
-		void set_input(int cat, const std::map<long, float>& values);
+		void set_input(int cat, const std::map<long, float>& input);
+		ConstIterator<std::pair<long, float> > get_input(int cat) const;
 
 		void clear(int cat);
 
