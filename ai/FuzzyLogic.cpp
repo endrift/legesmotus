@@ -189,6 +189,11 @@ void FuzzyLogic::apply(FuzzyEnvironment* env) const {
 	}
 }
 
+float FuzzyLogic::decide(int rule, FuzzyEnvironment* env) const {
+	ASSERT((size_t) rule < m_rules.size());
+	return m_rules[rule]->apply(*env);	
+}
+
 FuzzyLogic::Terminal* FuzzyLogic::make_terminal(const string& cat, const string& id) const {
 	int cat_id = get_category_id(cat);
 	return new Terminal(cat_id, get_category(cat_id)->get_bin_id(id));
