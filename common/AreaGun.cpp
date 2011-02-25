@@ -26,6 +26,7 @@
 #include "common/Player.hpp"
 #include "common/misc.hpp"
 #include "common/MapObject.hpp"
+#include "common/RayCast.hpp"
 
 using namespace LM;
 using namespace std;
@@ -209,33 +210,19 @@ void AreaGun::hit_object(PhysicsObject* object, Shot* shot, b2Contact* contact) 
 		Point start = shot->get_center();
 		
 		// Check if we actually have a hit, by raycasting at the player's center and corners:
-		m_hit_player_check = -1;
-		
-		m_shortest_dist = -1;
-		m_physics->RayCast(this, b2Vec2(to_physics(start.x), to_physics(start.y)), b2Vec2(to_physics(hit_player->get_x()), to_physics(hit_player->get_y())));
-		b2Body* body = hit_player->get_physics_body();
-		// XXX: Do we just want to use the first fixture?
-		b2Fixture* fixture = &body->GetFixtureList()[0];
-		b2Shape* shape = fixture->GetShape();
-		if (shape->GetType() == b2Shape::e_polygon) {
-			b2PolygonShape* polyshape = static_cast<b2PolygonShape*>(shape);
-			int index = 0;
-			while (m_hit_player_check != hit_player->get_id() && index < polyshape->GetVertexCount()) {
-				b2Vec2 vertex = polyshape->GetVertex(index);
-			
-				float x = to_physics(hit_player->get_x()) + vertex.x * cos(hit_player->get_rotation_radians());
-				float y = to_physics(hit_player->get_y()) + vertex.y * sin(hit_player->get_rotation_radians());
-				
-				m_shortest_dist = -1;
-				m_physics->RayCast(this, b2Vec2(to_physics(start.x), to_physics(start.y)), b2Vec2(x, y));
-				if (m_hit_player_check == hit_player->get_id()) {
-					break;
-				}
-				index++;
-			}
+		RayCast cast(m_physics);
+		b2Vec2 start_pos = b2Vec2(to_physics(start.x), to_physics(start.y));
+		cast.cast_at_player(start_pos, hit_player);
+	
+		RayCast::RayCastResult& result = cast.get_result();
+	
+		PhysicsObject* hitobj = result.closest_object;
+		if (hitobj->get_type() != PhysicsObject::PLAYER) {
+			return;
 		}
-		
-		if (m_hit_player_check != hit_player->get_id()) {
+	
+		Player* hitplayer = static_cast<Player*>(hitobj);
+		if (hitplayer->get_id() != hit_player->get_id()) {
 			return;
 		}
 		
@@ -304,47 +291,4 @@ Packet::PlayerHit* AreaGun::generate_next_hit_packet(Packet::PlayerHit* p, Playe
 	hit(hit_player, shooter, p);
 
 	return p;
-}
-
-float32 AreaGun::ReportFixture(b2Fixture* fixture, const b2Vec2& point, const b2Vec2& normal, float32 fraction) {
-	b2Body* body = fixture->GetBody();
-	
-	if (body->GetUserData() == NULL) {
-		WARN("Body has no user data!");
-		return 1;
-	}
-	
-	if (fraction < 0) {
-		return 0;
-	}
-	
-	if (fixture->IsSensor()) {
-		return 1;
-	}
-	
-	PhysicsObject* hitobj = static_cast<PhysicsObject*>(body->GetUserData());
-	
-	Point end = Point(point.x, point.y);
-	Point start = Point(to_physics(m_shot->get_center().x), to_physics(m_shot->get_center().y));
-	float dist = (end-start).get_magnitude();
-	if (m_shortest_dist != -1 && dist > m_shortest_dist) {
-		return 1;
-	}
-	m_shortest_dist = dist;
-	
-	if (hitobj->get_type() == PhysicsObject::MAP_OBJECT) {
-		MapObject* object = static_cast<MapObject*>(hitobj);
-		if (!object->is_collidable()) {
-			return 1;
-		}
-	}
-	
-	if (hitobj->get_type() == PhysicsObject::PLAYER) {
-		Player* hitplayer = static_cast<Player*>(hitobj);
-		m_hit_player_check = hitplayer->get_id();
-	} else {
-		m_hit_player_check = -1;
-	}
-	
-	return 1;
 }

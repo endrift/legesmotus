@@ -36,7 +36,7 @@ namespace LM {
 	class PhysicsObject;
 	class Gate;
 
-	class AI : public b2RayCastCallback {
+	class AI {
 	private:
 		struct RayCastResult {
 			PhysicsObject*	start_object;	// The object (if any) where this ray started
@@ -69,8 +69,6 @@ namespace LM {
 		const std::list<std::pair<const char*, float> >& get_vars();
 		
 		float get_fuzzy_input_value(StateTranslator* translator, const std::string& subsection);
-		
-		float do_ray_cast(b2Vec2& start_point, float direction, float distance, PhysicsObject* starting_object);
 		
 		// Begin methods used to get various data that can be passed to the Fuzzy Logic system.
 		
@@ -106,9 +104,6 @@ namespace LM {
 		// Boolean methods that could be necessary, but cannot be converted into floating point values:
 		bool is_active(Player* player) const;
 		bool grabbing_wall(Player* player) const;
-		
-		// Box2D Physics Callbacks
-		float32 ReportFixture(b2Fixture* fixture, const b2Vec2& point, const b2Vec2& normal, float32 fraction);
 	};
 }
 

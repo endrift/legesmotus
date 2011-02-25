@@ -30,7 +30,7 @@
 #include "common/physics.hpp"
 
 namespace LM {
-	class ReactiveAIController : public Controller, public b2RayCastCallback {
+	class ReactiveAIController : public Controller {
 	
 	private:
 		const static float MAX_AIM_VEL;
@@ -80,9 +80,6 @@ namespace LM {
 		virtual std::wstring get_message() const;
 		virtual bool message_is_team_only() const;
 		virtual void received_message(const Player* p, const std::wstring& message);
-		
-		// Box2D Physics Callbacks
-		float32 ReportFixture(b2Fixture* fixture, const b2Vec2& point, const b2Vec2& normal, float32 fraction);
 	};
 }
 
