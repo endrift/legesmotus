@@ -100,7 +100,7 @@ namespace LM {
 		const FuzzyCategory* get_category(int cat) const;
 		int get_category_id(const std::string& name) const;
 
-		bool load_category(Configuration* config, const std::string& category);
+		bool load_category(const Configuration* config, const std::string& category);
 
 		int add_rule(const std::string& name, Rule* rule);
 		int get_rule_id(const std::string& name) const;

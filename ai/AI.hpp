@@ -63,8 +63,7 @@ namespace LM {
 			DO_NOTHING
 		};
 	
-		AI(const GameLogic* logic);
-		AI();
+		AI(const GameLogic* logic = NULL);
 		virtual ~AI();
 		
 		virtual void update(uint64_t diff);

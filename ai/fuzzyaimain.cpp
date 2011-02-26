@@ -42,9 +42,9 @@ using namespace std;
 
 extern "C" int main(int argc, char* argv[]) {
 	Client game;
-	FuzzyLogicAI ai;
-	AIController controller(&ai);
 	Configuration config("ai.ini");
+	FuzzyLogicAI ai(&config);
+	AIController controller(&ai);
 	game.set_controller(&controller);
 	game.set_config(&config);
 	IPAddress host;

@@ -67,12 +67,16 @@ ConfigIterator::ConfigIterator(const CSimpleIniA::TKeyVal* local, const CSimpleI
 	m_local = local;
 	m_global = global;
 
-	m_liter = local->begin();
-	m_giter = global->begin();
+	if (m_local != NULL) {
+		m_liter = local->begin();
+	}
+	if (m_global != NULL) {
+		m_giter = global->begin();
+	}
 }
 
 bool ConfigIterator::has_more() const {
-	return m_liter != m_local->end() || m_giter != m_global->end();
+	return (m_local != NULL && m_liter != m_local->end()) || (m_global != NULL && m_giter != m_global->end());
 }
 
 pair<const char*, const char*> ConfigIterator::next() {
@@ -80,12 +84,12 @@ pair<const char*, const char*> ConfigIterator::next() {
 	pair<const char*, const char*> gnext(NULL, NULL);
 	pair<const char*, const char*> next(NULL, NULL);
 
-	if (m_liter != m_local->end()) {
+	if (m_local != NULL && m_liter != m_local->end()) {
 		lnext.first = m_liter->first.pItem;
 		lnext.second = m_liter->second;
 	}
 
-	if (m_giter != m_global->end()) {
+	if (m_global != NULL && m_giter != m_global->end()) {
 		gnext.first = m_giter->first.pItem;
 		gnext.second = m_giter->second;
 	}

@@ -25,16 +25,18 @@
 #ifndef LM_AI_FUZZYLOGICAI_HPP
 #define LM_AI_FUZZYLOGICAI_HPP
 
-#include "ai/AI.hpp"
+#include "AI.hpp"
+#include "FuzzyLogic.hpp"
+#include "common/Configuration.hpp"
 
 namespace LM {
 	class FuzzyLogicAI : public AI {
 	private:
+		FuzzyLogic* m_fuzzy;
+		const Configuration* m_config;
 
 	public:
-	
-		FuzzyLogicAI(const GameLogic* logic);
-		FuzzyLogicAI();
+		FuzzyLogicAI(const Configuration* config, const GameLogic* logic = NULL);
 		virtual ~FuzzyLogicAI();
 		
 		virtual void update(uint64_t diff);

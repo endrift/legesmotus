@@ -38,12 +38,8 @@ AI::AI(const GameLogic* logic) {
 	m_logic = logic;
 }
 
-AI::AI() {
-	m_logic = NULL;
-}
-
 AI::~AI() {
-
+	// Nothing to do
 }
 
 void AI::set_logic(const GameLogic* logic) {

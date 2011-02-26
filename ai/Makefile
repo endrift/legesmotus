@@ -1,4 +1,5 @@
-LIBSRCS := ReactiveAIController.cpp StateTranslator.cpp AI.cpp FuzzyLogic.cpp FuzzyCategory.cpp FuzzyEnvironment.cpp AIController.cpp FuzzyLogicAI.cpp
+LIBSRCS := ReactiveAIController.cpp StateTranslator.cpp AI.cpp FuzzyLogic.cpp FuzzyCategory.cpp FuzzyEnvironment.cpp \
+	AIController.cpp FuzzyLogicAI.cpp
 BINSRCS := simplemain.cpp fuzzyaimain.cpp
 LIBRARY := ../liblmai.a
 

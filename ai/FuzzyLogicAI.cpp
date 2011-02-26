@@ -27,16 +27,15 @@
 using namespace LM;
 using namespace std;
 
-FuzzyLogicAI::FuzzyLogicAI(const GameLogic* logic) : AI(logic) {
+FuzzyLogicAI::FuzzyLogicAI(const Configuration* config, const GameLogic* logic) : AI(logic) {
+	m_fuzzy = new FuzzyLogic("default");
+	m_config = config;
 
-}
-
-FuzzyLogicAI::FuzzyLogicAI() : AI() {
-
+	m_fuzzy->load_category(config, "can_see_player");
 }
 
 FuzzyLogicAI::~FuzzyLogicAI() {
-
+	delete m_fuzzy;
 }
 
 void FuzzyLogicAI::update(uint64_t diff) {

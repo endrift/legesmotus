@@ -115,15 +115,19 @@ int FuzzyLogic::get_category_id(const string& name) const {
 	return m_cat_ids.find(name)->second;
 }
 
-bool FuzzyLogic::load_category(Configuration* config, const string& category) {
-	stringstream s("FuzzyLogic");
-	s << ".";
+bool FuzzyLogic::load_category(const Configuration* config, const string& category) {
+	stringstream s;
+	s << "FuzzyLogic.";
 	if (!m_section.empty()) {
 		s << m_section << ".";
 	}
 	s << category << ".bins";
 
 	ConstIterator<pair<const char*, const char*> > citer = config->get_section(s.str().c_str());
+	if (!citer.has_more()) {
+		return false;
+	}
+
 	FuzzyCategory* cat = get_category(add_category(category));
 	ASSERT(cat != NULL);
 
@@ -143,7 +147,7 @@ bool FuzzyLogic::load_category(Configuration* config, const string& category) {
 		if (strncmp(last_bin_name, citem.first, bin_dot - citem.first)) {
 			// Guarantee it's not null
 			if (last_bin_name[0]) {
-				cat->add_bin(last_bin_name, last_bin);
+				cat->add_bin(string(last_bin_name).substr(0, last_bin_len), last_bin);
 			}
 			last_bin.clear();
 			last_bin_name = citem.first;
