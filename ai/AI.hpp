@@ -47,24 +47,38 @@ namespace LM {
 			float		shortest_dist;	// The closest hit-point on that object
 			b2Vec2		hit_point;	// The point where the ray hit
 		};
-	
-		GameLogic* m_logic;
-		Player* m_player;
-		Player* m_other_player;
+		
+		const GameLogic* m_logic;
+		const Player* m_player;
+		const Player* m_other_player;
 		
 		std::list<std::pair<const char*, float> > m_varlist;
 		
 		RayCastResult m_ray_cast;
 		
 	public:
-		AI(GameLogic* logic);
-		~AI();
+		enum AimReason {
+			JUMP,
+			FIRE,
+			DO_NOTHING
+		};
+	
+		AI(const GameLogic* logic);
+		AI();
+		virtual ~AI();
 		
-		void set_own_player(Player* player);
-		Player* get_own_player();
+		virtual void update(uint64_t diff);
+		virtual float find_desired_aim();
+		virtual AimReason get_aim_reason();
 		
-		void set_other_player(Player* other_player);
-		Player* get_other_player();
+		void set_logic(const GameLogic* logic);
+		const GameLogic* get_logic();
+		
+		void set_own_player(const Player* player);
+		const Player* get_own_player();
+		
+		void set_other_player(const Player* other_player);
+		const Player* get_other_player();
 		
 		const std::list<std::pair<const char*, float> >& get_vars();
 		
@@ -73,37 +87,37 @@ namespace LM {
 		// Begin methods used to get various data that can be passed to the Fuzzy Logic system.
 		
 		// Distance between players, in game (not physics) units
-		float dist_between_players(Player* first, Player* second) const;
+		float dist_between_players(const Player* first, const Player* second) const;
 		
 		// Distance to the gate, in game (not physics) units
-		float dist_to_own_gate(Player* player) const;
-		float dist_to_enemy_gate(Player* player) const;
+		float dist_to_own_gate(const Player* player) const;
+		float dist_to_enemy_gate(const Player* player) const;
 		
 		// Gate progress, from 0 to 1, if the enemy is holding the gate, 0 otherwise.
-		float holding_gate(Player* player) const;
+		float holding_gate(const Player* player) const;
 		
 		// Percent (0-1) of energy the enemy player has
-		float energy_percent(Player* player) const;
+		float energy_percent(const Player* player) const;
 		
 		// Amount of cooldown (milliseconds) remaining on the player's gun. NOTE: Only valid for your own player
-		float gun_cooldown(Player* player) const;
+		float gun_cooldown(const Player* player) const;
 		
 		// Magnitude of angle difference between current gun rotation and rotation to hit enemy
-		float gun_angle_to_player(Player* player, Player* other) const;
+		float gun_angle_to_player(const Player* player, const Player* other) const;
 		
 		// Distance to nearest object that could be hit by the player divided by the player's velocity
 		// Note: if the object that could be hit is moving, this will not check whether it will actually hit
-		float time_to_impact(Player* player);
+		float time_to_impact(const Player* player);
 		
 		// Distance to the player/gate (game units, not physics), if it can be seen, or max float value if not.
-		float can_see_player(Player* player, Player* other_player, float max_radius = -1);
-		float can_see_gate(Player* player, Gate* gate, float max_radius = -1);
+		float can_see_player(const Player* player, const Player* other_player, float max_radius = -1);
+		float can_see_gate(const Player* player, const Gate* gate, float max_radius = -1);
 		
 		// End data-retrieval methods.
 		
 		// Boolean methods that could be necessary, but cannot be converted into floating point values:
-		bool is_active(Player* player) const;
-		bool grabbing_wall(Player* player) const;
+		bool is_active(const Player* player) const;
+		bool grabbing_wall(const Player* player) const;
 	};
 }
 

@@ -34,37 +34,61 @@
 using namespace LM;
 using namespace std;
 
-AI::AI(GameLogic* logic) {
+AI::AI(const GameLogic* logic) {
 	m_logic = logic;
+}
+
+AI::AI() {
+	m_logic = NULL;
 }
 
 AI::~AI() {
 
 }
 
-void AI::set_own_player(Player* player) {
+void AI::set_logic(const GameLogic* logic) {
+	m_logic = logic;
+}
+
+const GameLogic* AI::get_logic() {
+	return m_logic;
+}
+
+void AI::set_own_player(const Player* player) {
 	m_player = player;
 }
 
-Player* AI::get_own_player() {
+const Player* AI::get_own_player() {
 	return m_player;
 }
 		
-void AI::set_other_player(Player* other_player) {
+void AI::set_other_player(const Player* other_player) {
 	m_other_player = other_player;
 }
 
-Player* AI::get_other_player() {
+const Player* AI::get_other_player() {
 	return m_other_player;
+}
+
+void AI::update(uint64_t diff) {
+	// Do nothing.
+}
+
+float AI::find_desired_aim() {
+	return 0;
+}
+
+AI::AimReason AI::get_aim_reason() {
+	return DO_NOTHING;
 }
 
 const list<pair<const char*, float> >& AI::get_vars() {
 	m_varlist.clear();
 	
-	Gate* enemy_gate = m_logic->get_map()->get_gate(get_other_team(m_player->get_team()));
-	Gate* allied_gate = m_logic->get_map()->get_gate(m_player->get_team());
-	Gate* other_enemy_gate = m_logic->get_map()->get_gate(get_other_team(m_other_player->get_team()));
-	Gate* other_allied_gate = m_logic->get_map()->get_gate(m_other_player->get_team());
+	const Gate* enemy_gate = m_logic->get_map()->get_gate(get_other_team(m_player->get_team()));
+	const Gate* allied_gate = m_logic->get_map()->get_gate(m_player->get_team());
+	const Gate* other_enemy_gate = m_logic->get_map()->get_gate(get_other_team(m_other_player->get_team()));
+	const Gate* other_allied_gate = m_logic->get_map()->get_gate(m_other_player->get_team());
 	
 	m_varlist.push_back(make_pair("dist_to_other", dist_between_players(m_player, m_other_player)));
 	m_varlist.push_back(make_pair("dist_to_my_gate", dist_to_own_gate(m_player)));
@@ -94,31 +118,31 @@ float AI::get_fuzzy_input_value(StateTranslator* translator, const std::string& 
 
 // Utility methods for get_vars():
 
-float AI::dist_between_players(Player* first, Player* second) const {
+float AI::dist_between_players(const Player* first, const Player* second) const {
 	return (first->get_position() - second->get_position()).get_magnitude();
 }
 
-float AI::dist_to_own_gate(Player* player) const {
-	Gate* my_gate = m_logic->get_map()->get_gate(player->get_team());
+float AI::dist_to_own_gate(const Player* player) const {
+	const Gate* my_gate = m_logic->get_map()->get_gate(player->get_team());
 	return (player->get_position() - my_gate->get_position()).get_magnitude();
 }
 
-float AI::dist_to_enemy_gate(Player* player) const {
-	Gate* enemy_gate = m_logic->get_map()->get_gate(get_other_team(player->get_team()));
+float AI::dist_to_enemy_gate(const Player* player) const {
+	const Gate* enemy_gate = m_logic->get_map()->get_gate(get_other_team(player->get_team()));
 	return (player->get_position() - enemy_gate->get_position()).get_magnitude();
 }
 
-float AI::holding_gate(Player* player) const {
-	Gate* enemy_gate = m_logic->get_map()->get_gate(get_other_team(player->get_team()));
+float AI::holding_gate(const Player* player) const {
+	const Gate* enemy_gate = m_logic->get_map()->get_gate(get_other_team(player->get_team()));
 	return m_logic->is_engaging_gate(player->get_id(), get_other_team(player->get_team())) ? enemy_gate->get_progress() : 0;
 }
 
-float AI::energy_percent(Player* player) const {
+float AI::energy_percent(const Player* player) const {
 	return (((float)player->get_energy()) / Player::MAX_ENERGY);
 }
 
-float AI::gun_cooldown(Player* player) const {
-	Weapon* weapon = m_logic->get_weapon(player->get_current_weapon_id());
+float AI::gun_cooldown(const Player* player) const {
+	const Weapon* weapon = m_logic->get_weapon(player->get_current_weapon_id());
 	
 	if (weapon == NULL) {
 		return 0;
@@ -127,15 +151,15 @@ float AI::gun_cooldown(Player* player) const {
 	return weapon->get_remaining_cooldown();
 }
 
-float AI::gun_angle_to_player(Player* player, Player* other) const {
+float AI::gun_angle_to_player(const Player* player, const Player* other) const {
 	float x_dist = other->get_x() - player->get_x();
 	float y_dist = other->get_y() - player->get_y();
 	float wanted_angle = atan2(y_dist, x_dist);
 	return fabs(wanted_angle - player->get_gun_rotation_radians());
 }
 
-float AI::time_to_impact(Player* player) {
-	b2World* world = m_logic->get_world();
+float AI::time_to_impact(const Player* player) {
+	const b2World* world = m_logic->get_world();
 
 	if (world == NULL || grabbing_wall(player)) {
 		return 0;
@@ -147,8 +171,8 @@ float AI::time_to_impact(Player* player) {
 	return to_game(found_distance) / player->get_velocity().get_magnitude();
 }
 
-float AI::can_see_player(Player* player, Player* other_player, float max_radius) {
-	b2World* world = m_logic->get_world();
+float AI::can_see_player(const Player* player, const Player* other_player, float max_radius) {
+	const b2World* world = m_logic->get_world();
 
 	if (world == NULL) {
 		return 0;
@@ -177,10 +201,10 @@ float AI::can_see_player(Player* player, Player* other_player, float max_radius)
 	return result.shortest_dist;
 }
 
-float AI::can_see_gate(Player* player, Gate* gate, float max_radius) {
+float AI::can_see_gate(const Player* player, const Gate* gate, float max_radius) {
 	b2Vec2 ray_start = b2Vec2(to_physics(player->get_x()), to_physics(player->get_y()));
 	
-	b2World* world = m_logic->get_world();
+	const b2World* world = m_logic->get_world();
 
 	if (world == NULL) {
 		return 0;
@@ -205,10 +229,10 @@ float AI::can_see_gate(Player* player, Gate* gate, float max_radius) {
 
 // Boolean getters that could be useful
 
-bool AI::is_active(Player* player) const {
+bool AI::is_active(const Player* player) const {
 	return !(player->is_frozen() || player->is_invisible());
 }
 
-bool AI::grabbing_wall(Player* player) const {
+bool AI::grabbing_wall(const Player* player) const {
 	return player->is_grabbing_obstacle();
 }
