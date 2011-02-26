@@ -56,22 +56,27 @@ int FuzzyCategory::get_bin_id(const string& name) const {
 	return m_ids.find(name)->second;
 }
 
-void FuzzyCategory::apply(float value, FuzzyEnvironment::Subenv results) const {
+void FuzzyCategory::apply(FuzzyEnvironment::Subenv results) const {
 	results.clear();
 
-	int i = 0;
-	for (vector<Bin>::const_iterator iter = m_bins.begin(); iter != m_bins.end(); ++iter, ++i) {
-		float result = 0.0f;
-		const Bin& b = *iter;
-		if (value >= b.start) {
-			if (value <= b.end) {
-				result = 1.0f;
-			} else if (value <= b.end + b.grade_width) {
-				result = (-value + b.end + b.grade_width)/b.grade_width;
+	int bid = 0;
+	for (vector<Bin>::const_iterator iter = m_bins.begin(); iter != m_bins.end(); ++iter, ++bid) {
+		ConstIterator<std::pair<long, float> > input = results.get_input();
+		while (input.has_more()) {
+			pair<long, float> in_pair = input.next();
+			float value = in_pair.second;
+			float result = 0.0f;
+			const Bin& b = *iter;
+			if (value >= b.start) {
+				if (value <= b.end) {
+					result = 1.0f;
+				} else if (value <= b.end + b.grade_width) {
+					result = (-value + b.end + b.grade_width)/b.grade_width;
+				}
+			} else if (value >= b.start - b.grade_width) {
+				result = (value - b.start + b.grade_width)/b.grade_width;
 			}
-		} else if (value >= b.start - b.grade_width) {
-			result = (value - b.start + b.grade_width)/b.grade_width;
+			results.set(in_pair.first, bid, result);
 		}
-		results.set(i, result);
 	}
 }

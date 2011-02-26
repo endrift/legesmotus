@@ -32,12 +32,12 @@ FuzzyEnvironment::Subenv::Subenv(FuzzyEnvironment* parent, int category) {
 	m_cat = category;
 }
 
-void FuzzyEnvironment::Subenv::set(int id, float value) {
-	m_e->set(m_cat, id, value);
+void FuzzyEnvironment::Subenv::set(long id, int bin, float value) {
+	m_e->set(m_cat, id, bin, value);
 }
 
-float FuzzyEnvironment::Subenv::get(int id) const {
-	return m_e->get(m_cat, id);
+float FuzzyEnvironment::Subenv::get(long id, int bin) const {
+	return m_e->get(m_cat, id, bin);
 }
 
 ConstIterator<pair<long, float> > FuzzyEnvironment::Subenv::get_input() const {
@@ -48,12 +48,20 @@ void FuzzyEnvironment::Subenv::clear() {
 	m_e->clear(m_cat);
 }
 
-void FuzzyEnvironment::set(int cat, int id, float value) {
-	m_env[cat][id] = value;
+void FuzzyEnvironment::set(int cat, int bin, float value) {
+	m_env[cat][0][bin] = value;
 }
 
-float FuzzyEnvironment::get(int cat, int id) const {
-	return m_env.find(cat)->second.find(id)->second;
+void FuzzyEnvironment::set(int cat, long id, int bin, float value) {
+	m_env[cat][id][bin] = value;
+}
+
+float FuzzyEnvironment::get(int cat, int bin) const {
+	return m_env.find(cat)->second.find(0)->second.find(bin)->second;
+}
+
+float FuzzyEnvironment::get(int cat, long id, int bin) const {
+	return m_env.find(cat)->second.find(id)->second.find(bin)->second;
 }
 
 void FuzzyEnvironment::set_input(int cat, float value) {

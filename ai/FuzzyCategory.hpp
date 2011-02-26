@@ -51,7 +51,7 @@ namespace LM {
 		int add_bin(const std::string& id, const Bin& bin);
 		int get_bin_id(const std::string& name) const;
 
-		void apply(float value, FuzzyEnvironment::Subenv env) const;
+		void apply(FuzzyEnvironment::Subenv env) const;
 	};
 }
 

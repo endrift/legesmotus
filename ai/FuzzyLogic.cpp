@@ -182,10 +182,7 @@ void FuzzyLogic::apply(FuzzyEnvironment* env) const {
 	int i = 0;
 	for (vector<FuzzyCategory>::const_iterator iter = m_cats.begin(); iter != m_cats.end(); ++iter, ++i) {
 		FuzzyEnvironment::Subenv subenv = env->subset(i);
-		ConstIterator<pair<long, float> > vals = subenv.get_input();
-		while (vals.has_more()) {
-			iter->apply(vals.next().second, subenv);
-		}
+		iter->apply(subenv);
 	}
 }
 
