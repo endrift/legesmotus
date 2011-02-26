@@ -1,13 +1,16 @@
 LIBSRCS := ReactiveAIController.cpp StateTranslator.cpp AI.cpp FuzzyLogic.cpp FuzzyCategory.cpp FuzzyEnvironment.cpp AIController.cpp FuzzyLogicAI.cpp
-BINSRCS := main.cpp
+BINSRCS := simplemain.cpp fuzzyaimain.cpp
 LIBRARY := ../liblmai.a
 
 include $(BASEDIR)/common.mk
 
-all: $(LIBRARY) reactiveai
+all: $(LIBRARY) simpleai fuzzylogicai
 
-reactiveai: $(BINOBJS) $(LIBRARY) ../liblmclient.a ../liblmcommon.a
+simpleai: simplemain.cpp.o $(LIBRARY) ../liblmclient.a ../liblmcommon.a
 	$(CXX) $(LDFLAGS) -o lmsimpleai $^ $(LIBS)
+
+fuzzylogicai: fuzzyaimain.cpp.o $(LIBRARY) ../liblmclient.a ../liblmcommon.a
+	$(CXX) $(LDFLAGS) -o lmfuzzylogic $^ $(LIBS)
 
 clean: common-clean
 	@$(RM) $(LIBRARY)
