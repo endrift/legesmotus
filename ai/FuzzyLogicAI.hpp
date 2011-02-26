@@ -28,7 +28,7 @@
 #include "ai/AI.hpp"
 
 namespace LM {
-	class FuzzyLogicAI : AI {
+	class FuzzyLogicAI : public AI {
 	private:
 
 	public:
