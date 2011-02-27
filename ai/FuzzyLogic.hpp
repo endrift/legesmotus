@@ -42,11 +42,13 @@ namespace LM {
 
 		class Terminal : public Rule {
 		private:
-			int m_id;
+			int m_bin;
+			long m_id;
 			int m_cat;
 
 		public:
-			Terminal(int cat, int id);
+			Terminal(int cat, int bin);
+			Terminal(int cat, long id, int bin);
 			virtual float apply(const FuzzyEnvironment& values) const;
 		};
 
@@ -108,7 +110,9 @@ namespace LM {
 		void apply(FuzzyEnvironment* env) const;
 		float decide(int rule, FuzzyEnvironment* env) const;
 
-		Terminal* make_terminal(const std::string& cat, const std::string& id) const;
+		Terminal* make_terminal(const std::string& cat, const std::string& bin) const;
+		Terminal* make_terminal(const std::string& cat, long id, const std::string& bin) const;
+		Terminal* make_terminal(const std::string& cat, void* id, const std::string& bin) const;
 	};
 }
 

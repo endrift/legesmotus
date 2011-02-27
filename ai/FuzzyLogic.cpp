@@ -30,9 +30,15 @@
 using namespace LM;
 using namespace std;
 
-FuzzyLogic::Terminal::Terminal(int cat, int id) {
+FuzzyLogic::Terminal::Terminal(int cat, int bin) {
+	m_cat = cat;
+	m_id = 0L;
+	m_bin = bin;
+}
+FuzzyLogic::Terminal::Terminal(int cat, long id, int bin) {
 	m_cat = cat;
 	m_id = id;
+	m_bin = bin;
 }
 
 float FuzzyLogic::Terminal::apply(const FuzzyEnvironment& values) const {
@@ -195,7 +201,15 @@ float FuzzyLogic::decide(int rule, FuzzyEnvironment* env) const {
 	return m_rules[rule]->apply(*env);	
 }
 
-FuzzyLogic::Terminal* FuzzyLogic::make_terminal(const string& cat, const string& id) const {
+FuzzyLogic::Terminal* FuzzyLogic::make_terminal(const string& cat, const string& bin) const {
+	return make_terminal(cat, 0L, bin);
+}
+
+FuzzyLogic::Terminal* FuzzyLogic::make_terminal(const string& cat, long id, const string& bin) const {
 	int cat_id = get_category_id(cat);
-	return new Terminal(cat_id, get_category(cat_id)->get_bin_id(id));
+	return new Terminal(cat_id, id, get_category(cat_id)->get_bin_id(bin));
+}
+
+FuzzyLogic::Terminal* FuzzyLogic::make_terminal(const string& cat, void* id, const string& bin) const {
+	return make_terminal(cat, (long) id, bin);
 }

@@ -59,6 +59,8 @@ namespace LM {
 
 		void set_input(int cat, float value);
 		void set_input(int cat, const std::map<long, float>& input);
+		void add_input(int cat, long id, float value);
+		void add_input(int cat, void* id, float value);
 		ConstIterator<std::pair<long, float> > get_input(int cat) const;
 
 		void clear();
