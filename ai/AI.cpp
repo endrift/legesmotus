@@ -143,25 +143,8 @@ float AI::can_see_player(const Player* player, const Player* other_player, float
 
 	RayCast cast(world);
 	b2Vec2 start_pos = b2Vec2(to_physics(player->get_x()), to_physics(player->get_y()));
-	cast.cast_at_player(start_pos, other_player, max_radius);
-	
-	RayCast::RayCastResult& result = cast.get_result();
-	
-	PhysicsObject* hitobj = result.closest_object;
-	if (hitobj == NULL) {
-		return numeric_limits<float>::max();
-	}
-	
-	if (hitobj->get_type() != PhysicsObject::PLAYER || to_game(result.shortest_dist) > max_radius) {
-		return numeric_limits<float>::max();
-	}
-	
-	Player* hitplayer = static_cast<Player*>(hitobj);
-	if (hitplayer->get_id() != other_player->get_id()) {
-		return numeric_limits<float>::max();
-	}
-	
-	return result.shortest_dist;
+	float dist = cast.cast_at_player(start_pos, other_player, max_radius);
+	return dist;
 }
 
 float AI::can_see_gate(const Player* player, const Gate* gate, float max_radius) {
@@ -174,20 +157,9 @@ float AI::can_see_gate(const Player* player, const Gate* gate, float max_radius)
 	}
 	
 	RayCast cast(world);
-	cast.cast_at_obstacle(ray_start, gate, max_radius, true);
+	float dist = cast.cast_at_obstacle(ray_start, gate, max_radius, true);
 	
-	RayCast::RayCastResult& result = cast.get_result();
-	
-	PhysicsObject* hitobj = result.closest_object;
-	if (hitobj == NULL) {
-		return numeric_limits<float>::max();
-	}
-	
-	if (hitobj->get_type() != PhysicsObject::MAP_OBJECT || to_game(result.shortest_dist) > max_radius || hitobj != gate) {
-		return numeric_limits<float>::max();
-	}
-	
-	return to_game(result.shortest_dist);
+	return dist;
 }
 
 // Boolean getters that could be useful
