@@ -54,8 +54,10 @@ namespace LM {
 	public:
 		void set(int cat, int bin, float value);
 		void set(int cat, long id, int bin, float value);
+		void set(int cat, void* id, int bin, float value);
 		float get(int cat, int bin) const;
 		float get(int cat, long id, int bin) const;
+		float get(int cat, void* id, int bin) const;
 
 		void set_input(int cat, float value);
 		void set_input(int cat, const std::map<long, float>& input);

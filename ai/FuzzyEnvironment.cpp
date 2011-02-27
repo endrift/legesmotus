@@ -49,19 +49,27 @@ void FuzzyEnvironment::Subenv::clear() {
 }
 
 void FuzzyEnvironment::set(int cat, int bin, float value) {
-	m_env[cat][0L][bin] = value;
+	set(cat, 0L, bin, value);
 }
 
 void FuzzyEnvironment::set(int cat, long id, int bin, float value) {
 	m_env[cat][id][bin] = value;
 }
 
+void FuzzyEnvironment::set(int cat, void* id, int bin, float value) {
+	set(cat, (long) id, bin, value);
+}
+
 float FuzzyEnvironment::get(int cat, int bin) const {
-	return m_env.find(cat)->second.find(0L)->second.find(bin)->second;
+	return get(cat, 0L, bin);
 }
 
 float FuzzyEnvironment::get(int cat, long id, int bin) const {
 	return m_env.find(cat)->second.find(id)->second.find(bin)->second;
+}
+
+float FuzzyEnvironment::get(int cat, void* id, int bin) const {
+	return get(cat, (long) id, bin);
 }
 
 void FuzzyEnvironment::set_input(int cat, float value) {
