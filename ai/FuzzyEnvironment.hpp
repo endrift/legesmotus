@@ -61,6 +61,7 @@ namespace LM {
 		void set_input(int cat, const std::map<long, float>& input);
 		ConstIterator<std::pair<long, float> > get_input(int cat) const;
 
+		void clear();
 		void clear(int cat);
 
 		Subenv subset(int cat);

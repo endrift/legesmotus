@@ -77,6 +77,11 @@ ConstIterator<pair<long, float> > FuzzyEnvironment::get_input(int cat) const {
 	return ConstIterator<pair<long, float> >(new ConstStdMapIterator<long, float>(&m_input.find(cat)->second));
 }
 
+void FuzzyEnvironment::clear() {
+	m_env.clear();
+	m_input.clear();
+}
+
 void FuzzyEnvironment::clear(int cat) {
 	if (m_env.find(cat) != m_env.end()) {
 		m_env[cat].clear();
