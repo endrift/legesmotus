@@ -171,7 +171,7 @@ bool FuzzyLogic::load_category(const Configuration* config, const string& catego
 			WARN("Fuzzy logic configuration contains unknown attribute: " << s.str() << "." << citem.first);
 		}
 	}
-	cat->add_bin(last_bin_name, last_bin);
+	cat->add_bin(string(last_bin_name).substr(0, last_bin_len), last_bin);
 
 	return true;
 }
