@@ -28,21 +28,24 @@
 #include "AI.hpp"
 #include "FuzzyLogic.hpp"
 #include "common/Configuration.hpp"
+#include "common/GameLogic.hpp"
 
 namespace LM {
 	class FuzzyLogicAI : public AI {
 	private:
 		FuzzyLogic* m_fuzzy;
+		FuzzyEnvironment m_fuzzy_env;
 		const Configuration* m_config;
+
+		void populate_environment();
 
 	public:
 		FuzzyLogicAI(const Configuration* config, const GameLogic* logic = NULL);
 		virtual ~FuzzyLogicAI();
 		
-		virtual void update(uint64_t diff);
+		virtual void update(const GameLogic& logic, uint64_t diff);
 		virtual float find_desired_aim();
 		virtual AimReason get_aim_reason();
-
 	};
 }
 

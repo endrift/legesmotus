@@ -36,10 +36,11 @@ using namespace std;
 
 AI::AI(const GameLogic* logic) {
 	m_logic = logic;
+	m_player = NULL;
+	m_other_player = NULL;
 }
 
 AI::~AI() {
-	// Nothing to do
 }
 
 void AI::set_logic(const GameLogic* logic) {
@@ -66,7 +67,7 @@ const Player* AI::get_other_player() {
 	return m_other_player;
 }
 
-void AI::update(uint64_t diff) {
+void AI::update(const GameLogic& logic, uint64_t diff) {
 	// Do nothing.
 }
 
@@ -76,40 +77,6 @@ float AI::find_desired_aim() {
 
 AI::AimReason AI::get_aim_reason() {
 	return DO_NOTHING;
-}
-
-const list<pair<const char*, float> >& AI::get_vars() {
-	m_varlist.clear();
-	
-	const Gate* enemy_gate = m_logic->get_map()->get_gate(get_other_team(m_player->get_team()));
-	const Gate* allied_gate = m_logic->get_map()->get_gate(m_player->get_team());
-	const Gate* other_enemy_gate = m_logic->get_map()->get_gate(get_other_team(m_other_player->get_team()));
-	const Gate* other_allied_gate = m_logic->get_map()->get_gate(m_other_player->get_team());
-	
-	m_varlist.push_back(make_pair("dist_to_other", dist_between_players(m_player, m_other_player)));
-	m_varlist.push_back(make_pair("dist_to_my_gate", dist_to_own_gate(m_player)));
-	m_varlist.push_back(make_pair("dist_to_enemy_gate", dist_to_enemy_gate(m_player)));
-	m_varlist.push_back(make_pair("other_dist_to_enemy_gate", dist_to_enemy_gate(m_other_player)));
-	m_varlist.push_back(make_pair("other_dist_to_own_gate", dist_to_own_gate(m_other_player)));
-	m_varlist.push_back(make_pair("holding_gate", holding_gate(m_player)));
-	m_varlist.push_back(make_pair("other_holding_gate", holding_gate(m_other_player)));
-	m_varlist.push_back(make_pair("my_energy_percent", energy_percent(m_player)));
-	m_varlist.push_back(make_pair("other_energy_percent", energy_percent(m_other_player)));
-	m_varlist.push_back(make_pair("gun_cooldown", gun_cooldown(m_player)));
-	m_varlist.push_back(make_pair("gun_angle_to_other", gun_angle_to_player(m_player, m_other_player)));
-	m_varlist.push_back(make_pair("time_to_impact", time_to_impact(m_player)));
-	m_varlist.push_back(make_pair("other_time_to_impact", time_to_impact(m_other_player)));
-	m_varlist.push_back(make_pair("can_see_other", can_see_player(m_player, m_other_player)));
-	m_varlist.push_back(make_pair("can_see_enemy_gate", can_see_gate(m_player, enemy_gate)));
-	m_varlist.push_back(make_pair("can_see_my_gate", can_see_gate(m_player, allied_gate)));
-	m_varlist.push_back(make_pair("other_can_see_enemy_gate", can_see_gate(m_player, other_enemy_gate)));
-	m_varlist.push_back(make_pair("other_can_see_own_gate", can_see_gate(m_player, other_allied_gate)));
-	
-	return m_varlist;
-}
-
-float AI::get_fuzzy_input_value(StateTranslator* translator, const std::string& subsection) {
-	return translator->get_value(subsection, get_vars());
 }
 
 // Utility methods for get_vars():

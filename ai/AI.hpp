@@ -27,10 +27,10 @@
 
 #include <string>
 #include "common/physics.hpp"
+#include "common/GameLogic.hpp"
 #include <list>
 
 namespace LM {
-	class GameLogic;
 	class Player;
 	class StateTranslator;
 	class PhysicsObject;
@@ -66,7 +66,7 @@ namespace LM {
 		AI(const GameLogic* logic = NULL);
 		virtual ~AI();
 		
-		virtual void update(uint64_t diff);
+		virtual void update(const GameLogic& logic, uint64_t diff);
 		virtual float find_desired_aim();
 		virtual AimReason get_aim_reason();
 		
@@ -78,10 +78,6 @@ namespace LM {
 		
 		void set_other_player(const Player* other_player);
 		const Player* get_other_player();
-		
-		const std::list<std::pair<const char*, float> >& get_vars();
-		
-		float get_fuzzy_input_value(StateTranslator* translator, const std::string& subsection);
 		
 		// Begin methods used to get various data that can be passed to the Fuzzy Logic system.
 		

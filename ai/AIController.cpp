@@ -34,6 +34,12 @@ AIController::AIController(AI* ai) {
 	m_aim_reason = AI::DO_NOTHING;
 	
 	m_ai = ai;
+	
+	m_changeset = 0;
+	
+	m_wanted_aim = 0;
+	m_curr_aim = 0;
+	m_aim_reason = AI::DO_NOTHING;
 }
 
 float AIController::update_gun() {
@@ -73,7 +79,7 @@ void AIController::update(uint64_t diff, const GameLogic& state, int player_id) 
 		m_ai->set_own_player(my_player);
 	
 		// Update the AI state:
-		m_ai->update(diff);
+		m_ai->update(state, diff);
 	
 		// Determine desired aim.
 		m_wanted_aim = m_ai->find_desired_aim();
@@ -83,7 +89,6 @@ void AIController::update(uint64_t diff, const GameLogic& state, int player_id) 
 	// Turn gun towards wanted aim.
 	float aimdiff = update_gun();
 	
-	// XXX: For now, we fire even if we're aiming to jump instead of to attack a player.
 	if (aimdiff <= AIM_TOLERANCE) {
 		if (m_aim_reason == AI::FIRE) {
 			m_changes[m_changeset ^ 1] |= FIRE_WEAPON;

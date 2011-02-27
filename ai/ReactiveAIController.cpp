@@ -215,7 +215,6 @@ void ReactiveAIController::update(uint64_t diff, const GameLogic& state, int pla
 	// Turn gun towards wanted aim.
 	float aimdiff = update_gun();
 	
-	// XXX: For now, we fire even if we're aiming to jump instead of to attack a player.
 	if (aimdiff <= AIM_TOLERANCE) {
 		if (m_aim_reason == FIRE) {
 			m_changes[m_changeset ^ 1] |= FIRE_WEAPON;
