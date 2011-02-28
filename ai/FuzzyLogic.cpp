@@ -201,16 +201,16 @@ void FuzzyLogic::apply(FuzzyEnvironment* env) const {
 	}
 }
 
-float FuzzyLogic::decide(int rule, FuzzyEnvironment* env) const {
+float FuzzyLogic::decide(int rule, const FuzzyEnvironment& env) const {
 	return decide(rule, 0L, env);	
 }
 
-float FuzzyLogic::decide(int rule, long id, FuzzyEnvironment* env) const {
+float FuzzyLogic::decide(int rule, long id, const FuzzyEnvironment& env) const {
 	ASSERT((size_t) rule < m_rules.size());
-	return m_rules[rule]->apply(*env, id);	
+	return m_rules[rule]->apply(env, id);	
 }
 
-float FuzzyLogic::decide(int rule, void* id, FuzzyEnvironment* env) const {
+float FuzzyLogic::decide(int rule, void* id, const FuzzyEnvironment& env) const {
 	return decide(rule, (long) id, env);
 }
 
