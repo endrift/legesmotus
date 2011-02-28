@@ -94,8 +94,10 @@ void FuzzyLogicAI::initialize_logic() {
 						m_fuzzy->make_terminal("dist_to_other", "far_away")
 					),
 					new FuzzyLogic::Or(
-						// Are they almost done capturing our gate?
-						m_fuzzy->make_terminal("other_holding_gate", "almost_done"),
+						// Are they capturing our gate?
+						new FuzzyLogic::Not(
+							m_fuzzy->make_terminal("other_holding_gate", "not_holding")
+						),
 						// Is our gun turned far away?
 						new FuzzyLogic::Not(
 							m_fuzzy->make_terminal("gun_angle_to_other", "far_off")
@@ -127,39 +129,50 @@ void FuzzyLogicAI::initialize_logic() {
 						m_fuzzy->make_terminal("gun_cooldown", "almost_ready")
 					),
 					new FuzzyLogic::Or(
-						// Are we close enough to hit them accurately?
-						new FuzzyLogic::Not(
-							m_fuzzy->make_terminal("dist_to_other", "far_away")
+						new FuzzyLogic::Or(
+							// Are we capturing their gate?
+							m_fuzzy->make_terminal("can_see_enemy_gate", "touching"),
+							new FuzzyLogic::Not(
+								m_fuzzy->make_terminal("holding_gate", "not_holding")
+							)
 						),
 						new FuzzyLogic::Or(
-							// Are they almost done capturing our gate?
-							m_fuzzy->make_terminal("other_holding_gate", "almost_done"),
-							// Is our gun turned far away?
+							// Are we close enough to hit them accurately?
 							new FuzzyLogic::Not(
-								m_fuzzy->make_terminal("gun_angle_to_other", "far_off")
+								m_fuzzy->make_terminal("dist_to_other", "far_away")
+							),
+							new FuzzyLogic::Or(
+								// Are they capturing our gate?
+								new FuzzyLogic::Not(
+									m_fuzzy->make_terminal("other_holding_gate", "not_holding")
+								),
+								// Is our gun turned far away?
+								new FuzzyLogic::Not(
+									m_fuzzy->make_terminal("gun_angle_to_other", "far_off")
+								)
 							)
 						)
 					)
 				)
 			),
 			new FuzzyLogic::Or(
-				new FuzzyLogic::Not(
-					m_fuzzy->make_terminal("dist_to_other", "far_away")
-				),
-				new FuzzyLogic::And(
-					// Are we close enough to hit them accurately?
+				new FuzzyLogic::Or(
+					// Are we capturing their gate?
+					m_fuzzy->make_terminal("can_see_enemy_gate", "touching"),
 					new FuzzyLogic::Not(
-						m_fuzzy->make_terminal("dist_to_other", "far_away")
+						m_fuzzy->make_terminal("holding_gate", "not_holding")
+					)
+				),
+				new FuzzyLogic::Or(
+					// Are they capturing our gate?
+					new FuzzyLogic::Not(
+						m_fuzzy->make_terminal("other_holding_gate", "not_holding")
 					),
-					new FuzzyLogic::Or(
-						// Are they almost done capturing our gate?
-						m_fuzzy->make_terminal("other_holding_gate", "almost_done"),
-						// Are we needing to jump?
-						new FuzzyLogic::Not(
-							new FuzzyLogic::Or(
-								m_fuzzy->make_terminal("time_to_impact", "already_grabbing"),
-								m_fuzzy->make_terminal("time_to_impact", "nearly_landed")
-							)
+					// Are we not needing to jump?
+					new FuzzyLogic::Not(
+						new FuzzyLogic::Or(
+							m_fuzzy->make_terminal("time_to_impact", "already_grabbing"),
+							m_fuzzy->make_terminal("time_to_impact", "nearly_landed")
 						)
 					)
 				)
@@ -192,10 +205,8 @@ void FuzzyLogicAI::initialize_logic() {
 						m_fuzzy->make_terminal("gun_angle_to_other", "far_off")
 					)
 				),
-				// Are they almost done capturing our gate?
-				new FuzzyLogic::Not(
-					m_fuzzy->make_terminal("other_holding_gate", "almost_done")
-				)
+				// Are they capturing our gate?
+				m_fuzzy->make_terminal("other_holding_gate", "not_holding")
 			)
 		)
 	);
@@ -215,9 +226,12 @@ void FuzzyLogicAI::initialize_logic() {
 						m_fuzzy->make_terminal("can_see_enemy_gate", "touching")
 					)
 				),
-				// Are we grabbing the gate?
-				new FuzzyLogic::Not(
-					m_fuzzy->make_terminal("dist_to_enemy_gate", "touching")
+				new FuzzyLogic::And(
+					// Are we already capturing their gate?
+					new FuzzyLogic::Not(
+						m_fuzzy->make_terminal("can_see_enemy_gate", "touching")
+					),
+					m_fuzzy->make_terminal("holding_gate", "not_holding")
 				)
 			)
 		)

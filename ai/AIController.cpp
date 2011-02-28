@@ -65,8 +65,6 @@ void AIController::update(uint64_t diff, const GameLogic& state, int player_id) 
 	m_changes[m_changeset] = NO_CHANGE;
 	m_changeset ^= 1;
 	
-	m_changes[m_changeset ^ 1] |= CHANGE_WEAPON;
-	
 	const Player* my_player = state.get_player(player_id);
 	if (my_player == NULL) {
 		return;
@@ -119,7 +117,7 @@ float AIController::get_distance() const {
 }
 
 int AIController::get_weapon() const {
-	return 2;
+	return 0;
 }
 
 wstring AIController::get_message() const {
