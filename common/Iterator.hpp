@@ -50,7 +50,7 @@ namespace LM {
 			}
 			
 			virtual T next() {
-				return 0;
+				return T();
 			}
 
 			virtual Null* clone() {
