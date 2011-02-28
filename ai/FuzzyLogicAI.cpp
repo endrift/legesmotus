@@ -31,12 +31,64 @@ using namespace std;
 FuzzyLogicAI::FuzzyLogicAI(const Configuration* config, const GameLogic* logic) : AI(logic) {
 	m_fuzzy = new FuzzyLogic("default");
 	m_config = config;
-
-	m_fuzzy->load_category(config, "can_see_player");
+	
+	initialize_logic();
 }
 
 FuzzyLogicAI::~FuzzyLogicAI() {
 	delete m_fuzzy;
+}
+
+void FuzzyLogicAI::initialize_logic() {
+	// Load the categories.
+	m_fuzzy->load_category(m_config, "dist_to_other");
+	m_fuzzy->load_category(m_config, "dist_to_my_gate");
+	m_fuzzy->load_category(m_config, "dist_to_enemy_gate");
+	m_fuzzy->load_category(m_config, "other_dist_to_enemy_gate");
+	m_fuzzy->load_category(m_config, "other_dist_to_own_gate");
+	m_fuzzy->load_category(m_config, "holding_gate");
+	m_fuzzy->load_category(m_config, "other_holding_gate");
+	m_fuzzy->load_category(m_config, "my_energy_percent");
+	m_fuzzy->load_category(m_config, "other_energy_percent");
+	m_fuzzy->load_category(m_config, "gun_cooldown");
+	m_fuzzy->load_category(m_config, "gun_angle_to_other");
+	m_fuzzy->load_category(m_config, "time_to_impact");
+	m_fuzzy->load_category(m_config, "other_time_to_impact");
+	m_fuzzy->load_category(m_config, "can_see_player");
+	m_fuzzy->load_category(m_config, "can_see_enemy_gate");
+	m_fuzzy->load_category(m_config, "can_see_my_gate");
+	m_fuzzy->load_category(m_config, "other_can_see_enemy_gate");
+	m_fuzzy->load_category(m_config, "other_can_see_own_gate");
+	
+	// Load the rules.
+	m_rule_dangerous = m_fuzzy->add_rule("dangerous", 
+		new FuzzyLogic::Not(
+			new FuzzyLogic::Or(
+				new FuzzyLogic::And(
+					m_fuzzy->make_terminal("can_see_player", "cant_see"), 
+					m_fuzzy->make_terminal("other_holding_gate", "not_holding")
+				),
+				m_fuzzy->make_terminal("other_energy_percent","frozen")
+			)
+		)
+	);
+	                       
+	m_rule_can_target = m_fuzzy->add_rule("can_target",
+		new FuzzyLogic::And(
+			new FuzzyLogic::And(
+				new FuzzyLogic::Not(
+					m_fuzzy->make_terminal("can_see_player", "cant_see")
+				),
+				new FuzzyLogic::Not(
+					m_fuzzy->make_terminal("gun_angle_to_other", "far_off")
+				)
+			),
+			new FuzzyLogic::Or(
+				m_fuzzy->make_terminal("gun_cooldown", "ready"),
+				m_fuzzy->make_terminal("gun_cooldown", "almost_ready")
+			)
+		)
+	);                             
 }
 
 void FuzzyLogicAI::update(const GameLogic& logic, uint64_t diff) {
@@ -67,13 +119,11 @@ void FuzzyLogicAI::update(const GameLogic& logic, uint64_t diff) {
 			continue;
 		}
 		
-		int cat_id = m_fuzzy->get_category_id("can_see_player");
-		FuzzyCategory* category = m_fuzzy->get_category(cat_id);
-		DEBUG("Can't see: " << m_fuzzy_env.get(cat_id, other_player, category->get_bin_id("cant_see")));
-		DEBUG("Far away: " << m_fuzzy_env.get(cat_id, other_player, category->get_bin_id("far_away")));
-		DEBUG("Midrange: " << m_fuzzy_env.get(cat_id, other_player, category->get_bin_id("midrange")));
-		DEBUG("Close: " << m_fuzzy_env.get(cat_id, other_player, category->get_bin_id("close")));
-		DEBUG("Melee: " << m_fuzzy_env.get(cat_id, other_player, category->get_bin_id("melee")));
+		float dangerous = m_fuzzy->decide(m_rule_dangerous, other_player, m_fuzzy_env);
+		
+		float can_target = m_fuzzy->decide(m_rule_can_target, other_player, m_fuzzy_env);
+
+		// TODO: Find best target here.
 	}
 }
 
@@ -105,7 +155,7 @@ void FuzzyLogicAI::populate_environment() {
 		const Gate* other_enemy_gate = logic->get_map()->get_gate(get_other_team(other_player->get_team()));
 		const Gate* other_allied_gate = logic->get_map()->get_gate(other_player->get_team());
 		
-		/*m_fuzzy_env.add_input(m_fuzzy->get_category_id("dist_to_other"), other_player, dist_between_players(my_player, other_player));
+		m_fuzzy_env.add_input(m_fuzzy->get_category_id("dist_to_other"), other_player, dist_between_players(my_player, other_player));
 		m_fuzzy_env.add_input(m_fuzzy->get_category_id("dist_to_my_gate"), other_player, dist_to_own_gate(my_player));
 		m_fuzzy_env.add_input(m_fuzzy->get_category_id("dist_to_enemy_gate"), other_player, dist_to_enemy_gate(my_player));
 		m_fuzzy_env.add_input(m_fuzzy->get_category_id("other_dist_to_enemy_gate"), other_player, dist_to_enemy_gate(other_player));
@@ -117,13 +167,12 @@ void FuzzyLogicAI::populate_environment() {
 		m_fuzzy_env.add_input(m_fuzzy->get_category_id("gun_cooldown"), other_player, gun_cooldown(my_player));
 		m_fuzzy_env.add_input(m_fuzzy->get_category_id("gun_angle_to_other"), other_player, gun_angle_to_player(my_player, other_player));
 		m_fuzzy_env.add_input(m_fuzzy->get_category_id("time_to_impact"), other_player, time_to_impact(my_player));
-		m_fuzzy_env.add_input(m_fuzzy->get_category_id("other_time_to_impact"), other_player, time_to_impact(other_player));*/
-		DEBUG("Value: " << can_see_player(my_player, other_player));
+		m_fuzzy_env.add_input(m_fuzzy->get_category_id("other_time_to_impact"), other_player, time_to_impact(other_player));
 		m_fuzzy_env.add_input(m_fuzzy->get_category_id("can_see_player"), other_player, can_see_player(my_player, other_player));
-		/*m_fuzzy_env.add_input(m_fuzzy->get_category_id("can_see_enemy_gate"), other_player, can_see_gate(my_player, enemy_gate));
+		m_fuzzy_env.add_input(m_fuzzy->get_category_id("can_see_enemy_gate"), other_player, can_see_gate(my_player, enemy_gate));
 		m_fuzzy_env.add_input(m_fuzzy->get_category_id("can_see_my_gate"), other_player, can_see_gate(my_player, allied_gate));
 		m_fuzzy_env.add_input(m_fuzzy->get_category_id("other_can_see_enemy_gate"), other_player, can_see_gate(my_player, other_enemy_gate));
-		m_fuzzy_env.add_input(m_fuzzy->get_category_id("other_can_see_own_gate"), other_player, can_see_gate(my_player, other_allied_gate));*/
+		m_fuzzy_env.add_input(m_fuzzy->get_category_id("other_can_see_own_gate"), other_player, can_see_gate(my_player, other_allied_gate));
 	}
 }
 

@@ -36,7 +36,12 @@ namespace LM {
 		FuzzyLogic* m_fuzzy;
 		FuzzyEnvironment m_fuzzy_env;
 		const Configuration* m_config;
+		
+		// Fuzzy Logic Rules
+		int m_rule_dangerous;
+		int m_rule_can_target;
 
+		void initialize_logic();
 		void populate_environment();
 
 	public:

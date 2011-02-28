@@ -118,7 +118,12 @@ float AI::gun_angle_to_player(const Player* player, const Player* other) const {
 	float x_dist = other->get_x() - player->get_x();
 	float y_dist = other->get_y() - player->get_y();
 	float wanted_angle = atan2(y_dist, x_dist);
-	return fabs(wanted_angle - player->get_gun_rotation_radians());
+	float curr_aim = player->get_gun_rotation_radians();
+	int dir = curr_aim > wanted_angle ? -1 : 1;
+	if (fabs(wanted_angle - curr_aim) > M_PI) {
+		curr_aim += 2 * M_PI * dir;
+	}
+	return fabs(wanted_angle - curr_aim);
 }
 
 float AI::time_to_impact(const Player* player) {
