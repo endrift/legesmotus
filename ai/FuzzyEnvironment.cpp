@@ -90,7 +90,11 @@ void FuzzyEnvironment::add_input(int cat, void* id, float value) {
 }
 
 ConstIterator<pair<long, float> > FuzzyEnvironment::get_input(int cat) const {
-	return ConstIterator<pair<long, float> >(new ConstStdMapIterator<long, float>(&m_input.find(cat)->second));
+	if (m_input.find(cat) == m_input.end()) {
+		return ConstIterator<pair<long, float> >(new ConstIterator<pair<long, float> >::Null);
+	} else {
+		return ConstIterator<pair<long, float> >(new ConstStdMapIterator<long, float>(&m_input.find(cat)->second));
+	}
 }
 
 void FuzzyEnvironment::clear() {

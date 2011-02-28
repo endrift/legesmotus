@@ -47,7 +47,7 @@ using namespace std;
 
 #endif
 
-class ConfigIterator : public ConstIterator<pair<const char*, const char*> >::ConstOpaqueIterator {
+class ConfigIterator : public ConstIterator<pair<const char*, const char*> >::OpaqueIterator {
 private:
 	const CSimpleIniA::TKeyVal* m_local;
 	const CSimpleIniA::TKeyVal* m_global;

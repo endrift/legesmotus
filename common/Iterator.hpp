@@ -43,6 +43,21 @@ namespace LM {
 			virtual OpaqueIterator* clone() = 0;
 		};
 
+		class Null : public OpaqueIterator {
+		public:
+			virtual bool has_more() const {
+				return false;
+			}
+			
+			virtual T next() {
+				return 0;
+			}
+
+			virtual Null* clone() {
+				return new Null();
+			}
+		};
+		
 		template <typename I>
 		class StdIterator : public OpaqueIterator {
 		private:
@@ -96,22 +111,37 @@ namespace LM {
 	template <typename T>
 	class ConstIterator {
 	public:
-		class ConstOpaqueIterator {
+		class OpaqueIterator {
 		public:
-			virtual ~ConstOpaqueIterator() {}
+			virtual ~OpaqueIterator() {}
 			virtual bool has_more() const = 0;
 			virtual T next() = 0;
-			virtual ConstOpaqueIterator* clone() = 0;
+			virtual OpaqueIterator* clone() = 0;
+		};
+
+		class Null : public OpaqueIterator{
+		public:
+			virtual bool has_more() const {
+				return false;
+			}
+			
+			virtual T next() {
+				return T();
+			}
+
+			virtual Null* clone() {
+				return new Null();
+			}
 		};
 
 		template <typename I>
-		class ConstStdIterator : public ConstOpaqueIterator {
+		class StdIterator : public OpaqueIterator {
 		private:
 			const I* m_data;
 			typename I::const_iterator m_iter;
 
 		public:
-			ConstStdIterator(const I* data) {
+			StdIterator(const I* data) {
 				m_data = data;
 				m_iter = data->begin();
 			}
@@ -124,16 +154,16 @@ namespace LM {
 				return *(m_iter++);
 			}
 
-			virtual ConstStdIterator<I>* clone() {
-				return new ConstStdIterator(*this);
+			virtual StdIterator<I>* clone() {
+				return new StdIterator(*this);
 			}
 		};
 		
 	private:
-		ConstOpaqueIterator* m_internal;
+		OpaqueIterator* m_internal;
 
 	public:
-		ConstIterator(ConstOpaqueIterator* real_iterator) {
+		ConstIterator(OpaqueIterator* real_iterator) {
 			m_internal = real_iterator;
 		}
 
@@ -175,27 +205,27 @@ namespace LM {
 	};
 
 	template <typename M, typename N>
-	class ConstStdMapIterator : public ConstIterator<std::pair<M, N> >::template ConstStdIterator<std::map<M, N> > {
+	class ConstStdMapIterator : public ConstIterator<std::pair<M, N> >::template StdIterator<std::map<M, N> > {
 	public:
-		ConstStdMapIterator(const std::map<M, N>* map) : ConstIterator<std::pair<M, N> >::template ConstStdIterator<std::map<M, N> >(map) {}
+		ConstStdMapIterator(const std::map<M, N>* map) : ConstIterator<std::pair<M, N> >::template StdIterator<std::map<M, N> >(map) {}
 	};
 
 	template <typename M, typename N>
-	class ConstStdMultiMapIterator : public ConstIterator<std::pair<M, N> >::template ConstStdIterator<std::multimap<M, N> > {
+	class ConstStdMultiMapIterator : public ConstIterator<std::pair<M, N> >::template StdIterator<std::multimap<M, N> > {
 	public:
-		ConstStdMultiMapIterator(const std::multimap<M, N>* map) : ConstIterator<std::pair<M, N> >::template ConstStdIterator<std::multimap<M, N> >(map) {}
+		ConstStdMultiMapIterator(const std::multimap<M, N>* map) : ConstIterator<std::pair<M, N> >::template StdIterator<std::multimap<M, N> >(map) {}
 	};
 
 	template <typename T>
-	class ConstStdVectorIterator : public ConstIterator<T>::template ConstStdIterator<std::vector<T> > {
+	class ConstStdVectorIterator : public ConstIterator<T>::template StdIterator<std::vector<T> > {
 	public:
-		ConstStdVectorIterator(const std::vector<T>* vector) : ConstIterator<T>::template ConstStdIterator<std::vector<T> >(vector) {}
+		ConstStdVectorIterator(const std::vector<T>* vector) : ConstIterator<T>::template StdIterator<std::vector<T> >(vector) {}
 	};
 
 	template <typename T>
-	class ConstStdListIterator : public ConstIterator<T>::template ConstStdIterator<std::list<T> > {
+	class ConstStdListIterator : public ConstIterator<T>::template StdIterator<std::list<T> > {
 	public:
-		ConstStdListIterator(const std::list<T>* list) : ConstIterator<T>::template ConstStdIterator<std::list<T> >(list) {}
+		ConstStdListIterator(const std::list<T>* list) : ConstIterator<T>::template StdIterator<std::list<T> >(list) {}
 	};
 }
 
