@@ -25,12 +25,14 @@
 #include "FuzzyCategory.hpp"
 #include "common/misc.hpp"
 
+#include <limits>
+
 using namespace LM;
 using namespace std;
 
 void FuzzyCategory::Bin::clear() {
-	start = 0.0f;
-	end = 0.0f;
+	start = numeric_limits<float>::min();
+	end = numeric_limits<float>::max();
 	grade_width = 0.0f;
 }
 
