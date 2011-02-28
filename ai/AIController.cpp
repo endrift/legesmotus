@@ -65,6 +65,8 @@ void AIController::update(uint64_t diff, const GameLogic& state, int player_id) 
 	m_changes[m_changeset] = NO_CHANGE;
 	m_changeset ^= 1;
 	
+	m_changes[m_changeset ^ 1] |= CHANGE_WEAPON;
+	
 	const Player* my_player = state.get_player(player_id);
 	if (my_player == NULL) {
 		return;
@@ -80,8 +82,8 @@ void AIController::update(uint64_t diff, const GameLogic& state, int player_id) 
 	
 		// Update the AI state:
 		m_ai->update(state, diff);
-	
-		// Determine desired aim.
+		
+		// Determine new desired aim.
 		m_wanted_aim = m_ai->find_desired_aim();
 		m_aim_reason = m_ai->get_aim_reason();
 	}
@@ -93,6 +95,7 @@ void AIController::update(uint64_t diff, const GameLogic& state, int player_id) 
 		if (m_aim_reason == AI::FIRE) {
 			m_changes[m_changeset ^ 1] |= FIRE_WEAPON;
 			m_changes[m_changeset ^ 1] |= STOP_JUMPING;
+			m_ai->randomize_aim_inaccuracy();
 		} else if (m_aim_reason == AI::JUMP) {
 			m_changes[m_changeset ^ 1] |= JUMPING;
 		} else {
@@ -116,7 +119,7 @@ float AIController::get_distance() const {
 }
 
 int AIController::get_weapon() const {
-	return 0;
+	return 2;
 }
 
 wstring AIController::get_message() const {

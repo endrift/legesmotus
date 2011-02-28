@@ -31,12 +31,225 @@ using namespace std;
 FuzzyLogicAI::FuzzyLogicAI(const Configuration* config, const GameLogic* logic) : AI(logic) {
 	m_fuzzy = new FuzzyLogic("default");
 	m_config = config;
-
-	m_fuzzy->load_category(config, "can_see_player");
+	
+	m_target = NULL;
+	
+	m_last_aim = 0.0f;
+	
+	// TODO: Load this from a config file?
+	max_aim_inaccuracy = 0.2f;
+	
+	m_aim_reason = DO_NOTHING;
+	
+	initialize_logic();
 }
 
 FuzzyLogicAI::~FuzzyLogicAI() {
 	delete m_fuzzy;
+}
+
+void FuzzyLogicAI::initialize_logic() {
+	// Load the categories.
+	m_fuzzy->load_category(m_config, "dist_to_other");
+	m_fuzzy->load_category(m_config, "dist_to_my_gate");
+	m_fuzzy->load_category(m_config, "dist_to_enemy_gate");
+	m_fuzzy->load_category(m_config, "other_dist_to_enemy_gate");
+	m_fuzzy->load_category(m_config, "other_dist_to_own_gate");
+	m_fuzzy->load_category(m_config, "holding_gate");
+	m_fuzzy->load_category(m_config, "other_holding_gate");
+	m_fuzzy->load_category(m_config, "my_energy_percent");
+	m_fuzzy->load_category(m_config, "other_energy_percent");
+	m_fuzzy->load_category(m_config, "gun_cooldown");
+	m_fuzzy->load_category(m_config, "gun_angle_to_other");
+	m_fuzzy->load_category(m_config, "time_to_impact");
+	m_fuzzy->load_category(m_config, "other_time_to_impact");
+	m_fuzzy->load_category(m_config, "can_see_player");
+	m_fuzzy->load_category(m_config, "can_see_enemy_gate");
+	m_fuzzy->load_category(m_config, "can_see_my_gate");
+	m_fuzzy->load_category(m_config, "other_can_see_enemy_gate");
+	m_fuzzy->load_category(m_config, "other_can_see_own_gate");
+	
+	// Load the rules.
+	m_rule_dangerous = m_fuzzy->add_rule("dangerous", 
+		new FuzzyLogic::Not(
+			new FuzzyLogic::Or(
+				new FuzzyLogic::And(
+					m_fuzzy->make_terminal("can_see_player", "cant_see"), 
+					m_fuzzy->make_terminal("other_holding_gate", "not_holding")
+				),
+				m_fuzzy->make_terminal("other_energy_percent","frozen")
+			)
+		)
+	);
+	
+	m_rule_can_target = m_fuzzy->add_rule("can_target",
+		new FuzzyLogic::And(
+			new FuzzyLogic::And(
+				new FuzzyLogic::Not(
+					m_fuzzy->make_terminal("can_see_player", "cant_see")
+				),
+				new FuzzyLogic::Or(
+					// Are we close enough to hit them accurately?
+					new FuzzyLogic::Not(
+						m_fuzzy->make_terminal("dist_to_other", "far_away")
+					),
+					new FuzzyLogic::Or(
+						// Are they almost done capturing our gate?
+						m_fuzzy->make_terminal("other_holding_gate", "almost_done"),
+						// Is our gun turned far away?
+						new FuzzyLogic::Not(
+							m_fuzzy->make_terminal("gun_angle_to_other", "far_off")
+						)
+					)
+				)
+			),
+			new FuzzyLogic::Or(
+				m_fuzzy->make_terminal("gun_cooldown", "ready"),
+				m_fuzzy->make_terminal("gun_cooldown", "almost_ready")
+			)
+		)
+	);
+	
+	m_rule_firing_importance = m_fuzzy->add_rule("firing_importance",
+		new FuzzyLogic::And(
+			new FuzzyLogic::And(
+				// Are we in danger of dying soon?
+				new FuzzyLogic::Not(
+					new FuzzyLogic::Or(
+						m_fuzzy->make_terminal("my_energy_percent", "frozen"),
+						m_fuzzy->make_terminal("my_energy_percent", "almost_frozen")
+					)
+				),
+				// Are we ready to fire at them?
+				new FuzzyLogic::And(
+					new FuzzyLogic::Or(
+						m_fuzzy->make_terminal("gun_cooldown", "ready"),
+						m_fuzzy->make_terminal("gun_cooldown", "almost_ready")
+					),
+					new FuzzyLogic::Or(
+						// Are we close enough to hit them accurately?
+						new FuzzyLogic::Not(
+							m_fuzzy->make_terminal("dist_to_other", "far_away")
+						),
+						new FuzzyLogic::Or(
+							// Are they almost done capturing our gate?
+							m_fuzzy->make_terminal("other_holding_gate", "almost_done"),
+							// Is our gun turned far away?
+							new FuzzyLogic::Not(
+								m_fuzzy->make_terminal("gun_angle_to_other", "far_off")
+							)
+						)
+					)
+				)
+			),
+			new FuzzyLogic::Or(
+				new FuzzyLogic::Not(
+					m_fuzzy->make_terminal("dist_to_other", "far_away")
+				),
+				new FuzzyLogic::And(
+					// Are we close enough to hit them accurately?
+					new FuzzyLogic::Not(
+						m_fuzzy->make_terminal("dist_to_other", "far_away")
+					),
+					new FuzzyLogic::Or(
+						// Are they almost done capturing our gate?
+						m_fuzzy->make_terminal("other_holding_gate", "almost_done"),
+						// Are we needing to jump?
+						new FuzzyLogic::Not(
+							new FuzzyLogic::Or(
+								m_fuzzy->make_terminal("time_to_impact", "already_grabbing"),
+								m_fuzzy->make_terminal("time_to_impact", "nearly_landed")
+							)
+						)
+					)
+				)
+			)
+		)
+	);
+	
+	m_rule_run_away = m_fuzzy->add_rule("run_away",
+		new FuzzyLogic::And(
+			// Can we jump soon?
+			new FuzzyLogic::Or(
+				m_fuzzy->make_terminal("time_to_impact", "already_grabbing"),
+				m_fuzzy->make_terminal("time_to_impact", "nearly_landed")
+			),
+			new FuzzyLogic::And(
+				// Are we in danger?
+				new FuzzyLogic::Or(
+					new FuzzyLogic::Or(
+						m_fuzzy->make_terminal("my_energy_percent", "frozen"),
+						m_fuzzy->make_terminal("my_energy_percent", "almost_frozen")
+					),
+					// Are they going to kill us soon?
+					new FuzzyLogic::Or(
+						new FuzzyLogic::Not(
+							new FuzzyLogic::Or(
+								m_fuzzy->make_terminal("gun_cooldown", "ready"),
+								m_fuzzy->make_terminal("gun_cooldown", "almost_ready")
+							)
+						),
+						m_fuzzy->make_terminal("gun_angle_to_other", "far_off")
+					)
+				),
+				// Are they almost done capturing our gate?
+				new FuzzyLogic::Not(
+					m_fuzzy->make_terminal("other_holding_gate", "almost_done")
+				)
+			)
+		)
+	);
+	
+	m_rule_jump_at_gate = m_fuzzy->add_rule("jump_at_gate",
+		new FuzzyLogic::And(
+			// Can we jump soon?
+			new FuzzyLogic::Or(
+				m_fuzzy->make_terminal("time_to_impact", "already_grabbing"),
+				m_fuzzy->make_terminal("time_to_impact", "nearly_landed")
+			),
+			new FuzzyLogic::And(
+				// Can we see the gate?
+				new FuzzyLogic::Not(
+					new FuzzyLogic::Or(
+						m_fuzzy->make_terminal("can_see_enemy_gate", "far_away"),
+						m_fuzzy->make_terminal("can_see_enemy_gate", "touching")
+					)
+				),
+				// Are we grabbing the gate?
+				new FuzzyLogic::Not(
+					m_fuzzy->make_terminal("dist_to_enemy_gate", "touching")
+				)
+			)
+		)
+	);
+	
+	m_rule_dont_jump = m_fuzzy->add_rule("dont_jump",
+		new FuzzyLogic::Or(
+			new FuzzyLogic::And(
+				// Is our cooldown nearly ready for firing?
+				new FuzzyLogic::Or(
+					m_fuzzy->make_terminal("gun_cooldown", "ready"),
+					m_fuzzy->make_terminal("gun_cooldown", "almost_ready")
+				),
+				// Can we jump soon?
+				new FuzzyLogic::Not(
+					new FuzzyLogic::Or(
+						m_fuzzy->make_terminal("time_to_impact", "already_grabbing"),
+						m_fuzzy->make_terminal("time_to_impact", "nearly_landed")
+					)
+				)
+			),
+			// Are we already grabbing the gate?
+			m_fuzzy->make_terminal("can_see_enemy_gate", "touching")
+		)
+	);
+	
+	//m_rule_touching_gate = m_fuzzy->add_rule("touching_gate", m_fuzzy->make_terminal("can_see_enemy_gate", "touching"));
+}
+
+void FuzzyLogicAI::randomize_aim_inaccuracy() {
+	float uncertainty = max_aim_inaccuracy;
+	m_aim_inaccuracy = (float)rand()/(float)RAND_MAX * uncertainty * 2 - uncertainty;
 }
 
 void FuzzyLogicAI::update(const GameLogic& logic, uint64_t diff) {
@@ -53,6 +266,8 @@ void FuzzyLogicAI::update(const GameLogic& logic, uint64_t diff) {
 	
 	ConstIterator<std::pair<uint32_t, Player*> > other_players = logic.list_players();
 	
+	Player* best_target = NULL;
+	float best_target_val = 0.0f;
 	// Determine danger for each enemy player.
 	while (other_players.has_more()) {
 		std::pair<uint32_t, Player*> next_iter = other_players.next();
@@ -67,14 +282,25 @@ void FuzzyLogicAI::update(const GameLogic& logic, uint64_t diff) {
 			continue;
 		}
 		
-		int cat_id = m_fuzzy->get_category_id("can_see_player");
-		FuzzyCategory* category = m_fuzzy->get_category(cat_id);
-		DEBUG("Can't see: " << m_fuzzy_env.get(cat_id, other_player, category->get_bin_id("cant_see")));
-		DEBUG("Far away: " << m_fuzzy_env.get(cat_id, other_player, category->get_bin_id("far_away")));
-		DEBUG("Midrange: " << m_fuzzy_env.get(cat_id, other_player, category->get_bin_id("midrange")));
-		DEBUG("Close: " << m_fuzzy_env.get(cat_id, other_player, category->get_bin_id("close")));
-		DEBUG("Melee: " << m_fuzzy_env.get(cat_id, other_player, category->get_bin_id("melee")));
+		float dangerous = m_fuzzy->decide(m_rule_dangerous, other_player, m_fuzzy_env);
+		
+		float can_target = m_fuzzy->decide(m_rule_can_target, other_player, m_fuzzy_env);
+
+		float target_val = dangerous * can_target;
+		
+		if (target_val > best_target_val || best_target == NULL) {
+			best_target = other_player;
+			best_target_val = target_val;
+		} else if (target_val == best_target_val) {
+			// If equally dangerous, choose randomly between them for now.
+			if (rand()%2 == 0) {
+				best_target = other_player;
+				best_target_val = target_val;
+			}
+		}
 	}
+	
+	m_target = best_target;
 }
 
 void FuzzyLogicAI::populate_environment() {
@@ -88,8 +314,8 @@ void FuzzyLogicAI::populate_environment() {
 		return;
 	}
 	
-	const Gate* enemy_gate = get_logic()->get_map()->get_gate(get_other_team(my_player->get_team()));
-	const Gate* allied_gate = get_logic()->get_map()->get_gate(my_player->get_team());
+	const Gate* enemy_gate = logic->get_map()->get_gate(get_other_team(my_player->get_team()));
+	const Gate* allied_gate = logic->get_map()->get_gate(my_player->get_team());
 	
 	// Populate each category for each of the other players.
 	ConstIterator<std::pair<uint32_t, Player*> > other_players = logic->list_players();
@@ -105,7 +331,7 @@ void FuzzyLogicAI::populate_environment() {
 		const Gate* other_enemy_gate = logic->get_map()->get_gate(get_other_team(other_player->get_team()));
 		const Gate* other_allied_gate = logic->get_map()->get_gate(other_player->get_team());
 		
-		/*m_fuzzy_env.add_input(m_fuzzy->get_category_id("dist_to_other"), other_player, dist_between_players(my_player, other_player));
+		m_fuzzy_env.add_input(m_fuzzy->get_category_id("dist_to_other"), other_player, dist_between_players(my_player, other_player));
 		m_fuzzy_env.add_input(m_fuzzy->get_category_id("dist_to_my_gate"), other_player, dist_to_own_gate(my_player));
 		m_fuzzy_env.add_input(m_fuzzy->get_category_id("dist_to_enemy_gate"), other_player, dist_to_enemy_gate(my_player));
 		m_fuzzy_env.add_input(m_fuzzy->get_category_id("other_dist_to_enemy_gate"), other_player, dist_to_enemy_gate(other_player));
@@ -117,20 +343,104 @@ void FuzzyLogicAI::populate_environment() {
 		m_fuzzy_env.add_input(m_fuzzy->get_category_id("gun_cooldown"), other_player, gun_cooldown(my_player));
 		m_fuzzy_env.add_input(m_fuzzy->get_category_id("gun_angle_to_other"), other_player, gun_angle_to_player(my_player, other_player));
 		m_fuzzy_env.add_input(m_fuzzy->get_category_id("time_to_impact"), other_player, time_to_impact(my_player));
-		m_fuzzy_env.add_input(m_fuzzy->get_category_id("other_time_to_impact"), other_player, time_to_impact(other_player));*/
-		DEBUG("Value: " << can_see_player(my_player, other_player));
+		m_fuzzy_env.add_input(m_fuzzy->get_category_id("other_time_to_impact"), other_player, time_to_impact(other_player));
 		m_fuzzy_env.add_input(m_fuzzy->get_category_id("can_see_player"), other_player, can_see_player(my_player, other_player));
-		/*m_fuzzy_env.add_input(m_fuzzy->get_category_id("can_see_enemy_gate"), other_player, can_see_gate(my_player, enemy_gate));
+		m_fuzzy_env.add_input(m_fuzzy->get_category_id("can_see_enemy_gate"), other_player, can_see_gate(my_player, enemy_gate));
 		m_fuzzy_env.add_input(m_fuzzy->get_category_id("can_see_my_gate"), other_player, can_see_gate(my_player, allied_gate));
-		m_fuzzy_env.add_input(m_fuzzy->get_category_id("other_can_see_enemy_gate"), other_player, can_see_gate(my_player, other_enemy_gate));
-		m_fuzzy_env.add_input(m_fuzzy->get_category_id("other_can_see_own_gate"), other_player, can_see_gate(my_player, other_allied_gate));*/
+		m_fuzzy_env.add_input(m_fuzzy->get_category_id("other_can_see_enemy_gate"), other_player, can_see_gate(other_player, other_enemy_gate));
+		m_fuzzy_env.add_input(m_fuzzy->get_category_id("other_can_see_own_gate"), other_player, can_see_gate(other_player, other_allied_gate));
 	}
 }
 
 float FuzzyLogicAI::find_desired_aim() {
-	return 0;
+	const GameLogic* logic = get_logic();
+		
+	const Player* my_player = get_own_player();
+
+	const Gate* enemy_gate = logic->get_map()->get_gate(get_other_team(my_player->get_team()));
+
+	int aim_at_target = 0;
+	int aim_to_jump = 0;
+	int aim_at_gate = 0;
+	
+	float desired_aim = 0.0f;
+	
+	if (m_target != NULL) {
+		// Determine importance of aiming at target.
+		float dangerous = m_fuzzy->decide(m_rule_dangerous, m_target, m_fuzzy_env);
+		
+		float can_target = m_fuzzy->decide(m_rule_can_target, m_target, m_fuzzy_env);
+		
+		float firing_importance = m_fuzzy->decide(m_rule_firing_importance, m_target, m_fuzzy_env);
+		
+		aim_at_target = (int)(dangerous * can_target * firing_importance * 100.0f);
+		
+		// Determine if we should jump at the gate.
+		aim_at_gate = m_fuzzy->decide(m_rule_jump_at_gate, m_target, m_fuzzy_env) * 100;
+	
+		// Determine if we should run away.
+		float run_away = m_fuzzy->decide(m_rule_run_away, m_target, m_fuzzy_env);
+		float dont_jump = m_fuzzy->decide(m_rule_dont_jump, m_target, m_fuzzy_env);
+		aim_to_jump = (run_away - dont_jump) * 100 - aim_at_target/2.0f;
+		if (aim_to_jump < 0) {
+			aim_to_jump = 0;
+		}
+		if (aim_to_jump < 0.1f && dont_jump <= 0.01f) {
+			aim_to_jump = 30;
+		}
+		
+		//DEBUG("Aim at target: " << aim_at_target);
+	
+	}
+	
+	int total = aim_at_target + aim_to_jump + aim_at_gate;
+	if (total < 20) {
+		// Do nothing.
+		m_aim_reason = DO_NOTHING;
+		return m_last_aim;
+	} else {
+		int result = rand() % total;
+		if (result < aim_at_target) {
+			// Aim at the target.
+			// Find the angle to turn towards the enemy.
+			float x_dist = m_target->get_x() - my_player->get_x();
+			float y_dist = m_target->get_y() - my_player->get_y();
+			desired_aim = atan2(y_dist, x_dist) + m_aim_inaccuracy;
+			m_aim_reason = FIRE;
+		} else if (result < aim_at_target + aim_to_jump) {
+			// Aim to jump.
+			// 1/5th chance to jump towards the gate, even if we can't see it.
+			if (m_aim_reason != JUMP) {
+				if (rand() % 5 == 1) {
+					Point gate_pos = enemy_gate->get_position();
+					float x_dist = gate_pos.x - my_player->get_x();
+					float y_dist = gate_pos.y - my_player->get_y();
+					desired_aim = atan2(y_dist, x_dist);
+					m_aim_reason = JUMP;
+				} else {
+					// For now, just randomly aim somewhere.
+					desired_aim = to_radians(rand()%360 - 180);
+					m_aim_reason = JUMP;
+				}
+			} else {
+				m_aim_reason = JUMP;
+				return m_last_aim;
+			}
+		} else {
+			// Aim to jump at the gate.
+			Point gate_pos = enemy_gate->get_position();
+			float x_dist = gate_pos.x - my_player->get_x();
+			float y_dist = gate_pos.y - my_player->get_y();
+			desired_aim = atan2(y_dist, x_dist);
+			m_aim_reason = JUMP;
+		}
+		
+		m_last_aim = desired_aim;
+	}
+	
+	return desired_aim;
 }
 
 AI::AimReason FuzzyLogicAI::get_aim_reason() {
-	return DO_NOTHING;
+	return m_aim_reason;
 }
