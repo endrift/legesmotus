@@ -66,6 +66,7 @@ namespace LM {
 		AI(const GameLogic* logic = NULL);
 		virtual ~AI();
 		
+		virtual void randomize_aim_inaccuracy();
 		virtual void update(const GameLogic& logic, uint64_t diff);
 		virtual float find_desired_aim();
 		virtual AimReason get_aim_reason();

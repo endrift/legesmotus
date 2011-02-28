@@ -36,10 +36,19 @@ namespace LM {
 		FuzzyLogic* m_fuzzy;
 		FuzzyEnvironment m_fuzzy_env;
 		const Configuration* m_config;
+		Player* m_target;
+		float m_last_aim;
+		AI::AimReason m_aim_reason;
+		float max_aim_inaccuracy;
+		float m_aim_inaccuracy;
 		
 		// Fuzzy Logic Rules
 		int m_rule_dangerous;
 		int m_rule_can_target;
+		int m_rule_firing_importance;
+		int m_rule_run_away;
+		int m_rule_jump_at_gate;
+		int m_rule_dont_jump;
 
 		void initialize_logic();
 		void populate_environment();
@@ -48,6 +57,8 @@ namespace LM {
 		FuzzyLogicAI(const Configuration* config, const GameLogic* logic = NULL);
 		virtual ~FuzzyLogicAI();
 		
+		
+		virtual void randomize_aim_inaccuracy();
 		virtual void update(const GameLogic& logic, uint64_t diff);
 		virtual float find_desired_aim();
 		virtual AimReason get_aim_reason();

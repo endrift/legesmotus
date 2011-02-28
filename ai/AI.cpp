@@ -67,6 +67,10 @@ const Player* AI::get_other_player() {
 	return m_other_player;
 }
 
+void AI::randomize_aim_inaccuracy() {
+	// Do nothing.
+}
+
 void AI::update(const GameLogic& logic, uint64_t diff) {
 	// Do nothing.
 }
@@ -82,17 +86,17 @@ AI::AimReason AI::get_aim_reason() {
 // Utility methods for get_vars():
 
 float AI::dist_between_players(const Player* first, const Player* second) const {
-	return (first->get_position() - second->get_position()).get_magnitude();
+	return to_physics((first->get_position() - second->get_position()).get_magnitude());
 }
 
 float AI::dist_to_own_gate(const Player* player) const {
 	const Gate* my_gate = m_logic->get_map()->get_gate(player->get_team());
-	return (player->get_position() - my_gate->get_position()).get_magnitude();
+	return to_physics((player->get_position() - my_gate->get_position()).get_magnitude());
 }
 
 float AI::dist_to_enemy_gate(const Player* player) const {
 	const Gate* enemy_gate = m_logic->get_map()->get_gate(get_other_team(player->get_team()));
-	return (player->get_position() - enemy_gate->get_position()).get_magnitude();
+	return to_physics((player->get_position() - enemy_gate->get_position()).get_magnitude());
 }
 
 float AI::holding_gate(const Player* player) const {
@@ -118,7 +122,7 @@ float AI::gun_angle_to_player(const Player* player, const Player* other) const {
 	float x_dist = other->get_x() - player->get_x();
 	float y_dist = other->get_y() - player->get_y();
 	float wanted_angle = atan2(y_dist, x_dist);
-	float curr_aim = player->get_gun_rotation_radians();
+	float curr_aim = get_normalized_angle(player->get_gun_rotation_radians() + player->get_rotation_radians());
 	int dir = curr_aim > wanted_angle ? -1 : 1;
 	if (fabs(wanted_angle - curr_aim) > M_PI) {
 		curr_aim += 2 * M_PI * dir;

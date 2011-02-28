@@ -192,7 +192,7 @@ float RayCast::cast_at_obstacle(const b2Vec2& ray_start, const MapObject* object
 		return numeric_limits<float>::max();
 	}
 	
-	return to_game(m_ray_cast.shortest_dist);
+	return m_ray_cast.shortest_dist;
 }
 
 float RayCast::cast_in_vel_dir(const Player* player) {
@@ -230,7 +230,7 @@ float RayCast::cast_in_vel_dir(const Player* player) {
 		}
 	}
 	
-	return to_game(found_distance);
+	return found_distance;
 }
 
 float32 RayCast::ReportFixture(b2Fixture* fixture, const b2Vec2& point, const b2Vec2& normal, float32 fraction) {
