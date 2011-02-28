@@ -24,25 +24,30 @@
 
 #include "FuzzyLogic.hpp"
 #include "common/misc.hpp"
+#include "common/Exception.hpp"
 
 #include <sstream>
 
 using namespace LM;
 using namespace std;
 
+float FuzzyLogic::Rule::apply(const FuzzyEnvironment& values, long id) const {
+	throw new Exception("Null Rule invoked");
+}
+
+void FuzzyLogic::Rule::apply(const FuzzyEnvironment& values, map<long, float>* output) const {
+	for (map<long, float>::iterator iter = output->begin(); iter != output->end(); ++iter) {
+		iter->second = apply(values, iter->first);
+	}
+}
+
 FuzzyLogic::Terminal::Terminal(int cat, int bin) {
 	m_cat = cat;
-	m_id = 0L;
-	m_bin = bin;
-}
-FuzzyLogic::Terminal::Terminal(int cat, long id, int bin) {
-	m_cat = cat;
-	m_id = id;
 	m_bin = bin;
 }
 
-float FuzzyLogic::Terminal::apply(const FuzzyEnvironment& values) const {
-	return values.get(m_cat, m_id);
+float FuzzyLogic::Terminal::apply(const FuzzyEnvironment& values, long id) const {
+	return values.get(m_cat, id, m_bin);
 }
 
 FuzzyLogic::And::And(const Rule* lhs, const Rule* rhs) {
@@ -55,8 +60,8 @@ FuzzyLogic::And::~And() {
 	delete m_rhs;
 }
 
-float FuzzyLogic::And::apply(const FuzzyEnvironment& values) const {
-	return min<float>(m_lhs->apply(values), m_rhs->apply(values));
+float FuzzyLogic::And::apply(const FuzzyEnvironment& values, long id) const {
+	return min<float>(m_lhs->apply(values, id), m_rhs->apply(values, id));
 }
 
 FuzzyLogic::Or::Or(const Rule* lhs, const Rule* rhs) {
@@ -69,8 +74,8 @@ FuzzyLogic::Or::~Or() {
 	delete m_rhs;
 }
 
-float FuzzyLogic::Or::apply(const FuzzyEnvironment& values) const {
-	return max<float>(m_lhs->apply(values), m_rhs->apply(values));
+float FuzzyLogic::Or::apply(const FuzzyEnvironment& values, long id) const {
+	return max<float>(m_lhs->apply(values, id), m_rhs->apply(values, id));
 }
 
 FuzzyLogic::Not::Not(const Rule* op) {
@@ -81,8 +86,8 @@ FuzzyLogic::Not::~Not() {
 	delete m_op;
 }
 
-float FuzzyLogic::Not::apply(const FuzzyEnvironment& values) const {
-	return 1.0f - m_op->apply(values);
+float FuzzyLogic::Not::apply(const FuzzyEnvironment& values, long id) const {
+	return 1.0f - m_op->apply(values, id);
 }
 
 FuzzyLogic::FuzzyLogic(const string& section) : m_section(section) {
@@ -196,20 +201,12 @@ void FuzzyLogic::apply(FuzzyEnvironment* env) const {
 	}
 }
 
-float FuzzyLogic::decide(int rule, FuzzyEnvironment* env) const {
+float FuzzyLogic::decide(int rule, long id, FuzzyEnvironment* env) const {
 	ASSERT((size_t) rule < m_rules.size());
-	return m_rules[rule]->apply(*env);	
+	return m_rules[rule]->apply(*env, id);	
 }
 
 FuzzyLogic::Terminal* FuzzyLogic::make_terminal(const string& cat, const string& bin) const {
-	return make_terminal(cat, 0L, bin);
-}
-
-FuzzyLogic::Terminal* FuzzyLogic::make_terminal(const string& cat, long id, const string& bin) const {
 	int cat_id = get_category_id(cat);
-	return new Terminal(cat_id, id, get_category(cat_id)->get_bin_id(bin));
-}
-
-FuzzyLogic::Terminal* FuzzyLogic::make_terminal(const string& cat, void* id, const string& bin) const {
-	return make_terminal(cat, (long) id, bin);
+	return new Terminal(cat_id, get_category(cat_id)->get_bin_id(bin));
 }

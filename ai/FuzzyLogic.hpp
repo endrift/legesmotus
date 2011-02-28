@@ -37,19 +37,18 @@ namespace LM {
 		class Rule {
 		public:
 			virtual ~Rule() {}
-			virtual float apply(const FuzzyEnvironment& values) const = 0;
+			virtual float apply(const FuzzyEnvironment& values, long id) const;
+			virtual void apply(const FuzzyEnvironment& values, std::map<long, float>* output) const;
 		};
 
 		class Terminal : public Rule {
 		private:
 			int m_bin;
-			long m_id;
 			int m_cat;
 
 		public:
 			Terminal(int cat, int bin);
-			Terminal(int cat, long id, int bin);
-			virtual float apply(const FuzzyEnvironment& values) const;
+			virtual float apply(const FuzzyEnvironment& values, long id) const;
 		};
 
 		class And : public Rule {
@@ -60,7 +59,7 @@ namespace LM {
 		public:
 			And(const Rule* lhs, const Rule* rhs);
 			virtual ~And();
-			virtual float apply(const FuzzyEnvironment& values) const;
+			virtual float apply(const FuzzyEnvironment& values, long id) const;
 		};
 
 		class Or : public Rule {
@@ -71,7 +70,7 @@ namespace LM {
 		public:
 			Or(const Rule* lhs, const Rule* rhs);
 			virtual ~Or();
-			virtual float apply(const FuzzyEnvironment& values) const;
+			virtual float apply(const FuzzyEnvironment& values, long id) const;
 		};
 
 		class Not : public Rule {
@@ -81,7 +80,7 @@ namespace LM {
 		public:
 			Not(const Rule* op);
 			virtual ~Not();
-			virtual float apply(const FuzzyEnvironment& values) const;
+			virtual float apply(const FuzzyEnvironment& values, long id) const;
 		};
 
 	private:
@@ -108,11 +107,9 @@ namespace LM {
 		int get_rule_id(const std::string& name) const;
 
 		void apply(FuzzyEnvironment* env) const;
-		float decide(int rule, FuzzyEnvironment* env) const;
+		float decide(int rule, long id, FuzzyEnvironment* env) const;
 
 		Terminal* make_terminal(const std::string& cat, const std::string& bin) const;
-		Terminal* make_terminal(const std::string& cat, long id, const std::string& bin) const;
-		Terminal* make_terminal(const std::string& cat, void* id, const std::string& bin) const;
 	};
 }
 
