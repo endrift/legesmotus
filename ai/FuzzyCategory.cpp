@@ -60,9 +60,9 @@ int FuzzyCategory::get_bin_id(const string& name) const {
 
 void FuzzyCategory::apply(FuzzyEnvironment::Subenv results) const {
 	int bid = 0;
-	for (vector<Bin>::const_iterator iter = m_bins.begin(); iter != m_bins.end(); ++iter, ++bid) {
-		ConstIterator<std::pair<long, float> > input = results.get_input();
-		while (input.has_more()) {
+	ConstIterator<std::pair<long, float> > input = results.get_input();
+	while (input.has_more()) {
+		for (vector<Bin>::const_iterator iter = m_bins.begin(); iter != m_bins.end(); ++iter, ++bid) {
 			pair<long, float> in_pair = input.next();
 			float value = in_pair.second;
 			float result = 0.0f;
