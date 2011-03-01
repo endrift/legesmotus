@@ -12,5 +12,5 @@ add_library(lmbot
 add_executable(lmsimpleai simplemain.cpp)
 add_executable(lmfuzzyai fuzzyaimain.cpp)
 
-target_link_libraries(lmsimpleai lmbot lmclient lmcommon Box2D)
-target_link_libraries(lmfuzzyai lmbot lmclient lmcommon Box2D)
+target_link_libraries(lmsimpleai lmbot lmclient lmcommon ${LIBS})
+target_link_libraries(lmfuzzyai lmbot lmclient lmcommon ${LIBS})

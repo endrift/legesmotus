@@ -1,4 +1,7 @@
+# Don't use pkg-config if we're building a bundle
+if(NOT CMAKE_HOST_APPLE OR NOT LM_BUNDLE)
 find_package(PkgConfig)
+endif()
 
 if(PKG_CONFIG_FOUND)
 
@@ -30,7 +33,7 @@ macro(find_libraries LIBNAME LIBDEPS)
 	addcflags("${${LIBNAME}_CFLAGS_OTHER}")
 endmacro()
 
-message("pkg-config found")
+message(STATUS "Using pkg-config to locate dependencies")
 
 find_libraries(SDL sdl>=1.2)
 find_libraries(SDL_IMAGE SDL_image>=1.2)
@@ -114,4 +117,4 @@ if(LDFLAGS)
 set_target_properties(legesmotus PROPERTIES LINK_FLAGS "${LDFLAGS}")
 endif()
 
-target_link_libraries(legesmotus lmgui lmclient lmcommon ${LIBS} Box2D)
+target_link_libraries(legesmotus lmgui lmclient lmcommon ${LIBS})

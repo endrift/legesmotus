@@ -13,4 +13,4 @@ add_executable(lmserver
 	main.cpp
 )
 
-target_link_libraries(lmserver lmcommon Box2D)
+target_link_libraries(lmserver lmcommon ${LIBS})
