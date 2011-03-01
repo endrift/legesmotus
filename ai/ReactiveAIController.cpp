@@ -25,6 +25,7 @@
 #include "ReactiveAIController.hpp"
 #include "common/PhysicsObject.hpp"
 #include <cstdlib>
+#include <ctime>
 #include "common/team.hpp"
 #include "common/RayCast.hpp"
 
