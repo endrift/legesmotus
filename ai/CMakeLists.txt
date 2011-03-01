@@ -1,6 +1,5 @@
 add_library(lmbot
 	ReactiveAIController.cpp
-	StateTranslator.cpp
 	AI.cpp
 	FuzzyLogic.cpp
 	FuzzyCategory.cpp
