@@ -25,7 +25,6 @@
 #include "AI.hpp"
 #include "common/GameLogic.hpp"
 #include "common/Player.hpp"
-#include "ai/StateTranslator.hpp"
 #include "common/team.hpp"
 #include "common/Weapon.hpp"
 #include "common/PhysicsObject.hpp"

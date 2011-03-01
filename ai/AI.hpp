@@ -32,7 +32,6 @@
 
 namespace LM {
 	class Player;
-	class StateTranslator;
 	class PhysicsObject;
 	class Gate;
 
