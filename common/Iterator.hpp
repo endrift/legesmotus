@@ -104,6 +104,7 @@ namespace LM {
 		}
 
 		T next() {
+			ASSERT(has_more());
 			return m_internal->next();
 		}
 	};

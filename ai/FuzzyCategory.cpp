@@ -62,8 +62,8 @@ void FuzzyCategory::apply(FuzzyEnvironment::Subenv results) const {
 	int bid = 0;
 	ConstIterator<std::pair<long, float> > input = results.get_input();
 	while (input.has_more()) {
+		pair<long, float> in_pair = input.next();
 		for (vector<Bin>::const_iterator iter = m_bins.begin(); iter != m_bins.end(); ++iter, ++bid) {
-			pair<long, float> in_pair = input.next();
 			float value = in_pair.second;
 			float result = 0.0f;
 			const Bin& b = *iter;
