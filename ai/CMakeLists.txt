@@ -1,7 +1,16 @@
 add_library(lmbot
 	ReactiveAIController.cpp
 	StateTranslator.cpp
+	AI.cpp
+	FuzzyLogic.cpp
+	FuzzyCategory.cpp
+	FuzzyEnvironment.cpp
+	AIController.cpp
+	FuzzyLogicAI.cpp
 )
 
-add_executable(lmreactiveai main.cpp)
-target_link_libraries(lmreactiveai lmbot lmclient lmcommon Box2D)
+add_executable(lmsimpleai simplemain.cpp)
+add_executable(lmfuzzyai fuzzyaimain.cpp)
+
+target_link_libraries(lmsimpleai lmbot lmclient lmcommon Box2D)
+target_link_libraries(lmfuzzyai lmbot lmclient lmcommon Box2D)

@@ -47,4 +47,5 @@ add_library(lmcommon
 	GameLogic.cpp
 	Iterator.cpp
 	Configuration.cpp
+	RayCast.cpp
 )
