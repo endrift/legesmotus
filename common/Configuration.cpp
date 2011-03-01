@@ -25,6 +25,8 @@
 #include "Configuration.hpp"
 #include "misc.hpp"
 
+#include <cstring>
+
 using namespace LM;
 using namespace std;
 
@@ -44,6 +46,88 @@ using namespace std;
 #include <errno.h>
 
 #endif
+
+class ConfigIterator : public ConstIterator<pair<const char*, const char*> >::OpaqueIterator {
+private:
+	const CSimpleIniA::TKeyVal* m_local;
+	const CSimpleIniA::TKeyVal* m_global;
+
+	CSimpleIniA::TKeyVal::const_iterator m_liter;
+	CSimpleIniA::TKeyVal::const_iterator m_giter;
+
+public:
+	ConfigIterator(const CSimpleIniA::TKeyVal* local, const CSimpleIniA::TKeyVal* global);
+
+	virtual bool has_more() const;
+	virtual pair<const char*, const char*> next();
+	virtual ConfigIterator* clone();
+};
+
+ConfigIterator::ConfigIterator(const CSimpleIniA::TKeyVal* local, const CSimpleIniA::TKeyVal* global) {
+	m_local = local;
+	m_global = global;
+
+	if (m_local != NULL) {
+		m_liter = local->begin();
+	}
+	if (m_global != NULL) {
+		m_giter = global->begin();
+	}
+}
+
+bool ConfigIterator::has_more() const {
+	return (m_local != NULL && m_liter != m_local->end()) || (m_global != NULL && m_giter != m_global->end());
+}
+
+pair<const char*, const char*> ConfigIterator::next() {
+	pair<const char*, const char*> lnext(NULL, NULL);
+	pair<const char*, const char*> gnext(NULL, NULL);
+	pair<const char*, const char*> next(NULL, NULL);
+
+	if (m_local != NULL && m_liter != m_local->end()) {
+		lnext.first = m_liter->first.pItem;
+		lnext.second = m_liter->second;
+	}
+
+	if (m_global != NULL && m_giter != m_global->end()) {
+		gnext.first = m_giter->first.pItem;
+		gnext.second = m_giter->second;
+	}
+
+	// Continue in lockstep
+	// We can do this because they're both sorted on the key
+	if (lnext.first == NULL) {
+		if (gnext.first != NULL) {
+			next = gnext;
+			++m_giter;
+		}
+		// Otherwise they're both null, so fall through
+	} else if (gnext.first == NULL) {
+		next = lnext;
+		++m_liter;
+	} else {
+		// Neither are null, so let's see which one we should return
+		int cmp = strcmp(lnext.first, gnext.first);
+		if (cmp < 0) {
+			next = lnext;
+			++m_liter;
+		} else if (cmp > 0) {
+			next = gnext;
+			++m_giter;
+		} else {
+			// Local overrides global! Step both but return local
+			next = lnext;
+			++m_liter;
+			++m_giter;
+		}
+	}
+
+	return next;
+}
+
+ConfigIterator* ConfigIterator::clone() {
+	return new ConfigIterator(*this);
+}
 
 const string& Configuration::local_dir() {
 	static string cfg("");
@@ -133,6 +217,10 @@ bool Configuration::global_key_exists(const char* section, const char* key) cons
 
 bool Configuration::key_exists(const char* section, const char* key) const {
 	return global_key_exists(section, key) || local_key_exists(section, key);
+}
+
+ConstIterator<pair<const char*, const char*> > Configuration::get_section(const char* section) const {
+	return ConstIterator<pair<const char*, const char*> >(new ConfigIterator(m_local->GetSection(section), m_global->GetSection(section)));
 }
 
 const char* Configuration::get_string(const char* section, const char* key, const char* dflt) const {

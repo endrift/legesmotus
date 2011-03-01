@@ -25,6 +25,8 @@
 #ifndef LM_COMMON_CONFIGURATION_HPP
 #define LM_COMMON_CONFIGURATION_HPP
 
+#include "common/Iterator.hpp"
+
 #include <string>
 
 #include "thirdparty/simpleini/SimpleIni.h"
@@ -48,6 +50,7 @@ namespace LM {
 		bool global_key_exists(const char* section, const char* key) const;
 		bool key_exists(const char* section, const char* key) const;
 
+		ConstIterator<std::pair<const char*, const char*> > get_section(const char* section) const;
 		const char* get_string(const char* section, const char* key, const char* dflt = NULL) const;
 		int get_int(const char* section, const char* key, int dflt = NULL) const;
 		bool get_bool(const char* section, const char* key, bool dflt = NULL) const;

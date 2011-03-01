@@ -1,5 +1,5 @@
 /*
- * ai/ReactiveAIController.hpp
+ * ai/AIController.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,50 +22,32 @@
  * 
  */
 
-#ifndef LM_AI_REACTIVEAICONTROLLER_HPP
-#define LM_AI_REACTIVEAICONTROLLER_HPP
+#ifndef LM_AI_AICONTROLLER_HPP
+#define LM_AI_AICONTROLLER_HPP
 
 #include "client/Controller.hpp"
-#include <string>
-#include "common/physics.hpp"
+#include "AI.hpp"
 
 namespace LM {
-	class ReactiveAIController : public Controller {
-	
+	class AIController : public Controller {
 	private:
 		const static float MAX_AIM_VEL;
 		const static unsigned int AIM_TOLERANCE;
-		const static float BASE_AIM_UNCERTAINTY;
-		const static float QUICK_AIM_CHANGE_ERROR;
-		const static unsigned int VISION_RADIUS;
-		const static unsigned int GUN_ANGLE_CHANGE_RATE;
-		
-		enum AimReason {
-			JUMP,
-			FIRE
-		};
+	
+		AI* m_ai;
 	
 		int m_changes[2];
 		int m_changeset;
 		
 		float m_wanted_aim; // Radians
 		float m_curr_aim; // Radians
-		float m_aim_inaccuracy; // Radians
-		AimReason m_aim_reason; // Why are we aiming towards the desired location?
-		
-		void find_desired_aim(const GameLogic& state, uint32_t player_id);
-		
+		AI::AimReason m_aim_reason; // Why are we aiming towards the desired location?
+
 		float update_gun(); // Returns the absolute value of the difference between desired and actual angle.
-		
-		float check_player_visible(const b2World* world, const Player* start_player, const Player* other_player); // Returns the distance to the player, or -1 if not visible.
-		float check_gate_visible(const b2World* physics, const Player* start_player, const Gate* gate); // Returns the distance to the gate, or -1 if not visible.
-		
-		// For ray casts:
-		const Gate*		m_enemy_gate;		// The other team's gate.
 
 	public:
-		ReactiveAIController();
-		
+		AIController(AI* ai);
+	
 		virtual void update(uint64_t diff, const GameLogic& state, int player_id);
 
 		virtual int get_changes() const;

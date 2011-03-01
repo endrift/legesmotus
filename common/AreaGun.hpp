@@ -41,7 +41,7 @@ namespace LM {
 		Point point;
 	};
 
-	class AreaGun : public Weapon, public b2RayCastCallback  {
+	class AreaGun : public Weapon {
 	private:
 		// Weapon settings
 		uint64_t		m_freeze_on_hit;	// If the gun hits someone, for how long does it freeze them each time?
@@ -93,9 +93,6 @@ namespace LM {
 		virtual int		get_current_ammo () const;
 		
 		Packet::PlayerHit* generate_next_hit_packet(Packet::PlayerHit* p, Player* shooter);
-		
-		// Box2D Physics Callbacks
-		float32 ReportFixture(b2Fixture* fixture, const b2Vec2& point, const b2Vec2& normal, float32 fraction);
 	};
 }
 

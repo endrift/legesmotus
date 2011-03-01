@@ -26,6 +26,7 @@
 #include "common/PhysicsObject.hpp"
 #include <cstdlib>
 #include "common/team.hpp"
+#include "common/RayCast.hpp"
 
 using namespace LM;
 using namespace std;
@@ -151,86 +152,48 @@ float ReactiveAIController::update_gun() {
 }
 
 float ReactiveAIController::check_gate_visible(const b2World* physics, const Player* start_player, const Gate* gate) {
-	// XXX: Question - is there a way to avoid all this repeated code.
-
-	m_ray_start = Point(to_physics(start_player->get_x()), to_physics(start_player->get_y()));
-
-	m_ray_gate_team = 0;
-	m_ray_shortest_dist = -1;
+	b2Vec2 ray_start = b2Vec2(to_physics(start_player->get_x()), to_physics(start_player->get_y()));
 	
-	Point gate_pos = gate->get_position();
+	RayCast cast(physics);
+	cast.cast_at_obstacle(ray_start, gate, VISION_RADIUS, true);
 	
-	// Perform the first raycast, at the center of the gate.
-	physics->RayCast(this, b2Vec2(m_ray_start.x, m_ray_start.y), b2Vec2(to_physics(gate_pos.x), to_physics(gate_pos.y)));
+	RayCast::RayCastResult& result = cast.get_result();
 	
-	const b2Shape* shape = gate->get_bounding_shape();
-	if (shape->GetType() == b2Shape::e_polygon) {
-		const b2PolygonShape* polyshape = static_cast<const b2PolygonShape*>(shape);
-		int index = 0;
-		while (m_ray_gate_team != gate->get_team() && index < polyshape->GetVertexCount()) {
-			b2Vec2 vertex = polyshape->GetVertex(index);
-		
-			float x = to_physics(gate_pos.x) + vertex.x * cos(to_radians(gate->get_rotation()));
-			float y = to_physics(gate_pos.y) + vertex.y * sin(to_radians(gate->get_rotation()));
-			
-			m_ray_shortest_dist = -1;
-			physics->RayCast(this, b2Vec2(m_ray_start.x, m_ray_start.y), b2Vec2(x, y));
-			if (m_ray_gate_team == gate->get_team()) {
-				break;
-			}
-			index++;
-		}
-	}
-	
-	float shortest_dist = to_game(m_ray_shortest_dist);
-	
-	if (m_ray_gate_team != gate->get_team() || shortest_dist > VISION_RADIUS) {
+	PhysicsObject* hitobj = result.closest_object;
+	if (hitobj == NULL) {
 		return -1;
 	}
 	
-	return shortest_dist;
+	if (hitobj->get_type() != PhysicsObject::MAP_OBJECT || to_game(result.shortest_dist) > VISION_RADIUS || hitobj != gate) {
+		return -1;
+	}
+	
+	return to_game(result.shortest_dist);
 }
 
+
 float ReactiveAIController::check_player_visible(const b2World* physics, const Player* start_player, const Player* other_player) {
-	// XXX: Question - is there a way to avoid all this repeated code.	
+	RayCast cast(physics);
+	b2Vec2 start_pos = b2Vec2(to_physics(start_player->get_x()), to_physics(start_player->get_y()));
+	cast.cast_at_player(start_pos, other_player, VISION_RADIUS);
 	
-	m_ray_start = Point(to_physics(start_player->get_x()), to_physics(start_player->get_y()));
-
-	m_ray_hit_player = -1;
-	m_ray_shortest_dist = -1;
+	RayCast::RayCastResult& result = cast.get_result();
 	
-	// Perform the first raycast, at the center of the player.
-	physics->RayCast(this, b2Vec2(m_ray_start.x, m_ray_start.y), b2Vec2(to_physics(other_player->get_x()), to_physics(other_player->get_y())));
-
-	b2Body* body = other_player->get_physics_body();
-	// XXX: Do we just want to use the first fixture?
-	b2Fixture* fixture = &body->GetFixtureList()[0];
-	b2Shape* shape = fixture->GetShape();
-	if (shape->GetType() == b2Shape::e_polygon) {
-		b2PolygonShape* polyshape = static_cast<b2PolygonShape*>(shape);
-		int index = 0;
-		while (m_ray_hit_player != other_player->get_id() && index < polyshape->GetVertexCount()) {
-			b2Vec2 vertex = polyshape->GetVertex(index);
-		
-			float x = to_physics(other_player->get_x()) + vertex.x * cos(other_player->get_rotation_radians());
-			float y = to_physics(other_player->get_y()) + vertex.y * sin(other_player->get_rotation_radians());
-			
-			m_ray_shortest_dist = -1;
-			physics->RayCast(this, b2Vec2(m_ray_start.x, m_ray_start.y), b2Vec2(x, y));
-			if (m_ray_hit_player == other_player->get_id()) {
-				break;
-			}
-			index++;
-		}
-	}
-	
-	float shortest_dist = to_game(m_ray_shortest_dist);
-	
-	if (m_ray_hit_player != other_player->get_id() || shortest_dist > VISION_RADIUS) {
+	PhysicsObject* hitobj = result.closest_object;
+	if (hitobj == NULL) {
 		return -1;
 	}
 	
-	return shortest_dist;
+	if (hitobj->get_type() != PhysicsObject::PLAYER || to_game(result.shortest_dist) > VISION_RADIUS) {
+		return -1;
+	}
+	
+	Player* hitplayer = static_cast<Player*>(hitobj);
+	if (hitplayer->get_id() != other_player->get_id()) {
+		return -1;
+	}
+	
+	return result.shortest_dist;
 }
 
 void ReactiveAIController::update(uint64_t diff, const GameLogic& state, int player_id) {
@@ -252,7 +215,6 @@ void ReactiveAIController::update(uint64_t diff, const GameLogic& state, int pla
 	// Turn gun towards wanted aim.
 	float aimdiff = update_gun();
 	
-	// XXX: For now, we fire even if we're aiming to jump instead of to attack a player.
 	if (aimdiff <= AIM_TOLERANCE) {
 		if (m_aim_reason == FIRE) {
 			m_changes[m_changeset ^ 1] |= FIRE_WEAPON;
@@ -295,56 +257,4 @@ bool ReactiveAIController::message_is_team_only() const {
 }
 
 void ReactiveAIController::received_message(const Player* p, const wstring& message) {
-}
-
-float32 ReactiveAIController::ReportFixture(b2Fixture* fixture, const b2Vec2& point, const b2Vec2& normal, float32 fraction) {
-	b2Body* body = fixture->GetBody();
-	
-	if (body->GetUserData() == NULL) {
-		WARN("Body has no user data!");
-		return 1;
-	}
-	
-	if (fraction < 0) {
-		return 0;
-	}
-	
-	PhysicsObject* hitobj = static_cast<PhysicsObject*>(body->GetUserData());
-	
-	if (fixture->IsSensor()) {
-		return 1;
-	}
-	
-	Point end = Point(point.x, point.y);
-	float dist = (end-m_ray_start).get_magnitude();
-	
-	if (m_ray_shortest_dist != -1 && dist > m_ray_shortest_dist) {
-		return 1;
-	}
-	m_ray_shortest_dist = dist;
-	
-	if (hitobj->get_type() == PhysicsObject::MAP_OBJECT) {
-		MapObject* object = static_cast<MapObject*>(hitobj);
-		
-		if (hitobj == m_enemy_gate) {
-			m_ray_gate_team = m_enemy_gate->get_team();
-		} else {
-			m_ray_gate_team = 0;
-		}
-		
-		if (!object->is_collidable()) {
-			return 1;
-		}
-	} else {
-		m_ray_gate_team = 0;
-	}
-	
-	if (hitobj->get_type() == PhysicsObject::PLAYER) {
-		Player* hitplayer = static_cast<Player*>(hitobj);
-		m_ray_hit_player = hitplayer->get_id();
-	} else {
-		m_ray_hit_player = -1;
-	}
-	
-	return 1;
 }
