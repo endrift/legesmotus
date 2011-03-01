@@ -27,6 +27,10 @@ include_directories(${PROJECT_BINARY_DIR}/common)
 link_directories(${PROJECT_BINARY_DIR}/common)
 link_directories(${PROJECT_BINARY_DIR}/client)
 
+if(CMAKE_HOST_WIN32)
+set(LIBS ${LIBS} glew32 wsock32)
+endif()
+
 # Find Box2d
 if(NOT BOX2D_INCLUDE_DIR)
 find_path(BOX2D_INCLUDE_DIR Box2D/Box2D.h
