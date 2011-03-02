@@ -1,5 +1,5 @@
 LIBSRCS := ReactiveAIController.cpp AI.cpp FuzzyLogic.cpp FuzzyCategory.cpp FuzzyEnvironment.cpp AIController.cpp \
-	FuzzyLogicAI.cpp
+	FuzzyLogicAI.cpp SparseIntersectMap.cpp
 BINSRCS := simplemain.cpp fuzzyaimain.cpp
 LIBRARY := ../liblmai.a
 
