@@ -60,7 +60,7 @@ public:
 
 	virtual bool has_more() const;
 	virtual pair<const char*, const char*> next();
-	virtual ConfigIterator* clone();
+	virtual ConfigIterator* clone() const;
 };
 
 ConfigIterator::ConfigIterator(const CSimpleIniA::TKeyVal* local, const CSimpleIniA::TKeyVal* global) {
@@ -125,7 +125,7 @@ pair<const char*, const char*> ConfigIterator::next() {
 	return next;
 }
 
-ConfigIterator* ConfigIterator::clone() {
+ConfigIterator* ConfigIterator::clone() const {
 	return new ConfigIterator(*this);
 }
 

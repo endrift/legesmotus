@@ -117,7 +117,7 @@ namespace LM {
 			virtual ~OpaqueIterator() {}
 			virtual bool has_more() const = 0;
 			virtual T next() = 0;
-			virtual OpaqueIterator* clone() = 0;
+			virtual OpaqueIterator* clone() const = 0;
 		};
 
 		class Null : public OpaqueIterator{
@@ -130,7 +130,7 @@ namespace LM {
 				return T();
 			}
 
-			virtual Null* clone() {
+			virtual Null* clone() const {
 				return new Null();
 			}
 		};
@@ -155,7 +155,7 @@ namespace LM {
 				return *(m_iter++);
 			}
 
-			virtual StdIterator<I>* clone() {
+			virtual StdIterator<I>* clone() const {
 				return new StdIterator(*this);
 			}
 		};
