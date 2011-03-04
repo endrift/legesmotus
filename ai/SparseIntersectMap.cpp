@@ -30,6 +30,56 @@
 using namespace LM;
 using namespace std;
 
+class SparseIntersectMap::ConstMapIterator : public ConstIterator<const SparseIntersectMap::Intersect&>::OpaqueIterator {
+private:
+	const SparseIntersectMap* m_map;
+	int m_bucket;
+	int m_i;
+
+	void seek_next();
+
+public:
+	ConstMapIterator(const SparseIntersectMap* map);
+
+	virtual bool has_more() const;
+	virtual const SparseIntersectMap::Intersect& next();
+	virtual ConstMapIterator* clone() const;
+};
+
+SparseIntersectMap::ConstMapIterator::ConstMapIterator(const SparseIntersectMap* map) {
+	m_map = map;
+	m_bucket = 0;
+	m_i = 0;
+	seek_next();
+}
+
+void SparseIntersectMap::ConstMapIterator::seek_next() {
+	ASSERT(m_bucket < m_map->m_nbuckets);
+
+	if (++m_i < m_map->m_buckets[m_bucket].nsize) {
+		return;
+	}
+	for (m_i = 0; m_bucket < m_map->m_nbuckets; ++m_bucket) {
+		if (m_map->m_buckets[m_bucket].nsize) {
+			return;
+		}
+	}
+}
+
+bool SparseIntersectMap::ConstMapIterator::has_more() const {
+	return m_bucket >= m_map->m_nbuckets;
+}
+
+const SparseIntersectMap::Intersect& SparseIntersectMap::ConstMapIterator::next() {
+	const Intersect& n = m_map->m_buckets[m_bucket].elts[m_i].i;
+	seek_next();
+	return n;
+}
+
+SparseIntersectMap::ConstMapIterator* SparseIntersectMap::ConstMapIterator::clone() const {
+	return new ConstMapIterator(*this);
+}
+
 SparseIntersectMap::SparseIntersectMap(int granularity, int est_elts) {
 	m_grain = granularity;
 	m_nbuckets = est_elts >> 6;
@@ -63,7 +113,7 @@ void SparseIntersectMap::set(float x, float y, float theta, const Intersect& ise
 	int gx = grain_x(x);
 	int gy = grain_y(y);
 	int gt = grain_theta(theta);
-	Bucket& bucket = m_buckets[make_hash(gx, gy, gt)];
+	Bucket& bucket = m_buckets[make_hash(gx, gy, gt) % m_nbuckets];
 
 	ASSERT(bucket.psize >= bucket.nsize);
 
@@ -104,7 +154,7 @@ bool SparseIntersectMap::get(float x, float y, float theta, Intersect* isect) co
 	int gx = grain_x(x);
 	int gy = grain_y(y);
 	int gt = grain_theta(theta);
-	const Bucket& bucket = m_buckets[make_hash(gx, gy, gt)];
+	const Bucket& bucket = m_buckets[make_hash(gx, gy, gt) % m_nbuckets];
 
 	for (int i = 0; i < bucket.nsize; ++i) {
 		const Element& e = bucket.elts[i];
@@ -115,6 +165,10 @@ bool SparseIntersectMap::get(float x, float y, float theta, Intersect* isect) co
 	}
 
 	return false;
+}
+
+ConstIterator<const SparseIntersectMap::Intersect&> SparseIntersectMap::iterate() const {
+	return ConstIterator<const SparseIntersectMap::Intersect&>(new ConstMapIterator(this));
 }
 
 float SparseIntersectMap::get_granularity_x() const {

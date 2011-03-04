@@ -25,8 +25,14 @@
 #ifndef LM_AI_SPARSEINTERSECTMAP_HPP
 #define LM_AI_SPARSEINTERSECTMAP_HPP
 
+#include "common/Iterator.hpp"
+
 namespace LM {
 	class SparseIntersectMap {
+		class ConstMapIterator;
+
+		friend class SparseIntersectMap::ConstMapIterator;
+
 	public:
 		struct Intersect {
 			int x;
@@ -63,6 +69,8 @@ namespace LM {
 
 		void set(float x, float y, float theta, const Intersect& isect);
 		bool get(float x, float y, float theta, Intersect* isect) const;
+
+		ConstIterator<const Intersect&> iterate() const;
 
 		float get_granularity_x() const;
 		float get_granularity_y() const;
