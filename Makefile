@@ -115,7 +115,7 @@ serverscanner: common
 
 metaserver: common
 
-tests: common server client gui
+tests: common server client gui ai
 
 else
 default:
