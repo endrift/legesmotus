@@ -82,8 +82,12 @@ SparseIntersectMap::ConstMapIterator* SparseIntersectMap::ConstMapIterator::clon
 
 SparseIntersectMap::SparseIntersectMap(int granularity, int est_elts) {
 	m_grain = granularity;
-	m_nbuckets = est_elts >> 6;
+	m_nbuckets = est_elts >> 5;
+	if (m_nbuckets < 16) {
+		m_nbuckets = 16;
+	}
 	m_buckets = new Bucket[m_nbuckets];
+	memset(m_buckets, 0, m_nbuckets * sizeof(Bucket));
 }
 
 SparseIntersectMap::~SparseIntersectMap() {
@@ -118,7 +122,7 @@ void SparseIntersectMap::set(float x, float y, float theta, const Intersect& ise
 	ASSERT(bucket.psize >= bucket.nsize);
 
 	if (bucket.psize == 0) {
-		bucket.psize = 16;
+		bucket.psize = 32;
 		bucket.elts = new Element[bucket.psize];
 		bucket.elts[0].x = gx;
 		bucket.elts[0].y = gy;
