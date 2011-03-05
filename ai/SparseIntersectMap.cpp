@@ -98,7 +98,12 @@ SparseIntersectMap::~SparseIntersectMap() {
 }
 
 int SparseIntersectMap::make_hash(int x, int y, int theta) const {
-	return x + y + theta;
+	int hash = x + y + theta;
+	// Ensure hash is non-negative
+	if (hash < 0) {
+		hash = -1 - hash;
+	}
+	return hash % m_nbuckets;
 }
 
 int SparseIntersectMap::grain_x(float x) const {
@@ -110,14 +115,14 @@ int SparseIntersectMap::grain_y(float y) const {
 }
 
 int SparseIntersectMap::grain_theta(float theta) const {
-	return int(theta / 360.0f * 65536.0f) >> m_grain;
+	return int(theta / 360.0f * 8192.0f) >> m_grain;
 }
 
 void SparseIntersectMap::set(float x, float y, float theta, const Intersect& isect) {
 	int gx = grain_x(x);
 	int gy = grain_y(y);
 	int gt = grain_theta(theta);
-	Bucket& bucket = m_buckets[make_hash(gx, gy, gt) % m_nbuckets];
+	Bucket& bucket = m_buckets[make_hash(gx, gy, gt)];
 
 	ASSERT(bucket.psize >= bucket.nsize);
 
@@ -158,7 +163,7 @@ bool SparseIntersectMap::get(float x, float y, float theta, Intersect* isect) co
 	int gx = grain_x(x);
 	int gy = grain_y(y);
 	int gt = grain_theta(theta);
-	const Bucket& bucket = m_buckets[make_hash(gx, gy, gt) % m_nbuckets];
+	const Bucket& bucket = m_buckets[make_hash(gx, gy, gt)];
 
 	for (int i = 0; i < bucket.nsize; ++i) {
 		const Element& e = bucket.elts[i];
@@ -184,5 +189,5 @@ float SparseIntersectMap::get_granularity_y() const {
 }
 
 float SparseIntersectMap::get_granularity_theta() const {
-	return (1 << m_grain) * 360.0f / 65536.0f;
+	return (1 << m_grain) * 360.0f / 8192.0f;
 }
