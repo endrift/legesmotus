@@ -28,6 +28,7 @@
 #include <string>
 #include <list>
 #include <ctype.h>
+#include "Exception.hpp"
 
 #define _S(x) #x
 #define STRING(x) _S(x)
@@ -53,7 +54,6 @@
 #define BREAK()
 #endif
 
-#include "Exception.hpp"
 #include "timer.hpp"
 #include <iostream>
 
@@ -81,6 +81,7 @@
 #define DEBUG(x)
 #define STUB(x)
 
+#define BREAK()
 
 #endif
 
