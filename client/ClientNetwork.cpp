@@ -1,5 +1,5 @@
 /*
- * newclient/ClientNetwork.cpp
+ * client/ClientNetwork.cpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 

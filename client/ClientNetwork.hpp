@@ -1,5 +1,5 @@
 /*
- * newclient/ClientNetwork.hpp
+ * client/ClientNetwork.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,8 +22,8 @@
  * 
  */
 
-#ifndef LM_NEWCLIENT_CLIENTNETWORK_HPP
-#define LM_NEWCLIENT_CLIENTNETWORK_HPP
+#ifndef LM_CLIENT_CLIENTNETWORK_HPP
+#define LM_CLIENT_CLIENTNETWORK_HPP
 
 #include "common/IPAddress.hpp"
 #include "common/CommonNetwork.hpp"

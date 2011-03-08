@@ -22,8 +22,8 @@
  * 
  */
 
-#ifndef LM_NEWCLIENT_GAMELOGIC_HPP
-#define LM_NEWCLIENT_GAMELOGIC_HPP
+#ifndef LM_COMMON_GAMELOGIC_HPP
+#define LM_COMMON_GAMELOGIC_HPP
 
 #include "common/Player.hpp"
 #include "common/physics.hpp"

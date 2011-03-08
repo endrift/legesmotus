@@ -22,8 +22,8 @@
  * 
  */
 
-#ifndef LM_NEWCLIENT_CLIENT_HPP
-#define LM_NEWCLIENT_CLIENT_HPP
+#ifndef LM_CLIENT_CLIENT_HPP
+#define LM_CLIENT_CLIENT_HPP
 
 #include "ClientNetwork.hpp"
 #include "common/Packet.hpp"

@@ -1,5 +1,5 @@
 /*
- * newclient/Controller.cpp
+ * client/Controller.cpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 

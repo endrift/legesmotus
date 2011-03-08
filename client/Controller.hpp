@@ -1,5 +1,5 @@
 /*
- * newclient/Controller.hpp
+ * client/Controller.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,8 +22,8 @@
  * 
  */
 
-#ifndef LM_NEWCLIENT_CONTROLLER_HPP
-#define LM_NEWCLIENT_CONTROLLER_HPP
+#ifndef LM_CLIENT_CONTROLLER_HPP
+#define LM_CLIENT_CONTROLLER_HPP
 
 #include <string>
 #include <stdint.h>
