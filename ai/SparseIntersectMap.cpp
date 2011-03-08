@@ -24,6 +24,7 @@
 
 #include "SparseIntersectMap.hpp"
 #include "common/misc.hpp"
+#include "common/file.hpp"
 
 #include <cstring>
 
@@ -89,6 +90,32 @@ SparseIntersectMap::SparseIntersectMap(int granularity, int est_elts) {
 	}
 	m_buckets = new Bucket[m_nbuckets];
 	memset(m_buckets, 0, m_nbuckets * sizeof(Bucket));
+}
+
+SparseIntersectMap::SparseIntersectMap(std::istream* f) {
+	try {
+		static uint16_t v = 0;
+		expect(f, "LMSM", 4);
+		expect(f, &v, 2);
+		read32(f, &m_count);
+		read32(f, &m_grain);
+		read32(f, &m_nbuckets);
+		for (int i = 0; i < m_nbuckets; ++i) {
+			Bucket& bucket = m_buckets[i];
+			read32(f, &bucket.psize);
+			int j;
+			for (j = 0; j < bucket.psize; ++j) {
+				read32(f, &bucket.elts[j].x);
+				read32(f, &bucket.elts[j].y);
+				read32(f, &bucket.elts[j].t);
+				read32(f, &bucket.elts[j].i.x);
+				read32(f, &bucket.elts[j].i.y);
+				read32(f, &bucket.elts[j].i.dist);
+			}
+		}
+	} catch (const Exception&) {
+		throw Exception("Could not read file");
+	}
 }
 
 SparseIntersectMap::~SparseIntersectMap() {
@@ -186,6 +213,30 @@ int SparseIntersectMap::count() const {
 
 ConstIterator<const SparseIntersectMap::Intersect&> SparseIntersectMap::iterate() const {
 	return ConstIterator<const SparseIntersectMap::Intersect&>(new ConstMapIterator(this));
+}
+
+void SparseIntersectMap::write(ostream* f) const {
+	(*f) << "LMSM";
+	write16(f, 0);
+	write32(f, m_count);
+	write32(f, m_grain);
+	write32(f, m_nbuckets);
+	for (int i = 0; i < m_nbuckets; ++i) {
+		const Bucket& bucket = m_buckets[i];
+		write32(f, bucket.psize);
+		int j;
+		for (j = 0; j < bucket.nsize; ++j) {
+			write32(f, bucket.elts[j].x);
+			write32(f, bucket.elts[j].y);
+			write32(f, bucket.elts[j].t);
+			write32(f, bucket.elts[j].i.x);
+			write32(f, bucket.elts[j].i.y);
+			write32(f, bucket.elts[j].i.dist);
+		}
+		for (; j < bucket.psize; ++j) {
+			write0(f, 4*6);
+		}
+	}
 }
 
 float SparseIntersectMap::get_granularity_x() const {

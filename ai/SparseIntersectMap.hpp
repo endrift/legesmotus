@@ -67,6 +67,7 @@ namespace LM {
 
 	public:
 		SparseIntersectMap(int granularity, int est_elts);
+		SparseIntersectMap(std::istream* f);
 		~SparseIntersectMap();
 
 		void set(float x, float y, float theta, const Intersect& isect);
@@ -75,6 +76,7 @@ namespace LM {
 		int count() const;
 
 		ConstIterator<const Intersect&> iterate() const;
+		void write(std::ostream* f) const;
 
 		float get_granularity_x() const;
 		float get_granularity_y() const;
