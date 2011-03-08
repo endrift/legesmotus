@@ -68,10 +68,12 @@ void test_random(int size = 0x100000, int seed = 0) {
 		m.get(rand(), rand(), 0, &itest);
 		test(isect, itest);
 	}
+
+	ASSERT(m.count() == size);
 }
 
 extern "C" int main(int argc, char* argv[]) {
-	RUN_TEST(test_incremental());
+	//RUN_TEST(test_incremental());
 	RUN_TEST(test_random(0x1000));
 	RUN_TEST(test_random(0x10000));
 	RUN_TEST(test_random(0x100000));

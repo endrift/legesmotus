@@ -82,6 +82,7 @@ SparseIntersectMap::ConstMapIterator* SparseIntersectMap::ConstMapIterator::clon
 
 SparseIntersectMap::SparseIntersectMap(int granularity, int est_elts) {
 	m_grain = granularity;
+	m_count = 0;
 	m_nbuckets = est_elts >> 5;
 	if (m_nbuckets < 16) {
 		m_nbuckets = 16;
@@ -115,7 +116,7 @@ int SparseIntersectMap::grain_y(float y) const {
 }
 
 int SparseIntersectMap::grain_theta(float theta) const {
-	return int(theta / 360.0f * 8192.0f) >> m_grain;
+	return int(theta / 360.0f * 4096.0f) >> m_grain;
 }
 
 void SparseIntersectMap::set(float x, float y, float theta, const Intersect& isect) {
@@ -134,6 +135,8 @@ void SparseIntersectMap::set(float x, float y, float theta, const Intersect& ise
 		bucket.elts[0].t = gt;
 		bucket.elts[0].i = isect;
 		bucket.nsize = 1;
+		++m_count;
+		return;
 	}
 
 	for (int i = 0; i < bucket.nsize; ++i) {
@@ -157,6 +160,7 @@ void SparseIntersectMap::set(float x, float y, float theta, const Intersect& ise
 	bucket.elts[bucket.nsize].t = gt;
 	bucket.elts[bucket.nsize].i = isect;
 	++bucket.nsize;
+	++m_count;
 }
 
 bool SparseIntersectMap::get(float x, float y, float theta, Intersect* isect) const {
@@ -176,6 +180,10 @@ bool SparseIntersectMap::get(float x, float y, float theta, Intersect* isect) co
 	return false;
 }
 
+int SparseIntersectMap::count() const {
+	return m_count;
+}
+
 ConstIterator<const SparseIntersectMap::Intersect&> SparseIntersectMap::iterate() const {
 	return ConstIterator<const SparseIntersectMap::Intersect&>(new ConstMapIterator(this));
 }
@@ -189,5 +197,5 @@ float SparseIntersectMap::get_granularity_y() const {
 }
 
 float SparseIntersectMap::get_granularity_theta() const {
-	return (1 << m_grain) * 360.0f / 8192.0f;
+	return (1 << m_grain) * 360.0f / 4096.0f;
 }

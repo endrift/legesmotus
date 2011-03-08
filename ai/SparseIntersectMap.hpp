@@ -37,6 +37,7 @@ namespace LM {
 		struct Intersect {
 			int x;
 			int y;
+			float dist;
 		};
 
 	private:
@@ -56,6 +57,7 @@ namespace LM {
 		Bucket* m_buckets;
 		int m_nbuckets;
 		int m_grain;
+		int m_count;
 
 		int make_hash(int x, int y, int theta) const;
 
@@ -69,6 +71,8 @@ namespace LM {
 
 		void set(float x, float y, float theta, const Intersect& isect);
 		bool get(float x, float y, float theta, Intersect* isect) const;
+
+		int count() const;
 
 		ConstIterator<const Intersect&> iterate() const;
 
