@@ -262,7 +262,7 @@ unsigned char* GLESContext::setup_texture(PixelFormat fmt, const unsigned char* 
 		*type = LM_GL(UNSIGNED_BYTE);
 		break;
 	default:
-		throw new Exception("Invalid image format");
+		throw Exception("Invalid image format");
 	}
 	
 

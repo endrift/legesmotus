@@ -82,7 +82,7 @@ namespace LM {
 	void ResourceCache::add(const std::string& name, const T& res) {
 		instance_map<T>& instances = get_instances<T>();
 		if (name.empty()) {
-			throw new Exception("Can't add a nameless resource!");
+			throw Exception("Can't add a nameless resource!");
 		}
 
 		if (instances.find(name) == instances.end()) {

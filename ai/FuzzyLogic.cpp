@@ -32,7 +32,7 @@ using namespace LM;
 using namespace std;
 
 float FuzzyLogic::Rule::apply(const FuzzyEnvironment& values, long id) const {
-	throw new Exception("Null Rule invoked");
+	throw Exception("Null Rule invoked");
 }
 
 void FuzzyLogic::Rule::apply(const FuzzyEnvironment& values, map<long, float>* output) const {

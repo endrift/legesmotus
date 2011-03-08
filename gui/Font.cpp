@@ -47,7 +47,7 @@ Font::Font(const std::string& filename, float size, ResourceCache* cache, bool i
 	if (!m_init) {
 		err = FT_Init_FreeType(&m_library);
 		if (err) {
-			throw new Exception("Could not initialize FreeType");
+			throw Exception("Could not initialize FreeType");
 		}
 		m_init = true;
 	}
@@ -58,12 +58,12 @@ Font::Font(const std::string& filename, float size, ResourceCache* cache, bool i
 
 	err = FT_New_Face(m_library, (cache->get_root() + "/fonts/" + filename).c_str(), 0, &m_face);
 	if (err) {
-		throw new Exception("Could not initialize font");
+		throw Exception("Could not initialize font");
 	}
 
 	err = FT_Set_Char_Size(m_face, int(size*(1<<6)), 0, 0, 0);
 	if (err) {
-		throw new Exception("Could not initialize font size");
+		throw Exception("Could not initialize font size");
 	}
 
 	m_cache = cache;

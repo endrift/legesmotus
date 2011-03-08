@@ -61,7 +61,7 @@
 	do {             \
 		if (!(x)) {  \
 			BREAK(); \
-			throw new AssertionFailure("Assertion failed at " __FILE__ ":" STRING(__LINE__) ": " #x); \
+			throw AssertionFailure("Assertion failed at " __FILE__ ":" STRING(__LINE__) ": " #x); \
 		}            \
 	} while (0)
 
@@ -85,7 +85,7 @@
 
 #endif
 
-#define FATAL(x) throw new Exception("FATAL: " __FILE__ ":" STRING(__LINE__) ": " #x)
+#define FATAL(x) throw Exception("FATAL: " __FILE__ ":" STRING(__LINE__) ": " #x)
 
 // Signals to the program that it should clean up and exit; implemented elsewhere
 extern "C" void clean_exit();

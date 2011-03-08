@@ -210,7 +210,7 @@ void Image::reload(bool autogen) {
 	s << m_cache->get_root() << "/" << m_image_dir << "/" << m_name;
 	SDL_Surface *image = IMG_Load(s.str().c_str());
 	if (image == NULL) {
-		throw new Exception("Image could not be loaded");
+		throw Exception("Image could not be loaded");
 	}
 
 	m_width = image->w;
@@ -236,7 +236,7 @@ void Image::reload(bool autogen) {
 		break;
 
 	default:
-		throw new Exception("Can't handle unknown image depth");
+		throw Exception("Can't handle unknown image depth");
 	}
 
 	if (autogen) {
