@@ -53,13 +53,14 @@ namespace LM {
 		void initialize_logic();
 		void populate_environment();
 
+		virtual void step(const GameLogic& logic, uint64_t diff);
+
 	public:
 		FuzzyLogicAI(const Configuration* config, const GameLogic* logic = NULL);
 		virtual ~FuzzyLogicAI();
 		
 		
 		virtual void randomize_aim_inaccuracy();
-		virtual void update(const GameLogic& logic, uint64_t diff);
 		virtual float find_desired_aim();
 		virtual AimReason get_aim_reason();
 	};

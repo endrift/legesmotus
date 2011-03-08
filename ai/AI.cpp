@@ -71,6 +71,23 @@ void AI::randomize_aim_inaccuracy() {
 }
 
 void AI::update(const GameLogic& logic, uint64_t diff) {
+	set_logic(&logic);
+
+	// Deal with MapGrapher if necessary:
+	// If we don't know anything about the map, start learning about it.
+	if (get_map_graph() == NULL) {
+		initialize_map_grapher();
+	}
+
+	// If the MapGrapher is not done, continue it:
+	if (!m_grapher.is_done_mapping()) {
+		m_grapher.do_mapping(1);
+	}
+	
+	step(logic, diff);
+}
+
+void AI::step(const GameLogic& logic, uint64_t diff) {
 	// Do nothing.
 }
 
@@ -178,4 +195,19 @@ bool AI::is_active(const Player* player) const {
 
 bool AI::grabbing_wall(const Player* player) const {
 	return player->is_grabbing_obstacle();
+}
+
+SparseIntersectMap* AI::get_map_graph() {
+	return m_grapher.get_graph();
+}
+
+void AI::initialize_map_grapher() {
+	b2World* world = const_cast<b2World*>(m_logic->get_world());
+
+	if (world == NULL) {
+		return;
+	}
+	// NOTE: Const cast here is necessary because MapGrapher can only work
+	// with a non-const b2World for now, due to b2World's GetBodyList() method.
+	m_grapher.load_map(m_logic, world);
 }

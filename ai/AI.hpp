@@ -28,12 +28,14 @@
 #include <string>
 #include "common/physics.hpp"
 #include "common/GameLogic.hpp"
+#include "MapGrapher.hpp"
 #include <list>
 
 namespace LM {
 	class Player;
 	class PhysicsObject;
 	class Gate;
+	class SparseIntersectMap;
 
 	class AI {
 	private:
@@ -51,9 +53,13 @@ namespace LM {
 		const Player* m_player;
 		const Player* m_other_player;
 		
+		MapGrapher m_grapher;
+		
 		std::list<std::pair<const char*, float> > m_varlist;
 		
 		RayCastResult m_ray_cast;
+		
+		virtual void step(const GameLogic& logic, uint64_t diff);
 		
 	public:
 		enum AimReason {
@@ -66,7 +72,7 @@ namespace LM {
 		virtual ~AI();
 		
 		virtual void randomize_aim_inaccuracy();
-		virtual void update(const GameLogic& logic, uint64_t diff);
+		void update(const GameLogic& logic, uint64_t diff);
 		virtual float find_desired_aim();
 		virtual AimReason get_aim_reason();
 		
@@ -113,6 +119,10 @@ namespace LM {
 		// Boolean methods that could be necessary, but cannot be converted into floating point values:
 		bool is_active(const Player* player) const;
 		bool grabbing_wall(const Player* player) const;
+		
+		SparseIntersectMap* get_map_graph();
+		
+		void initialize_map_grapher();
 	};
 }
 

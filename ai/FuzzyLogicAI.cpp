@@ -266,8 +266,7 @@ void FuzzyLogicAI::randomize_aim_inaccuracy() {
 	m_aim_inaccuracy = (float)rand()/(float)RAND_MAX * uncertainty * 2 - uncertainty;
 }
 
-void FuzzyLogicAI::update(const GameLogic& logic, uint64_t diff) {
-	set_logic(&logic);
+void FuzzyLogicAI::step(const GameLogic& logic, uint64_t diff) {
 	populate_environment();
 	
 	const Player* my_player = get_own_player();

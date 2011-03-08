@@ -68,6 +68,7 @@ float RayCast::do_ray_cast(const b2Vec2& start_point, float direction, float dis
 	m_ray_cast.start_object = starting_object;
 	m_ray_cast.closest_object = NULL;
 	m_ray_cast.shortest_dist = -1;
+	m_ray_cast.hit_point = b2Vec2(-1, -1);
 	
 	if (m_physics == NULL) {
 		return -1;
