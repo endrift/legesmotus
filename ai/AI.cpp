@@ -48,7 +48,7 @@ void AI::set_logic(const GameLogic* logic) {
 	m_logic = logic;
 }
 
-const GameLogic* AI::get_logic() {
+const GameLogic* AI::get_logic() const {
 	return m_logic;
 }
 
@@ -56,7 +56,7 @@ void AI::set_own_player(const Player* player) {
 	m_player = player;
 }
 
-const Player* AI::get_own_player() {
+const Player* AI::get_own_player() const {
 	return m_player;
 }
 		
@@ -64,7 +64,7 @@ void AI::set_other_player(const Player* other_player) {
 	m_other_player = other_player;
 }
 
-const Player* AI::get_other_player() {
+const Player* AI::get_other_player() const {
 	return m_other_player;
 }
 
@@ -148,7 +148,7 @@ float AI::gun_angle_to_player(const Player* player, const Player* other) const {
 	return fabs(wanted_angle - curr_aim);
 }
 
-float AI::time_to_impact(const Player* player) {
+float AI::time_to_impact(const Player* player) const {
 	const b2World* world = m_logic->get_world();
 
 	if (world == NULL || grabbing_wall(player)) {
@@ -204,13 +204,14 @@ SparseIntersectMap* AI::get_map_graph() {
 }
 
 void AI::initialize_map_grapher() {
+	// NOTE: Const cast here is necessary because MapGrapher can only work
+	// with a non-const b2World for now, due to b2World's GetBodyList() method.
+	// This is fixed in Box2D's trunk, but not in any released version yet
 	b2World* world = const_cast<b2World*>(m_logic->get_world());
 
 	if (world == NULL) {
 		return;
 	}
-	// NOTE: Const cast here is necessary because MapGrapher can only work
-	// with a non-const b2World for now, due to b2World's GetBodyList() method.
 	m_grapher.load_map(m_logic, world);
 	
 	m_pathfinder.set_graph(get_map_graph());

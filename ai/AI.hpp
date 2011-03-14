@@ -41,13 +41,13 @@ namespace LM {
 	class AI {
 	private:
 		struct RayCastResult {
-			PhysicsObject*	start_object;	// The object (if any) where this ray started
-			b2Vec2		ray_start;	// The starting point of the ray cast
-			float		ray_direction;	// The angle (in radians) at which the ray was cast
-			b2Vec2		ray_end;	// The maximum point on the ray
-			PhysicsObject* 	closest_object; // The closest object
-			float		shortest_dist;	// The closest hit-point on that object
-			b2Vec2		hit_point;	// The point where the ray hit
+			PhysicsObject* start_object; // The object (if any) where this ray started
+			b2Vec2 ray_start; // The starting point of the ray cast
+			float ray_direction; // The angle (in radians) at which the ray was cast
+			b2Vec2 ray_end; // The maximum point on the ray
+			PhysicsObject* closest_object; // The closest object
+			float shortest_dist; // The closest hit-point on that object
+			b2Vec2 hit_point; // The point where the ray hit
 		};
 		
 		const GameLogic* m_logic;
@@ -80,13 +80,13 @@ namespace LM {
 		virtual AimReason get_aim_reason();
 		
 		void set_logic(const GameLogic* logic);
-		const GameLogic* get_logic();
+		const GameLogic* get_logic() const;
 		
 		void set_own_player(const Player* player);
-		const Player* get_own_player();
+		const Player* get_own_player() const;
 		
 		void set_other_player(const Player* other_player);
-		const Player* get_other_player();
+		const Player* get_other_player() const;
 		
 		// Begin methods used to get various data that can be passed to the Fuzzy Logic system.
 		
@@ -111,7 +111,7 @@ namespace LM {
 		
 		// Distance to nearest object that could be hit by the player divided by the player's velocity
 		// Note: if the object that could be hit is moving, this will not check whether it will actually hit
-		float time_to_impact(const Player* player);
+		float time_to_impact(const Player* player) const;
 		
 		// Distance to the player/gate (game units, not physics), if it can be seen, or max float value if not.
 		float can_see_player(const Player* player, const Player* other_player, float max_radius = -1);
