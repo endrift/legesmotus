@@ -30,6 +30,7 @@
 #include "common/GameLogic.hpp"
 #include "MapGrapher.hpp"
 #include <list>
+#include "Pathfinder.hpp"
 
 namespace LM {
 	class Player;
@@ -53,6 +54,8 @@ namespace LM {
 		const Player* m_player;
 		const Player* m_other_player;
 		
+		Pathfinder m_pathfinder;
+
 		MapGrapher m_grapher;
 		
 		std::list<std::pair<const char*, float> > m_varlist;
@@ -123,6 +126,9 @@ namespace LM {
 		SparseIntersectMap* get_map_graph();
 		
 		void initialize_map_grapher();
+		
+		bool find_path(const Player* my_player, float end_x, float end_y, float tolerance, std::vector<SparseIntersectMap::Intersect>& path);
+		
 	};
 }
 

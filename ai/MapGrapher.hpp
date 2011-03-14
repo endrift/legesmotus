@@ -45,6 +45,8 @@ namespace LM {
 		const static int GRANULARITY;
 		const static int MAX_SIZE;
 		
+		const static bool DOUBLE_CAST=false;
+		
 		float dist_change;
 		float theta_change;
 		
@@ -59,6 +61,7 @@ namespace LM {
 		b2World* m_physics;
 		std::list<b2Body*> m_objects;
 		RayCast m_ray_cast;
+		RayCast m_ray_cast2;
 		
 		int m_width;
 		int m_height;

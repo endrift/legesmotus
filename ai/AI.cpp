@@ -29,6 +29,8 @@
 #include "common/Weapon.hpp"
 #include "common/PhysicsObject.hpp"
 #include "common/RayCast.hpp"
+#include "SparseIntersectMap.hpp"
+#include "Pathfinder.hpp"
 
 using namespace LM;
 using namespace std;
@@ -210,4 +212,34 @@ void AI::initialize_map_grapher() {
 	// NOTE: Const cast here is necessary because MapGrapher can only work
 	// with a non-const b2World for now, due to b2World's GetBodyList() method.
 	m_grapher.load_map(m_logic, world);
+	
+	m_pathfinder.set_graph(get_map_graph());
+}
+
+bool AI::find_path(const Player* my_player, float end_x, float end_y, float tolerance, std::vector<SparseIntersectMap::Intersect>& path) {
+	uint64_t pathfind_start_time = get_ticks();
+
+	b2Body* body = my_player->get_physics_body();
+	// XXX: Do we just want to use the first fixture?
+	b2Fixture* fixture = &body->GetFixtureList()[0];
+	b2Shape* shape = fixture->GetShape();
+	bool path_found = false;
+	if (shape->GetType() == b2Shape::e_polygon) {
+		b2PolygonShape* polyshape = static_cast<b2PolygonShape*>(shape);
+		int index = 0;
+		while (index < polyshape->GetVertexCount()) {
+			b2Vec2 vertex = polyshape->GetVertex(index);
+			float start_x = my_player->get_x() + to_game(vertex.x) * cos(my_player->get_rotation_radians());
+			float start_y = my_player->get_y() + to_game(vertex.y) * sin(my_player->get_rotation_radians());
+			if (m_pathfinder.find_path(start_x, start_y, end_x, end_y, tolerance, path)) {
+				path_found = true;
+				break;
+			}
+			index++;
+		}
+	
+		DEBUG("Finding path: Success: " << path_found << " Took: " << (get_ticks() - pathfind_start_time) << " ms.");
+	}
+	
+	return path_found;
 }

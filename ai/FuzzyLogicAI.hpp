@@ -31,6 +31,8 @@
 #include "common/GameLogic.hpp"
 
 namespace LM {
+	class Pathfinder;
+
 	class FuzzyLogicAI : public AI {
 	private:
 		FuzzyLogic* m_fuzzy;
@@ -41,6 +43,8 @@ namespace LM {
 		AI::AimReason m_aim_reason;
 		float max_aim_inaccuracy;
 		float m_aim_inaccuracy;
+		
+		bool m_found_path;
 		
 		// Fuzzy Logic Rules
 		int m_rule_dangerous;

@@ -52,6 +52,9 @@ namespace LM {
 	
 	public:
 		enum { MAX_ENERGY = 100 };
+		
+		const static float PLAYER_WIDTH = 18.0f;
+		const static float PLAYER_HEIGHT = 40.0f;
 
 	protected:
 		std::string	m_name;		// Specified by the client; should be unique

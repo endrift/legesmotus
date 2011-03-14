@@ -27,7 +27,7 @@
 using namespace LM;
 using namespace std;
 
-const float AIController::MAX_AIM_VEL = .04f;
+const float AIController::MAX_AIM_VEL = .02f;
 const unsigned int AIController::AIM_TOLERANCE = .01f;
 
 AIController::AIController(AI* ai) {

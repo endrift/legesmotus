@@ -29,6 +29,7 @@
 #include "common/RayCast.hpp"
 #include "common/MapObject.hpp"
 #include "common/GameLogic.hpp"
+#include "common/Player.hpp"
 
 using namespace LM;
 using namespace std;
@@ -137,6 +138,8 @@ void MapGrapher::map_segment(b2Vec2 start, b2Vec2 end, PhysicsObject* obj) {
 		return;
 	}
 	
+	b2Vec2 temp_vec2(temp_vec.x, temp_vec.y);
+	
 	for (int dist = 0; dist <= length; dist += dist_change) {
 		for (float angle = dir - theta_change; angle > dir - 180 + theta_change; angle -= theta_change) {
 			
@@ -150,18 +153,38 @@ void MapGrapher::map_segment(b2Vec2 start, b2Vec2 end, PhysicsObject* obj) {
 			
 			entries_checked++;
 			
+			// Cast a ray where the player's head would be.
 			m_ray_cast.do_ray_cast(b2Vec2(to_physics(temp_vec.x), to_physics(temp_vec.y)), normalized_angle, -1, obj);
 			
 			RayCast::RayCastResult& result = m_ray_cast.get_result();
 			
-			if (result.shortest_dist == -1) {
-				continue;
+			if (DOUBLE_CAST) {
+				// Cast a second ray where the player's feet would be.
+				temp_vec2.x = temp_vec.x + to_physics(Player::PLAYER_HEIGHT) * cos(to_radians(dir));
+				temp_vec2.y = temp_vec.y + to_physics(Player::PLAYER_HEIGHT) * sin(to_radians(dir));
+			
+				m_ray_cast2.do_ray_cast(b2Vec2(to_physics(temp_vec2.x), to_physics(temp_vec2.y)), normalized_angle, -1, obj);
+			
+				RayCast::RayCastResult& result2 = m_ray_cast2.get_result();
+			
+				if (result.shortest_dist == -1 && result2.shortest_dist == -1) {
+					continue;
+				}
+			
+				if (result.shortest_dist == -1 || (result.shortest_dist > result2.shortest_dist && result2.shortest_dist != -1)) {
+					result = result2;
+				}
+			} else {
+				if (result.shortest_dist == -1) {
+					continue;
+				}
 			}
 			
 			entries_mapped++;
 			
 			isect.x = to_game(result.hit_point.x);
 			isect.y = to_game(result.hit_point.y);
+			isect.dist = to_game(result.shortest_dist);
 			
 			//DEBUG("Started at: " << temp_vec.x << ", " << temp_vec.y << ", " << to_degrees(normalized_angle) << ", HIT: " << to_game(result.hit_point.x) << ", " << to_game(result.hit_point.y));
 			
@@ -170,13 +193,16 @@ void MapGrapher::map_segment(b2Vec2 start, b2Vec2 end, PhysicsObject* obj) {
 			
 			// Set the reverse direction in the graph.
 			if (m_graph->get(to_game(result.hit_point.x), to_game(result.hit_point.y), get_normalized_angle(angle-180), &isect)) {
-				//entries_skipped++;
+				entries_skipped++;
 				//DEBUG("Reverse entry at " << to_game(result.hit_point.x) << ", " << to_game(result.hit_point.y) << ", " << get_normalized_angle(angle-180) << " already set.");
 				continue;
 			}
 			
 			isect.x = temp_vec.x;
 			isect.y = temp_vec.y;
+			isect.dist = to_game(result.shortest_dist);
+			
+			entries_mapped++;
 			
 			//DEBUG("Setting: " << to_game(result.hit_point.x) << ", " << to_game(result.hit_point.y) << ", " << get_normalized_angle(angle-180));
 			
@@ -206,6 +232,7 @@ void MapGrapher::load_map(const GameLogic* logic, b2World* world) {
 	m_physics = world;
 	
 	m_ray_cast.set_physics(world);
+	m_ray_cast2.set_physics(world);
 	
 	// Clear our current map:
 	delete m_graph;

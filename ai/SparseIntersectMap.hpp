@@ -26,6 +26,8 @@
 #define LM_AI_SPARSEINTERSECTMAP_HPP
 
 #include "common/Iterator.hpp"
+#include <istream>
+#include <ostream>
 
 namespace LM {
 	class SparseIntersectMap {
