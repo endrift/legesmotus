@@ -29,6 +29,7 @@
 #include "Font.hpp"
 #include "ResourceCache.hpp"
 #include "common/Weapon.hpp"
+#include "common/team.hpp"
 
 using namespace LM;
 using namespace std;
@@ -451,7 +452,7 @@ void Hud::update(const GameLogic* logic) {
 	update_radar(logic->list_players());
 
 	m_our_gate->set_progress(1.0f - logic->get_gate_progress(m_active_team));
-	m_their_gate->set_progress(1.0f - logic->get_gate_progress(m_active_team == 'A' ? 'B' : 'A'));
+	m_their_gate->set_progress(1.0f - logic->get_gate_progress(get_other_team(m_active_team)));
 }
 
 void Hud::draw(DrawContext* ctx) const {
