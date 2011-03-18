@@ -44,6 +44,7 @@ using namespace std;
 #include <sys/stat.h>
 #include <pwd.h>
 #include <errno.h>
+#include <stdlib.h>
 
 #endif
 
