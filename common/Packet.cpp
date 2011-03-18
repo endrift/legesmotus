@@ -426,6 +426,11 @@ static void unmarshal_PLAYER_JUMPED(PacketReader& r, Packet* p) {
 	r >> p->player_jumped.direction;
 }
 
+Packet::Packet() {
+	clear();
+	this->type = (PacketEnum) 0;
+}
+
 Packet::Packet(PacketEnum type) {
 	clear();
 	this->type = type;

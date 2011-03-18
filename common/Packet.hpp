@@ -54,7 +54,7 @@ namespace LM {
 	class PacketReceiver;
 
 	struct Packet {
-		Packet() { clear(); }
+		Packet();
 		Packet(PacketEnum type);
 		Packet(const Packet& other);
 		~Packet();

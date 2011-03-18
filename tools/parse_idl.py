@@ -185,7 +185,7 @@ def outputHpp(interface):
     code.append('\tclass {0}Receiver;\n'.format(interface.name))
 
     code.append('\tstruct {0} {{'.format(interface.name))
-    code.append('\t\t{0}() {{ clear(); }}'.format(interface.name))
+    code.append('\t\t{0}();'.format(interface.name))
     code.append('\t\t{0}({0}Enum type);'.format(interface.name))
     code.append('\t\t{0}(const {0}& other);'.format(interface.name))
     code.append('\t\t~{0}();'.format(interface.name))
@@ -239,6 +239,11 @@ def outputCpp(interface):
         for field in item.fields:
             code.append('\tr >> p->{0}.{1};'.format(item.name.lower(), field.name))
         code.append('}\n')
+
+    code.append('{0}::{0}() {{'.format(interface.name))
+    code.append('\tclear();');
+    code.append('\tthis->type = ({0}Enum) 0;'.format(interface.name));
+    code.append('}\n')
 
     code.append('{0}::{0}({0}Enum type) {{'.format(interface.name))
     code.append('\tclear();');
