@@ -63,20 +63,52 @@ void LM::open_resource(ifstream* file, const char* filename, bool binary) {
 	if (file->fail()) {
 		// Could not open the user resource
 		file->close();
-		s.str();
+		s.str("");
 		s << resource_dir();
 		s << filename;
 		file->open(s.str().c_str(), mode);
 	}
 }
 
+void LM::open_for_writing(ofstream* file, const char* filename, bool binary) {
+	ASSERT(file != NULL);
+	ios_base::openmode mode = ios_base::out | ios_base::trunc;
+	if (binary) {
+		mode |= ios_base::binary;
+	}
+
+	stringstream s;
+
+	s << user_dir();
+	s << filename;
+	file->open(s.str().c_str(), mode);
+}
+
 const char* LM::resource_dir() {
+	static string dir("");
+
+	if (!dir.empty()) {
+		return dir.c_str();
+	}
+
 	const char* envdir = getenv("LM_DATA_DIR");
-	return envdir ? envdir : LM_DATA_DIR;
+	if (envdir != NULL) {
+		dir = envdir;
+	} else {
+		dir = LM_DATA_DIR;
+	}
+	dir.append(PATH_SEP);
+
+	return dir.c_str();
 }
 
 const char* LM::user_dir() {
 	static string dir("");
+
+	if (!dir.empty()) {
+		return dir.c_str();
+	}
+
 #ifdef __WIN32
 	static TCHAR path[MAX_PATH];
 	HRESULT err = SHGetFolderPath(0, CSIDL_LOCAL_APPDATA|CSIDL_FLAG_CREATE, NULL, SHGFP_TYPE_CURRENT, path);

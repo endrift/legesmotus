@@ -36,6 +36,8 @@
 
 namespace LM {
 	void open_resource(std::ifstream* file, const char* filename, bool binary = false);
+	void open_for_writing(std::ofstream* file, const char* filename, bool binary = false);
+
 	const char* resource_dir();
 	const char* user_dir();
 	

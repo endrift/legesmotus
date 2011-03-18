@@ -84,6 +84,11 @@ void AI::update(const GameLogic& logic, uint64_t diff) {
 	// If the MapGrapher is not done, continue it:
 	if (!m_grapher.is_done_mapping()) {
 		m_grapher.do_mapping(1);
+
+		// We're done now, let's output the results
+		if (m_grapher.is_done_mapping()) {
+			m_grapher.write_map(logic.get_map()->get_name());
+		}
 	}
 	
 	step(logic, diff);

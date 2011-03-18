@@ -78,9 +78,9 @@ namespace LM {
 		// If a number n of objects is passed, will only map the next n bodies.
 		void do_mapping(int num_objects = -1);
 		
-		bool is_done_mapping();
+		bool is_done_mapping() const;
 		
-		bool write_map(std::string filename);
+		bool write_map(const char* map_name) const;
 		
 		SparseIntersectMap* get_graph();
 	};

@@ -30,6 +30,7 @@
 #include "common/MapObject.hpp"
 #include "common/GameLogic.hpp"
 #include "common/Player.hpp"
+#include <fstream>
 
 using namespace LM;
 using namespace std;
@@ -236,7 +237,18 @@ void MapGrapher::load_map(const GameLogic* logic, b2World* world) {
 	
 	// Clear our current map:
 	delete m_graph;
-	m_graph = new SparseIntersectMap(GRANULARITY, MAX_SIZE);
+
+	ifstream graph_file;
+	open_resource(&graph_file, (string("maps") + PATH_SEP + map->get_name() + ".mgf").c_str(), true);
+	bool res_used = false;
+
+	if (graph_file.fail()) {
+		m_graph = new SparseIntersectMap(GRANULARITY, MAX_SIZE);
+	} else {
+		res_used = true;
+		m_graph = new SparseIntersectMap(&graph_file);
+	}
+	graph_file.close();
 	
 	theta_change = m_graph->get_granularity_theta();
 	
@@ -245,14 +257,16 @@ void MapGrapher::load_map(const GameLogic* logic, b2World* world) {
 	
 	// Initialize our list of objects to be done.
 	m_objects.clear();
-	
-	b2Body* body = m_physics->GetBodyList();
-	while (body != NULL) {
-		PhysicsObject* obj = static_cast<PhysicsObject*>(body->GetUserData());
-		if (obj->get_type() == PhysicsObject::MAP_EDGE || obj->get_type() == PhysicsObject::MAP_OBJECT) {
-			m_objects.push_back(body);
+
+	if (!res_used) {
+		b2Body* body = m_physics->GetBodyList();
+		while (body != NULL) {
+			PhysicsObject* obj = static_cast<PhysicsObject*>(body->GetUserData());
+			if (obj->get_type() == PhysicsObject::MAP_EDGE || obj->get_type() == PhysicsObject::MAP_OBJECT) {
+				m_objects.push_back(body);
+			}
+			body = body->GetNext();
 		}
-		body = body->GetNext();
 	}
 }
 
@@ -285,13 +299,17 @@ void MapGrapher::do_mapping(int num_objects) {
 	}
 }
 
-bool MapGrapher::is_done_mapping() {
+bool MapGrapher::is_done_mapping() const {
 	return m_objects.empty();
 }
 
-bool MapGrapher::write_map(std::string filename) {
-	// TODO: Write the results to a file.
-	return false;
+bool MapGrapher::write_map(const char* map_name) const {
+	ofstream output;
+	open_for_writing(&output, (string("maps") + PATH_SEP + map_name + ".mgf").c_str(), true);
+	m_graph->write(&output);
+	bool failed = !output.bad();
+	output.close();
+	return failed;
 }
 
 SparseIntersectMap* MapGrapher::get_graph() {

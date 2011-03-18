@@ -100,9 +100,11 @@ SparseIntersectMap::SparseIntersectMap(std::istream* f) {
 		read32(f, &m_count);
 		read32(f, &m_grain);
 		read32(f, &m_nbuckets);
+		m_buckets = new Bucket[m_nbuckets];
 		for (int i = 0; i < m_nbuckets; ++i) {
 			Bucket& bucket = m_buckets[i];
 			read32(f, &bucket.psize);
+			bucket.elts = new Element[bucket.psize];
 			int j;
 			for (j = 0; j < bucket.psize; ++j) {
 				read32(f, &bucket.elts[j].x);
