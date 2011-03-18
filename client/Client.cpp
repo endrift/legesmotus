@@ -335,21 +335,22 @@ void Client::connect(const IPAddress& server_address) {
 }
 
 void Client::player_update(const Packet& p) {
-	Packet::PlayerUpdate update = Packet::PlayerUpdate(p.player_update);
-	Player* player = get_player(update.player_id);
+	// XXX don't copy packet
+	Packet update = Packet(p);
+	Player* player = get_player(update.player_update.player_id);
 	if (player == NULL) {
 		return;
 	}
 	
 	// Don't let the server tell us which weapon our own player is using.
-	if (update.player_id == m_player_id) {
-		update.current_weapon_id = player->get_current_weapon_id();
+	if (update.player_update.player_id == m_player_id) {
+		update.player_update.current_weapon_id = player->get_current_weapon_id();
 	}
 	
-	player->read_player_update(update);
+	player->read_player_update(update.player_update);
 
 	// XXX if Weapon::select ever has side effects, we need to have a different way of updating the other players' weapons
-	Weapon* weapon = get_game()->get_weapon(update.current_weapon_id);
+	Weapon* weapon = get_game()->get_weapon(update.player_update.current_weapon_id);
 	if (weapon != NULL) {
 		weapon->select(player);
 	}

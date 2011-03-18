@@ -428,7 +428,7 @@ static void unmarshal_PLAYER_JUMPED(PacketReader& r, Packet* p) {
 
 Packet::Packet() {
 	clear();
-	this->type = (PacketEnum) 0;
+	type = (PacketEnum) 0;
 }
 
 Packet::Packet(PacketEnum type) {
@@ -656,12 +656,17 @@ Packet::Packet(const Packet& other) {
 }
 
 Packet::~Packet() {
+	free();
+}
+
+void Packet::free() {
 	switch(type) {
 	case ACK_PACKET:
 		break;
 
 	case PLAYER_UPDATE_PACKET:
 		delete player_update.flags.item;
+		player_update.flags.item = NULL;
 		break;
 
 	case WEAPON_DISCHARGED_PACKET:
@@ -669,15 +674,19 @@ Packet::~Packet() {
 
 	case PLAYER_HIT_PACKET:
 		delete player_hit.extradata.item;
+		player_hit.extradata.item = NULL;
 		break;
 
 	case MESSAGE_PACKET:
 		delete message.recipient.item;
+		message.recipient.item = NULL;
 		delete message.message_text.item;
+		message.message_text.item = NULL;
 		break;
 
 	case NEW_ROUND_PACKET:
 		delete new_round.map_name.item;
+		new_round.map_name.item = NULL;
 		break;
 
 	case ROUND_OVER_PACKET:
@@ -685,14 +694,17 @@ Packet::~Packet() {
 
 	case SCORE_UPDATE_PACKET:
 		delete score_update.subject.item;
+		score_update.subject.item = NULL;
 		break;
 
 	case WELCOME_PACKET:
 		delete welcome.player_name.item;
+		welcome.player_name.item = NULL;
 		break;
 
 	case ANNOUNCE_PACKET:
 		delete announce.player_name.item;
+		announce.player_name.item = NULL;
 		break;
 
 	case GATE_UPDATE_PACKET:
@@ -700,36 +712,49 @@ Packet::~Packet() {
 
 	case JOIN_PACKET:
 		delete join.compat_version.item;
+		join.compat_version.item = NULL;
 		delete join.name.item;
+		join.name.item = NULL;
 		break;
 
 	case INFO_server_PACKET:
 		delete info_server.server_address.item;
+		info_server.server_address.item = NULL;
 		delete info_server.server_compat_version.item;
+		info_server.server_compat_version.item = NULL;
 		delete info_server.current_map_name.item;
+		info_server.current_map_name.item = NULL;
 		delete info_server.server_name.item;
+		info_server.server_name.item = NULL;
 		delete info_server.server_location.item;
+		info_server.server_location.item = NULL;
 		break;
 
 	case INFO_client_PACKET:
 		delete info_client.client_version.item;
+		info_client.client_version.item = NULL;
 		break;
 
 	case LEAVE_PACKET:
 		delete leave.message.item;
+		leave.message.item = NULL;
 		break;
 
 	case PLAYER_ANIMATION_PACKET:
 		delete player_animation.sprite_list.item;
+		player_animation.sprite_list.item = NULL;
 		delete player_animation.field.item;
+		player_animation.field.item = NULL;
 		break;
 
 	case REQUEST_DENIED_PACKET:
 		delete request_denied.message.item;
+		request_denied.message.item = NULL;
 		break;
 
 	case NAME_CHANGE_PACKET:
 		delete name_change.name.item;
+		name_change.name.item = NULL;
 		break;
 
 	case TEAM_CHANGE_PACKET:
@@ -737,7 +762,9 @@ Packet::~Packet() {
 
 	case REGISTER_SERVER_server_PACKET:
 		delete register_server_server.server_version.item;
+		register_server_server.server_version.item = NULL;
 		delete register_server_server.server_listen_address.item;
+		register_server_server.server_listen_address.item = NULL;
 		break;
 
 	case REGISTER_SERVER_metaserver_PACKET:
@@ -745,14 +772,17 @@ Packet::~Packet() {
 
 	case UNREGISTER_SERVER_PACKET:
 		delete unregister_server.server_listen_address.item;
+		unregister_server.server_listen_address.item = NULL;
 		break;
 
 	case UPGRADE_AVAILABLE_PACKET:
 		delete upgrade_available.latest_version.item;
+		upgrade_available.latest_version.item = NULL;
 		break;
 
 	case MAP_INFO_PACKET:
 		delete map_info.map.item;
+		map_info.map.item = NULL;
 		break;
 
 	case MAP_OBJECT_PACKET:
@@ -760,11 +790,14 @@ Packet::~Packet() {
 
 	case GAME_PARAM_PACKET:
 		delete game_param.param_name.item;
+		game_param.param_name.item = NULL;
 		delete game_param.param_value.item;
+		game_param.param_value.item = NULL;
 		break;
 
 	case HOLE_PUNCH_PACKET:
 		delete hole_punch.client_address.item;
+		hole_punch.client_address.item = NULL;
 		break;
 
 	case PLAYER_DIED_PACKET:
@@ -772,6 +805,7 @@ Packet::~Packet() {
 
 	case WEAPON_INFO_PACKET:
 		delete weapon_info.weapon_data.item;
+		weapon_info.weapon_data.item = NULL;
 		break;
 
 	case ROUND_START_PACKET:
@@ -779,7 +813,9 @@ Packet::~Packet() {
 
 	case SPAWN_PACKET:
 		delete spawn.position.item;
+		spawn.position.item = NULL;
 		delete spawn.velocity.item;
+		spawn.velocity.item = NULL;
 		break;
 
 	case PLAYER_JUMPED_PACKET:

@@ -190,6 +190,7 @@ def outputHpp(interface):
     code.append('\t\t{0}(const {0}& other);'.format(interface.name))
     code.append('\t\t~{0}();'.format(interface.name))
     code.append('\t\tvoid clear();')
+    code.append('\t\tvoid free();')
     code.append('\t\tvoid marshal();')
     code.append('\t\tvoid unmarshal();')
     code.append('\t\tvoid dispatch({0}Receiver* r);'.format(interface.name, interface.name.lower()))
@@ -242,7 +243,7 @@ def outputCpp(interface):
 
     code.append('{0}::{0}() {{'.format(interface.name))
     code.append('\tclear();');
-    code.append('\tthis->type = ({0}Enum) 0;'.format(interface.name));
+    code.append('\ttype = ({0}Enum) 0;'.format(interface.name));
     code.append('}\n')
 
     code.append('{0}::{0}({0}Enum type) {{'.format(interface.name))
@@ -269,12 +270,17 @@ def outputCpp(interface):
     code.append('}\n')
 
     code.append('{0}::~{0}() {{'.format(interface.name))
+    code.append('\tfree();')
+    code.append('}\n')
+
+    code.append('void {0}::free() {{'.format(interface.name))
     code.append('\tswitch(type) {')
     for item in interface.definitions:
         code.append('\tcase {1}_{0}:'.format(interface.name.upper(), item.name))
         for field in item.fields:
             if field.type == 'string' or field.type in interface.requirements:
                 code.append('\t\tdelete {0}.{1}.item;'.format(item.name.lower(), field.name))
+                code.append('\t\t{0}.{1}.item = NULL;'.format(item.name.lower(), field.name))
         code.append('\t\tbreak;\n')
     code.append('\t}')
     code.append('}\n')

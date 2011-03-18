@@ -96,6 +96,7 @@ void	ClientNetwork::receive_packets() {
 	// Keep receiving packets for as long as we can.
 	while (receive_raw_packet(packet.raw)) {
 		if (is_connected() && packet.raw.get_address() == m_server_address) {
+			packet.free();
 			packet.unmarshal();
 			if (packet.type != PLAYER_UPDATE_PACKET && packet.type != PLAYER_ANIMATION_PACKET) {
 				// Too many packets will get alerted if we leave this for PLAYER_UPDATE

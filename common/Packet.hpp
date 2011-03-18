@@ -59,6 +59,7 @@ namespace LM {
 		Packet(const Packet& other);
 		~Packet();
 		void clear();
+		void free();
 		void marshal();
 		void unmarshal();
 		void dispatch(PacketReceiver* r);
