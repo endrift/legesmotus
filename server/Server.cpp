@@ -46,6 +46,7 @@
 #include <cstring>
 #include <cmath>
 #include <iostream>
+#include <fstream>
 #include <set>
 #include <limits>
 
@@ -1206,9 +1207,12 @@ bool	Server::load_map(const char* map_name) {
 	string		map_filename(map_name);
 	map_filename += ".map";
 
-	if (!m_current_map.load_file(m_path_manager.data_path(map_filename.c_str(), "maps"))) {
+	ifstream file(m_path_manager.data_path(map_filename.c_str(), "maps"));
+	if (!m_current_map.load(file)) {
+		file.close();
 		return false;
 	}
+	file.close();
 
 	// 1. Reset the game parameters to their hard-coded internal defaults
 	m_params.reset();

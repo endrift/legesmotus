@@ -31,6 +31,7 @@
 #include "common/Weapon.hpp"
 #include "common/timer.hpp"
 #include "common/Configuration.hpp"
+#include "common/file.hpp"
 #include "Window.hpp"
 #include "Bone.hpp"
 #include "common/math.hpp"
@@ -52,7 +53,7 @@ GuiClient::GuiClient() {
 	flags |= m_config->get_bool("GameWindow", "vsync", true)?Window::FLAG_VSYNC:0;
 	flags |= m_config->get_bool("GameWindow", "fullscreen")?Window::FLAG_FULLSCREEN:0;
 	m_window = SDLWindow::get_instance(width, height, depth, flags);
-	m_cache = new ResourceCache(get_res_directory(), m_window->get_context());
+	m_cache = new ResourceCache(resource_dir(), m_window->get_context());
 	m_input = new SDLInputDriver;
 	m_input->set_sink(this);
 	m_gcontrol = new HumanController; // XXX we don't necessarily want one

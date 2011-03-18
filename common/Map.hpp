@@ -29,6 +29,7 @@
 #include <iosfwd>
 #include <list>
 #include "ConfigManager.hpp"
+#include "file.hpp"
 
 class b2World;
 
@@ -106,10 +107,6 @@ namespace LM {
 		
 		// Read and parse the given input stream and load into the current map
 		virtual bool	load(std::istream& in);
-	
-		// load_file will preserve the current map if it can't open the new map
-		// (and return false to indicate error)
-		virtual bool	load_file(const char* path);
 	
 		// Remove all objects from the map:
 		virtual void	clear();

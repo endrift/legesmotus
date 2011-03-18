@@ -28,23 +28,35 @@
 #include "misc.hpp"
 #include <iostream>
 
-void read8(std::istream* f, uint8_t* v);
-void read8(std::istream* f, int8_t* v);
-void read16(std::istream* f, uint16_t* v);
-void read16(std::istream* f, int16_t* v);
-void read32(std::istream* f, uint32_t* v);
-void read32(std::istream* f, int32_t* v);
-void read32(std::istream* f, float* v);
-void expect(std::istream* f, const void* v, int n);
+#ifdef __WIN32
+#define PATH_SEP "\\"
+#else
+#define PATH_SEP "/"
+#endif
 
-void write8(std::ostream* f, uint8_t v);
-void write8(std::ostream* f, int8_t v);
-void write16(std::ostream* f, uint16_t v);
-void write16(std::ostream* f, int16_t v);
-void write16(std::ostream* f, int v);
-void write32(std::ostream* f, uint32_t v);
-void write32(std::ostream* f, int32_t v);
-void write32(std::ostream* f, float v);
-void write0(std::ostream* f, int n);
+namespace LM {
+	void open_resource(std::ifstream* file, const char* filename, bool binary = false);
+	const char* resource_dir();
+	const char* user_dir();
+	
+	void read8(std::istream* f, uint8_t* v);
+	void read8(std::istream* f, int8_t* v);
+	void read16(std::istream* f, uint16_t* v);
+	void read16(std::istream* f, int16_t* v);
+	void read32(std::istream* f, uint32_t* v);
+	void read32(std::istream* f, int32_t* v);
+	void read32(std::istream* f, float* v);
+	void expect(std::istream* f, const void* v, int n);
+	
+	void write8(std::ostream* f, uint8_t v);
+	void write8(std::ostream* f, int8_t v);
+	void write16(std::ostream* f, uint16_t v);
+	void write16(std::ostream* f, int16_t v);
+	void write16(std::ostream* f, int v);
+	void write32(std::ostream* f, uint32_t v);
+	void write32(std::ostream* f, int32_t v);
+	void write32(std::ostream* f, float v);
+	void write0(std::ostream* f, int n);
+}
 
 #endif

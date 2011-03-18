@@ -28,10 +28,12 @@
 #include "common/Player.hpp"
 #include "common/timer.hpp"
 #include "common/misc.hpp"
+#include "common/file.hpp"
 #include "common/team.hpp"
 #include "common/Weapon.hpp"
 #include "common/Configuration.hpp"
 #include <iostream>
+#include <fstream>
 
 using namespace LM;
 using namespace std;
@@ -118,12 +120,6 @@ uint64_t Client::step(uint64_t diff) {
 	check_player_hits();
 	
 	return diff;
-}
-
-const char* Client::get_res_directory() const {
-	// TODO get from env
-	const char* envdir = getenv("LM_DATA_DIR");
-	return envdir ? envdir : LM_DATA_DIR;
 }
 
 void Client::add_player(Player* player) {
@@ -404,7 +400,9 @@ void Client::new_round(const Packet& p) {
 	map = m_logic->get_map();
 	// TODO use time_until_start, remove round_started from packet
 	// TODO preload and tell revision instead of loading the whole thing
-	if (map->load_file((string(get_res_directory()) + "/maps/" + *p.new_round.map_name + ".map").c_str())) {
+	ifstream file;
+	open_resource(&file, (string("maps") + PATH_SEP + *p.new_round.map_name + ".map").c_str());
+	if (map->load(file)) {
 		// TODO put back during real map loading
 		/*if (map->get_revision() != map_revision) {
 			// this is really lame
@@ -420,6 +418,7 @@ void Client::new_round(const Packet& p) {
 		map->set_height(p.new_round.map_height);
 		map->set_revision(p.new_round.map_revision);
 	}
+	file.close();
 	m_logic->update_map();
 
 	round_init(map);

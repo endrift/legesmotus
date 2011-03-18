@@ -158,14 +158,14 @@ MapObject* Map::make_map_object(MapReader* reader) {
 	return object;
 }
 
-bool	Map::is_loaded(const char* name, int revision) const {
+bool Map::is_loaded(const char* name, int revision) const {
 	return !m_name.empty() && m_name == name && m_revision == revision;
 }
 
-bool	Map::load(istream& in) {
+bool Map::load(istream& in) {
 	clear();
 
-	string			line;
+	string line;
 
 	/*
 	 * Map header: specifies map options (e.g. name, width, etc.)
@@ -178,8 +178,8 @@ bool	Map::load(istream& in) {
 			continue;
 		}
 
-		StringTokenizer	tokenizer(line, " \t", true, 2);
-		string		option_name;
+		StringTokenizer tokenizer(line, " \t", true, 2);
+		string option_name;
 		tokenizer >> option_name;
 
 		if (option_name.empty()) {
@@ -215,19 +215,14 @@ bool	Map::load(istream& in) {
 			continue;
 		}
 
-		MapReader	reader(line.c_str());
+		MapReader reader(line.c_str());
 		add_object(reader);
 	}
 
 	return true;
 }
 
-bool	Map::load_file(const char* path) {
-	ifstream	file(path);
-	return file && load(file);
-}
-
-void	Map::clear() {
+void Map::clear() {
 	m_name.clear();
 	m_revision = 0;
 	m_width = m_height = 0;
@@ -241,13 +236,13 @@ void	Map::clear() {
 	}
 }
 
-void	Map::add_object(MapReader& data) {
+void Map::add_object(MapReader& data) {
 	if (MapObject* object = make_map_object(&data)) {
 		add_object(object);
 	}
 }
 
-void	Map::add_object(MapObject* object) {
+void Map::add_object(MapObject* object) {
 	m_objects.push_back(object);
 }
 
@@ -270,7 +265,7 @@ Map::ObjectType	Map::parse_object_type(const char* type_string) {
 	return INVALID_OBJECT_TYPE;
 }
 
-StringTokenizer&	LM::operator>> (StringTokenizer& tok, Map::ObjectType& object_type) {
+StringTokenizer& LM::operator>> (StringTokenizer& tok, Map::ObjectType& object_type) {
 	if (const char* str = tok.get_next()) {
 		object_type = Map::parse_object_type(str);
 	} else {
@@ -279,12 +274,12 @@ StringTokenizer&	LM::operator>> (StringTokenizer& tok, Map::ObjectType& object_t
 	return tok;
 }
 
-PacketReader&	LM::operator>>(PacketReader& packet, Map& map) {
+PacketReader& LM::operator>>(PacketReader& packet, Map& map) {
 	packet >> map.m_name >> map.m_revision >> map.m_width >> map.m_height;
 	return packet;
 }
 
-PacketWriter&	LM::operator<<(PacketWriter& packet, const Map& map) {
+PacketWriter& LM::operator<<(PacketWriter& packet, const Map& map) {
 	packet << map.m_name << map.m_revision << map.m_width << map.m_height;
 	return packet;
 }

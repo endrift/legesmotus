@@ -60,8 +60,6 @@ namespace LM {
 		// Networking, GameLogic calls, and base client updates are handled here
 		uint64_t step(uint64_t diff);
 
-		virtual const char* get_res_directory() const;
-
 		virtual void add_player(Player* player);
 		virtual void set_own_player(uint32_t id);
 		void remove_player(uint32_t id);

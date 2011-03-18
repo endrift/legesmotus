@@ -24,28 +24,12 @@
 
 #include "Configuration.hpp"
 #include "misc.hpp"
+#include "file.hpp"
 
 #include <cstring>
 
 using namespace LM;
 using namespace std;
-
-#ifdef __WIN32
-
-#include <Shlobj.h>
-
-// MinGW doesn't have this defined
-#ifndef SHGFP_TYPE_CURRENT
-#define SHGFP_TYPE_CURRENT 0
-#endif
-
-#else
-
-#include <sys/stat.h>
-#include <pwd.h>
-#include <errno.h>
-
-#endif
 
 class ConfigIterator : public ConstIterator<pair<const char*, const char*> >::OpaqueIterator {
 private:
@@ -133,32 +117,7 @@ const string& Configuration::local_dir() {
 	static string cfg("");
 
 	if (cfg.empty()) {
-#ifdef __WIN32
-		static TCHAR path[MAX_PATH];
-		HRESULT err = SHGetFolderPath(0, CSIDL_LOCAL_APPDATA|CSIDL_FLAG_CREATE, NULL, SHGFP_TYPE_CURRENT, path);
-		if (SUCCEEDED(err)) {
-			cfg = path;
-			cfg += "\\Leges Motus\\";
-			if (!CreateDirectory(cfg.c_str(), NULL)) {
-				if (GetLastError() != ERROR_ALREADY_EXISTS) {
-					WARN("Couldn't create config directory");
-				}
-			}
-		} else {
-			WARN("Couldn't obtain application settings directory");
-		}
-#else
-		if (struct passwd* pw = getpwuid(getuid())) {
-			cfg = pw->pw_dir;
-			cfg += "/.legesmotus/";
-			int err = mkdir(cfg.c_str(), 0775);
-			if (err && errno != EEXIST) {
-				WARN("Couldn't create config directory");
-			}
-		} else {
-			WARN("Couldn't obtain application settings directory");
-		}
-#endif
+		cfg = user_dir();
 	}
 
 	return cfg;
