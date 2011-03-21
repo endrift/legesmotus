@@ -29,6 +29,7 @@
 #include "FuzzyLogic.hpp"
 #include "common/Configuration.hpp"
 #include "common/GameLogic.hpp"
+#include <vector>
 
 namespace LM {
 	class Pathfinder;
@@ -45,6 +46,7 @@ namespace LM {
 		float m_aim_inaccuracy;
 		
 		SparseIntersectMap::Intersect m_jumping_towards;
+		std::vector<SparseIntersectMap::Intersect>* m_current_path;
 		bool m_found_path;
 		bool m_was_grabbing;
 		
@@ -60,11 +62,15 @@ namespace LM {
 		void populate_environment();
 
 		virtual void step(const GameLogic& logic, uint64_t diff);
+		
+		virtual bool set_path(b2Vec2 start, std::vector<SparseIntersectMap::Intersect>& path);
+		virtual float get_next_aim(b2Vec2 start, std::vector<SparseIntersectMap::Intersect>& path);
 
 	public:
 		FuzzyLogicAI(const Configuration* config, const GameLogic* logic = NULL);
 		virtual ~FuzzyLogicAI();
 		
+		virtual const std::vector<SparseIntersectMap::Intersect>* get_current_path() const;
 		
 		virtual void randomize_aim_inaccuracy();
 		virtual float find_desired_aim();
