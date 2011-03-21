@@ -222,7 +222,9 @@ void AI::initialize_map_grapher() {
 	m_pathfinder.set_graph(get_map_graph());
 }
 
-bool AI::find_path(const Player* my_player, float end_x, float end_y, float tolerance, std::vector<SparseIntersectMap::Intersect>& path) {
+bool AI::find_path(const Player* my_player, float end_x, float end_y, float tolerance, std::vector<SparseIntersectMap::Intersect>& path, b2Vec2* start) {
+	ASSERT(start != NULL);
+
 	uint64_t pathfind_start_time = get_ticks();
 
 	b2Body* body = my_player->get_physics_body();
@@ -235,16 +237,19 @@ bool AI::find_path(const Player* my_player, float end_x, float end_y, float tole
 		int index = 0;
 		while (index < polyshape->GetVertexCount()) {
 			b2Vec2 vertex = polyshape->GetVertex(index);
-			float start_x = my_player->get_x() + to_game(vertex.x) * cos(my_player->get_rotation_radians());
-			float start_y = my_player->get_y() + to_game(vertex.y) * sin(my_player->get_rotation_radians());
-			if (m_pathfinder.find_path(start_x, start_y, end_x, end_y, tolerance, path)) {
+			b2Vec2 world = body->GetWorldPoint(vertex);
+			if (m_pathfinder.find_path(to_game(world.x), to_game(world.y), end_x, end_y, tolerance, path)) {
 				path_found = true;
+				start->x = to_game(world.x);
+				start->y = to_game(world.y);
 				break;
 			}
 			index++;
 		}
 	
-		DEBUG("Finding path: Success: " << path_found << " Took: " << (get_ticks() - pathfind_start_time) << " ms.");
+		if (path_found) {
+			DEBUG("Finding path: Success: " << path_found << " Took: " << (get_ticks() - pathfind_start_time) << " ms.");
+		}
 	}
 	
 	return path_found;

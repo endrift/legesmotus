@@ -35,7 +35,7 @@
 using namespace LM;
 using namespace std;
 
-const int MapGrapher::GRANULARITY = 5;
+const int MapGrapher::GRANULARITY = 4;
 const int MapGrapher::MAX_SIZE = 1000000;
 
 MapGrapher::MapGrapher() {
@@ -139,7 +139,13 @@ void MapGrapher::map_segment(b2Vec2 start, b2Vec2 end, PhysicsObject* obj) {
 		return;
 	}
 	
+	// Go a little ways into the shape, so we don't accidentally start inside another shape as well,
+	// which would cause Box2D to ignore the other shape when raycasting, and give us incorrect results.
+	temp_vec.x = temp_vec.x - 4.0 * cos(to_radians(dir - 90));
+	temp_vec.y = temp_vec.y - 4.0 * sin(to_radians(dir - 90));
+	
 	b2Vec2 temp_vec2(temp_vec.x, temp_vec.y);
+	b2Vec2 temp_vec3(temp_vec.x, temp_vec.y);
 	
 	for (int dist = 0; dist <= length; dist += dist_change) {
 		for (float angle = dir - theta_change; angle > dir - 180 + theta_change; angle -= theta_change) {
@@ -159,21 +165,33 @@ void MapGrapher::map_segment(b2Vec2 start, b2Vec2 end, PhysicsObject* obj) {
 			
 			RayCast::RayCastResult& result = m_ray_cast.get_result();
 			
-			if (DOUBLE_CAST) {
+			if (MULTI_CAST) {
 				// Cast a second ray where the player's feet would be.
-				temp_vec2.x = temp_vec.x + to_physics(Player::PLAYER_HEIGHT) * cos(to_radians(dir));
-				temp_vec2.y = temp_vec.y + to_physics(Player::PLAYER_HEIGHT) * sin(to_radians(dir));
+				temp_vec2.x = temp_vec.x + to_physics(Player::PLAYER_HEIGHT*.5f) * cos(to_radians(dir));
+				temp_vec2.y = temp_vec.y + to_physics(Player::PLAYER_HEIGHT*.5f) * sin(to_radians(dir));
 			
 				m_ray_cast2.do_ray_cast(b2Vec2(to_physics(temp_vec2.x), to_physics(temp_vec2.y)), normalized_angle, -1, obj);
 			
 				RayCast::RayCastResult& result2 = m_ray_cast2.get_result();
+				
+				// Cast a third ray where the player's feet would be on the other side.
+				temp_vec3.x = temp_vec.x + to_physics(Player::PLAYER_HEIGHT*.5f) * cos(to_radians(dir-180));
+				temp_vec3.y = temp_vec.y + to_physics(Player::PLAYER_HEIGHT*.5f) * sin(to_radians(dir-180));
 			
-				if (result.shortest_dist == -1 && result2.shortest_dist == -1) {
+				m_ray_cast3.do_ray_cast(b2Vec2(to_physics(temp_vec3.x), to_physics(temp_vec3.y)), normalized_angle, -1, obj);
+			
+				RayCast::RayCastResult& result3 = m_ray_cast3.get_result();
+			
+				if (result.shortest_dist == -1 && result2.shortest_dist == -1 && result3.shortest_dist == -1) {
 					continue;
 				}
 			
 				if (result.shortest_dist == -1 || (result.shortest_dist > result2.shortest_dist && result2.shortest_dist != -1)) {
 					result = result2;
+				}
+				
+				if (result.shortest_dist == -1 || (result.shortest_dist > result3.shortest_dist && result3.shortest_dist != -1)) {
+					result = result3;
 				}
 			} else {
 				if (result.shortest_dist == -1) {
@@ -186,6 +204,12 @@ void MapGrapher::map_segment(b2Vec2 start, b2Vec2 end, PhysicsObject* obj) {
 			isect.x = to_game(result.hit_point.x);
 			isect.y = to_game(result.hit_point.y);
 			isect.dist = to_game(result.shortest_dist);
+			
+			if (isect.dist <= 50) {
+				entries_skipped++;
+				// Don't store the result if you will travel a very short distance.
+				continue;
+			}
 			
 			//DEBUG("Started at: " << temp_vec.x << ", " << temp_vec.y << ", " << to_degrees(normalized_angle) << ", HIT: " << to_game(result.hit_point.x) << ", " << to_game(result.hit_point.y));
 			

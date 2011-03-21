@@ -368,6 +368,7 @@ void FuzzyLogicAI::populate_environment() {
 }
 
 float FuzzyLogicAI::find_desired_aim() {
+
 	const GameLogic* logic = get_logic();
 		
 	const Player* my_player = get_own_player();
@@ -408,6 +409,14 @@ float FuzzyLogicAI::find_desired_aim() {
 	
 	}
 	
+	// Re-find paths after we jump.
+	if (!my_player->is_grabbing_obstacle()) {
+		if (m_was_grabbing) {
+			m_found_path = false;
+		}
+	}
+	m_was_grabbing = my_player->is_grabbing_obstacle();
+	
 	int total = aim_at_target + aim_to_jump + aim_at_gate;
 	if (total < 20) {
 		// Do nothing.
@@ -437,55 +446,65 @@ float FuzzyLogicAI::find_desired_aim() {
 					desired_aim = to_radians(rand()%360 - 180);
 					m_aim_reason = JUMP;
 				}
-				
-				std::vector<SparseIntersectMap::Intersect> path;
-				m_found_path = find_path(my_player, enemy_gate->get_position().x, enemy_gate->get_position().y, 50, path);
-				if (path.size() > 0) {
-					SparseIntersectMap::Intersect jump_loc = path[1];
-					float x_dist = jump_loc.x - my_player->get_x();
-					float y_dist = jump_loc.y - my_player->get_y();
-					desired_aim = atan2(y_dist, x_dist);
-					m_aim_reason = JUMP;
-				}
-			} else {
-				m_aim_reason = JUMP;
-				
-				if (!m_found_path) {
+				if (my_player->is_grabbing_obstacle()) {
 					std::vector<SparseIntersectMap::Intersect> path;
-					m_found_path = find_path(my_player, enemy_gate->get_position().x, enemy_gate->get_position().y, 50, path);
+					b2Vec2 start(0,0);
+					m_found_path = find_path(my_player, enemy_gate->get_position().x, enemy_gate->get_position().y, 50, path, &start);
 					if (path.size() > 0) {
 						SparseIntersectMap::Intersect jump_loc = path[1];
-						float x_dist = jump_loc.x - my_player->get_x();
-						float y_dist = jump_loc.y - my_player->get_y();
+						m_jumping_towards = path[1];
+						float x_dist = jump_loc.x - start.x;
+						float y_dist = jump_loc.y - start.y;
 						desired_aim = atan2(y_dist, x_dist);
 						m_aim_reason = JUMP;
 					}
 				}
+			} else {
+				m_aim_reason = JUMP;
 				
-				return m_last_aim;
+				if (my_player->is_grabbing_obstacle() && !m_found_path) {
+					std::vector<SparseIntersectMap::Intersect> path;
+					b2Vec2 start(0,0);
+					m_found_path = find_path(my_player, enemy_gate->get_position().x, enemy_gate->get_position().y, 50, path, &start);
+					if (path.size() > 0) {
+						SparseIntersectMap::Intersect jump_loc = path[1];
+						m_jumping_towards = path[1];
+						float x_dist = jump_loc.x - start.x;
+						float y_dist = jump_loc.y - start.y;
+						desired_aim = atan2(y_dist, x_dist);
+						m_aim_reason = JUMP;
+					} else {
+						return m_last_aim;
+					}
+				} else {
+					return m_last_aim;
+				}
 			}
 		} else {
-			// Aim to jump at the gate.
 			Point gate_pos = enemy_gate->get_position();
 			float x_dist = gate_pos.x - my_player->get_x();
 			float y_dist = gate_pos.y - my_player->get_y();
 			desired_aim = atan2(y_dist, x_dist);
 			
-			std::vector<SparseIntersectMap::Intersect> path;
-			m_found_path = find_path(my_player, enemy_gate->get_position().x, enemy_gate->get_position().y, 50, path);
-			if (path.size() > 0) {
-				SparseIntersectMap::Intersect jump_loc = path[1];
-				float x_dist = jump_loc.x - my_player->get_x();
-				float y_dist = jump_loc.y - my_player->get_y();
-				desired_aim = atan2(y_dist, x_dist);
+			// Aim to jump at the gate.
+			if (!m_found_path) {
+				std::vector<SparseIntersectMap::Intersect> path;
+				b2Vec2 start(0,0);
+				m_found_path = find_path(my_player, enemy_gate->get_position().x, enemy_gate->get_position().y, 50, path, &start);
+				if (path.size() > 0) {
+					SparseIntersectMap::Intersect jump_loc = path[1];
+					m_jumping_towards = path[1];
+					float x_dist = jump_loc.x - start.x;
+					float y_dist = jump_loc.y - start.y;
+					desired_aim = atan2(y_dist, x_dist);
+					m_aim_reason = JUMP;
+				}
 				m_aim_reason = JUMP;
 			}
-			m_aim_reason = JUMP;
 		}
-		
-		m_last_aim = desired_aim;
 	}
 	
+	m_last_aim = desired_aim;
 	return desired_aim;
 }
 

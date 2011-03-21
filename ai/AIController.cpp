@@ -94,7 +94,7 @@ void AIController::update(uint64_t diff, const GameLogic& state, int player_id) 
 			m_changes[m_changeset ^ 1] |= FIRE_WEAPON;
 			m_changes[m_changeset ^ 1] |= STOP_JUMPING;
 			m_ai->randomize_aim_inaccuracy();
-		} else if (m_aim_reason == AI::JUMP) {
+		} else if (m_aim_reason == AI::JUMP && my_player->is_grabbing_obstacle()) {
 			m_changes[m_changeset ^ 1] |= JUMPING;
 		} else {
 			m_changes[m_changeset ^ 1] |= STOP_JUMPING;

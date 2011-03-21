@@ -44,7 +44,9 @@ namespace LM {
 		float max_aim_inaccuracy;
 		float m_aim_inaccuracy;
 		
+		SparseIntersectMap::Intersect m_jumping_towards;
 		bool m_found_path;
+		bool m_was_grabbing;
 		
 		// Fuzzy Logic Rules
 		int m_rule_dangerous;
