@@ -42,6 +42,7 @@ FuzzyLogicAI::FuzzyLogicAI(const Configuration* config, const GameLogic* logic) 
 	m_aim_reason = DO_NOTHING;
 	
 	m_found_path = false;
+	m_current_path = NULL;
 	
 	initialize_logic();
 }
@@ -318,6 +319,25 @@ void FuzzyLogicAI::step(const GameLogic& logic, uint64_t diff) {
 	m_target = best_target;
 }
 
+bool FuzzyLogicAI::set_path(b2Vec2 start, vector<SparseIntersectMap::Intersect>& path) {
+	if (path.size() == 0) {
+		m_current_path = NULL;
+		return false;
+	}
+	m_current_path = &path;
+	return true;
+}
+
+float FuzzyLogicAI::get_next_aim(b2Vec2 start, vector<SparseIntersectMap::Intersect>& path) {
+	SparseIntersectMap::Intersect jump_loc = path[1];
+	m_jumping_towards = path[1];
+	float x_dist = jump_loc.x - start.x;
+	float y_dist = jump_loc.y - start.y;
+	float desired_aim = atan2(y_dist, x_dist);
+	m_aim_reason = JUMP;
+	return desired_aim;
+}
+
 void FuzzyLogicAI::populate_environment() {
 	m_fuzzy_env.clear();
 	
@@ -450,13 +470,8 @@ float FuzzyLogicAI::find_desired_aim() {
 					std::vector<SparseIntersectMap::Intersect> path;
 					b2Vec2 start(0,0);
 					m_found_path = find_path(my_player, enemy_gate->get_position().x, enemy_gate->get_position().y, 50, path, &start);
-					if (path.size() > 0) {
-						SparseIntersectMap::Intersect jump_loc = path[1];
-						m_jumping_towards = path[1];
-						float x_dist = jump_loc.x - start.x;
-						float y_dist = jump_loc.y - start.y;
-						desired_aim = atan2(y_dist, x_dist);
-						m_aim_reason = JUMP;
+					if (set_path(start, path)) {
+						desired_aim = get_next_aim(start, path);
 					}
 				}
 			} else {
@@ -466,13 +481,8 @@ float FuzzyLogicAI::find_desired_aim() {
 					std::vector<SparseIntersectMap::Intersect> path;
 					b2Vec2 start(0,0);
 					m_found_path = find_path(my_player, enemy_gate->get_position().x, enemy_gate->get_position().y, 50, path, &start);
-					if (path.size() > 0) {
-						SparseIntersectMap::Intersect jump_loc = path[1];
-						m_jumping_towards = path[1];
-						float x_dist = jump_loc.x - start.x;
-						float y_dist = jump_loc.y - start.y;
-						desired_aim = atan2(y_dist, x_dist);
-						m_aim_reason = JUMP;
+					if (set_path(start, path)) {
+						desired_aim = get_next_aim(start, path);
 					} else {
 						return m_last_aim;
 					}
@@ -491,15 +501,9 @@ float FuzzyLogicAI::find_desired_aim() {
 				std::vector<SparseIntersectMap::Intersect> path;
 				b2Vec2 start(0,0);
 				m_found_path = find_path(my_player, enemy_gate->get_position().x, enemy_gate->get_position().y, 50, path, &start);
-				if (path.size() > 0) {
-					SparseIntersectMap::Intersect jump_loc = path[1];
-					m_jumping_towards = path[1];
-					float x_dist = jump_loc.x - start.x;
-					float y_dist = jump_loc.y - start.y;
-					desired_aim = atan2(y_dist, x_dist);
-					m_aim_reason = JUMP;
+				if (set_path(start, path)) {
+					desired_aim = get_next_aim(start, path);
 				}
-				m_aim_reason = JUMP;
 			}
 		}
 	}
@@ -510,4 +514,8 @@ float FuzzyLogicAI::find_desired_aim() {
 
 AI::AimReason FuzzyLogicAI::get_aim_reason() {
 	return m_aim_reason;
+}
+
+std::vector<SparseIntersectMap::Intersect>* FuzzyLogicAI::get_current_path() {
+	return m_current_path;
 }
