@@ -70,7 +70,7 @@ namespace LM {
 		FuzzyLogicAI(const Configuration* config, const GameLogic* logic = NULL);
 		virtual ~FuzzyLogicAI();
 		
-		virtual std::vector<SparseIntersectMap::Intersect>* get_current_path();
+		virtual const std::vector<SparseIntersectMap::Intersect>* get_current_path() const;
 		
 		virtual void randomize_aim_inaccuracy();
 		virtual float find_desired_aim();

@@ -516,6 +516,6 @@ AI::AimReason FuzzyLogicAI::get_aim_reason() {
 	return m_aim_reason;
 }
 
-std::vector<SparseIntersectMap::Intersect>* FuzzyLogicAI::get_current_path() {
+const std::vector<SparseIntersectMap::Intersect>* FuzzyLogicAI::get_current_path() const {
 	return m_current_path;
 }
