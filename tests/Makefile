@@ -2,7 +2,7 @@ BASEDIR = ..
 NOBUNDLE = 1
 include $(BASEDIR)/common.mk
 TESTOBJS = test_primitives test_widgets test_label test_blend test_images test_graphics \
-	test_rendering test_shaders test_gameview test_input test_sim
+	test_rendering test_shaders test_gameview test_input test_sim watch_ai
 CXXFLAGS += $(CLIENTFLAGS)
 LIBS := $(CLIENTLIBS)
 
