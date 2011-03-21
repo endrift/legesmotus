@@ -71,7 +71,7 @@ GuiClient::GuiClient() {
 
 	m_debugdraw = new PhysicsDraw;
 	if (m_config->get_bool("Debug", "physics_overlay")) {
-		m_view->add_child(m_debugdraw, GameView::OVERLAY);
+		add_extra_draw(m_debugdraw);
 	}
 
 	m_map = NULL;
@@ -371,6 +371,10 @@ void GuiClient::update_gui() {
 	realign_badges();
 
 	m_hud->update(get_game());
+}
+
+void GuiClient::add_extra_draw(Widget* draw) {
+	m_view->add_child(draw, GameView::OVERLAY);
 }
 
 void GuiClient::key_pressed(const KeyEvent& event) {

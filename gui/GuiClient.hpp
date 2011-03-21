@@ -116,6 +116,7 @@ namespace LM {
 
 		virtual void run();
 		void update_gui();
+		void add_extra_draw(Widget* draw);
 
 		virtual void key_pressed(const KeyEvent& event);
 		virtual void mouse_moved(const MouseMotionEvent& event);
