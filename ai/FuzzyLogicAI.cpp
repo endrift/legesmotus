@@ -42,7 +42,6 @@ FuzzyLogicAI::FuzzyLogicAI(const Configuration* config, const GameLogic* logic) 
 	m_aim_reason = DO_NOTHING;
 	
 	m_found_path = false;
-	m_current_path = NULL;
 	
 	initialize_logic();
 }
@@ -321,10 +320,10 @@ void FuzzyLogicAI::step(const GameLogic& logic, uint64_t diff) {
 
 bool FuzzyLogicAI::set_path(b2Vec2 start, vector<SparseIntersectMap::Intersect>& path) {
 	if (path.size() == 0) {
-		m_current_path = NULL;
+		m_current_path.clear();
 		return false;
 	}
-	m_current_path = &path;
+	m_current_path = path;
 	return true;
 }
 
@@ -517,5 +516,5 @@ AI::AimReason FuzzyLogicAI::get_aim_reason() {
 }
 
 const std::vector<SparseIntersectMap::Intersect>* FuzzyLogicAI::get_current_path() const {
-	return m_current_path;
+	return &m_current_path;
 }

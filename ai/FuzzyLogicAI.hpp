@@ -46,7 +46,7 @@ namespace LM {
 		float m_aim_inaccuracy;
 		
 		SparseIntersectMap::Intersect m_jumping_towards;
-		std::vector<SparseIntersectMap::Intersect>* m_current_path;
+		std::vector<SparseIntersectMap::Intersect> m_current_path;
 		bool m_found_path;
 		bool m_was_grabbing;
 		
