@@ -8,7 +8,7 @@ LIBS := $(CLIENTLIBS)
 
 all: $(TESTOBJS)
 
-%: %.cpp ../liblmgui.a ../liblmclient.a ../liblmcommon.a ../liblmserver.a ../liblmai.a
+%: %.cpp ../liblmgui.a ../liblmclient.a ../liblmai.a ../liblmcommon.a ../liblmserver.a
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
 
 clean:
