@@ -35,9 +35,10 @@
 using namespace LM;
 using namespace std;
 
-const int MapGrapher::GRANULARITY = 4;
+const int MapGrapher::GRANULARITY = 5;
 const int MapGrapher::MAX_SIZE = 1000000;
 const int MapGrapher::BUFFER_ANGLE = 30;
+const bool MapGrapher::MULTI_CAST = false;
 
 MapGrapher::MapGrapher() {
 	m_physics = NULL;

@@ -46,7 +46,7 @@ namespace LM {
 		const static int MAX_SIZE;
 		const static int BUFFER_ANGLE;
 		
-		const static bool MULTI_CAST=true;
+		const static bool MULTI_CAST;
 		
 		float dist_change;
 		float theta_change;
