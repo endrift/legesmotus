@@ -36,6 +36,9 @@ namespace LM {
 
 	class FuzzyLogicAI : public AI {
 	private:
+		const static float AREA_AVOID_WEIGHT;
+		const static float AREA_AVOID_SIZE;
+	
 		FuzzyLogic* m_fuzzy;
 		FuzzyEnvironment m_fuzzy_env;
 		const Configuration* m_config;

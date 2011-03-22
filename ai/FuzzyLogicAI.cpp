@@ -28,6 +28,9 @@
 using namespace LM;
 using namespace std;
 
+const float FuzzyLogicAI::AREA_AVOID_WEIGHT=500.0f;
+const float FuzzyLogicAI::AREA_AVOID_SIZE=150.0f;
+
 FuzzyLogicAI::FuzzyLogicAI(const Configuration* config, const GameLogic* logic) : AI(logic) {
 	m_fuzzy = new FuzzyLogic("default");
 	m_config = config;
@@ -436,11 +439,21 @@ float FuzzyLogicAI::find_desired_aim() {
 	}
 	m_was_grabbing = my_player->is_grabbing_obstacle();
 	
+	Pathfinder* pathfinder = get_pathfinder();
+	if (m_current_path.size() > 0) {
+		Pathfinder::AvoidArea avoidlast;
+		avoidlast.x = m_current_path[0].x;
+		avoidlast.y = m_current_path[0].y;
+		avoidlast.area = AREA_AVOID_SIZE;
+		avoidlast.weight = AREA_AVOID_WEIGHT;
+		pathfinder->add_avoid_area(&avoidlast);
+	}
+	
 	int total = aim_at_target + aim_to_jump + aim_at_gate;
 	if (total < 20) {
 		// Do nothing.
 		m_aim_reason = DO_NOTHING;
-		return m_last_aim;
+		desired_aim = m_last_aim;
 	} else {
 		int result = rand() % total;
 		if (result < aim_at_target) {
@@ -483,10 +496,10 @@ float FuzzyLogicAI::find_desired_aim() {
 					if (set_path(start, path)) {
 						desired_aim = get_next_aim(start, path);
 					} else {
-						return m_last_aim;
+						desired_aim = m_last_aim;
 					}
 				} else {
-					return m_last_aim;
+					desired_aim = m_last_aim;
 				}
 			}
 		} else {
@@ -506,6 +519,8 @@ float FuzzyLogicAI::find_desired_aim() {
 			}
 		}
 	}
+	
+	pathfinder->clear_avoid_areas();
 	
 	m_last_aim = desired_aim;
 	return desired_aim;

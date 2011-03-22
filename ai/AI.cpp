@@ -222,6 +222,10 @@ void AI::initialize_map_grapher() {
 	m_pathfinder.set_graph(get_map_graph());
 }
 
+Pathfinder* AI::get_pathfinder() {
+	return &m_pathfinder;
+}
+
 bool AI::find_path(const Player* my_player, float end_x, float end_y, float tolerance, std::vector<SparseIntersectMap::Intersect>& path, b2Vec2* start) {
 	ASSERT(start != NULL);
 

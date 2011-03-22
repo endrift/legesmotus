@@ -44,7 +44,13 @@ namespace LM {
 		};
 		
 	public:
-	
+		struct AvoidArea {
+			float x;
+			float y;
+			float area;
+			float weight;
+		};
+		
 		static std::map<SparseIntersectMap::Intersect, float, IntersectComparator> f_scores;
 		static std::map<SparseIntersectMap::Intersect, float, IntersectComparator> g_scores;
 		static std::map<SparseIntersectMap::Intersect, float, IntersectComparator> h_scores;
@@ -59,6 +65,7 @@ namespace LM {
 		};
 		
 		SparseIntersectMap* m_graph;
+		std::vector<AvoidArea*> m_avoid_areas;
 	
 		float estimate_h_score(SparseIntersectMap::Intersect intersect, float goal_x, float goal_y);
 	
@@ -66,11 +73,18 @@ namespace LM {
 		
 		void reconstruct_path(std::map<SparseIntersectMap::Intersect, SparseIntersectMap::Intersect, IntersectComparator>& came_from, SparseIntersectMap::Intersect current, std::vector<SparseIntersectMap::Intersect>& path);
 	
+		float calculate_g_score(SparseIntersectMap::Intersect node);
+		
 	public:
 		Pathfinder();
 		Pathfinder(SparseIntersectMap* graph);
+		~Pathfinder();
 	
 		void set_graph(SparseIntersectMap* graph);
+		
+		void add_avoid_area(AvoidArea* a);
+		
+		void clear_avoid_areas();
 		
 		// Fills the "path" with the path to the goal. Returns false if it cannot find one.
 		bool find_path(float start_x, float start_y, float goal_x, float goal_y, float tolerance, std::vector<SparseIntersectMap::Intersect>& path);

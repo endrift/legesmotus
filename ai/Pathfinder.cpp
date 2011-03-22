@@ -46,6 +46,10 @@ Pathfinder::Pathfinder(SparseIntersectMap* graph) {
 	set_graph(graph);
 }
 
+Pathfinder::~Pathfinder() {
+	clear_avoid_areas();
+}
+
 void Pathfinder::set_graph(SparseIntersectMap* graph) {
 	m_graph = graph;
 }
@@ -104,7 +108,7 @@ bool Pathfinder::find_path(float start_x, float start_y, float goal_x, float goa
 				continue;
 			}
 			
-			float tentative_g_score = g_scores[current] + neighbor.dist;
+			float tentative_g_score = g_scores[current] + calculate_g_score(neighbor);
 			
 			if (g_scores.find(neighbor) == g_scores.end() || g_scores[neighbor] > tentative_g_score) {
 				g_scores[neighbor] = tentative_g_score;
@@ -135,4 +139,21 @@ float Pathfinder::get_dist(SparseIntersectMap::Intersect node, float goal_x, flo
 float Pathfinder::estimate_h_score(SparseIntersectMap::Intersect node, float goal_x, float goal_y) {
 	// TODO: Is there a better heuristic?
 	return get_dist(node, goal_x, goal_y);
+}
+
+float Pathfinder::calculate_g_score(SparseIntersectMap::Intersect node) {
+	float g_score = node.dist;
+	for (unsigned int i = 0; i < m_avoid_areas.size(); i++) {
+		AvoidArea* undesired_loc = m_avoid_areas[i];
+		g_score += max(0.0f, (undesired_loc->area - get_dist(node, undesired_loc->x, undesired_loc->y))/undesired_loc->area * undesired_loc->weight);
+	}
+	return g_score;
+}
+
+void Pathfinder::add_avoid_area(AvoidArea* a) {
+	m_avoid_areas.push_back(a);
+}
+		
+void Pathfinder::clear_avoid_areas() {
+	m_avoid_areas.clear();
 }

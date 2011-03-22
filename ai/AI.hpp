@@ -129,6 +129,7 @@ namespace LM {
 		
 		bool find_path(const Player* my_player, float end_x, float end_y, float tolerance, std::vector<SparseIntersectMap::Intersect>& path, b2Vec2* start);
 		
+		Pathfinder* get_pathfinder();
 	};
 }
 
