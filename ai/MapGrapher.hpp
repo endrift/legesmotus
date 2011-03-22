@@ -44,6 +44,7 @@ namespace LM {
 	private:
 		const static int GRANULARITY;
 		const static int MAX_SIZE;
+		const static int BUFFER_ANGLE;
 		
 		const static bool MULTI_CAST=true;
 		

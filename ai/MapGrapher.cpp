@@ -37,6 +37,7 @@ using namespace std;
 
 const int MapGrapher::GRANULARITY = 4;
 const int MapGrapher::MAX_SIZE = 1000000;
+const int MapGrapher::BUFFER_ANGLE = 30;
 
 MapGrapher::MapGrapher() {
 	m_physics = NULL;
@@ -141,14 +142,14 @@ void MapGrapher::map_segment(b2Vec2 start, b2Vec2 end, PhysicsObject* obj) {
 	
 	// Go a little ways into the shape, so we don't accidentally start inside another shape as well,
 	// which would cause Box2D to ignore the other shape when raycasting, and give us incorrect results.
-	temp_vec.x = temp_vec.x - 4.0 * cos(to_radians(dir - 90));
-	temp_vec.y = temp_vec.y - 4.0 * sin(to_radians(dir - 90));
+	temp_vec.x = temp_vec.x - 1.0 * cos(to_radians(dir - 90));
+	temp_vec.y = temp_vec.y - 1.0 * sin(to_radians(dir - 90));
 	
 	b2Vec2 temp_vec2(temp_vec.x, temp_vec.y);
 	b2Vec2 temp_vec3(temp_vec.x, temp_vec.y);
 	
 	for (int dist = 0; dist <= length; dist += dist_change) {
-		for (float angle = dir - theta_change; angle > dir - 180 + theta_change; angle -= theta_change) {
+		for (float angle = dir - BUFFER_ANGLE - theta_change; angle > dir - (180-BUFFER_ANGLE) + theta_change; angle -= theta_change) {
 			
 			float normalized_angle = to_radians(get_normalized_angle(angle));
 			
