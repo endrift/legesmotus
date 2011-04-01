@@ -116,11 +116,9 @@ void MapGrapher::map_segment(b2Vec2 start, b2Vec2 end, PhysicsObject* obj) {
 	temp_vec -= end;
 	float length = temp_vec.Length();
 	temp_vec += end;
-	float dir = to_degrees(atan2(end.y - start.y, end.x - start.x));
+	float dir = get_normalized_angle(to_degrees(atan2(end.y - start.y, end.x - start.x)));
 	
 	SparseIntersectMap::Intersect isect;
-	
-	//DEBUG("Start: " << start.x << ", " << start.y << " End: " << end.x << ", " << end.y);
 	
 	int entries_checked = 0;
 	
