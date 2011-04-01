@@ -31,7 +31,7 @@
 namespace LM {
 	class AIController : public Controller {
 	private:
-		const static float MAX_AIM_VEL;
+		float m_max_aim_vel;
 		const static unsigned int AIM_TOLERANCE;
 	
 		AI* m_ai;

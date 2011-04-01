@@ -45,6 +45,7 @@ namespace LM {
 		const static int GRANULARITY;
 		const static int MAX_SIZE;
 		const static int BUFFER_ANGLE;
+		const static float MULTI_CAST_WIDTH;
 		
 		const static bool MULTI_CAST;
 		

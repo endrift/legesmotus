@@ -27,8 +27,7 @@
 using namespace LM;
 using namespace std;
 
-const float AIController::MAX_AIM_VEL = .03f;
-const unsigned int AIController::AIM_TOLERANCE = .01f;
+const unsigned int AIController::AIM_TOLERANCE = .005f;
 
 AIController::AIController(AI* ai) {
 	m_aim_reason = AI::DO_NOTHING;
@@ -40,6 +39,9 @@ AIController::AIController(AI* ai) {
 	m_wanted_aim = 0;
 	m_curr_aim = 0;
 	m_aim_reason = AI::DO_NOTHING;
+	
+	// TODO: load from config file
+	m_max_aim_vel = .06f;
 }
 
 float AIController::update_gun() {
@@ -55,7 +57,7 @@ float AIController::update_gun() {
 			dir *= -1;
 		}
 		
-		m_curr_aim += dir * min(MAX_AIM_VEL, dir * (m_wanted_aim - m_curr_aim));
+		m_curr_aim += dir * min(m_max_aim_vel, dir * (m_wanted_aim - m_curr_aim));
 	}
 	
 	return fabs(m_curr_aim - m_wanted_aim);

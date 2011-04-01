@@ -30,6 +30,7 @@ using namespace std;
 
 const float FuzzyLogicAI::AREA_AVOID_WEIGHT=500.0f;
 const float FuzzyLogicAI::AREA_AVOID_SIZE=150.0f;
+const uint64_t FuzzyLogicAI::ALLOWED_IDLE_TIME = 2000;
 
 FuzzyLogicAI::FuzzyLogicAI(const Configuration* config, const GameLogic* logic) : AI(logic) {
 	m_fuzzy = new FuzzyLogic("default");
@@ -39,8 +40,8 @@ FuzzyLogicAI::FuzzyLogicAI(const Configuration* config, const GameLogic* logic) 
 	
 	m_last_aim = 0.0f;
 	
-	// TODO: Load this from a config file?
-	max_aim_inaccuracy = 0.2f;
+	// TODO: Load this from a config file
+	m_max_aim_inaccuracy = 0.2f;
 	
 	m_aim_reason = DO_NOTHING;
 	
@@ -259,7 +260,12 @@ void FuzzyLogicAI::initialize_logic() {
 				)
 			),
 			// Are we already grabbing the gate?
-			m_fuzzy->make_terminal("can_see_enemy_gate", "touching")
+			new FuzzyLogic::Or(
+				m_fuzzy->make_terminal("can_see_enemy_gate", "touching"),
+				new FuzzyLogic::Not(
+					m_fuzzy->make_terminal("holding_gate", "not_holding")
+				)
+			)
 		)
 	);
 	
@@ -267,7 +273,7 @@ void FuzzyLogicAI::initialize_logic() {
 }
 
 void FuzzyLogicAI::randomize_aim_inaccuracy() {
-	float uncertainty = max_aim_inaccuracy;
+	float uncertainty = m_max_aim_inaccuracy;
 	m_aim_inaccuracy = (float)rand()/(float)RAND_MAX * uncertainty * 2 - uncertainty;
 }
 
@@ -450,12 +456,28 @@ float FuzzyLogicAI::find_desired_aim() {
 	}
 	
 	int total = aim_at_target + aim_to_jump + aim_at_gate;
+	if (total == 0) {
+		total = 1;
+	}
+	int result = rand() % total;
+	
+	bool take_action = true;
+	
 	if (total < 20) {
-		// Do nothing.
-		m_aim_reason = DO_NOTHING;
-		desired_aim = m_last_aim;
-	} else {
-		int result = rand() % total;
+		if (m_last_action < get_ticks() - ALLOWED_IDLE_TIME) {
+			// We've idled too long. Aim to jump.
+			result = aim_at_target + 1;
+		} else {
+			// Do nothing.
+			m_aim_reason = DO_NOTHING;
+			desired_aim = m_last_aim;
+			take_action = false;
+		}
+	}
+	
+	if (take_action) {
+		m_last_action = get_ticks();
+		
 		if (result < aim_at_target) {
 			// Aim at the target.
 			// Find the angle to turn towards the enemy.

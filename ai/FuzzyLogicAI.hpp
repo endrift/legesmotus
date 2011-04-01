@@ -38,6 +38,7 @@ namespace LM {
 	private:
 		const static float AREA_AVOID_WEIGHT;
 		const static float AREA_AVOID_SIZE;
+		const static uint64_t ALLOWED_IDLE_TIME;
 	
 		FuzzyLogic* m_fuzzy;
 		FuzzyEnvironment m_fuzzy_env;
@@ -45,8 +46,10 @@ namespace LM {
 		Player* m_target;
 		float m_last_aim;
 		AI::AimReason m_aim_reason;
-		float max_aim_inaccuracy;
+		float m_max_aim_inaccuracy;
 		float m_aim_inaccuracy;
+		
+		uint64_t m_last_action;
 		
 		SparseIntersectMap::Intersect m_jumping_towards;
 		std::vector<SparseIntersectMap::Intersect> m_current_path;
