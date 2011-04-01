@@ -85,12 +85,14 @@ void	Server::player_update(const IPAddress& address, PacketReader& inbound_packe
 
 		// Process the update packet
 		player->read_update_packet(inbound_packet);
-		
-		// Re-broadcast the packet to all _other_ players
-		PacketWriter	outbound_packet(PLAYER_UPDATE_PACKET);
-		player->write_update_packet(outbound_packet);
-		m_network.broadcast_packet(outbound_packet);
 	}
+}
+
+void	Server::send_player_update(Player* player) {
+	// Re-broadcast the packet to all _other_ players
+	PacketWriter	outbound_packet(PLAYER_UPDATE_PACKET);
+	player->write_update_packet(outbound_packet);
+	m_network.broadcast_packet(outbound_packet);
 }
 
 void	Server::player_animation(const IPAddress& address, PacketReader& inbound_packet)
@@ -792,6 +794,7 @@ void	Server::run()
 {
 	m_is_running = true;
 	uint64_t last_logic_update = get_ticks();
+	uint64_t last_player_update = get_ticks();
 	
 	set<uint32_t> frozen_players;
 	
@@ -835,17 +838,21 @@ void	Server::run()
 		}
 		
 		uint64_t diff = get_ticks() - last_logic_update;
+		
+		float curr_logic_update = 0;
+		
 		if (diff > 10) {
-			last_logic_update = get_ticks();
+			curr_logic_update = get_ticks();
 			if (m_game_logic != NULL) {
 				uint64_t extratime = m_game_logic->steps(diff);
 				
 				// Keep track of the extra time between updates.
-				last_logic_update -= extratime;
+				curr_logic_update -= extratime;
 				
 				// Check for newly-dead players or players engaging gates:
 				for (PlayerMap::iterator it(m_players.begin()); it != m_players.end(); ++it) {
 					ServerPlayer& player = it->second;
+					
 					// Check for gates
 					char team = get_other_team(player. get_team());
 					bool is_engaged = m_game_logic->is_engaging_gate(player.get_id(), team);
@@ -866,11 +873,34 @@ void	Server::run()
 							}
 						}
 					}
+					
+					
 				}
 			}
 		}
 		
-		m_network.receive_packets(server_sleep_time());
+		// Check if we need to re-send player updates.
+		float curr_time = get_ticks();
+		if (last_player_update <= curr_time - PLAYER_UPDATE_RATE) {
+			last_player_update = curr_time;
+			
+			for (PlayerMap::iterator it(m_players.begin()); it != m_players.end(); ++it) {
+				ServerPlayer& player = it->second;
+				send_player_update(&player);
+			}
+		}
+		
+		m_network.receive_packets(0); // old version: server_sleep_time()
+		
+		if (curr_logic_update != 0) {
+			last_logic_update = curr_logic_update;
+		}
+		
+		float totaltime = get_ticks() - last_logic_update;
+		
+		if (totaltime < 17) {
+			msleep(17 - totaltime);
+		}
 	}
 
 	// Kick any players still in the game!

@@ -39,6 +39,7 @@ using namespace LM;
 using namespace std;
 
 const uint64_t Client::MAX_CONTINUOUS_JUMP_FREQUENCY = 200;
+const uint64_t Client::PLAYER_UPDATE_RATE = 34;
 
 Client::Client() : m_network(this) {
 	m_logic = NULL;
@@ -47,6 +48,7 @@ Client::Client() : m_network(this) {
 	m_config = NULL;
 	m_jumping = false;
 	m_last_jump_time = 0;
+	m_last_player_update = 0;
 
 	m_weapon_switch_time = 0;
 	m_weapon_switch_delay = 300;
@@ -111,10 +113,13 @@ uint64_t Client::step(uint64_t diff) {
 	
 	// Step the GameLogic.
 	diff = m_logic->steps(diff);
-
-	Packet p;
-	generate_player_update(m_player_id, &p);
-	m_network.send_packet(&p);
+	
+	if (m_last_player_update < get_ticks() - PLAYER_UPDATE_RATE) {
+		Packet p;
+		generate_player_update(m_player_id, &p);
+		m_network.send_packet(&p);
+		m_last_player_update = get_ticks();
+	}
 	
 	// Check the weapon for hitting any players:
 	check_player_hits();

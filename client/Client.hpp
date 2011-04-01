@@ -40,6 +40,7 @@ namespace LM {
 	class Client : public PacketReceiver {
 	private:
 		const static uint64_t MAX_CONTINUOUS_JUMP_FREQUENCY;
+		const static uint64_t PLAYER_UPDATE_RATE;
 	
 		Controller* m_controller;
 		GameLogic* m_logic;
@@ -51,6 +52,7 @@ namespace LM {
 		uint64_t m_last_jump_time;
 		uint64_t m_weapon_switch_time;
 		uint64_t m_weapon_switch_delay;
+		uint64_t m_last_player_update;
 
 		bool m_running;
 		

@@ -56,6 +56,7 @@ namespace LM {
 		// Internal time constants - should not be set by user
 		// in milliseconds
 		enum {
+			PLAYER_UPDATE_RATE = 34,
 			GATE_UPDATE_FREQUENCY = 100,		// When a gate is down, update players at least once every 100 ms
 			PLAYER_TIMEOUT = 10000			// Kick players who have not updated for 10 seconds
 		};
@@ -142,6 +143,7 @@ namespace LM {
 		void			send_new_round_packets(const ServerPlayer* player =NULL); // Also broadcasts game and weapon info
 		void			send_round_start_packet(const ServerPlayer* player =NULL);
 		void			broadcast_player_died(const ServerPlayer* dead_player, const ServerPlayer* except = NULL);
+		void			send_player_update(Player* player);
 
 		// Send all the relevant game parameters to the client (should be called at the beginning of each new game)
 		// If player is NULL, broadcast to all players, otherwise only to specific player

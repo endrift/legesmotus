@@ -108,7 +108,10 @@ bool	ServerNetwork::receive_packets(uint32_t timeout) {
 #endif
 
 	// Block until packets are received, timeout has elapsed, or a signal has been received.
-	bool		has_packets = m_socket.has_packets(timeout);
+	bool		has_packets = true;
+	if (timeout != 0) {
+		has_packets = m_socket.has_packets(timeout);
+	}
 
 #ifndef __WIN32
 	// Restore the old signal mask
