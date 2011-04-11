@@ -53,43 +53,44 @@ namespace LM {
 	};
 
 	template <typename K, typename S>
-	FiniteStateMachine::FiniteStateMachine(K start_state) {
-		m_state = start_state;
+	FiniteStateMachine<K, S>::FiniteStateMachine(const K& start_state) {
+		m_current_state = start_state;
 	}
 
-	void FiniteStateMachine::set_state_data(const K& id, S* state) {
+	template <typename K, typename S>
+	void FiniteStateMachine<K, S>::set_state_data(const K& id, S* state) {
 		m_statelist[id] = state;
 	}
 
 	template <typename K, typename S>
-	const S* FiniteStateMachine::get_state_data(const K& id) const {
+	const S* FiniteStateMachine<K, S>::get_state_data(const K& id) const {
 		ASSERT(m_statelist->find(id) != m_statelist->end());
 		return m_statelist->find(id)->second;
 	}
 
 	template <typename K, typename S>
-	S* FiniteStateMachine::get_state_data(const K& id) {
+	S* FiniteStateMachine<K, S>::get_state_data(const K& id) {
 		ASSERT(m_statelist->find(id) != m_statelist->end());
 		return m_statelist->find(id)->second;
 	}
 
 	template <typename K, typename S>
-	const K& FiniteStateMachine::get_current_state() const {
+	const K& FiniteStateMachine<K, S>::get_current_state() const {
 		return m_current_state;
 	}
 
 	template <typename K, typename S>
-	const S* FiniteStateMachine::get_current_state_data() const {
+	const S* FiniteStateMachine<K, S>::get_current_state_data() const {
 		return get_state_data(m_current_state);
 	}
 
 	template <typename K, typename S>
-	S* FiniteStateMachine::get_current_state_data() {
+	S* FiniteStateMachine<K, S>::get_current_state_data() {
 		return get_state_data(m_current_state);
 	}
 
 	template <typename K, typename S>
-	const K& FiniteStateMachine::transition() {
+	const K& FiniteStateMachine<K, S>::transition() {
 		m_current_state = get_transition();
 		return m_current_state;
 	}
