@@ -91,6 +91,18 @@ namespace LM {
 		virtual int		get_current_ammo () const { return 0; }
 		virtual bool		has_limited_ammo () const { return get_total_ammo() != 0; }
 		
+		// Get the standard damage of the weapon.
+		virtual int		get_damage() const;
+		// Point should be in game coords.
+		virtual int		get_damage_at_point(int start_x, int start_y, int target_x, int target_y) const;
+		
+		// Get the force that will be applied by the weapon to the target.
+		virtual float		get_base_force() const;
+		virtual float		get_force(int start_x, int start_y, int target_x, int target_y) const;
+		
+		// Get the automatic freeze time that will be applied by the weapon to the target.
+		virtual float		get_freeze_time() const;
+		
 		// TODO: set up mouse events?
 
 		static Weapon*		new_weapon (WeaponReader&, ClientWeapon* clientpart = NULL);

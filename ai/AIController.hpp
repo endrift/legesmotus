@@ -39,6 +39,8 @@ namespace LM {
 		int m_changes[2];
 		int m_changeset;
 		
+		int m_current_weapon;
+		
 		float m_wanted_aim; // Radians
 		float m_curr_aim; // Radians
 		AI::AimReason m_aim_reason; // Why are we aiming towards the desired location?

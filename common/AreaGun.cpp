@@ -292,3 +292,34 @@ Packet::PlayerHit* AreaGun::generate_next_hit_packet(Packet::PlayerHit* p, Playe
 
 	return p;
 }
+
+int AreaGun::get_damage() const {
+	return m_damage;
+}
+
+int AreaGun::get_damage_at_point(int start_x, int start_y, int target_x, int target_y) const {
+	float distance = sqrt((target_y - start_y) * (target_y - start_y) + (target_x - start_x) * (target_x - start_x));
+	float fraction = distance/m_max_range;
+	// Estimate the actual damage at this range.
+	float actualdamage = m_damage - m_damage_degradation * m_max_range * fraction;
+	if (distance > m_max_range) {
+		return 0;
+	}
+	if (actualdamage <= 0) {
+		actualdamage = 0;
+	}
+	return actualdamage;
+}
+
+float AreaGun::get_base_force() const {
+	return m_force;
+}
+
+float AreaGun::get_force(int start_x, int start_y, int target_x, int target_y) const {
+	return m_force;
+}
+
+float AreaGun::get_freeze_time() const {
+	return m_freeze_time;
+}
+

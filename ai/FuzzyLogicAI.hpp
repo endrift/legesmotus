@@ -39,6 +39,7 @@ namespace LM {
 		const static float AREA_AVOID_WEIGHT;
 		const static float AREA_AVOID_SIZE;
 		const static uint64_t ALLOWED_IDLE_TIME;
+		const static uint64_t MAX_WEAPON_SWITCH_FREQ;
 	
 		FuzzyLogic* m_fuzzy;
 		FuzzyEnvironment m_fuzzy_env;
@@ -48,6 +49,9 @@ namespace LM {
 		AI::AimReason m_aim_reason;
 		float m_max_aim_inaccuracy;
 		float m_aim_inaccuracy;
+		
+		int m_curr_weapon;
+		uint64_t m_last_weapon_switch;
 		
 		uint64_t m_last_action;
 		
@@ -63,6 +67,7 @@ namespace LM {
 		int m_rule_run_away;
 		int m_rule_jump_at_gate;
 		int m_rule_dont_jump;
+		int m_rule_weapon_fitness;
 
 		void initialize_logic();
 		void populate_environment();
@@ -71,7 +76,10 @@ namespace LM {
 		
 		virtual bool set_path(b2Vec2 start, std::vector<SparseIntersectMap::Intersect>& path);
 		virtual float get_next_aim(b2Vec2 start, std::vector<SparseIntersectMap::Intersect>& path);
+		virtual bool check_switch_weapons(const GameLogic& logic);
 
+		// For putting values in the FuzzyLogic that have both player and weapon ID dependencies:
+		long get_combo_id(const Player* player, const Weapon* weapon);
 	public:
 		FuzzyLogicAI(const Configuration* config, const GameLogic* logic = NULL);
 		virtual ~FuzzyLogicAI();
@@ -81,6 +89,8 @@ namespace LM {
 		virtual void randomize_aim_inaccuracy();
 		virtual float find_desired_aim();
 		virtual AimReason get_aim_reason();
+		
+		virtual int get_curr_weapon() const;
 	};
 }
 

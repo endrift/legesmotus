@@ -106,6 +106,10 @@ AI::AimReason AI::get_aim_reason() {
 	return DO_NOTHING;
 }
 
+int AI::get_curr_weapon() const {
+	return 0;
+}
+
 // Utility methods for get_vars():
 
 float AI::dist_between_players(const Player* first, const Player* second) const {

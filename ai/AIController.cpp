@@ -36,6 +36,8 @@ AIController::AIController(AI* ai) {
 	
 	m_changeset = 0;
 	
+	m_current_weapon = 0;
+	
 	m_wanted_aim = 0;
 	m_curr_aim = 0;
 	m_aim_reason = AI::DO_NOTHING;
@@ -86,6 +88,12 @@ void AIController::update(uint64_t diff, const GameLogic& state, int player_id) 
 		// Determine new desired aim.
 		m_wanted_aim = m_ai->find_desired_aim();
 		m_aim_reason = m_ai->get_aim_reason();
+		
+		// Determine whether the AI switched weapons.
+		if (m_current_weapon != m_ai->get_curr_weapon()) {
+			m_changes[m_changeset ^ 1] |= CHANGE_WEAPON;
+			m_current_weapon = m_ai->get_curr_weapon();
+		}
 	}
 	
 	// Turn gun towards wanted aim.
@@ -119,7 +127,7 @@ float AIController::get_distance() const {
 }
 
 int AIController::get_weapon() const {
-	return 0;
+	return m_current_weapon;
 }
 
 wstring AIController::get_message() const {

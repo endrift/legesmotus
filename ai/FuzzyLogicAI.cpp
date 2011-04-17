@@ -24,6 +24,7 @@
 
 #include "FuzzyLogicAI.hpp"
 #include "common/team.hpp"
+#include "common/Weapon.hpp"
 
 using namespace LM;
 using namespace std;
@@ -31,6 +32,7 @@ using namespace std;
 const float FuzzyLogicAI::AREA_AVOID_WEIGHT=500.0f;
 const float FuzzyLogicAI::AREA_AVOID_SIZE=150.0f;
 const uint64_t FuzzyLogicAI::ALLOWED_IDLE_TIME = 2000;
+const uint64_t FuzzyLogicAI::MAX_WEAPON_SWITCH_FREQ = 5000;
 
 FuzzyLogicAI::FuzzyLogicAI(const Configuration* config, const GameLogic* logic) : AI(logic) {
 	m_fuzzy = new FuzzyLogic("default");
@@ -44,6 +46,11 @@ FuzzyLogicAI::FuzzyLogicAI(const Configuration* config, const GameLogic* logic) 
 	m_max_aim_inaccuracy = 0.2f;
 	
 	m_aim_reason = DO_NOTHING;
+	
+	m_curr_weapon = 0;
+	m_last_weapon_switch = 0;
+	
+	m_last_action = 0;
 	
 	m_found_path = false;
 	
@@ -74,6 +81,9 @@ void FuzzyLogicAI::initialize_logic() {
 	m_fuzzy->load_category(m_config, "can_see_my_gate");
 	m_fuzzy->load_category(m_config, "other_can_see_enemy_gate");
 	m_fuzzy->load_category(m_config, "other_can_see_own_gate");
+	m_fuzzy->load_category(m_config, "weap_damage_at_player");
+	m_fuzzy->load_category(m_config, "weap_freeze_time");
+	m_fuzzy->load_category(m_config, "weap_force");
 	
 	// Load the rules.
 	m_rule_dangerous = m_fuzzy->add_rule("dangerous", 
@@ -269,6 +279,26 @@ void FuzzyLogicAI::initialize_logic() {
 		)
 	);
 	
+	m_rule_weapon_fitness = m_fuzzy->add_rule("weapon_fitness",
+		new FuzzyLogic::Or(
+			new FuzzyLogic::And(
+				m_fuzzy->make_terminal("weap_damage_at_player", "freeze"),
+				new FuzzyLogic::Or(
+					m_fuzzy->make_terminal("gun_cooldown", "ready"),
+					m_fuzzy->make_terminal("gun_cooldown", "almost_ready")
+				)
+			),
+			new FuzzyLogic::And(
+				new FuzzyLogic::Not(
+					m_fuzzy->make_terminal("other_holding_gate", "not_holding")
+				),
+				new FuzzyLogic::Not(
+					m_fuzzy->make_terminal("weap_freeze_time", "none")
+				)
+			)
+		)
+	);
+	
 	//m_rule_touching_gate = m_fuzzy->add_rule("touching_gate", m_fuzzy->make_terminal("can_see_enemy_gate", "touching"));
 }
 
@@ -325,6 +355,9 @@ void FuzzyLogicAI::step(const GameLogic& logic, uint64_t diff) {
 	}
 	
 	m_target = best_target;
+	
+	// Check if we should switch weapons.
+	check_switch_weapons(logic);
 }
 
 bool FuzzyLogicAI::set_path(b2Vec2 start, vector<SparseIntersectMap::Intersect>& path) {
@@ -344,6 +377,10 @@ float FuzzyLogicAI::get_next_aim(b2Vec2 start, vector<SparseIntersectMap::Inters
 	float desired_aim = atan2(y_dist, x_dist);
 	m_aim_reason = JUMP;
 	return desired_aim;
+}
+
+long FuzzyLogicAI::get_combo_id(const Player* player, const Weapon* weapon) {
+	return (weapon->get_id() | (player->get_id() << 16));
 }
 
 void FuzzyLogicAI::populate_environment() {
@@ -392,7 +429,20 @@ void FuzzyLogicAI::populate_environment() {
 		m_fuzzy_env.add_input(m_fuzzy->get_category_id("can_see_my_gate"), other_player, can_see_gate(my_player, allied_gate));
 		m_fuzzy_env.add_input(m_fuzzy->get_category_id("other_can_see_enemy_gate"), other_player, can_see_gate(other_player, other_enemy_gate));
 		m_fuzzy_env.add_input(m_fuzzy->get_category_id("other_can_see_own_gate"), other_player, can_see_gate(other_player, other_allied_gate));
-	}
+		
+		// Populate each weapon-choosing-related category for each of the other players.
+		ConstIterator<Weapon*> weapons = logic->list_weapons();
+	
+		while (weapons.has_more()) {
+			Weapon* weapon = weapons.next();
+			
+			m_fuzzy_env.add_input(m_fuzzy->get_category_id("weap_damage_at_player"), get_combo_id(other_player, weapon),  weapon->get_damage_at_point(my_player->get_x(), my_player->get_y(), other_player->get_x(), other_player->get_y()));
+			m_fuzzy_env.add_input(m_fuzzy->get_category_id("weap_freeze_time"), get_combo_id(other_player, weapon),  weapon->get_freeze_time());
+			m_fuzzy_env.add_input(m_fuzzy->get_category_id("weap_force"), get_combo_id(other_player, weapon),  weapon->get_force(my_player->get_x(), my_player->get_y(), other_player->get_x(), other_player->get_y()));
+			m_fuzzy_env.add_input(m_fuzzy->get_category_id("gun_cooldown"), get_combo_id(other_player, weapon),  weapon->get_remaining_cooldown());
+			m_fuzzy_env.add_input(m_fuzzy->get_category_id("other_holding_gate"), get_combo_id(other_player, weapon), holding_gate(my_player));
+		}
+	}	
 }
 
 float FuzzyLogicAI::find_desired_aim() {
@@ -548,8 +598,62 @@ float FuzzyLogicAI::find_desired_aim() {
 	return desired_aim;
 }
 
+bool FuzzyLogicAI::check_switch_weapons(const GameLogic& logic) {
+	if (m_last_weapon_switch < get_ticks() - MAX_WEAPON_SWITCH_FREQ && m_target != NULL) {
+		// Determine whether we should switch weapons.
+		int total_weapon_val = 0;
+		
+		int weapon_vals[logic.num_weapons()];
+		
+		int best_weapon = m_curr_weapon;
+
+		
+		ConstIterator<Weapon*> weapons = logic.list_weapons();
+
+		while (weapons.has_more()) {
+			Weapon* weapon = weapons.next();
+		
+			float weapon_fitness = m_fuzzy->decide(m_rule_weapon_fitness, get_combo_id(m_target, weapon), m_fuzzy_env);
+		
+			// Favor the current weapon.
+			if (weapon->get_id() == m_curr_weapon && weapon_fitness >= 0.95f) {
+				weapon_fitness *= 50.0f;
+			}
+			
+			total_weapon_val += weapon_fitness * 100.0f;
+			weapon_vals[weapon->get_id()] = weapon_fitness * 100.0f;
+		}
+		
+		if (total_weapon_val != 0) {
+			int result = rand() % total_weapon_val;
+			int i = 0;
+			//DEBUG("Total: " << total_weapon_val << " Result: " << result);
+			while(result > 0 && i < logic.num_weapons()) {
+				result -= weapon_vals[i];
+				if (result <= 0) {
+					best_weapon = i;
+				}
+				i++;
+			}
+		}
+	
+		if (m_curr_weapon != best_weapon) {
+			DEBUG("AI switching to: " << best_weapon);
+			m_last_weapon_switch = get_ticks();
+			m_curr_weapon = best_weapon;
+			return true;
+		}
+	}
+	
+	return false;
+}
+
 AI::AimReason FuzzyLogicAI::get_aim_reason() {
 	return m_aim_reason;
+}
+
+int FuzzyLogicAI::get_curr_weapon() const {
+	return m_curr_weapon;
 }
 
 const std::vector<SparseIntersectMap::Intersect>* FuzzyLogicAI::get_current_path() const {

@@ -221,13 +221,70 @@ uint64_t StandardGun::get_remaining_cooldown() const {
 	return 0;
 }
 
-int StandardGun::get_current_ammo () const {
+int StandardGun::get_current_ammo() const {
 	if (m_last_fired_time && m_ammo_recharge) {
 		// Take into account the ammo recharge that has occurred since last firing
 		uint64_t	time_since_fire = get_ticks() - m_last_fired_time;
 		return min<int>(m_total_ammo, m_current_ammo + time_since_fire / m_ammo_recharge);
 	}
 	return m_current_ammo;
+}
+
+int StandardGun::get_damage() const {
+	return m_damage;
+}
+
+int StandardGun::get_damage_at_point(int start_x, int start_y, int target_x, int target_y) const {
+	float distance = sqrt((target_y - start_y) * (target_y - start_y) + (target_x - start_x) * (target_x - start_x));
+	float fraction = distance/m_max_range;
+	// Estimate the actual damage at this range.
+	float actualdamage = m_damage - m_damage_degradation * m_max_range * fraction;
+	if (distance > m_max_range) {
+		return 0;
+	}
+	if (actualdamage <= 0) {
+		actualdamage = 0;
+	}
+	// Estimate the number of projectiles that will hit.
+	if (m_nbr_projectiles > 1) {
+		int num_missed = 0;
+		float spread = m_angle * distance;
+		if (spread > Player::PLAYER_HEIGHT) {
+			num_missed = 2 * spread/Player::PLAYER_HEIGHT;
+			if (num_missed >= m_nbr_projectiles) {
+				num_missed = m_nbr_projectiles-1;
+			}
+		}
+		actualdamage *= m_nbr_projectiles - num_missed;
+	}
+	return actualdamage;
+}
+
+float StandardGun::get_base_force() const {
+	return m_recoil;
+}
+
+float StandardGun::get_force(int start_x, int start_y, int target_x, int target_y) const {
+	if (m_nbr_projectiles <= 1) {
+		return m_recoil;
+	}
+	
+	float distance = sqrt((target_y - start_y) * (target_y - start_y) + (target_x - start_x) * (target_x - start_x));
+	
+	// Estimate the number of projectiles that will hit.
+	int num_missed = 0;
+	float spread = m_angle * distance;
+	if (spread > Player::PLAYER_HEIGHT) {
+		num_missed = 2 * spread/Player::PLAYER_HEIGHT;
+		if (num_missed >= m_nbr_projectiles) {
+			num_missed = m_nbr_projectiles-1;
+		}
+	}
+	return (m_recoil * (m_nbr_projectiles - num_missed)) / m_nbr_projectiles;
+}
+
+float StandardGun::get_freeze_time() const {
+	return m_freeze_time;
 }
 
 Packet::PlayerHit* StandardGun::generate_next_hit_packet(Packet::PlayerHit* p, Player* shooter) {
@@ -332,3 +389,4 @@ float32 StandardGun::ReportFixture(b2Fixture* fixture, const b2Vec2& point, cons
 	
 	return 1;
 }
+

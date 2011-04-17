@@ -92,6 +92,13 @@ namespace LM {
 		virtual int		get_total_ammo () const { return m_total_ammo; }
 		virtual int		get_current_ammo () const;
 		
+		virtual int		get_damage() const;
+		virtual int		get_damage_at_point(int start_x, int start_y, int target_x, int target_y) const;
+		virtual float		get_base_force() const;
+		virtual float		get_force(int start_x, int start_y, int target_x, int target_y) const;
+		
+		virtual float		get_freeze_time() const;
+		
 		Packet::PlayerHit* generate_next_hit_packet(Packet::PlayerHit* p, Player* shooter);
 	};
 }

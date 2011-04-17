@@ -98,3 +98,22 @@ void Weapon::select(Player* player) {
 	}
 }
 
+int Weapon::get_damage() const {
+	return 0;
+}
+
+int Weapon::get_damage_at_point(int start_x, int start_y, int target_x, int target_y) const {
+	return 0;
+}
+
+float Weapon::get_base_force() const {
+	return 0;
+}
+
+float Weapon::get_force(int start_x, int start_y, int target_x, int target_y) const {
+	return 0;
+}
+
+float Weapon::get_freeze_time() const {
+	return 0;
+}

@@ -88,6 +88,8 @@ namespace LM {
 		void set_other_player(const Player* other_player);
 		const Player* get_other_player() const;
 		
+		virtual int get_curr_weapon() const;
+		
 		// Begin methods used to get various data that can be passed to the Fuzzy Logic system.
 		
 		// Distance between players, in game (not physics) units
