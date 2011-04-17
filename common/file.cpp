@@ -116,7 +116,7 @@ const char* LM::user_dir() {
 	if (SUCCEEDED(err)) {
 		dir = path;
 		dir += "\\Leges Motus\\";
-		if (!CreateDirectory(cfg.c_str(), NULL)) {
+		if (!CreateDirectory(dir.c_str(), NULL)) {
 			if (GetLastError() != ERROR_ALREADY_EXISTS) {
 				WARN("Couldn't create config directory");
 			}
