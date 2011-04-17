@@ -31,7 +31,7 @@ namespace LM {
 	template <typename K, typename S>
 	class FiniteStateMachine {
 	private:
-		const K& m_current_state;
+		K m_current_state;
 		std::map<K, S*> m_statelist;
 
 	protected:
@@ -53,8 +53,8 @@ namespace LM {
 	};
 
 	template <typename K, typename S>
-	FiniteStateMachine<K, S>::FiniteStateMachine(const K& start_state) {
-		m_current_state = start_state;
+	FiniteStateMachine<K, S>::FiniteStateMachine(const K& start_state) : m_current_state(start_state) {
+		// Nothing to do
 	}
 
 	template <typename K, typename S>
@@ -64,14 +64,14 @@ namespace LM {
 
 	template <typename K, typename S>
 	const S* FiniteStateMachine<K, S>::get_state_data(const K& id) const {
-		ASSERT(m_statelist->find(id) != m_statelist->end());
-		return m_statelist->find(id)->second;
+		ASSERT(m_statelist.find(id) != m_statelist.end());
+		return m_statelist.find(id)->second;
 	}
 
 	template <typename K, typename S>
 	S* FiniteStateMachine<K, S>::get_state_data(const K& id) {
-		ASSERT(m_statelist->find(id) != m_statelist->end());
-		return m_statelist->find(id)->second;
+		ASSERT(m_statelist.find(id) != m_statelist.end());
+		return m_statelist.find(id)->second;
 	}
 
 	template <typename K, typename S>
