@@ -33,8 +33,8 @@ BACKGROUND	3072,3072	metal_wall_se32
 # Gates
 GATE	-15,1479	blue_gate	team=blue
 GATE	3079,1479	red_gate	team=red
-FORCE	0,1536	-	circle:512	frozen	sucks-off-obstacles	gravity=-200
-FORCE	3072,1536	-	circle:512	frozen	sucks-off-obstacles	gravity=-200
+FORCE	0,1536	-	circle:512	frozen	sucks-off-obstacles	gravity=-2
+FORCE	3072,1536	-	circle:512	frozen	sucks-off-obstacles	gravity=-2
 
 # Spawnpoints
 SPAWN	0,1536		BLUE

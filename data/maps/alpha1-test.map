@@ -36,8 +36,20 @@ FORCE	0,512	-	circle:512	frozen	sucks-off-obstacles	gravity=-2
 FORCE	2048,512	-	circle:512	frozen	sucks-off-obstacles	gravity=-2
 
 # Spawnpoints
+SPAWN	0,128		BLUE	notgrabbing	velocity=-1,0
+SPAWN	0,256		BLUE	notgrabbing	velocity=-1,0
+SPAWN	0,384		BLUE	notgrabbing	velocity=-1,0
 SPAWN	0,512		BLUE	notgrabbing	velocity=-1,0
+SPAWN	0,640		BLUE	notgrabbing	velocity=-1,0
+SPAWN	0,768		BLUE	notgrabbing	velocity=-1,0
+SPAWN	0,896		BLUE	notgrabbing	velocity=-1,0
+SPAWN	2048,128	RED	notgrabbing	velocity=1,0
+SPAWN	2048,256	RED	notgrabbing	velocity=1,0
+SPAWN	2048,384	RED	notgrabbing	velocity=1,0
 SPAWN	2048,512	RED	notgrabbing	velocity=1,0
+SPAWN	2048,640	RED	notgrabbing	velocity=1,0
+SPAWN	2048,768	RED	notgrabbing	velocity=1,0
+SPAWN	2048,896	RED	notgrabbing	velocity=1,0
 
 # Blocks in front of blue gate
 OBSTACLE	192,256	metal_obstacle128	rect:128,128	rotate=15
