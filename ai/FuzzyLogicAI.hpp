@@ -46,19 +46,21 @@ namespace LM {
 		const Configuration* m_config;
 		Player* m_target;
 		float m_last_aim;
-		AI::AimReason m_aim_reason;
 		float m_max_aim_inaccuracy;
 		float m_aim_inaccuracy;
-		
-		int m_curr_weapon;
 		uint64_t m_last_weapon_switch;
-		
 		uint64_t m_last_action;
 		
 		SparseIntersectMap::Intersect m_jumping_towards;
 		std::vector<SparseIntersectMap::Intersect> m_current_path;
 		bool m_found_path;
 		bool m_was_grabbing;
+
+		// Cached state
+		float m_max_aim_vel;
+		float m_desired_aim;
+		AI::AimReason m_aim_reason;
+		int m_curr_weapon;
 		
 		// Fuzzy Logic Rules
 		int m_rule_dangerous;
@@ -85,12 +87,21 @@ namespace LM {
 		virtual ~FuzzyLogicAI();
 		
 		virtual const std::vector<SparseIntersectMap::Intersect>* get_current_path() const;
-		
+
+		// TODO: make these const
 		virtual void randomize_aim_inaccuracy();
 		virtual float find_desired_aim();
 		virtual AimReason get_aim_reason();
 		
 		virtual int get_curr_weapon() const;
+
+		float get_last_aim() const;
+		float get_max_aim_inaccuracy() const;
+		uint64_t get_last_weapon_switch() const;
+		uint64_t get_last_action() const;
+		const SparseIntersectMap::Intersect& get_jumping_towards() const;
+		bool was_path_found() const;
+		bool was_grabbing() const;
 	};
 }
 

@@ -29,6 +29,7 @@
 
 namespace LM {
 	class FuzzyEnvironment;
+	class FuzzyLogicAI;
 
 	class FuzzyLogicState {
 	private:
@@ -44,7 +45,7 @@ namespace LM {
 		virtual AI::AimReason get_aim_reason() const = 0;
 		virtual int get_curr_weapon() const = 0;
 
-		virtual void decide(FuzzyEnvironment* env, const GameLogic& logic) = 0;
+		virtual void decide(FuzzyLogicAI* ai, FuzzyEnvironment* env, const GameLogic& logic) = 0;
 	};
 }
 

@@ -28,19 +28,11 @@ using namespace LM;
 using namespace std;
 
 FuzzyLogicFSM::FuzzyLogicFSM(const string& start_state) : FiniteStateMachine<string, FuzzyLogicState>(start_state) {
-	m_curr_player = NULL;
+	// Nothing to do
 }
 
 const string& FuzzyLogicFSM::get_transition() {
 	return get_current_state_data()->next_state()->get_name();
-}
-
-void FuzzyLogicFSM::set_player(const Player* curr_player) {
-	m_curr_player = curr_player;
-}
-
-const Player* FuzzyLogicFSM::get_player() const {
-	return m_curr_player;
 }
 
 float FuzzyLogicFSM::get_max_aim_vel() const {
@@ -59,6 +51,6 @@ int FuzzyLogicFSM::get_curr_weapon() const {
 	return get_current_state_data()->get_curr_weapon();
 }
 
-void FuzzyLogicFSM::decide(FuzzyEnvironment* env, const GameLogic& logic) {
-	return get_current_state_data()->decide(env, logic);
+void FuzzyLogicFSM::decide(FuzzyLogicAI* ai, FuzzyEnvironment* env, const GameLogic& logic) {
+	return get_current_state_data()->decide(ai, env, logic);
 }

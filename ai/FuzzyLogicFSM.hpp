@@ -33,30 +33,20 @@
 
 namespace LM {
 	class Player;
-	class FuzzyEnvironment;
 
 	class FuzzyLogicFSM : public FiniteStateMachine<std::string, FuzzyLogicState> {
-	private:
-		const Player* m_curr_player;
-
 	protected:
 		virtual const std::string& get_transition();
 
 	public:
 		FuzzyLogicFSM(const std::string& start_state);
 
-		void set_player(const Player* curr_player);
-		const Player* get_player() const;
-
 		float get_max_aim_vel() const;
 		float find_desired_aim() const;
 		AI::AimReason get_aim_reason() const;
 		int get_curr_weapon() const;
 
-		// TODO: figure out pathfinding location
-		//Point desired_destination() const;
-
-		void decide(FuzzyEnvironment* env, const GameLogic& logic);
+		void decide(FuzzyLogicAI* ai, FuzzyEnvironment* env, const GameLogic& logic);
 	};
 }
 

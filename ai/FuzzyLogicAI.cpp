@@ -659,3 +659,31 @@ int FuzzyLogicAI::get_curr_weapon() const {
 const std::vector<SparseIntersectMap::Intersect>* FuzzyLogicAI::get_current_path() const {
 	return &m_current_path;
 }
+
+float FuzzyLogicAI::get_last_aim() const {
+	return m_last_aim;
+}
+
+float FuzzyLogicAI::get_max_aim_inaccuracy() const {
+	return m_max_aim_inaccuracy;
+}
+
+uint64_t FuzzyLogicAI::get_last_weapon_switch() const {
+	return m_last_weapon_switch;
+}
+
+uint64_t FuzzyLogicAI::get_last_action() const {
+	return m_last_action;
+}
+
+const SparseIntersectMap::Intersect& FuzzyLogicAI::get_jumping_towards() const {
+	return m_jumping_towards;
+}
+
+bool FuzzyLogicAI::was_path_found() const {
+	return m_found_path;
+}
+
+bool FuzzyLogicAI::was_grabbing() const {
+	return m_was_grabbing;
+}
