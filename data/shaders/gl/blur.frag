@@ -3,8 +3,8 @@ uniform float d;
 uniform int ksize;
 
 void main() {
-	vec4 csum;
-	float sum;
+	vec4 csum = vec4(0.0, 0.0, 0.0, 0.0);
+	float sum = 0.0;
 	vec2 t = gl_TexCoord[0].st;
 	for (int i = 0; i < ksize; ++i) {
 		for (int j = 0; j < ksize; ++j) {
