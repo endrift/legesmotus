@@ -30,21 +30,29 @@
 #include "common/Configuration.hpp"
 #include "common/GameLogic.hpp"
 #include <vector>
+#include "FuzzyLogicFSM.hpp"
 
 namespace LM {
 	class Pathfinder;
+	class FuzzyState;
 
 	class FuzzyLogicAI : public AI {
-	private:
+	public:
 		const static float AREA_AVOID_WEIGHT;
 		const static float AREA_AVOID_SIZE;
 		const static uint64_t ALLOWED_IDLE_TIME;
 		const static uint64_t MAX_WEAPON_SWITCH_FREQ;
 	
+	private:
+	
 		FuzzyLogic* m_fuzzy;
 		FuzzyEnvironment m_fuzzy_env;
 		const Configuration* m_config;
+		FuzzyLogicFSM* m_fsm;
+		std::map<std::string, FuzzyLogicState*> m_states;
+		
 		Player* m_target;
+		
 		float m_last_aim;
 		float m_max_aim_inaccuracy;
 		float m_aim_inaccuracy;
@@ -57,7 +65,6 @@ namespace LM {
 		bool m_was_grabbing;
 
 		// Cached state
-		float m_max_aim_vel;
 		float m_desired_aim;
 		AI::AimReason m_aim_reason;
 		int m_curr_weapon;
@@ -72,12 +79,11 @@ namespace LM {
 		int m_rule_weapon_fitness;
 
 		void initialize_logic();
+		void initialize_states();
 		void populate_environment();
 
 		virtual void step(const GameLogic& logic, uint64_t diff);
 		
-		virtual bool set_path(b2Vec2 start, std::vector<SparseIntersectMap::Intersect>& path);
-		virtual float get_next_aim(b2Vec2 start, std::vector<SparseIntersectMap::Intersect>& path);
 		virtual bool check_switch_weapons(const GameLogic& logic);
 
 		// For putting values in the FuzzyLogic that have both player and weapon ID dependencies:
@@ -87,6 +93,10 @@ namespace LM {
 		virtual ~FuzzyLogicAI();
 		
 		virtual const std::vector<SparseIntersectMap::Intersect>* get_current_path() const;
+		
+		virtual bool set_path(b2Vec2 start, std::vector<SparseIntersectMap::Intersect>& path);
+		virtual void set_found_path(bool found);
+		virtual float get_next_aim(b2Vec2 start, std::vector<SparseIntersectMap::Intersect>& path);
 
 		// TODO: make these const
 		virtual void randomize_aim_inaccuracy();
@@ -97,11 +107,14 @@ namespace LM {
 
 		float get_last_aim() const;
 		float get_max_aim_inaccuracy() const;
+		float get_curr_aim_inaccuracy() const;
 		uint64_t get_last_weapon_switch() const;
 		uint64_t get_last_action() const;
 		const SparseIntersectMap::Intersect& get_jumping_towards() const;
 		bool was_path_found() const;
 		bool was_grabbing() const;
+		
+		void action_taken();
 	};
 }
 

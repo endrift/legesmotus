@@ -41,7 +41,7 @@ namespace LM {
 	public:
 		FuzzyLogicFSM(const std::string& start_state);
 
-		float get_max_aim_vel() const;
+		//float get_max_aim_vel() const;
 		float find_desired_aim() const;
 		AI::AimReason get_aim_reason() const;
 		int get_curr_weapon() const;

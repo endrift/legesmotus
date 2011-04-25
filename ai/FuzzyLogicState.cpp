@@ -23,7 +23,11 @@
  */
 
 #include "FuzzyLogicState.hpp"
+#include "common/Weapon.hpp"
 
 using namespace LM;
 using namespace std;
 
+long FuzzyLogicState::get_combo_id(const Player* player, const Weapon* weapon) {
+	return (weapon->get_id() | (player->get_id() << 16));
+}

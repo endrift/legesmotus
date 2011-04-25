@@ -40,12 +40,13 @@ namespace LM {
 		virtual const std::string& get_name() const = 0;
 		virtual FuzzyLogicState* next_state() = 0;
 
-		virtual float get_max_aim_vel() const = 0;
+		//virtual float get_max_aim_vel() const = 0;
 		virtual float find_desired_aim() const = 0;
 		virtual AI::AimReason get_aim_reason() const = 0;
 		virtual int get_curr_weapon() const = 0;
 
 		virtual void decide(FuzzyLogicAI* ai, FuzzyEnvironment* env, const GameLogic& logic) = 0;
+		long get_combo_id(const Player* player, const Weapon* weapon);
 	};
 }
 

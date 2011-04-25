@@ -1,5 +1,5 @@
 /*
- * ai/FuzzyLogicFSM.cpp
+ * ai/SeekingState.cpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -22,35 +22,7 @@
  * 
  */
 
-#include "FuzzyLogicFSM.hpp"
+#include "SeekingState.hpp"
 
 using namespace LM;
 using namespace std;
-
-FuzzyLogicFSM::FuzzyLogicFSM(const string& start_state) : FiniteStateMachine<string, FuzzyLogicState>(start_state) {
-	// Nothing to do
-}
-
-const string& FuzzyLogicFSM::get_transition() {
-	return get_current_state_data()->next_state()->get_name();
-}
-
-/*float FuzzyLogicFSM::get_max_aim_vel() const {
-	return get_current_state_data()->get_max_aim_vel();
-}*/
-
-float FuzzyLogicFSM::find_desired_aim() const {
-	return get_current_state_data()->find_desired_aim();
-}
-
-AI::AimReason FuzzyLogicFSM::get_aim_reason() const {
-	return get_current_state_data()->get_aim_reason();
-}
-
-int FuzzyLogicFSM::get_curr_weapon() const {
-	return get_current_state_data()->get_curr_weapon();
-}
-
-void FuzzyLogicFSM::decide(FuzzyLogicAI* ai, FuzzyEnvironment* env, const GameLogic& logic) {
-	return get_current_state_data()->decide(ai, env, logic);
-}
