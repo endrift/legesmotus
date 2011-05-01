@@ -91,7 +91,9 @@ namespace LM {
 
 	template <typename K, typename S>
 	const K& FiniteStateMachine<K, S>::transition() {
-		m_current_state = get_transition();
+		K next_state = get_transition();
+		ASSERT(m_statelist.find(next_state) != m_statelist.end());
+		m_current_state = next_state;
 		return m_current_state;
 	}
 }
