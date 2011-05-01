@@ -33,6 +33,7 @@ namespace LM {
 	private:
 		float m_max_aim_vel;
 		const static unsigned int AIM_TOLERANCE;
+		const static unsigned long MIN_GRAB_TIME;
 	
 		AI* m_ai;
 	
@@ -40,6 +41,8 @@ namespace LM {
 		int m_changeset;
 		
 		int m_current_weapon;
+		
+		uint64_t m_time_of_grab;
 		
 		float m_wanted_aim; // Radians
 		float m_curr_aim; // Radians

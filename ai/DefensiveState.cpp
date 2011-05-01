@@ -415,8 +415,6 @@ void DefensiveState::update_wanted_aim(FuzzyLogicAI* ai, const GameLogic& logic,
 	}
 	int result = rand() % total;
 	
-	DEBUG("Aim at gate: " << aim_at_gate);
-	
 	bool take_action = true;
 	
 	if (total < 20) {
@@ -458,10 +456,8 @@ void DefensiveState::update_wanted_aim(FuzzyLogicAI* ai, const GameLogic& logic,
 			float y_dist = gate_pos.y - my_player->get_y();
 			desired_aim = atan2(y_dist, x_dist);
 			
-			DEBUG("Here!");
 			// Aim to jump at the gate.
 			if (my_player->is_grabbing_obstacle()) {
-				DEBUG("HERE2!");
 				std::vector<SparseIntersectMap::Intersect> path;
 				b2Vec2 start(0,0);
 				ai->find_path(my_player, my_gate->get_position().x, my_gate->get_position().y, 50, path, &start);

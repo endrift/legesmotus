@@ -53,7 +53,7 @@ void RayCast::set_physics(const b2World* physics) {
 	m_physics = physics;
 }
 
-float RayCast::do_ray_cast(const b2Vec2& start_point, float direction, float distance = -1, const PhysicsObject* starting_object, bool ignore_collidable) {
+float RayCast::do_ray_cast(const b2Vec2& start_point, float direction, float distance, const PhysicsObject* starting_object, bool ignore_collidable) {
 	m_ignore_collidable = ignore_collidable;
 	
 	if (distance == -1) {

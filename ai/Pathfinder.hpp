@@ -26,14 +26,20 @@
 #define LM_AI_PATHFINDER_HPP
 
 #include "SparseIntersectMap.hpp"
+#include "common/RayCast.hpp"
 #include <queue>
 #include <vector>
 #include <map>
+
+class b2World;
 
 namespace LM {
 	class Player;
 
 	class Pathfinder {
+
+	typedef bool (Pathfinder::*PathFoundFunc)(SparseIntersectMap::Intersect node, float goal_x, float goal_y, float tolerance);
+	
 	private:
 	
 		class IntersectComparator {
@@ -66,21 +72,30 @@ namespace LM {
 		
 		SparseIntersectMap* m_graph;
 		std::vector<AvoidArea*> m_avoid_areas;
+		RayCast m_ray_cast;
+		long m_timeout;
 	
 		float estimate_h_score(SparseIntersectMap::Intersect intersect, float goal_x, float goal_y);
 	
 		float get_dist(SparseIntersectMap::Intersect node, float goal_x, float goal_y);
 		
+		bool is_within_dist(SparseIntersectMap::Intersect node, float goal_x, float goal_y, float tolerance);
+		bool is_visible(SparseIntersectMap::Intersect node, float goal_x, float goal_y, float tolerance);
+		
 		void reconstruct_path(std::map<SparseIntersectMap::Intersect, SparseIntersectMap::Intersect, IntersectComparator>& came_from, SparseIntersectMap::Intersect current, std::vector<SparseIntersectMap::Intersect>& path);
 	
 		float calculate_g_score(SparseIntersectMap::Intersect node);
 		
+		bool find_path(float start_x, float start_y, float goal_x, float goal_y, float tolerance, std::vector<SparseIntersectMap::Intersect>& path, PathFoundFunc check_found);
+
 	public:
 		Pathfinder();
 		Pathfinder(SparseIntersectMap* graph);
 		~Pathfinder();
 	
 		void set_graph(SparseIntersectMap* graph);
+		void set_physics(const b2World* world);
+		void set_timeout(long timeout);
 		
 		void add_avoid_area(AvoidArea* a);
 		
@@ -88,6 +103,7 @@ namespace LM {
 		
 		// Fills the "path" with the path to the goal. Returns false if it cannot find one.
 		bool find_path(float start_x, float start_y, float goal_x, float goal_y, float tolerance, std::vector<SparseIntersectMap::Intersect>& path);
+		bool find_path_to_visibility(float start_x, float start_y, float goal_x, float goal_y, float tolerance, std::vector<SparseIntersectMap::Intersect>& path);
 	};
 }
 

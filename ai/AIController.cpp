@@ -28,6 +28,7 @@ using namespace LM;
 using namespace std;
 
 const unsigned int AIController::AIM_TOLERANCE = .005f;
+const unsigned long AIController::MIN_GRAB_TIME = 500;
 
 AIController::AIController(AI* ai) {
 	m_aim_reason = AI::DO_NOTHING;
@@ -78,6 +79,12 @@ void AIController::update(uint64_t diff, const GameLogic& state, int player_id) 
 		return;
 	}
 	
+	if (!my_player->is_grabbing_obstacle()) {
+		m_time_of_grab = 0;
+	} else if (m_time_of_grab == 0) {
+		m_time_of_grab = get_ticks();
+	}
+	
 	if (m_ai != NULL) {
 		m_ai->set_logic(&state);
 		m_ai->set_own_player(my_player);
@@ -104,7 +111,7 @@ void AIController::update(uint64_t diff, const GameLogic& state, int player_id) 
 			m_changes[m_changeset ^ 1] |= FIRE_WEAPON;
 			m_changes[m_changeset ^ 1] |= STOP_JUMPING;
 			m_ai->randomize_aim_inaccuracy();
-		} else if (m_aim_reason == AI::JUMP && my_player->is_grabbing_obstacle()) {
+		} else if (m_aim_reason == AI::JUMP && my_player->is_grabbing_obstacle() &&  get_ticks() - m_time_of_grab > MIN_GRAB_TIME) {
 			m_changes[m_changeset ^ 1] |= JUMPING;
 		} else {
 			m_changes[m_changeset ^ 1] |= STOP_JUMPING;

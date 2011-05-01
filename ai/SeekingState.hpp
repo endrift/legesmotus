@@ -25,14 +25,49 @@
 #ifndef LM_AI_SEEKINGSTATE_HPP
 #define LM_AI_SEEKINGSTATE_HPP
 
+#include "FuzzyLogicState.hpp"
+#include "common/misc.hpp"
+#include "FuzzyLogic.hpp"
+
 namespace LM {
-	class SeekingState {
+	class SeekingState : public FuzzyLogicState {
 	private:
+		std::string m_name;
+		FuzzyLogicState* m_next_state;
+		const FuzzyLogic* m_fuzzy;
+		
+		Player* m_target;
+		int m_wanted_weapon;
+		float m_desired_aim;
+		AI::AimReason m_aim_reason;
+		
+		// Fuzzy Logic Rules
+		FuzzyLogic::Rule* m_rule_good_target;
+		FuzzyLogic::Rule* m_rule_easy_target;
+		FuzzyLogic::Rule* m_rule_dangerous;
+		FuzzyLogic::Rule* m_rule_can_target;
+		FuzzyLogic::Rule* m_rule_firing_importance;
+		FuzzyLogic::Rule* m_rule_jump_at_enemy;
+		FuzzyLogic::Rule* m_rule_weapon_fitness;
+		
+		void load_rules();
+		void switch_target(FuzzyLogicAI* ai, const GameLogic& logic, FuzzyEnvironment* env);
+		bool check_switch_weapons(FuzzyLogicAI* ai, const GameLogic& logic, FuzzyEnvironment* env);
+		void update_wanted_aim(FuzzyLogicAI* ai, const GameLogic& logic, FuzzyEnvironment* env);
 
 	public:
+		SeekingState(const FuzzyLogic* fuzzy_logic);
+		virtual ~SeekingState();
+	
+		virtual const std::string& get_name() const;
+		virtual FuzzyLogicState* next_state();
+		
+		virtual float find_desired_aim() const;
+		virtual AI::AimReason get_aim_reason() const;
+		virtual int get_curr_weapon() const;
 
+		virtual void decide(FuzzyLogicAI* ai, FuzzyEnvironment* env, const GameLogic& logic);
 	};
 }
 
 #endif
-

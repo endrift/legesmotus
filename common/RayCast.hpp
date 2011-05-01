@@ -68,7 +68,7 @@ namespace LM {
 		
 		float cast_in_vel_dir(const Player* player);
 	
-		float do_ray_cast(const b2Vec2& start_point, float direction, float distance, const PhysicsObject* starting_object = NULL, bool ignore_collidable = false);
+		float do_ray_cast(const b2Vec2& start_point, float direction, float distance = -1, const PhysicsObject* starting_object = NULL, bool ignore_collidable = false);
 	
 		// Box2D Physics Callbacks
 		float32 ReportFixture(b2Fixture* fixture, const b2Vec2& point, const b2Vec2& normal, float32 fraction);

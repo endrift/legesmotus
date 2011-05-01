@@ -40,10 +40,12 @@ std::map<SparseIntersectMap::Intersect, float, Pathfinder::IntersectComparator> 
 
 Pathfinder::Pathfinder() {
 	set_graph(NULL);
+	m_timeout = -1;
 }
 
 Pathfinder::Pathfinder(SparseIntersectMap* graph) {
 	set_graph(graph);
+	m_timeout = -1;
 }
 
 Pathfinder::~Pathfinder() {
@@ -54,10 +56,20 @@ void Pathfinder::set_graph(SparseIntersectMap* graph) {
 	m_graph = graph;
 }
 
-bool Pathfinder::find_path(float start_x, float start_y, float goal_x, float goal_y, float tolerance, vector<SparseIntersectMap::Intersect>& path) {
+void Pathfinder::set_physics(const b2World* world) {
+	m_ray_cast.set_physics(world);
+}
+
+void Pathfinder::set_timeout(long timeout) {
+	m_timeout = timeout;
+}
+
+bool Pathfinder::find_path(float start_x, float start_y, float goal_x, float goal_y, float tolerance, vector<SparseIntersectMap::Intersect>& path, PathFoundFunc check_found) {
 	f_scores.clear();
 	g_scores.clear();
 	h_scores.clear();
+	
+	uint64_t start_time = get_ticks();
 	
 	// Check if we're already there.
 	b2Vec2 curr_dist = b2Vec2(goal_x - start_x, goal_y - start_y);
@@ -85,7 +97,7 @@ bool Pathfinder::find_path(float start_x, float start_y, float goal_x, float goa
 	while (!open_set.empty()) {
 		SparseIntersectMap::Intersect current = open_set.top();
 		//DEBUG("Current: " << current.x << ", " << current.y);
-		if (get_dist(current, goal_x, goal_y) < tolerance) {
+		if ((*this.*check_found)(current, goal_x, goal_y, tolerance)) {
 			// We're done.
 			reconstruct_path(came_from, current, path);
 			DEBUG("Found a path! Distance: " << g_scores[current] << " Hops: " << path.size());
@@ -119,10 +131,22 @@ bool Pathfinder::find_path(float start_x, float start_y, float goal_x, float goa
 				open_set.push(neighbor);
 				came_from[neighbor] = current;
 			}
+		
+			if (m_timeout != -1 && get_ticks() > start_time + m_timeout) {
+				return false;
+			}
 		}
 	}
 	
 	return false;
+}
+
+bool Pathfinder::find_path(float start_x, float start_y, float goal_x, float goal_y, float tolerance, vector<SparseIntersectMap::Intersect>& path) {
+	return find_path(start_x, start_y, goal_x, goal_y, tolerance, path, &Pathfinder::is_within_dist);
+}
+
+bool Pathfinder::find_path_to_visibility(float start_x, float start_y, float goal_x, float goal_y, float tolerance, vector<SparseIntersectMap::Intersect>& path) {
+	return find_path(start_x, start_y, goal_x, goal_y, tolerance, path, &Pathfinder::is_visible);
 }
 
 void Pathfinder::reconstruct_path(std::map<SparseIntersectMap::Intersect, SparseIntersectMap::Intersect, IntersectComparator>& came_from, SparseIntersectMap::Intersect current, std::vector<SparseIntersectMap::Intersect>& path) {
@@ -134,6 +158,21 @@ void Pathfinder::reconstruct_path(std::map<SparseIntersectMap::Intersect, Sparse
 
 float Pathfinder::get_dist(SparseIntersectMap::Intersect node, float goal_x, float goal_y) {
 	return sqrt((goal_x - node.x) * (goal_x - node.x) + (goal_y - node.y) * (goal_y - node.y));
+}
+
+bool Pathfinder::is_within_dist(SparseIntersectMap::Intersect node, float goal_x, float goal_y, float tolerance) {
+	return get_dist(node, goal_x, goal_y) < tolerance;
+}
+
+bool Pathfinder::is_visible(SparseIntersectMap::Intersect node, float goal_x, float goal_y, float tolerance) {
+	if (!is_within_dist(node, goal_x, goal_y, tolerance)) {
+		return false;
+	}
+	
+	float direction = atan2(goal_y - node.y, goal_x - node.x);
+	m_ray_cast.do_ray_cast(b2Vec2(to_physics(node.x), to_physics(node.y)), direction);
+	
+	return to_game(m_ray_cast.get_result().shortest_dist) >= get_dist(node, goal_x, goal_y) - 40;
 }
 
 float Pathfinder::estimate_h_score(SparseIntersectMap::Intersect node, float goal_x, float goal_y) {

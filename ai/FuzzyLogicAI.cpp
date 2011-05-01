@@ -27,6 +27,7 @@
 #include "common/Weapon.hpp"
 #include "AggressiveState.hpp"
 #include "DefensiveState.hpp"
+#include "SeekingState.hpp"
 #include "FuzzyLogicState.hpp"
 
 using namespace LM;
@@ -99,6 +100,7 @@ void FuzzyLogicAI::initialize_logic() {
 void FuzzyLogicAI::initialize_states() {
 	m_states["aggressive"] = new AggressiveState(m_fuzzy);
 	m_states["defensive"] = new DefensiveState(m_fuzzy);
+	m_states["seeking"] = new SeekingState(m_fuzzy);
 	
 	int statenum = rand() % m_states.size();
 	map<string, FuzzyLogicState*>::iterator it = m_states.begin();

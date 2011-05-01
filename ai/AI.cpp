@@ -75,6 +75,8 @@ void AI::randomize_aim_inaccuracy() {
 void AI::update(const GameLogic& logic, uint64_t diff) {
 	set_logic(&logic);
 
+	m_pathfinder.set_physics(logic.get_world());
+
 	// Deal with MapGrapher if necessary:
 	// If we don't know anything about the map, start learning about it.
 	if (get_map_graph() == NULL) {
@@ -224,6 +226,8 @@ void AI::initialize_map_grapher() {
 	m_grapher.load_map(m_logic, world);
 	
 	m_pathfinder.set_graph(get_map_graph());
+	m_pathfinder.set_physics(world);
+	m_pathfinder.set_timeout(500);
 }
 
 Pathfinder* AI::get_pathfinder() {
@@ -257,6 +261,41 @@ bool AI::find_path(const Player* my_player, float end_x, float end_y, float tole
 	
 		if (path_found) {
 			DEBUG("Finding path: Success: " << path_found << " Took: " << (get_ticks() - pathfind_start_time) << " ms.");
+		}
+	}
+	
+	return path_found;
+}
+
+bool AI::find_path_to_visibility(const Player* my_player, float end_x, float end_y, float tolerance, std::vector<SparseIntersectMap::Intersect>& path, b2Vec2* start) {
+	ASSERT(start != NULL);
+
+	uint64_t pathfind_start_time = get_ticks();
+
+	b2Body* body = my_player->get_physics_body();
+	// XXX: Do we just want to use the first fixture?
+	b2Fixture* fixture = &body->GetFixtureList()[0];
+	b2Shape* shape = fixture->GetShape();
+	bool path_found = false;
+	if (shape->GetType() == b2Shape::e_polygon) {
+		b2PolygonShape* polyshape = static_cast<b2PolygonShape*>(shape);
+		int index = 0;
+		while (index < polyshape->GetVertexCount()) {
+			b2Vec2 vertex = polyshape->GetVertex(index);
+			b2Vec2 world = body->GetWorldPoint(vertex);
+			if (m_pathfinder.find_path_to_visibility(to_game(world.x), to_game(world.y), end_x, end_y, tolerance, path)) {
+				path_found = true;
+				start->x = to_game(world.x);
+				start->y = to_game(world.y);
+				break;
+			}
+			index++;
+		}
+	
+		if (path_found) {
+			DEBUG("Finding path: Success: " << path_found << " Took: " << (get_ticks() - pathfind_start_time) << " ms.");
+		} else {
+			DEBUG("Finding path: Failure: " << path_found << " Took: " << (get_ticks() - pathfind_start_time) << " ms.");
 		}
 	}
 	
