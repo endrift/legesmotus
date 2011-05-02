@@ -37,11 +37,11 @@ const float LM::RADIANS_TO_DEGREES = 57.29577951308232f;
 const float LM::DEGREES_TO_RADIANS = 1.745329251994e-02f;
 
 float LM::get_normalized_angle(float angle) {
-	while (angle < 0) {
-		angle += 360;
+	if (angle < 0.0f) {
+		angle = 360 + fmodf(angle, 360.0f);
 	}
-	while (angle >= 360) {
-		angle -= 360;
+	if (angle >= 360.0f) {
+		angle = fmodf(angle, 360.0f);
 	}
 	return angle;
 }
