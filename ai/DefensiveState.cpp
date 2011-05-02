@@ -31,8 +31,8 @@ using namespace LM;
 using namespace std;
 
 DefensiveState::DefensiveState(const FuzzyLogic* fuzzy_logic) {
-	m_name = "";
-	m_next_state = this;
+	m_name = "defensive";
+	m_next_state = m_name;
 	
 	m_fuzzy = fuzzy_logic;
 	
@@ -238,14 +238,30 @@ void DefensiveState::load_rules() {
 				)
 			)
 		);
+
+	m_rule_holding_gate = 
+		new FuzzyLogic::And(
+			new FuzzyLogic::Not(
+				m_fuzzy->make_terminal("other_holding_gate", "not_holding")
+			),
+			new FuzzyLogic::Not(
+				// Are we already grabbing the gate?
+				new FuzzyLogic::Or(
+					m_fuzzy->make_terminal("can_see_enemy_gate", "touching"),
+					new FuzzyLogic::Not(
+						m_fuzzy->make_terminal("holding_gate", "not_holding")
+					)
+				)
+			)
+		);
 }
 
 const string& DefensiveState::get_name() const {
 	return m_name;
 }
 
-FuzzyLogicState* DefensiveState::next_state() {
-	return m_next_state;
+const FuzzyLogicState* DefensiveState::next_state(const FuzzyLogicFSM* fsm) {
+	return fsm->get_state_data(m_next_state);
 }
 
 float DefensiveState::find_desired_aim() const {
@@ -305,6 +321,9 @@ void DefensiveState::decide(FuzzyLogicAI* ai, FuzzyEnvironment* env, const GameL
 
 	// Update our wanted aim.
 	update_wanted_aim(ai, logic, env);
+	
+	// Check if we should switch states.
+	check_transitions(ai, logic, env);
 }
 
 bool DefensiveState::check_switch_weapons(FuzzyLogicAI* ai, const GameLogic& logic, FuzzyEnvironment* env) {
@@ -471,4 +490,78 @@ void DefensiveState::update_wanted_aim(FuzzyLogicAI* ai, const GameLogic& logic,
 	pathfinder->clear_avoid_areas();
 	
 	m_desired_aim = desired_aim;
+}
+
+void DefensiveState::check_transitions(FuzzyLogicAI* ai, const GameLogic& logic, FuzzyEnvironment* env) {
+	const Player* my_player = ai->get_own_player();
+	const Gate* enemy_gate = logic.get_map()->get_gate(get_other_team(my_player->get_team()));
+	float map_size = sqrt(logic.get_map()->get_width() * logic.get_map()->get_width() + logic.get_map()->get_height() * logic.get_map()->get_height());
+	
+	ConstIterator<std::pair<uint32_t, Player*> > other_players = logic.list_players();
+
+	bool found_enemy = false;
+	bool found_gate_hold = false;
+	int num_enemies_defending = 0;
+	int num_allies_attacking = 0;
+
+	// Check if anyone is holding the gate.
+	// Also check if anyone is on your side of the field.
+	while (other_players.has_more()) {
+		std::pair<uint32_t, Player*> next_iter = other_players.next();
+		
+		Player* other_player = next_iter.second;
+		if (other_player == my_player) {
+			continue;
+		}
+		
+		// If it's the other team, check if it's unfrozen
+		if (other_player->get_team() != my_player->get_team()) {
+			// Ignored frozen players.
+			if (!other_player->is_frozen()) {
+				found_enemy = true;
+			}
+			
+			float dist_from_gate = (enemy_gate->get_position() - other_player->get_position()).get_magnitude();
+			if (dist_from_gate < map_size * .25) {
+				num_enemies_defending++;
+			}
+			continue;
+		} else {
+			float holding_gate = m_rule_holding_gate->apply(*env, (long)other_player);
+		
+			if (holding_gate > .5) {
+				found_gate_hold = true;
+			}
+			
+			float dist_from_gate = (enemy_gate->get_position() - other_player->get_position()).get_magnitude();
+			if (dist_from_gate < map_size * .25) {
+				num_allies_attacking++;
+			}
+		}
+	}
+	
+	int defdiff = num_enemies_defending - num_allies_attacking;
+	
+	if (num_enemies_defending == 0 && num_allies_attacking == 0) {
+		defdiff = 1;
+	}
+	
+	if (defdiff > 0) {
+		int randchance = rand() % 1000;
+		if (randchance < defdiff) {
+			if (!found_gate_hold) {
+				DEBUG("Switching to aggressive.");
+				m_next_state = "aggressive";
+				return;
+			} else {
+				if (found_enemy) {
+					DEBUG("Switching to seeking.");
+					m_next_state = "seeking";
+					return;
+				}
+			}
+		}
+	}
+
+	m_next_state = "defensive";
 }

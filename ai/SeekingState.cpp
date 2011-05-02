@@ -26,13 +26,14 @@
 #include "common/Weapon.hpp"
 #include "FuzzyLogicAI.hpp"
 #include "common/team.hpp"
+#include "FuzzyLogicFSM.hpp"
 
 using namespace LM;
 using namespace std;
 
 SeekingState::SeekingState(const FuzzyLogic* fuzzy_logic) {
-	m_name = "";
-	m_next_state = this;
+	m_name = "seeking";
+	m_next_state = m_name;
 	
 	m_fuzzy = fuzzy_logic;
 	
@@ -206,8 +207,8 @@ const string& SeekingState::get_name() const {
 	return m_name;
 }
 
-FuzzyLogicState* SeekingState::next_state() {
-	return m_next_state;
+const FuzzyLogicState* SeekingState::next_state(const FuzzyLogicFSM* fsm) {
+	return fsm->get_state_data(m_next_state);
 }
 
 float SeekingState::find_desired_aim() const {
@@ -231,6 +232,9 @@ void SeekingState::decide(FuzzyLogicAI* ai, FuzzyEnvironment* env, const GameLog
 
 	// Update our wanted aim.
 	update_wanted_aim(ai, logic, env);
+	
+	// Check if we should transition to another state
+	check_transitions(ai, logic, env);
 }
 
 void SeekingState::switch_target(FuzzyLogicAI* ai, const GameLogic& logic, FuzzyEnvironment* env) {
@@ -433,4 +437,35 @@ void SeekingState::update_wanted_aim(FuzzyLogicAI* ai, const GameLogic& logic, F
 	pathfinder->clear_avoid_areas();
 	
 	m_desired_aim = desired_aim;
+}
+
+void SeekingState::check_transitions(FuzzyLogicAI* ai, const GameLogic& logic, FuzzyEnvironment* env) {
+	const Player* my_player = ai->get_own_player();
+	
+	ConstIterator<std::pair<uint32_t, Player*> > other_players = logic.list_players();
+
+	// Determine danger for each enemy player.
+	while (other_players.has_more()) {
+		std::pair<uint32_t, Player*> next_iter = other_players.next();
+		
+		Player* other_player = next_iter.second;
+		if (other_player == my_player) {
+			continue;
+		}
+		
+		// Ignore my own team.
+		if (other_player->get_team() == my_player->get_team()) {
+			continue;
+		}
+		
+		float good_target = m_rule_good_target->apply(*env, (long)other_player);
+		
+		if (good_target != 0) {
+			m_next_state = "seeking";
+			return;
+		}
+	}
+	
+	DEBUG("Switching to aggressive.");
+	m_next_state = "aggressive";
 }

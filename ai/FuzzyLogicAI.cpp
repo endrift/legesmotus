@@ -142,6 +142,8 @@ void FuzzyLogicAI::step(const GameLogic& logic, uint64_t diff) {
 	
 	m_was_grabbing = my_player->is_grabbing_obstacle();
 	m_last_aim = m_fsm->find_desired_aim();
+	
+	m_fsm->transition();
 }
 
 bool FuzzyLogicAI::set_path(b2Vec2 start, vector<SparseIntersectMap::Intersect>& path) {

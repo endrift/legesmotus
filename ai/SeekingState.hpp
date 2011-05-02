@@ -30,10 +30,12 @@
 #include "FuzzyLogic.hpp"
 
 namespace LM {
+	class FuzzyLogicFSM;
+
 	class SeekingState : public FuzzyLogicState {
 	private:
 		std::string m_name;
-		FuzzyLogicState* m_next_state;
+		std::string m_next_state;
 		const FuzzyLogic* m_fuzzy;
 		
 		Player* m_target;
@@ -54,13 +56,14 @@ namespace LM {
 		void switch_target(FuzzyLogicAI* ai, const GameLogic& logic, FuzzyEnvironment* env);
 		bool check_switch_weapons(FuzzyLogicAI* ai, const GameLogic& logic, FuzzyEnvironment* env);
 		void update_wanted_aim(FuzzyLogicAI* ai, const GameLogic& logic, FuzzyEnvironment* env);
+		void check_transitions(FuzzyLogicAI* ai, const GameLogic& logic, FuzzyEnvironment* env);
 
 	public:
 		SeekingState(const FuzzyLogic* fuzzy_logic);
 		virtual ~SeekingState();
 	
 		virtual const std::string& get_name() const;
-		virtual FuzzyLogicState* next_state();
+		virtual const FuzzyLogicState* next_state(const FuzzyLogicFSM* fsm);
 		
 		virtual float find_desired_aim() const;
 		virtual AI::AimReason get_aim_reason() const;
