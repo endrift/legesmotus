@@ -32,7 +32,7 @@ FuzzyLogicFSM::FuzzyLogicFSM(const string& start_state) : FiniteStateMachine<str
 }
 
 const string& FuzzyLogicFSM::get_transition() {
-	return get_current_state_data()->next_state()->get_name();
+	return get_current_state_data()->next_state(this)->get_name();
 }
 
 /*float FuzzyLogicFSM::get_max_aim_vel() const {

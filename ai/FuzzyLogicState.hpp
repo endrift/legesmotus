@@ -30,6 +30,7 @@
 namespace LM {
 	class FuzzyEnvironment;
 	class FuzzyLogicAI;
+	class FuzzyLogicFSM;
 
 	class FuzzyLogicState {
 	private:
@@ -38,7 +39,7 @@ namespace LM {
 		virtual ~FuzzyLogicState() { }
 
 		virtual const std::string& get_name() const = 0;
-		virtual FuzzyLogicState* next_state() = 0;
+		virtual const FuzzyLogicState* next_state(const FuzzyLogicFSM* fsm) = 0;
 
 		//virtual float get_max_aim_vel() const = 0;
 		virtual float find_desired_aim() const = 0;
