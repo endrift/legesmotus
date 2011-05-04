@@ -503,11 +503,11 @@ void	Server::join(const IPAddress& address, PacketReader& packet) {
 
 	packet >> client_proto_version;
 
-	cerr << "Join request from " << format_ip_address(address) << ": Client protocol version: " << client_proto_version << ", Client gameplay version: " << client_compat_version << endl;
-
 	if (client_proto_version == PROTOCOL_VERSION) {
 		packet >> client_compat_version >> requested_name >> team;
 	}
+
+	cerr << "Join request from " << format_ip_address(address) << ": Client protocol version: " << client_proto_version << ", Client gameplay version: " << client_compat_version << endl;
 
 	if (client_proto_version != PROTOCOL_VERSION || client_compat_version != COMPAT_VERSION) {
 		cerr << "Rejected join for incompatible client version." << endl;
@@ -991,6 +991,9 @@ void	Server::game_over(char winning_team) {
 	m_network.broadcast_reliable_packet(packet);
 	m_gates[0].reset();
 	m_gates[1].reset();
+
+	cerr << "Round ended, team " << winning_team << " won." << endl;
+	cerr << "Scores: A: " << m_team_score[0] << ", B: " << m_team_score[1] << endl;
 	
 	m_game_start_time = 0;
 	m_game_logic->round_ended();
