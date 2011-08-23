@@ -378,31 +378,6 @@ void Player::write_update_packet (PacketWriter& packet) const {
 	packet << get_id() << get_x() << get_y() << get_x_vel() << get_y_vel() << get_rotation_degrees() << get_energy() << get_gun_rotation_degrees() << get_current_weapon_id() << flags;
 }
 
-void Player::read_update_packet (PacketReader& packet) {
-	float x;
-	float y;
-	float x_vel;
-	float y_vel;
-	float rotation;
-	float aim;
-	int energy;
-	uint32_t current_weapon_id;
-	string	flags;
-
-	packet >> x >> y >> x_vel >> y_vel >> rotation >> energy >> aim >> current_weapon_id >> flags;
-
-	// Note: We must use the setter functions, and not set the values directly, since a derived class may have overridden a setter.  (GraphicalPlayer overrides nearly all of them.)
-	set_position(x, y);
-	set_velocity(x_vel, y_vel);
-	set_rotation_degrees(rotation);
-	set_energy(energy);
-	set_gun_rotation_degrees(aim);
-	set_current_weapon_id(current_weapon_id);
-	set_is_invisible(flags.find_first_of('I') != string::npos);
-	set_is_frozen(flags.find_first_of('F') != string::npos, FOREVER);
-	set_is_grabbing_obstacle(flags.find_first_of('G') != string::npos);
-}
-
 void Player::set_is_grabbing_obstacle(bool x) {
 	m_is_grabbing_obstacle = x;
 }
@@ -447,4 +422,23 @@ void Player::read_player_update(const Packet::PlayerUpdate& p) {
 		// Let the other client say how we're moving on the wall
 		m_physics_body->SetAwake(false);
 	}
+}
+
+void Player::generate_player_to_server_update(Packet::PlayerToServerUpdate* p) {
+	p->player_id = get_id();
+	p->gun_rotation = get_gun_rotation_degrees();
+	p->current_weapon_id = get_current_weapon_id();
+}
+
+
+void Player::read_player_to_server_update_packet (PacketReader& packet) {
+	float aim;
+	uint32_t current_weapon_id;
+
+	packet >> aim >> current_weapon_id;
+
+	if (!is_frozen()) {
+		set_gun_rotation_degrees(aim);
+	}
+	set_current_weapon_id(current_weapon_id);
 }

@@ -49,6 +49,7 @@ namespace LM {
 		ROUND_START_PACKET = 29,
 		SPAWN_PACKET = 30,
 		PLAYER_JUMPED_PACKET = 31,
+		PLAYER_TO_SERVER_UPDATE_PACKET = 32,
 	};
 
 	class PacketReceiver;
@@ -273,6 +274,12 @@ namespace LM {
 			float direction;
 		};
 
+		struct PlayerToServerUpdate {
+			uint32_t player_id;
+			float gun_rotation;
+			uint32_t current_weapon_id;
+		};
+
 		PacketEnum type;
 		UDPPacket raw;
 		PacketHeader header;
@@ -310,6 +317,7 @@ namespace LM {
 			RoundStart round_start;
 			Spawn spawn;
 			PlayerJumped player_jumped;
+			PlayerToServerUpdate player_to_server_update;
 		};
 	};
 
@@ -348,6 +356,7 @@ namespace LM {
 		virtual void round_start(const Packet& p) { }
 		virtual void spawn(const Packet& p) { }
 		virtual void player_jumped(const Packet& p) { }
+		virtual void player_to_server_update(const Packet& p) { }
 	};
 
 }

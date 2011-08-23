@@ -426,6 +426,18 @@ static void unmarshal_PLAYER_JUMPED(PacketReader& r, Packet* p) {
 	r >> p->player_jumped.direction;
 }
 
+static void marshal_PLAYER_TO_SERVER_UPDATE(PacketWriter& w, Packet* p) {
+	w << p->player_to_server_update.player_id;
+	w << p->player_to_server_update.gun_rotation;
+	w << p->player_to_server_update.current_weapon_id;
+}
+
+static void unmarshal_PLAYER_TO_SERVER_UPDATE(PacketReader& r, Packet* p) {
+	r >> p->player_to_server_update.player_id;
+	r >> p->player_to_server_update.gun_rotation;
+	r >> p->player_to_server_update.current_weapon_id;
+}
+
 Packet::Packet() {
 	clear();
 	type = (PacketEnum) 0;
@@ -652,6 +664,12 @@ Packet::Packet(const Packet& other) {
 		player_jumped.direction = other.player_jumped.direction;
 		break;
 
+	case PLAYER_TO_SERVER_UPDATE_PACKET:
+		player_to_server_update.player_id = other.player_to_server_update.player_id;
+		player_to_server_update.gun_rotation = other.player_to_server_update.gun_rotation;
+		player_to_server_update.current_weapon_id = other.player_to_server_update.current_weapon_id;
+		break;
+
 	}
 }
 
@@ -821,6 +839,9 @@ void Packet::free() {
 	case PLAYER_JUMPED_PACKET:
 		break;
 
+	case PLAYER_TO_SERVER_UPDATE_PACKET:
+		break;
+
 	}
 }
 
@@ -957,6 +978,10 @@ void Packet::marshal() {
 
 	case PLAYER_JUMPED_PACKET:
 		marshal_PLAYER_JUMPED(w, this);
+		break;
+
+	case PLAYER_TO_SERVER_UPDATE_PACKET:
+		marshal_PLAYER_TO_SERVER_UPDATE(w, this);
 		break;
 
 	default:
@@ -1100,6 +1125,10 @@ void Packet::unmarshal() {
 		unmarshal_PLAYER_JUMPED(r, this);
 		break;
 
+	case PLAYER_TO_SERVER_UPDATE_PACKET:
+		unmarshal_PLAYER_TO_SERVER_UPDATE(r, this);
+		break;
+
 	default:
 		break;
 	}
@@ -1232,6 +1261,10 @@ void Packet::dispatch(PacketReceiver* r) {
 
 	case PLAYER_JUMPED_PACKET:
 		r->player_jumped(*this);
+		break;
+
+	case PLAYER_TO_SERVER_UPDATE_PACKET:
+		r->player_to_server_update(*this);
 		break;
 
 	default:

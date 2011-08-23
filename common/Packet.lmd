@@ -227,3 +227,9 @@ PLAYER_JUMPED = 31 {
 	player_id : uint32_t ; The ID of the player who jumped.
 	direction : float ; The angle of the jump.
 }
+
+PLAYER_TO_SERVER_UPDATE = 32 {
+	player_id : uint32_t ; The ID of the player sending this update
+	gun_rotation : float ; the rotation of the player's gun arm
+	current_weapon_id : uint32_t ; current weapon ID
+}

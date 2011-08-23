@@ -142,6 +142,7 @@ namespace LM {
 		virtual void weapon_info(const Packet& p);
 		virtual void round_start(const Packet& p);
 		virtual void spawn(const Packet& p);
+		//virtual void player_to_server_update(const Packet& p); // Should not be received by client.
 		// End packet callbacks
 
 		virtual void name_change(Player* player, const std::string& new_name);

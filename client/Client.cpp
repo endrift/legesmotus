@@ -190,13 +190,13 @@ void Client::check_player_hits() {
 }
 
 void Client::generate_player_update(uint32_t id, Packet* p) {
-	p->type = PLAYER_UPDATE_PACKET;
+	p->type = PLAYER_TO_SERVER_UPDATE_PACKET;
 	Player* player = get_player(id);
 	if (player == NULL || p == NULL) {
 		return;
 	}
 
-	player->generate_player_update(&p->player_update);
+	player->generate_player_to_server_update(&p->player_to_server_update);
 }
 
 void Client::generate_weapon_fired(uint32_t weapon_id, uint32_t player_id) {

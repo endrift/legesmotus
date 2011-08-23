@@ -72,22 +72,6 @@ Server::Server (ServerConfig& config, PathManager& path_manager) : m_config(conf
 	m_game_logic = NULL;
 }
 
-void	Server::player_update(const IPAddress& address, PacketReader& inbound_packet)
-{
-	uint32_t		player_id;
-	inbound_packet >> player_id;
-
-	if (is_authorized(address, player_id)) {
-		ServerPlayer* player = get_player(player_id);
-
-		// Mark the player as seen
-		player->seen(m_timeout_queue);
-
-		// Process the update packet
-		player->read_update_packet(inbound_packet);
-	}
-}
-
 void	Server::send_player_update(Player* player) {
 	// Re-broadcast the packet to all _other_ players
 	PacketWriter	outbound_packet(PLAYER_UPDATE_PACKET);
@@ -657,6 +641,22 @@ void	Server::player_jumped(const IPAddress& address, PacketReader& packet) {
 		}
 		
 		broadcast_packet_except(outbound_packet, player_id);
+	}
+}
+
+void	Server::player_to_server_update(const IPAddress& address, PacketReader& inbound_packet)
+{
+	uint32_t		player_id;
+	inbound_packet >> player_id;
+
+	if (is_authorized(address, player_id)) {
+		ServerPlayer* player = get_player(player_id);
+
+		// Mark the player as seen
+		player->seen(m_timeout_queue);
+
+		// Process the update packet
+		player->read_player_to_server_update_packet(inbound_packet);
 	}
 }
 

@@ -265,7 +265,6 @@ namespace LM {
 		uint64_t get_gate_stick_time() const { return m_params.gate_stick_time; }
 	
 		// Called upon receipt of network packets:
-		void		player_update(const IPAddress& address, PacketReader& packet);
 		void		join(const IPAddress& address, PacketReader& packet);
 		void		info(const IPAddress& address, PacketReader& packet);
 		void		leave(const IPAddress& address, PacketReader& packet);
@@ -281,6 +280,7 @@ namespace LM {
 		void		hole_punch_packet(const IPAddress& address, PacketReader& packet);
 		void		player_died(const IPAddress& address, PacketReader& packet);
 		void		player_jumped(const IPAddress& address, PacketReader& packet);
+		void		player_to_server_update(const IPAddress& address, PacketReader& packet);
 
 		void		excessive_packet_drop(const IPAddress& address);
 	

@@ -173,10 +173,6 @@ void	ServerNetwork::process_packet(const IPAddress& address, PacketReader& reade
 		process_ack(address, reader);
 		break;
 
-	case PLAYER_UPDATE_PACKET:
-		m_server.player_update(address, reader);
-		break;
-
 	case WEAPON_DISCHARGED_PACKET:
 		m_server.weapon_discharged(address, reader);
 		break;
@@ -235,6 +231,10 @@ void	ServerNetwork::process_packet(const IPAddress& address, PacketReader& reade
 		
 	case PLAYER_JUMPED_PACKET:
 		m_server.player_jumped(address, reader);
+		break;
+		
+	case PLAYER_TO_SERVER_UPDATE_PACKET:
+		m_server.player_to_server_update(address, reader);
 		break;
 	}
 }
