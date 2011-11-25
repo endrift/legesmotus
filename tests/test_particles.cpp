@@ -5,15 +5,47 @@
 #include "gui/Image.hpp"
 #include "gui/GraphicRegion.hpp"
 #include "gui/GraphicContainer.hpp"
+#include "gui/SimpleRadialEmitter.hpp"
+#include "gui/ParticleManager.hpp"
+#include "common/math.hpp"
+#include "gui/DrawContext.hpp"
 
 using namespace LM;
 using namespace std;
+
+void add_emitter(ParticleManager* particle_manager, Image* particle) {
+	SimpleRadialEmitter* simple_emitter = new SimpleRadialEmitter(particle_manager, Point(rand() % 400 + 50, rand() % 400 + 50), particle, DrawContext::BLEND_ADD);
+
+	SimpleRadialEmitterSettings* settings = new SimpleRadialEmitterSettings();
+	settings->particle_speed = 100.0f;
+	settings->speed_variance = 0.05f;
+	settings->spawn_per_second = 1000.0f;
+	settings->spawn_variance = 1.0f;
+	settings->lifetime_millis = 500;
+	settings->lifetime_variance = 100;
+	settings->rotation_rads = 0.0f;
+	settings->rotation_variance = 2 * M_PI;
+	settings->global_force = Point(0.0f,0.0f);
+	settings->max_spawn = -1;
+	settings->emitter_stop_spawning_millis = 500;
+	settings->emitter_lifetime_millis = 1000;
+	
+	simple_emitter->init(settings);
+	
+	particle_manager->add_emitter(simple_emitter);
+}
 
 int main(int argc, char *argv[]) {
 	SDLWindow* window = SDLWindow::get_instance(512, 512, 24, Window::FLAG_VSYNC);
 	GLESContext* ctx = window->get_context();
 	ResourceCache cache("data", ctx);
 	Image tile("metal_hazard64.png", &cache, true);
+	Image particle("blue_gate.png", &cache, true);
+	
+	Widget w0;
+	w0.set_x(0);
+	w0.set_y(0);
+	
 	GraphicRegion tile_s(&tile);
 	float c[] = { 4.0f, 8.0f, 0.5f, 1.0f };
 	float s[] = { 9.0f, 14.0f };
@@ -26,14 +58,18 @@ int main(int argc, char *argv[]) {
 	tile_s.set_image_height(32);
 	tile_s.set_shader_set(program);
 
-	GraphicContainer g;
+	GraphicContainer g(true, &w0);
 	g.add_graphic("tile", &tile_s, -1);
-	ctx->set_root_widget(&g);
+	
+	ParticleManager* particle_manager = new ParticleManager(&w0, 100, true);
+	
+	ctx->set_root_widget(&w0);
 
 	SDL_ShowCursor(SDL_TRUE);
 
 	bool running = true;
 	int frame = 0;
+	uint64_t last_frame_time = get_ticks();
 
 	program->link();
 	ctx->bind_shader_set(program);
@@ -61,9 +97,10 @@ int main(int argc, char *argv[]) {
 				}
 			}
 		}
-		ctx->bind_shader_set(program);
+		
+		//ctx->bind_shader_set(program);
 		//if (frame < 100) {
-			program->set_variable("time", frame / 80.0f);
+			//program->set_variable("time", frame / 80.0f);
 		//} else if (frame < 150) {
 		//	program->set_variable("time", 1.0f);
 		//} else {
@@ -72,9 +109,19 @@ int main(int argc, char *argv[]) {
 
 		frame = (frame + 1) % 80;
 		
+		if (frame % 20 == 0) {
+			add_emitter(particle_manager, &particle);
+		}
+		
+		particle_manager->update(get_ticks() - last_frame_time);
+		last_frame_time = get_ticks();
+		
 		window->redraw();
+		
 		SDL_Delay(6);
 	}
+	
+	delete particle_manager;
 
 	return 0;
 }
