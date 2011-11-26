@@ -37,8 +37,8 @@ ParticleEmitter::ParticleEmitter(ParticleManager* manager, Point center, Image* 
 	m_image = image;
 	m_blend_mode = mode;
 	
-	vertices = NULL;
-	colors = NULL;
+	m_vertices = NULL;
+	m_colors = NULL;
 }
 
 ParticleEmitter::~ParticleEmitter() {
@@ -46,8 +46,8 @@ ParticleEmitter::~ParticleEmitter() {
 		DEBUG("Emitter still has particles remaining...");
 	}
 	
-	delete[] vertices;
-	delete[] colors;
+	delete[] m_vertices;
+	delete[] m_colors;
 }
 
 void ParticleEmitter::init_arrays(int max_expected_particles) {
@@ -56,8 +56,8 @@ void ParticleEmitter::init_arrays(int max_expected_particles) {
 		DEBUG("Tried to pass negative number into ParticleEmitter::init_arrays.");
 	}
 	m_max_expected_particles = max_expected_particles;
-	vertices = new float[max_expected_particles * 2];
-	colors = new float[max_expected_particles * 4];
+	m_vertices = new float[max_expected_particles * 2];
+	m_colors = new float[max_expected_particles * 4];
 }
 
 Particle* ParticleEmitter::request_particle() {
@@ -73,11 +73,11 @@ void ParticleEmitter::free_particle(Particle* particle, list<Particle*>::iterato
 void ParticleEmitter::draw(DrawContext* context) {
 	list<Particle*>::iterator it;
 	
-	if (vertices == NULL) {
+	if (m_vertices == NULL) {
 		DEBUG("Vertex array must be initialized.");
 	}
 	
-	if (colors == NULL) {
+	if (m_colors == NULL) {
 		DEBUG("Color array must be initialized.");
 	}
 	
@@ -91,25 +91,25 @@ void ParticleEmitter::draw(DrawContext* context) {
 	context->set_blend_mode(m_blend_mode);
 	
 	if (uint32_t(m_max_expected_particles) < m_particles.size()) {
-		delete[] vertices;
-		delete[] colors;
+		delete[] m_vertices;
+		delete[] m_colors;
 		init_arrays(max(int(m_particles.size()), m_max_expected_particles*2));
 	}
 	
 	int i = 0;
 	for (it = m_particles.begin(); it != m_particles.end(); it++) {
-		vertices[2 * i] = (*it)->m_pos.x;
-		vertices[(2 * i)+1] = (*it)->m_pos.y;
-		//vertices[i+2] = (*it)->m_size * m_image->get_width();
-		//vertices[i+3] = (*it)->m_size * m_image->get_height();
-		colors[4 * i] = (*it)->m_color.r;
-		colors[(4 * i)+1] = (*it)->m_color.g;
-		colors[(4 * i)+2] = (*it)->m_color.b;
-		colors[(4 * i)+3] = (*it)->m_color.a;
+		m_vertices[2 * i] = (*it)->m_pos.x;
+		m_vertices[(2 * i)+1] = (*it)->m_pos.y;
+		//m_vertices[i+2] = (*it)->m_size * m_image->get_width();
+		//m_vertices[i+3] = (*it)->m_size * m_image->get_height();
+		m_colors[4 * i] = (*it)->m_color.r;
+		m_colors[(4 * i)+1] = (*it)->m_color.g;
+		m_colors[(4 * i)+2] = (*it)->m_color.b;
+		m_colors[(4 * i)+3] = (*it)->m_color.a;
 		
 		i++;
 	}
-	context->draw_bound_point_sprites(vertices, m_particles.size(), m_image->get_width(), m_image->get_height(), colors);
+	context->draw_bound_point_sprites(m_vertices, m_particles.size(), m_image->get_width(), m_image->get_height(), m_colors);
 	context->unbind_image();
 	context->pop_transform();
 }

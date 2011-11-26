@@ -5,7 +5,7 @@
 #include "gui/Image.hpp"
 #include "gui/GraphicRegion.hpp"
 #include "gui/GraphicContainer.hpp"
-#include "gui/SimpleRadialEmitter.hpp"
+#include "gui/SimpleLineEmitter.hpp"
 #include "gui/ParticleManager.hpp"
 #include "common/math.hpp"
 #include "gui/DrawContext.hpp"
@@ -13,10 +13,10 @@
 using namespace LM;
 using namespace std;
 
-void add_emitter(ParticleManager* particle_manager, SimpleRadialEmitterSettings* settings, Image* particle) {
-	SimpleRadialEmitter* simple_emitter = new SimpleRadialEmitter(particle_manager, Point(rand() % 400 + 50, rand() % 400 + 50), particle, DrawContext::BLEND_ADD);
+void add_emitter(ParticleManager* particle_manager, SimpleLineEmitterSettings* settings, Image* particle) {
+	SimpleLineEmitter* simple_emitter = new SimpleLineEmitter(particle_manager, Point(rand() % 400 + 50, rand() % 400 + 50), particle, DrawContext::BLEND_ADD);
 	
-	settings->rotation_rads = 2 * M_PI * (rand() / (float)RAND_MAX);
+	simple_emitter->set_endpoint(rand() % 400 + 50, rand() % 400 + 50);
 	
 	simple_emitter->init(settings);
 	
@@ -50,17 +50,16 @@ int main(int argc, char *argv[]) {
 	GraphicContainer g(true, &w0);
 	g.add_graphic("tile", &tile_s, -1);
 	
-	SimpleRadialEmitterSettings* settings = new SimpleRadialEmitterSettings();
-	settings->particle_speed = 100.0f;
-	settings->speed_variance = 10.0f;
-	settings->spawn_per_second = 1000.0f;
+	SimpleLineEmitterSettings* settings = new SimpleLineEmitterSettings();
+	settings->particle_speed = 10.0f;
+	settings->speed_variance = 0.05f;
+	settings->spawn_per_second = 500.0f;
 	settings->spawn_variance = 1.0f;
-	settings->lifetime_millis = 500;
-	settings->lifetime_variance = 100;
-	settings->rotation_rads = 2 * M_PI * (rand() / (float)RAND_MAX);
-	settings->rotation_variance = 2*M_PI;
+	settings->lifetime_millis = 250;
+	settings->lifetime_variance = 50;
+	settings->rotation_variance = 2 * M_PI;
 	settings->global_force = Point(0.0f,0.0f);
-	settings->max_spawn = 500;
+	settings->max_spawn = 100;
 	settings->emitter_stop_spawning_millis = -1;
 	settings->emitter_lifetime_millis = -1;
 	

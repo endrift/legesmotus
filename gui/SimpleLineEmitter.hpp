@@ -1,5 +1,5 @@
 /*
- * gui/SimpleRadialEmitter.hpp
+ * gui/SimpleLineEmitter.hpp
  *
  * This file is part of Leges Motus, a networked, 2D shooter set in zero gravity.
  * 
@@ -24,18 +24,17 @@
 
 #include "ParticleEmitter.hpp"
 
-#ifndef LM_GUI_SIMPLERADIALEMITTER_HPP
-#define LM_GUI_SIMPLERADIALEMITTER_HPP
+#ifndef LM_GUI_SIMPLELINEEMITTER_HPP
+#define LM_GUI_SIMPLELINEEMITTER_HPP
 
 namespace LM {
-	struct SimpleRadialEmitterSettings {
+	struct SimpleLineEmitterSettings {
 		float particle_speed;
 		float speed_variance;
 		int spawn_per_second;
 		int spawn_variance;
 		uint64_t lifetime_millis;
 		uint64_t lifetime_variance;
-		float rotation_rads;
 		float rotation_variance;
 		Vector global_force;
 		int max_spawn;
@@ -43,22 +42,26 @@ namespace LM {
 		uint64_t emitter_lifetime_millis;
 	};
 
-	class SimpleRadialEmitter : public ParticleEmitter {
+	class SimpleLineEmitter : public ParticleEmitter {
 	private:
 		uint64_t m_lifetime;
 		uint64_t m_leftover_diff;
 		int m_spawned_total;
+		Point m_endpoint;
 	
-		const SimpleRadialEmitterSettings* m_settings;
+		const SimpleLineEmitterSettings* m_settings;
 		
 		void init_particle(Particle* particle);
 	public:
-		SimpleRadialEmitter(ParticleManager* manager, Point center, Image* image, DrawContext::BlendMode mode = DrawContext::BLEND_ADD);
-		virtual ~SimpleRadialEmitter();
+		SimpleLineEmitter(ParticleManager* manager, Point center, Image* image, DrawContext::BlendMode mode = DrawContext::BLEND_ADD);
+		virtual ~SimpleLineEmitter();
 		
-		void init(const SimpleRadialEmitterSettings* settings);
+		void init(const SimpleLineEmitterSettings* settings);
 		
 		virtual bool update(uint64_t timediff);
+		
+		void set_endpoint(Point point);
+		void set_endpoint(float x, float y);
 	};
 }
 

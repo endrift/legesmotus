@@ -4,7 +4,7 @@ LIBSRCS := Widget.cpp DrawContext.cpp GLESContext.cpp GuiWindow.cpp Font.cpp Lab
 	GraphicalMap.cpp GraphicalPlayer.cpp InputDriver.cpp SDLInputDriver.cpp InputSink.cpp HumanController.cpp \
 	GameView.cpp input.cpp GraphicalMapObject.cpp ShaderSet.cpp GLESProgram.cpp Bindings.cpp PhysicsDraw.cpp \
 	GraphicalGate.cpp GraphicalWeapon.cpp ConvolveKernel.cpp Hud.cpp pubsub.cpp ProgressBar.cpp Particle.cpp \
-	ParticleEmitter.cpp ParticleManager.cpp SimpleRadialEmitter.cpp
+	ParticleEmitter.cpp ParticleManager.cpp SimpleRadialEmitter.cpp SimpleLineEmitter.cpp
 BINSRCS := main.cpp
 LIBRARY := ../liblmgui.a
 

@@ -43,8 +43,8 @@ namespace LM {
 		ParticleManager* m_manager;
 		
 		int m_max_expected_particles;
-		float* vertices;
-		float* colors;
+		float* m_vertices;
+		float* m_colors;
 	protected:
 		std::list<Particle*> m_particles;
 	public:
