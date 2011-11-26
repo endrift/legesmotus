@@ -26,6 +26,7 @@
 #include "ParticleManager.hpp"
 #include "Particle.hpp"
 #include "common/misc.hpp"
+#include <math.h>
 
 using namespace LM;
 using namespace std;
@@ -35,12 +36,28 @@ ParticleEmitter::ParticleEmitter(ParticleManager* manager, Point center, Image* 
 	m_center = center;
 	m_image = image;
 	m_blend_mode = mode;
+	
+	vertices = NULL;
+	colors = NULL;
 }
 
 ParticleEmitter::~ParticleEmitter() {
 	if (m_particles.size() > 0) {
 		DEBUG("Emitter still has particles remaining...");
 	}
+	
+	delete[] vertices;
+	delete[] colors;
+}
+
+void ParticleEmitter::init_arrays(int max_expected_particles) {
+	if (max_expected_particles <= 0) {
+		max_expected_particles = 1;
+		DEBUG("Tried to pass negative number into ParticleEmitter::init_arrays.");
+	}
+	m_max_expected_particles = max_expected_particles;
+	vertices = new float[max_expected_particles * 2];
+	colors = new float[max_expected_particles * 4];
 }
 
 Particle* ParticleEmitter::request_particle() {
@@ -56,6 +73,14 @@ void ParticleEmitter::free_particle(Particle* particle, list<Particle*>::iterato
 void ParticleEmitter::draw(DrawContext* context) {
 	list<Particle*>::iterator it;
 	
+	if (vertices == NULL) {
+		DEBUG("Vertex array must be initialized.");
+	}
+	
+	if (colors == NULL) {
+		DEBUG("Color array must be initialized.");
+	}
+	
 	if (m_image == NULL) {
 		DEBUG("Trying to draw emitter with null image.");
 		return;
@@ -65,8 +90,12 @@ void ParticleEmitter::draw(DrawContext* context) {
 	context->bind_image(m_image->get_handle());
 	context->set_blend_mode(m_blend_mode);
 	
-	float vertices[m_particles.size() * 4];
-	float colors[m_particles.size() * 4];
+	if (uint32_t(m_max_expected_particles) < m_particles.size()) {
+		delete[] vertices;
+		delete[] colors;
+		init_arrays(max(int(m_particles.size()), m_max_expected_particles*2));
+	}
+	
 	int i = 0;
 	for (it = m_particles.begin(); it != m_particles.end(); it++) {
 		vertices[2 * i] = (*it)->m_pos.x;

@@ -40,6 +40,17 @@ SimpleRadialEmitter::~SimpleRadialEmitter() {
 void SimpleRadialEmitter::init(const SimpleRadialEmitterSettings* settings) {
 	m_settings = settings;
 	
+	// Initialize the vertex/color arrays to be at least the max expected particles
+	if (m_settings->max_spawn > 0) {
+		init_arrays(m_settings->max_spawn + 1);
+	} else if (m_settings->emitter_stop_spawning_millis > 0) {
+		init_arrays(m_settings->emitter_stop_spawning_millis * (m_settings->spawn_per_second/1000.0) + 1);
+	} else if (m_settings->emitter_lifetime_millis > 0) {
+		init_arrays(m_settings->emitter_lifetime_millis * (m_settings->spawn_per_second/1000.0) + 1);
+	} else {
+		init_arrays(MAX_PARTICLES_AT_A_TIME);
+	}
+	
 	m_leftover_diff = 0;
 	m_lifetime = 0;
 }
@@ -59,9 +70,13 @@ bool SimpleRadialEmitter::update(uint64_t timediff) {
 	}
 	
 	// Spawn new particles
-	if ((m_settings->max_spawn <= 0 || m_spawned_total < m_settings->max_spawn) && 
-	(m_settings->emitter_stop_spawning_millis <= 0 || m_settings->emitter_stop_spawning_millis > m_lifetime)) {
+	if (m_settings->emitter_stop_spawning_millis <= 0 || m_settings->emitter_stop_spawning_millis > m_lifetime) {
 		for (int i = 0; i < num_to_spawn; i++) {
+			if (m_particles.size() >= MAX_PARTICLES_AT_A_TIME ||
+				(m_settings->max_spawn > 0 && m_spawned_total >= m_settings->max_spawn)) {
+				break;
+			}
+		
 			Particle* particle = request_particle();
 	
 			init_particle(particle);

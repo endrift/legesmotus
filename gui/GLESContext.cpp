@@ -820,8 +820,7 @@ void GLESContext::draw_bound_point_sprites(const float vertices[], int n, int si
 	// use glDrawArrays to draw the points
 	LM_gl(DrawArrays, (LM_GL(POINTS), 0, n));
 	
-	// Disable the client states which have been used incase the next draw function does 
-	// not need or use them
+	// Disable the client states
 	LM_gl(DisableClientState, (LM_GL(COLOR_ARRAY)));
 	LM_gl(Disable, (LM_GL(POINT_SPRITE)));
 }

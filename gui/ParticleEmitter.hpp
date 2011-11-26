@@ -41,9 +41,15 @@ namespace LM {
 		int m_alive_count;
 		Point m_center;
 		ParticleManager* m_manager;
+		
+		int m_max_expected_particles;
+		float* vertices;
+		float* colors;
 	protected:
 		std::list<Particle*> m_particles;
 	public:
+		const static float MAX_PARTICLES_AT_A_TIME = 100000;
+	
 		ParticleEmitter(ParticleManager* manager, Point center, Image* image, DrawContext::BlendMode mode = DrawContext::BLEND_ADD);
 		virtual ~ParticleEmitter();
 		
@@ -57,6 +63,8 @@ namespace LM {
 		void free_particle(Particle* particle, std::list<Particle*>::iterator it);
 		
 		virtual bool update(uint64_t timediff);
+		
+		void init_arrays(int max_expected_particles);
 		
 		Point get_center();
 		

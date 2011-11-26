@@ -109,7 +109,7 @@ int main(int argc, char *argv[]) {
 
 		frame = (frame + 1) % 80;
 		
-		if (frame % 10 == 0) {
+		if (frame % 5 == 0) {
 			add_emitter(particle_manager, settings, &particle);
 		}
 		
