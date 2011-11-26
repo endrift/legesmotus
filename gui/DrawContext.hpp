@@ -26,6 +26,7 @@
 #define LM_GUI_DRAWCONTEXT_HPP
 
 #include "common/misc.hpp"
+#include "common/Point.hpp"
 #include <vector>
 
 namespace LM {
@@ -145,6 +146,7 @@ namespace LM {
 		virtual void	unbind_image() = 0;
 		virtual void	draw_image(int width, int height, Image img) = 0;
 		virtual void	draw_bound_image(int width, int height) = 0;
+		virtual void	draw_bound_point_sprites(const float vertices[], int n, int size_x, int size_y, const float colors[]) = 0;
 		virtual void	draw_bound_image_region(int width, int height,
 												float tex_x, float tex_y,
 												float tex_width, float tex_height) = 0;

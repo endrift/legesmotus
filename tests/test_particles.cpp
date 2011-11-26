@@ -13,22 +13,8 @@
 using namespace LM;
 using namespace std;
 
-void add_emitter(ParticleManager* particle_manager, Image* particle) {
+void add_emitter(ParticleManager* particle_manager, SimpleRadialEmitterSettings* settings, Image* particle) {
 	SimpleRadialEmitter* simple_emitter = new SimpleRadialEmitter(particle_manager, Point(rand() % 400 + 50, rand() % 400 + 50), particle, DrawContext::BLEND_ADD);
-
-	SimpleRadialEmitterSettings* settings = new SimpleRadialEmitterSettings();
-	settings->particle_speed = 100.0f;
-	settings->speed_variance = 0.05f;
-	settings->spawn_per_second = 1000.0f;
-	settings->spawn_variance = 1.0f;
-	settings->lifetime_millis = 500;
-	settings->lifetime_variance = 100;
-	settings->rotation_rads = 0.0f;
-	settings->rotation_variance = 2 * M_PI;
-	settings->global_force = Point(0.0f,0.0f);
-	settings->max_spawn = -1;
-	settings->emitter_stop_spawning_millis = 500;
-	settings->emitter_lifetime_millis = 1000;
 	
 	simple_emitter->init(settings);
 	
@@ -60,6 +46,20 @@ int main(int argc, char *argv[]) {
 
 	GraphicContainer g(true, &w0);
 	g.add_graphic("tile", &tile_s, -1);
+	
+	SimpleRadialEmitterSettings* settings = new SimpleRadialEmitterSettings();
+	settings->particle_speed = 100.0f;
+	settings->speed_variance = 0.05f;
+	settings->spawn_per_second = 1000.0f;
+	settings->spawn_variance = 1.0f;
+	settings->lifetime_millis = 500;
+	settings->lifetime_variance = 100;
+	settings->rotation_rads = 0.0f;
+	settings->rotation_variance = 2 * M_PI;
+	settings->global_force = Point(0.0f,0.0f);
+	settings->max_spawn = 500;
+	settings->emitter_stop_spawning_millis = -1;
+	settings->emitter_lifetime_millis = -1;
 	
 	ParticleManager* particle_manager = new ParticleManager(&w0, 100, true);
 	
@@ -109,8 +109,8 @@ int main(int argc, char *argv[]) {
 
 		frame = (frame + 1) % 80;
 		
-		if (frame % 20 == 0) {
-			add_emitter(particle_manager, &particle);
+		if (frame % 10 == 0) {
+			add_emitter(particle_manager, settings, &particle);
 		}
 		
 		particle_manager->update(get_ticks() - last_frame_time);
@@ -122,6 +122,8 @@ int main(int argc, char *argv[]) {
 	}
 	
 	delete particle_manager;
+	
+	delete settings;
 
 	return 0;
 }

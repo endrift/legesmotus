@@ -64,15 +64,23 @@ void ParticleEmitter::draw(DrawContext* context) {
 	context->push_transform();
 	context->bind_image(m_image->get_handle());
 	context->set_blend_mode(m_blend_mode);
-	//DEBUG("Particles: " << m_particles.size());
+	
+	float vertices[m_particles.size() * 4];
+	float colors[m_particles.size() * 4];
+	int i = 0;
 	for (it = m_particles.begin(); it != m_particles.end(); it++) {
-		//DEBUG("HERE: " << (*it)->m_pos.x << ", " << (*it)->m_pos.y);
-		context->translate((*it)->m_pos.x, (*it)->m_pos.y);
-		context->set_draw_color((*it)->m_color);
-		context->draw_bound_image((*it)->m_size * m_image->get_width(), (*it)->m_size * m_image->get_height());
-		context->draw_rect_fill((*it)->m_size * m_image->get_width(), (*it)->m_size * m_image->get_height());
-		context->translate(-1 * (*it)->m_pos.x, -1 * (*it)->m_pos.y);
+		vertices[2 * i] = (*it)->m_pos.x;
+		vertices[(2 * i)+1] = (*it)->m_pos.y;
+		//vertices[i+2] = (*it)->m_size * m_image->get_width();
+		//vertices[i+3] = (*it)->m_size * m_image->get_height();
+		colors[4 * i] = (*it)->m_color.r;
+		colors[(4 * i)+1] = (*it)->m_color.g;
+		colors[(4 * i)+2] = (*it)->m_color.b;
+		colors[(4 * i)+3] = (*it)->m_color.a;
+		
+		i++;
 	}
+	context->draw_bound_point_sprites(vertices, m_particles.size(), m_image->get_width(), m_image->get_height(), colors);
 	context->unbind_image();
 	context->pop_transform();
 }

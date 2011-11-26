@@ -799,6 +799,33 @@ void GLESContext::draw_bound_image(int width, int height) {
 	pop_transform();
 }
 
+void GLESContext::draw_bound_point_sprites(const float vertices[], int n, int size_x, int size_y, const float colors[]) {
+	LM_gl(Enable, (LM_GL(POINT_SPRITE)));
+	LM_gl(TexEnvi, (LM_GL(POINT_SPRITE), LM_GL(COORD_REPLACE), LM_GL(TRUE)));
+
+	// Set the size of all the point sprites
+	LM_gl(PointSize, (max(size_x,size_y)));
+	
+	unbind_vbo();
+	
+	// Configure the point array
+	LM_gl(VertexPointer, (2, LM_GL(FLOAT), 0, vertices));
+	
+	// Enable the use of the color array
+	LM_gl(EnableClientState, (LM_GL(COLOR_ARRAY)));
+	
+	// Configure the color array
+	LM_gl(ColorPointer, (4, LM_GL(FLOAT), 0, colors));
+	
+	// use glDrawArrays to draw the points
+	LM_gl(DrawArrays, (LM_GL(POINTS), 0, n));
+	
+	// Disable the client states which have been used incase the next draw function does 
+	// not need or use them
+	LM_gl(DisableClientState, (LM_GL(COLOR_ARRAY)));
+	LM_gl(Disable, (LM_GL(POINT_SPRITE)));
+}
+
 void GLESContext::draw_bound_image_region(int width, int height,
                                           float tex_x, float tex_y,
                                           float tex_width, float tex_height) {

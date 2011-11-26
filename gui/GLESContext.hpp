@@ -207,6 +207,7 @@ namespace LM {
 		virtual void unbind_image();
 		virtual void draw_image(int width, int height, Image img);
 		virtual void draw_bound_image(int width, int height);
+		virtual void draw_bound_point_sprites(const float vertices[], int n, int size_x, int size_y, const float colors[]);
 		virtual void draw_bound_image_region(int width, int height,
 												float tex_x, float tex_y,
 												float tex_width, float tex_height);

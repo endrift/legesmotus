@@ -35,7 +35,6 @@ SimpleRadialEmitter::SimpleRadialEmitter(ParticleManager* manager, Point center,
 }
 
 SimpleRadialEmitter::~SimpleRadialEmitter() {
-	delete m_settings;
 }
 
 void SimpleRadialEmitter::init(const SimpleRadialEmitterSettings* settings) {
