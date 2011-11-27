@@ -63,6 +63,9 @@ FuzzyLogicAI::FuzzyLogicAI(const Configuration* config, const GameLogic* logic) 
 	initialize_logic();
 	
 	initialize_states();
+	
+	m_aim_inaccuracy = 0;
+	randomize_aim_inaccuracy();
 }
 
 FuzzyLogicAI::~FuzzyLogicAI() {

@@ -100,7 +100,7 @@ bool Pathfinder::find_path(float start_x, float start_y, float goal_x, float goa
 		if ((*this.*check_found)(current, goal_x, goal_y, tolerance)) {
 			// We're done.
 			reconstruct_path(came_from, current, path);
-			DEBUG("Found a path! Distance: " << g_scores[current] << " Hops: " << path.size());
+			//DEBUG("Found a path! Distance: " << g_scores[current] << " Hops: " << path.size());
 			return true;
 		}
 		open_set.pop();

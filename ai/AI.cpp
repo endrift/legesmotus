@@ -260,7 +260,7 @@ bool AI::find_path(const Player* my_player, float end_x, float end_y, float tole
 		}
 	
 		if (path_found) {
-			DEBUG("Finding path: Success: " << path_found << " Took: " << (get_ticks() - pathfind_start_time) << " ms.");
+			//DEBUG("Finding path: Success: " << path_found << " Took: " << (get_ticks() - pathfind_start_time) << " ms.");
 		}
 	}
 	
@@ -293,9 +293,9 @@ bool AI::find_path_to_visibility(const Player* my_player, float end_x, float end
 		}
 	
 		if (path_found) {
-			DEBUG("Finding path: Success: " << path_found << " Took: " << (get_ticks() - pathfind_start_time) << " ms.");
+			//DEBUG("Finding path: Success: " << path_found << " Took: " << (get_ticks() - pathfind_start_time) << " ms.");
 		} else {
-			DEBUG("Finding path: Failure: " << path_found << " Took: " << (get_ticks() - pathfind_start_time) << " ms.");
+			//DEBUG("Finding path: Failure: " << path_found << " Took: " << (get_ticks() - pathfind_start_time) << " ms.");
 		}
 	}
 	
