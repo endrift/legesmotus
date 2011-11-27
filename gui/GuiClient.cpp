@@ -128,6 +128,10 @@ void GuiClient::preload() {
 	preload_image("aim.png");
 	preload_image("blue_particle.png");
 	preload_image("red_particle.png");
+	preload_image("large_blue_particle.png");
+	preload_image("large_red_particle.png");
+	preload_image("shot.png");
+	preload_image("shot_red.png");
 
 	// XXX un-hardcode
 	set_font(load_font("DustHomeMedium.ttf", 12), FONT_BADGE);

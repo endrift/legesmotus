@@ -24,9 +24,9 @@
 	recoil=1.5
 	normal=12,55:-15:front:back:sgun_noshot.png;5,20:-15:back:back:sgun_noshot.png
 	firing=12,55:-15:front:back:sgun_shot.png;5,20:-15:back:back:sgun_shot.png
-	firing_radial_emitter_image_red=red_gate.png
-	firing_radial_emitter_image_blue=blue_gate.png
-	firing_radial_emitter=particle_speed=1000.0|speed_variance=50.0|spawn_per_second=1000.0|spawn_variance=100.0|lifetime_millis=300|lifetime_variance=50|rotation_variance=0.4|max_spawn=5|emitter_stop_spawning_millis=-1|emitter_lifetime_millis=-1|
+	firing_radial_emitter_image_red=shot_red.png
+	firing_radial_emitter_image_blue=shot.png
+	firing_radial_emitter=particle_speed=1000.0|speed_variance=50.0|spawn_per_second=1000.0|spawn_variance=100.0|lifetime_millis=300|lifetime_variance=50|rotation_variance=0.3|max_spawn=5|emitter_stop_spawning_millis=-1|emitter_lifetime_millis=-1|
 	
 
 #2:IMPACT
