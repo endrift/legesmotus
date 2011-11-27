@@ -38,6 +38,8 @@
 #include "Font.hpp"
 #include "Label.hpp"
 #include "Hud.hpp"
+#include "ParticleManager.hpp"
+#include "SimpleLineEmitter.hpp"
 
 using namespace LM;
 using namespace std;
@@ -73,6 +75,9 @@ GuiClient::GuiClient() {
 	if (m_config->get_bool("Debug", "physics_overlay")) {
 		add_extra_draw(m_debugdraw);
 	}
+	
+	m_particle_manager = new ParticleManager(&m_root, 50000, true);
+	add_extra_draw(m_particle_manager);
 
 	m_map = NULL;
 	m_player = NULL;
@@ -95,8 +100,11 @@ GuiClient::~GuiClient() {
 	delete m_cache;
 	delete m_input;
 	delete m_debugdraw;
+	delete m_particle_manager;
 	delete m_view;
 	delete m_config;
+	
+	m_graphical_weapons.clear();
 
 	// Clean up associations to prevent deletion failures
 	m_root.set_parent(NULL);
@@ -118,6 +126,8 @@ void GuiClient::preload() {
 	preload_image("blue_frontleg.png");
 	preload_image("blue_backleg.png");
 	preload_image("aim.png");
+	preload_image("blue_particle.png");
+	preload_image("red_particle.png");
 
 	// XXX un-hardcode
 	set_font(load_font("DustHomeMedium.ttf", 12), FONT_BADGE);
@@ -269,12 +279,25 @@ GraphicalMap* GuiClient::make_map() {
 	return new GraphicalMap(m_cache);
 }
 
-Weapon* GuiClient::make_weapon(WeaponReader& weapon_data) {
+Weapon* GuiClient::make_weapon(uint32_t index, WeaponReader& weapon_data) {
 	GraphicalWeapon* gw = new GraphicalWeapon(m_cache);
 	Weapon* w = Weapon::new_weapon(weapon_data, gw);
+	
 	if (w == NULL) {
 		delete gw;
 	}
+	
+	while(index > m_graphical_weapons.size()) {
+		m_graphical_weapons.push_back(NULL);
+	}
+	
+	if (index == m_graphical_weapons.size()) {
+		m_graphical_weapons.push_back(gw);
+	} else {
+		m_graphical_weapons.erase(m_graphical_weapons.begin() + index);
+		m_graphical_weapons.insert(m_graphical_weapons.begin() + index, gw);
+	}
+	
 	return w;
 }
 
@@ -352,6 +375,8 @@ void GuiClient::run() {
 		crosshair_bone.set_rotation(m_gcontrol->get_aim() * RADIANS_TO_DEGREES);
 
 		update_gui();
+		
+		m_particle_manager->update(current_time - last_time);
 
 		m_window->redraw();
 		last_time = current_time;
@@ -375,6 +400,13 @@ void GuiClient::update_gui() {
 
 void GuiClient::add_extra_draw(Widget* draw) {
 	m_view->add_child(draw, GameView::OVERLAY);
+}
+
+GraphicalWeapon* GuiClient::get_weapon(uint32_t id) {
+	if (id >= m_graphical_weapons.size()) {
+		return NULL;
+	}
+	return m_graphical_weapons.at(id);
 }
 
 void GuiClient::key_pressed(const KeyEvent& event) {
@@ -420,4 +452,68 @@ void GuiClient::round_over(const Packet& p) {
 	round_cleanup();
 	
 	Client::round_over(p);
+}
+
+void GuiClient::weapon_discharged(const Packet& p) {
+	Client::weapon_discharged(p);
+
+	Player* player = get_player(p.weapon_discharged.player_id);
+	if (player == NULL) {
+		WARN("Player " << p.weapon_discharged.player_id << " fired, but does not exist.");
+		return;
+	}
+	
+	GraphicalPlayer* g_player = static_cast<GraphicalPlayer*>(player);
+	if (g_player == NULL) {
+		WARN("Player " << p.weapon_discharged.player_id << " could not be converted to a graphical player.");
+		return;
+	}
+	
+	Graphic* weapon_graphic = g_player->get_curr_visible_weapon_graphic();
+	if (weapon_graphic == NULL) {
+		return;
+	}
+	
+	add_weapon_fired_emitter(g_player->get_current_weapon_id(), g_player, player->get_x(), player->get_y(), p.weapon_discharged.end_x, p.weapon_discharged.end_y, p.weapon_discharged.direction);
+}
+
+Packet* GuiClient::attempt_firing() {
+	Packet* packet = Client::attempt_firing();
+	
+	if (packet == NULL) {
+		return packet;
+	}
+	
+	if (m_player == NULL) {
+		WARN("Attempted to fire without having a player.");
+		return packet;
+	}
+	
+	Graphic* weapon_graphic = m_player->get_curr_visible_weapon_graphic();
+	if (weapon_graphic == NULL) {
+		return packet;
+	}
+	
+	add_weapon_fired_emitter(m_player->get_current_weapon_id(), m_player, m_player->get_x(), m_player->get_y(), packet->weapon_discharged.end_x, packet->weapon_discharged.end_y, packet->weapon_discharged.direction);
+	
+	return packet;
+}
+
+void GuiClient::add_weapon_fired_emitter(int weapon_id, GraphicalPlayer* player, float player_x, float player_y, float end_x, float end_y, float rotation_rads) {
+	float start_x = player_x;
+	float start_y = player_y;
+	// Move the start position to be closer to the gun muzzle
+	Point offset_to_shoulder(0, -16);
+	offset_to_shoulder.rotate(player->get_rotation_radians());
+	Point offset_to_gun(50, 0);
+	offset_to_gun.rotate(player->get_rotation_radians() + player->get_gun_rotation_radians());
+	start_x += offset_to_shoulder.x + offset_to_gun.x;
+	start_y += offset_to_shoulder.y + offset_to_gun.y;
+
+	GraphicalWeapon* weapon = get_weapon(weapon_id);
+	if (weapon == NULL) {
+		DEBUG("No weapon found for generating a particle emitter.");
+		return;
+	}
+	weapon->generate_fired_emitter(m_particle_manager, m_cache, start_x, start_y, end_x, end_y, rotation_rads, player->get_team());
 }

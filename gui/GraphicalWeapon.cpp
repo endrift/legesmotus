@@ -23,12 +23,18 @@
  */
 
 #include "GraphicalWeapon.hpp"
+#include "ParticleManager.hpp"
+#include "SimpleLineEmitter.hpp"
+#include "SimpleRadialEmitter.hpp"
+#include "ResourceCache.hpp"
 
 using namespace LM;
 using namespace std;
 
 GraphicalWeapon::GraphicalWeapon(ResourceCache* cache) {
 	m_cache = cache;
+	m_firing_line_emitter_settings = NULL;
+	m_firing_radial_emitter_settings = NULL;
 }
 
 bool GraphicalWeapon::parse_param(const char* param_string, Weapon* owner) {
@@ -37,6 +43,18 @@ bool GraphicalWeapon::parse_param(const char* param_string, Weapon* owner) {
 		type |= GraphicalPlayer::PART_UNFIRED;
 	} else if (strncasecmp(param_string, "firing=", 7) == 0) {
 		type |= GraphicalPlayer::PART_FIRED;
+	} else if (strncasecmp(param_string, "firing_line_emitter=", 20) == 0) {
+		m_firing_line_emitter_settings = SimpleLineEmitter::parse_settings_string(string(param_string+20));
+	} else if (strncasecmp(param_string, "firing_line_emitter_image_red=", 30) == 0) {
+		m_firing_line_emitter_image_name_red = string(param_string+30);
+	} else if (strncasecmp(param_string, "firing_line_emitter_image_blue=", 31) == 0) {
+		m_firing_line_emitter_image_name_blue = string(param_string+31);
+	} else if (strncasecmp(param_string, "firing_radial_emitter=", 22) == 0) {
+		m_firing_radial_emitter_settings = SimpleRadialEmitter::parse_settings_string(string(param_string+22));
+	} else if (strncasecmp(param_string, "firing_radial_emitter_image_red=", 32) == 0) {
+		m_firing_radial_emitter_image_name_red = string(param_string+32);
+	} else if (strncasecmp(param_string, "firing_radial_emitter_image_blue=", 33) == 0) {
+		m_firing_radial_emitter_image_name_blue = string(param_string+33);
 	} else {
 		return false;
 	}
@@ -84,5 +102,38 @@ void GraphicalWeapon::select(Player* player) {
 		sprite->set_x(m_gunpart[i].position.x);
 		sprite->set_y(m_gunpart[i].position.y);
 		sprite->set_rotation(m_gunpart[i].rotation);
+	}
+}
+
+void GraphicalWeapon::generate_fired_emitter(ParticleManager* manager, ResourceCache* cache, float start_x, float start_y, float end_x, float end_y, float rotation, char team) {
+	if (m_firing_line_emitter_settings != NULL) {
+		string name = m_firing_line_emitter_image_name_blue;
+		if (team == 'B') {
+			name = m_firing_line_emitter_image_name_red;
+		}
+	
+		SimpleLineEmitter* simple_emitter = new SimpleLineEmitter(manager, Point(start_x, start_y), (cache->get<Image>(name)), DrawContext::BLEND_ADD);
+	
+		simple_emitter->set_endpoint(end_x, end_y);
+	
+		simple_emitter->init(m_firing_line_emitter_settings);
+	
+		manager->add_emitter(simple_emitter);
+	}
+	
+	if (m_firing_radial_emitter_settings != NULL) {
+		string name = m_firing_radial_emitter_image_name_blue;
+		if (team == 'B') {
+			DEBUG("NAME: " << m_firing_radial_emitter_image_name_red);
+			name = m_firing_radial_emitter_image_name_red;
+		}
+	
+		SimpleRadialEmitter* radial_emitter = new SimpleRadialEmitter(manager, Point(start_x, start_y), (cache->get<Image>(name)), DrawContext::BLEND_ADD);
+	
+		radial_emitter->init(m_firing_radial_emitter_settings);
+		
+		radial_emitter->set_rotation(rotation);
+	
+		manager->add_emitter(radial_emitter);
 	}
 }

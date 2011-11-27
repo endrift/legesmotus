@@ -32,12 +32,25 @@ using namespace std;
 SimpleRadialEmitter::SimpleRadialEmitter(ParticleManager* manager, Point center, Image* image, DrawContext::BlendMode mode) : ParticleEmitter(manager, center, image, mode) {
 	m_lifetime = 0;
 	m_spawned_total = 0;
+	m_settings = NULL;
+	m_delete_settings = false;
+	m_curr_rotation = 0;
+	m_leftover_diff = 0;
 }
 
 SimpleRadialEmitter::~SimpleRadialEmitter() {
+	if (m_delete_settings) {
+		delete m_settings;
+	}
 }
 
-void SimpleRadialEmitter::init(const SimpleRadialEmitterSettings* settings) {
+void SimpleRadialEmitter::init(const SimpleRadialEmitterSettings* settings, bool delete_settings) {
+	if (m_delete_settings) {
+		delete m_settings;
+	}
+	
+	m_delete_settings = delete_settings;
+
 	m_settings = settings;
 	
 	// Initialize the vertex/color arrays to be at least the max expected particles
@@ -50,9 +63,6 @@ void SimpleRadialEmitter::init(const SimpleRadialEmitterSettings* settings) {
 	} else {
 		init_arrays(MAX_PARTICLES_AT_A_TIME);
 	}
-	
-	m_leftover_diff = 0;
-	m_lifetime = 0;
 }
 
 bool SimpleRadialEmitter::update(uint64_t timediff) {
@@ -132,9 +142,9 @@ void SimpleRadialEmitter::init_particle(Particle* particle) {
 	particle->m_pos = get_center();
 	particle->m_prev_pos = particle->m_pos;
 	float speed = m_settings->particle_speed + (rand()/(float)RAND_MAX) * m_settings->speed_variance;
-	float dir = m_settings->rotation_rads + (rand()/(float)RAND_MAX) * m_settings->rotation_variance - m_settings->rotation_variance/2;
+	float dir = m_curr_rotation + m_settings->rotation_rads + (rand()/(float)RAND_MAX) * m_settings->rotation_variance - m_settings->rotation_variance/2;
 	
-	particle->m_vel = Vector(speed * sin(dir), speed * cos(dir));
+	particle->m_vel = Vector(speed * cos(dir), speed * sin(dir));
 	
 	particle->m_energy_left = m_settings->lifetime_millis + rand() % m_settings->lifetime_variance;
 	particle->m_initial_energy = particle->m_energy_left;
@@ -145,4 +155,62 @@ void SimpleRadialEmitter::init_particle(Particle* particle) {
 	particle->m_color.a = 255;
 	
 	particle->m_size = 1.0f;
+}
+
+SimpleRadialEmitterSettings* SimpleRadialEmitter::parse_settings_string(string settings_string) {
+	SimpleRadialEmitterSettings* settings = new SimpleRadialEmitterSettings();
+	
+	while(settings_string.length() > 0) {
+		int loc = settings_string.find("|");
+		
+		if (loc < 0) {
+			break;
+		}
+		
+		string token = settings_string.substr(0, loc);
+		int equalsloc = token.find("=");
+		
+		if (equalsloc < 0) {
+			continue;
+		}
+		
+		string name = token.substr(0, equalsloc);
+		string value = token.substr(equalsloc+1);
+		
+		parse_param(settings, name, value);
+		
+		settings_string = settings_string.substr(loc+1);
+	}
+	
+	return settings;
+}
+
+void SimpleRadialEmitter::parse_param(SimpleRadialEmitterSettings* settings, string name, string value) {
+	if (name == "particle_speed") {
+		settings->particle_speed = atof(value.c_str());
+	} else if (name == "speed_variance") {
+		settings->speed_variance = atof(value.c_str());
+	} else if (name == "spawn_per_second") {
+		settings->spawn_per_second = atoi(value.c_str());
+	} else if (name == "spawn_variance") {
+		settings->spawn_variance = atoi(value.c_str());
+	} else if (name == "lifetime_millis") {
+		settings->lifetime_millis = atoi(value.c_str());
+	} else if (name == "lifetime_variance") {
+		settings->lifetime_variance = atoi(value.c_str());
+	} else if (name == "rotation_rads") {
+		settings->rotation_rads = atof(value.c_str());
+	} else if (name == "rotation_variance") {
+		settings->rotation_variance = atof(value.c_str());
+	} else if (name == "max_spawn") {
+		settings->max_spawn = atoi(value.c_str());
+	} else if (name == "emitter_stop_spawning_millis") {
+		settings->emitter_stop_spawning_millis = atoi(value.c_str());
+	} else if (name == "emitter_lifetime_millis") {
+		settings->emitter_lifetime_millis = atoi(value.c_str());
+	}
+}
+
+void SimpleRadialEmitter::set_rotation(float rads) {
+	m_curr_rotation = rads;
 }

@@ -53,6 +53,8 @@ namespace LM {
 		uint64_t m_weapon_switch_time;
 		uint64_t m_weapon_switch_delay;
 		uint64_t m_last_player_update;
+		
+		Packet* weapon_discharged_packet;
 
 		bool m_running;
 		
@@ -69,7 +71,7 @@ namespace LM {
 
 		Player* get_player(uint32_t id);
 		
-		void attempt_firing();
+		virtual Packet* attempt_firing();
 		void check_player_hits();
 		
 		void generate_player_update(uint32_t id, Packet* p);
@@ -96,7 +98,7 @@ namespace LM {
 		
 		virtual Player* make_player(const char* name, uint32_t id, char team);
 		virtual Map* make_map();
-		virtual Weapon* make_weapon(WeaponReader& weapon_data);
+		virtual Weapon* make_weapon(uint32_t index, WeaponReader& weapon_data);
 
 		void set_controller(Controller* controller);
 		void set_config(Configuration* config);

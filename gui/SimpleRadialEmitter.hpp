@@ -48,17 +48,25 @@ namespace LM {
 		uint64_t m_lifetime;
 		uint64_t m_leftover_diff;
 		int m_spawned_total;
+		float m_curr_rotation;
 	
 		const SimpleRadialEmitterSettings* m_settings;
+		bool m_delete_settings;
 		
 		void init_particle(Particle* particle);
 	public:
 		SimpleRadialEmitter(ParticleManager* manager, Point center, Image* image, DrawContext::BlendMode mode = DrawContext::BLEND_ADD);
 		virtual ~SimpleRadialEmitter();
 		
-		void init(const SimpleRadialEmitterSettings* settings);
+		void init(const SimpleRadialEmitterSettings* settings, bool delete_settings = false);
 		
 		virtual bool update(uint64_t timediff);
+		
+		static SimpleRadialEmitterSettings* parse_settings_string(std::string settings_string);
+		
+		static void parse_param(SimpleRadialEmitterSettings* settings, std::string name, std::string value);
+		
+		void set_rotation(float rads);
 	};
 }
 

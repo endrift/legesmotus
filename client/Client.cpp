@@ -52,9 +52,15 @@ Client::Client() : m_network(this) {
 
 	m_weapon_switch_time = 0;
 	m_weapon_switch_delay = 300;
+	
+	weapon_discharged_packet = NULL;
 }
 
 Client::~Client() {
+	if (weapon_discharged_packet != NULL) {
+		delete weapon_discharged_packet;
+	}
+
 	delete m_logic;
 }
 
@@ -162,16 +168,23 @@ Player* Client::get_player(uint32_t id) {
 	return m_logic->get_player(id);
 }
 
-void Client::attempt_firing() {
+Packet* Client::attempt_firing() {
 	if (get_weapon_switch_delay_remaining() > 0) {
-		return;
+		return NULL;
 	}
 	
-	Packet weapon_discharged(WEAPON_DISCHARGED_PACKET);
-	bool fired_successfully = m_logic->attempt_fire(m_player_id, m_curr_weapon, m_controller->get_aim(), &(weapon_discharged.weapon_discharged));
-	if (fired_successfully) {
-		m_network.send_packet(&weapon_discharged);
+	if (weapon_discharged_packet != NULL) {
+		delete weapon_discharged_packet;
 	}
+	
+	weapon_discharged_packet = new Packet(WEAPON_DISCHARGED_PACKET);
+	bool fired_successfully = m_logic->attempt_fire(m_player_id, m_curr_weapon, m_controller->get_aim(), &(weapon_discharged_packet->weapon_discharged));
+	if (fired_successfully) {
+		m_network.send_packet(weapon_discharged_packet);
+		return weapon_discharged_packet;
+	}
+	
+	return NULL;
 }
 
 void Client::check_player_hits() {
@@ -275,7 +288,7 @@ Map* Client::make_map() {
 	return new Map;
 }
 
-Weapon* Client::make_weapon(WeaponReader& weapon_data) {
+Weapon* Client::make_weapon(uint32_t index, WeaponReader& weapon_data) {
 	return Weapon::new_weapon(weapon_data);
 }
 
@@ -524,7 +537,7 @@ void Client::player_died(const Packet& p) {
 void Client::weapon_info(const Packet& p) {
 	WeaponReader wr(*p.weapon_info.weapon_data);
 	DEBUG("Weapon: " << p.weapon_info.index);
-	Weapon* weapon = make_weapon(wr);
+	Weapon* weapon = make_weapon(p.weapon_info.index, wr);
 	
 	if (weapon != NULL && m_logic != NULL) {
 		DEBUG(weapon->get_name() << ", " << weapon->get_id());

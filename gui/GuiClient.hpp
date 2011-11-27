@@ -45,6 +45,7 @@ namespace LM {
 	class ConvolveKernel;
 	class Hud;
 	class Configuration;
+	class ParticleManager;
 
 	class GuiClient : public Client, public InputSink {
 	private:
@@ -64,8 +65,12 @@ namespace LM {
 		PhysicsDraw* m_debugdraw;
 		Configuration* m_config;
 
+		ParticleManager* m_particle_manager;
+
 		GraphicalPlayer* m_player;
 		GraphicalMap* m_map;
+		
+		std::vector<GraphicalWeapon*> m_graphical_weapons;
 
 		ResourceCache* m_cache;
 		std::vector<std::string> m_preloaded_images;
@@ -107,7 +112,7 @@ namespace LM {
 
 		virtual GraphicalPlayer* make_player(const char* name, uint32_t id, char team);
 		virtual GraphicalMap* make_map();
-		virtual Weapon* make_weapon(WeaponReader& weapon_data);
+		virtual Weapon* make_weapon(uint32_t index, WeaponReader& weapon_data);
 
 		virtual void name_change(Player* player, const std::string& new_name);
 		virtual void team_change(Player* player, char new_team);
@@ -117,6 +122,8 @@ namespace LM {
 		virtual void run();
 		void update_gui();
 		void add_extra_draw(Widget* draw);
+		
+		GraphicalWeapon* get_weapon(uint32_t id);
 
 		virtual void key_pressed(const KeyEvent& event);
 		virtual void mouse_moved(const MouseMotionEvent& event);
@@ -126,6 +133,10 @@ namespace LM {
 		virtual void disconnect();
 		
 		virtual void round_over(const Packet& p);
+		virtual void weapon_discharged(const Packet& p);
+		
+		virtual Packet* attempt_firing();
+		virtual void add_weapon_fired_emitter(int weapon_id, GraphicalPlayer* player, float player_x, float player_y, float end_x, float end_y, float rotation_rads);
 	};
 }
 

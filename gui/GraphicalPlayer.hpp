@@ -74,6 +74,8 @@ namespace LM {
 		virtual void set_is_frozen(bool is_frozen, int64_t freeze_time = 0, PhysicsObject* source = NULL);
 
 		Graphic* get_weapon_graphic(int partid);
+		
+		Graphic* get_curr_visible_weapon_graphic();
 	};
 }
 

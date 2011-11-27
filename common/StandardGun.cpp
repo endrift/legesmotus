@@ -112,6 +112,7 @@ bool StandardGun::parse_param(const char* param_string) {
 Packet::WeaponDischarged* StandardGun::fire(b2World* physics, Player& player, Point start, float direction, Packet::WeaponDischarged* packet) {
 	m_last_fired_time = get_ticks();
 	m_last_fired_dir = direction;
+	b2Vec2 end_point;
 	m_hit_data.clear();
 	
 	// Recharge ammo, if applicable
@@ -139,6 +140,40 @@ Packet::WeaponDischarged* StandardGun::fire(b2World* physics, Player& player, Po
 		if (!m_hit_data.back().empty()) {
 			sort(m_hit_data.back().begin(), m_hit_data.back().end(), compare_hit_data);
 		}
+		
+		// Find the end point of the middle projectile
+		if (i == m_nbr_projectiles/2) {
+			bool found = false;
+			vector<HitData>::iterator thishit = m_hit_data.back().end();
+			
+			// Discard invalid collisions until we find the closest good collision
+			while (!found) {
+				thishit--;
+				
+				b2Body* body = (*thishit).fixture->GetBody();
+	
+				if (body->GetUserData() == NULL) {
+					continue;
+				}
+	
+				PhysicsObject* hitobj = static_cast<PhysicsObject*>(body->GetUserData());
+				
+				if ((*thishit).fixture->IsSensor()) {
+					continue;
+				}
+	
+				if (hitobj->get_type() == PhysicsObject::MAP_OBJECT) {
+					MapObject* object = static_cast<MapObject*>(hitobj);
+		
+					if (!object->is_shootable()) {
+						continue;
+					}
+				}
+				
+				found = true;
+			}
+			end_point = (*thishit).point;
+		}
 
 		currdirection += m_angle/(m_nbr_projectiles - 1.0);
 	}
@@ -147,9 +182,8 @@ Packet::WeaponDischarged* StandardGun::fire(b2World* physics, Player& player, Po
 	packet->weapon_id = get_id();
 	packet->start_x = start.x;
 	packet->start_y = start.y;
-	// FIXME make this variable length
-	packet->end_x = start.x;
-	packet->end_y = start.y;
+	packet->end_x = to_game(end_point.x);
+	packet->end_y = to_game(end_point.y);
 	packet->direction = direction;
 	
 	was_fired(physics, player, direction);
@@ -389,4 +423,3 @@ float32 StandardGun::ReportFixture(b2Fixture* fixture, const b2Vec2& point, cons
 	
 	return 1;
 }
-

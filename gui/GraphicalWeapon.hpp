@@ -30,6 +30,9 @@
 
 namespace LM {
 	class ResourceCache;
+	class ParticleManager;
+	struct SimpleLineEmitterSettings;
+	struct SimpleRadialEmitterSettings;
 	
 	class GraphicalWeapon : public ClientWeapon {
 	private:
@@ -41,11 +44,21 @@ namespace LM {
 
 		ResourceCache* m_cache;
 		GunPart m_gunpart[GraphicalPlayer::PART_MAX];
+		
+		std::string m_firing_line_emitter_image_name_red;
+		std::string m_firing_line_emitter_image_name_blue;
+		SimpleLineEmitterSettings* m_firing_line_emitter_settings;
+		
+		std::string m_firing_radial_emitter_image_name_red;
+		std::string m_firing_radial_emitter_image_name_blue;
+		SimpleRadialEmitterSettings* m_firing_radial_emitter_settings;
 
 	public:
 		GraphicalWeapon(ResourceCache* cache);
 		virtual bool parse_param(const char* param_string, Weapon* owner);
 		virtual void select(Player* player);
+		
+		virtual void generate_fired_emitter(ParticleManager* manager, ResourceCache* cache, float start_x, float start_y, float end_x, float end_y, float rotation, char team);
 	};
 }
 

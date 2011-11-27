@@ -244,3 +244,13 @@ Graphic* GraphicalPlayer::get_weapon_graphic(int partid) {
 	gunname << partid;
 	return m_graphic_root.get_graphic(gunname.str());
 }
+
+Graphic* GraphicalPlayer::get_curr_visible_weapon_graphic() {
+	if (!get_weapon_graphic(PART_BACK_HAND|PART_BACK_ARM|PART_UNFIRED)->is_invisible()) {
+		return get_weapon_graphic(PART_BACK_HAND|PART_BACK_ARM|PART_UNFIRED);
+	} else if (!get_weapon_graphic(PART_BACK_HAND|PART_FRONT_ARM|PART_UNFIRED)->is_invisible()) {
+		return get_weapon_graphic(PART_BACK_HAND|PART_FRONT_ARM|PART_UNFIRED);
+	} else {
+		DEBUG("No part found.");
+	}
+}

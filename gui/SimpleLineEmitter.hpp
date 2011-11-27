@@ -48,6 +48,8 @@ namespace LM {
 		uint64_t m_leftover_diff;
 		int m_spawned_total;
 		Point m_endpoint;
+		
+		bool m_delete_settings;
 	
 		const SimpleLineEmitterSettings* m_settings;
 		
@@ -56,12 +58,16 @@ namespace LM {
 		SimpleLineEmitter(ParticleManager* manager, Point center, Image* image, DrawContext::BlendMode mode = DrawContext::BLEND_ADD);
 		virtual ~SimpleLineEmitter();
 		
-		void init(const SimpleLineEmitterSettings* settings);
+		void init(const SimpleLineEmitterSettings* settings, bool delete_settings = false);
 		
 		virtual bool update(uint64_t timediff);
 		
 		void set_endpoint(Point point);
 		void set_endpoint(float x, float y);
+		
+		static SimpleLineEmitterSettings* parse_settings_string(std::string settings_string);
+		
+		static void parse_param(SimpleLineEmitterSettings* settings, std::string name, std::string value);
 	};
 }
 
