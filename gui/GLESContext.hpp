@@ -215,6 +215,8 @@ namespace LM {
 											   float tex_x, float tex_y,
 											   float tex_width, float tex_height);
 
+		virtual void set_scissor(float x, float y, float width, float height);
+
 		virtual void clear();
 		virtual void redraw();
 	};

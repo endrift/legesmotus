@@ -131,6 +131,7 @@ namespace LM {
 		virtual void	draw_roundrect(float w, float h, float r, int fine);
 		virtual void	draw_roundrect_fill(float w, float h, float r, int fine);
 		virtual void	draw_roundrect_line(float w, float h, float r, int fine);
+		virtual void	draw_roundrect_wide_line(float w, float h, float r, int fine);
 
 		virtual void	draw_line(float x1, float y1, float x2, float y2) = 0;
 		virtual void	draw_lines(const float vertices[], int n, bool loop) = 0;
@@ -154,6 +155,7 @@ namespace LM {
 											   float tex_x, float tex_y,
 											   float tex_width, float tex_height) = 0;
 
+		virtual void set_scissor(float x, float y, float width, float height) = 0;
 		virtual void	clear() = 0;
 		virtual void	redraw() = 0;
 	};

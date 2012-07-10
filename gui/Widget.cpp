@@ -28,6 +28,8 @@
 using namespace LM;
 using namespace std;
 
+uint64_t Widget::CURR_ID = 0;
+
 Widget::Widget(Widget* parent) {
 	m_parent = parent;
 	if (parent != NULL) {
@@ -38,6 +40,9 @@ Widget::Widget(Widget* parent) {
 	m_y = 0;
 	m_w = 0;
 	m_h = 0;
+	m_id = CURR_ID++;
+	
+	m_receive_input = true;
 
 	m_drawable = true;
 
@@ -69,6 +74,12 @@ Widget* Widget::get_parent() {
 	return m_parent;
 }
 
+void Widget::on_add_child(Widget* child, int priority) {
+}
+
+void Widget::on_remove_child(Widget* child) {
+}
+
 void Widget::add_child(Widget* child, int priority) {
 	if (child != NULL) {
 		if (child->m_parent != NULL) {
@@ -76,6 +87,8 @@ void Widget::add_child(Widget* child, int priority) {
 		}
 		child->m_parent = this;
 		m_children.insert(make_pair(priority, child));
+		
+		on_add_child(child, priority);
 	}
 }
 
@@ -85,6 +98,8 @@ void Widget::remove_child(Widget* child) {
 		for (multimap<int, Widget*>::iterator iter = m_children.begin(); iter != m_children.end();) {
 			if (iter->second == child) {
 				m_children.erase(iter++);
+				
+				on_remove_child(child);
 			} else {
 				++iter;
 			}
@@ -103,9 +118,14 @@ Iterator<std::pair<int, Widget*> > Widget::list_children() {
 	return Iterator<pair<int, Widget*> >(new StdMultiMapIterator<int, Widget*>(&m_children));
 }
 
+Point Widget::get_relative_point(float x, float y) {
+	return Point(x - get_x(), y - get_y());
+}
+
 Widget* Widget::top_child_at(float x, float y) {
+	Point relative_point = get_relative_point(x, y);
 	for (multimap<int, Widget*>::iterator iter = m_children.begin(); iter != m_children.end(); ++iter) {
-		if (iter->second->contains_point(x - get_x(), y - get_y())) {
+		if (iter->second->contains_point(relative_point.x, relative_point.y)) {
 			return iter->second;
 		}
 	}
@@ -113,16 +133,17 @@ Widget* Widget::top_child_at(float x, float y) {
 }
 
 multimap<int, Widget*> Widget::children_at(float x, float y) {
+	Point relative_point = get_relative_point(x, y);
 	multimap<int, Widget*> children;
 	for (multimap<int, Widget*>::iterator iter = m_children.begin(); iter != m_children.end(); ++iter) {
-		if (iter->second->contains_point(x - get_x(), y - get_y())) {
+		if (iter->second->contains_point(relative_point.x, relative_point.y)) {
 			children.insert(*iter);
 		}
 	}
 	return children;
 }
 
-bool Widget::contains_point(float x, float y) {
+bool Widget::contains_point(float x, float y) const {
 	if (x < get_x() - get_width()/2 || x > get_x() + get_width()/2) {
 		return false;
 	}
@@ -148,6 +169,22 @@ void Widget::change_priority(Widget* widget, int new_priority) {
 	add_child(widget, new_priority);
 }
 
+uint64_t Widget::get_id() const {
+	return m_id;
+}
+
+void Widget::set_id(uint64_t id) {
+	m_id = id;
+}
+
+void Widget::set_receives_input(bool receive_input) {
+	m_receive_input = receive_input;
+}
+
+bool Widget::receives_input() const {
+	return m_receive_input;
+}
+
 void Widget::set_x(float x) {
 	m_x = x;
 }
@@ -170,6 +207,22 @@ float Widget::get_x() const {
 
 float Widget::get_y() const {
 	return m_y;
+}
+
+float Widget::get_absolute_x() const {
+	if (m_parent != NULL) {
+		return m_parent->get_absolute_x() + m_x;
+	} else {
+		return m_x;
+	}
+}
+
+float Widget::get_absolute_y() const {
+	if (m_parent != NULL) {
+		return m_parent->get_absolute_y() + m_y;
+	} else {
+		return m_x;
+	}
 }
 
 float Widget::get_width() const {
@@ -206,31 +259,76 @@ void Widget::blur() {
 	//s_blur();
 }
 
-// TODO propagate events downward
+// TODO better info about whether child handled the event!
+
+void Widget::private_mouse_clicked(bool child_handled, float x, float y, bool down, int button) {
+}
+void Widget::private_mouse_moved(bool child_handled, float x, float y, float delta_x, float delta_y) {
+}
+void Widget::private_keypress(const KeyEvent& event) {
+}
 
 void Widget::mouse_clicked(float x, float y, bool down, int button) {
-	Widget* child = top_child_at(x, y);
-	if (child != NULL) {
-		child->mouse_clicked(x - get_x(), y - get_y(), down, button);
+	// All children receive up events, but only the one clicked receives the down event
+	Point relative_point = get_relative_point(x, y);
+	if (down) {
+		bool child_handled = false;
+		Point relative_point = get_relative_point(x, y);
+		for (multimap<int, Widget*>::iterator iter = m_children.begin(); iter != m_children.end(); ++iter) {
+			if (iter->second->receives_input() && iter->second->contains_point(relative_point.x, relative_point.y)) {
+				iter->second->mouse_clicked(relative_point.x, relative_point.y, down, button);
+				child_handled = true;
+			}
+		}
+		
+		private_mouse_clicked(child_handled, x, y, down, button);
+	} else {
+		bool child_handled = false;
+		for (multimap<int, Widget*>::iterator iter = m_children.begin(); iter != m_children.end(); ++iter) {
+			if (iter->second->receives_input()) {
+				iter->second->mouse_clicked(relative_point.x, relative_point.y, down, button);
+				child_handled = true;
+			}
+		}
+		
+		private_mouse_clicked(child_handled, x, y, down, button);
 	}
-
-	//s_mouse_clicked(x, y, down, button);
 }
 
 void Widget::mouse_moved(float x, float y, float delta_x, float delta_y) {
 	multimap<int, Widget*> children = children_at(x, y);
-	for (multimap<int, Widget*>::iterator iter = children.begin(); iter != children.end(); ++iter) {
-		iter->second->mouse_moved(x - get_x(), y - get_y(), delta_x, delta_y);
+	
+	Point relative_point = get_relative_point(x, y);
+	bool child_handled = false;
+	
+	// For now, have all children receive the event
+	for (multimap<int, Widget*>::iterator iter = m_children.begin(); iter != m_children.end(); ++iter) {
+		if (iter->second->receives_input()) {
+			iter->second->mouse_moved(relative_point.x, relative_point.y, delta_x, delta_y);
+			child_handled = true;
+		}
 	}
 
-	//s_mouse_moved(x, y, delta_x, delta_y);
+	private_mouse_moved(child_handled, x, y, delta_x, delta_y);
 }
 
-void Widget::keypress(int key, bool down) {
-	//s_keypress(key, down);
+void Widget::keypress(const KeyEvent& event) {
+	// TODO: replicate down to children?
+
+	private_keypress(event);
+}
+
+void Widget::update(uint64_t timediff) {
+	for (multimap<int, Widget*>::iterator iter = m_children.begin(); iter != m_children.end(); ++iter) {
+		iter->second->update(timediff);
+	}
 }
 
 void Widget::draw(DrawContext* ctx) const {
+	draw_internals(ctx);
+}
+
+void Widget::draw_internals(DrawContext* ctx) const {
 	ctx->translate(get_x(), get_y());
 	for (multimap<int, Widget*>::const_iterator iter = m_children.begin(); iter != m_children.end(); ++iter) {
 		if (iter->second->is_drawable()) {

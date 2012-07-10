@@ -392,7 +392,7 @@ void GLESContext::start_clip() {
 }
 
 void GLESContext::clip_add() {
-	m_stencil_func = -1;
+	m_stencil_func = 0;
 	LM_gl(StencilOp, (LM_GL(KEEP), LM_GL(INCR), LM_GL(INCR)));
 	update_stencil();
 
@@ -849,6 +849,10 @@ void GLESContext::draw_bound_image_tiled(int width, int height,
 	draw_subimage(width, height, tex_x, tex_y, tex_width, tex_height);
 
 	pop_transform();
+}
+
+void GLESContext::set_scissor(float x, float y, float width, float height) {
+	LM_gl(Scissor, (x, y, width, height));
 }
 
 void GLESContext::clear() {

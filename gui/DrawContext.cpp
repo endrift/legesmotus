@@ -134,3 +134,47 @@ void DrawContext::draw_roundrect_line(float w, float h, float r, int fine) {
 	translate(r - h/2.0f, r - w/2.0f);
 	rotate(90);
 }
+
+void DrawContext::draw_roundrect_wide_line(float w, float h, float r, int fine) {
+	if (w - 2.0f*r < 0) {
+		r = w/2.0f;
+	}
+	if (h - 2.0f*r < 0) {
+		r = h/2.0f;
+	}
+
+	float r_t2 = 2.0f*r;
+
+	// Draw edges
+	translate(w/2.0f-r/2, 0);
+	draw_rect_fill(r, h - 2*r);
+	translate(0-(w-r), 0);
+	draw_rect_fill(r, h - 2*r);
+	translate(w/2-r/2, 0-h/2+r/2);
+	draw_rect_fill(w-2*r, r);
+	translate(0, h-r);
+	draw_rect_fill(w-2*r, r);
+	
+	// Recenter
+	translate(0, 0-h/2+r/2);
+
+	// Draw corners
+	translate(w/2.0f - r, h/2.0f - r);
+	draw_arc_fill(0.25f, r, r, fine);
+
+	translate(r_t2 - w, 0);
+	rotate(90);
+	draw_arc_fill(0.25f, r, r, fine);
+
+	translate(r_t2 - h, 0);
+	rotate(90);
+	draw_arc_fill(0.25f, r, r, fine);
+
+	translate(r_t2 - w, 0);
+	rotate(90);
+	draw_arc_fill(0.25f, r, r, fine);
+
+	// Recenter
+	translate(r - h/2.0f, r - w/2.0f);
+	rotate(90);
+}
