@@ -31,6 +31,7 @@
 #include "pubsub.hpp"
 #include "common/Iterator.hpp"
 #include "input.hpp"
+#include <stdint.h>
 
 namespace LM {
 	class Widget : public Publisher {

@@ -27,6 +27,7 @@
 
 #include "misc.hpp"
 #include <iostream>
+#include <stdint.h>
 
 #ifdef __WIN32
 #define PATH_SEP "\\"
