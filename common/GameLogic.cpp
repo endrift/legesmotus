@@ -43,7 +43,8 @@ GameLogic::GameLogic(Map* map) {
 	m_physics = NULL;
 
 	b2Vec2 gravity(0.0f, 0.0f);
-	m_physics = new b2World(gravity, true);
+	m_physics = new b2World(gravity);
+	m_physics->SetAllowSleeping(true);
 	
 	m_physics->SetContactListener(this);
 	

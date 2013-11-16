@@ -219,7 +219,8 @@ void Player::apply_force(b2Vec2 force_vec) {
 }
 
 void Player::apply_force(b2Vec2 force_vec, b2Vec2 world_point) {
-	m_physics_body->ApplyForce(force_vec, world_point);
+	bool wake = true;
+	m_physics_body->ApplyForce(force_vec, world_point, wake);
 }
 
 void Player::apply_delayed_force(b2Vec2 force_vec) {
@@ -231,7 +232,8 @@ void Player::apply_delayed_force(b2Vec2 force_vec, b2Vec2 world_point) {
 }
 
 void Player::apply_torque(float torque) {
- 	m_physics_body->ApplyTorque(torque);
+	bool wake = true;
+ 	m_physics_body->ApplyTorque(torque, wake);
 }
 
 void Player::update_physics() {

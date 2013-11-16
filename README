@@ -49,27 +49,15 @@ Please note that only GNU Make is supported.  If the default 'make' command is n
 See "ADVANCED BUILDING" below for more advanced build options.
 
 
-RUNNING THE CLIENT ON *NIX
-
-To run the client, if Leges Motus is in your path, run the 'legesmotus' command.  You can also double click on legesmotus.exe on Windows and the Leges Motus application on Mac, but you cannot specify command line options in this manner.
-
-The client supports the following command-line options:
-  -n NAME        set your player name (default: your user name)
-  -t red|blue    set your team (default: auto-balanced)
-  -s SERVER      set the hostname of the server (default: use the server browser)
-  -p PORTNO      set the port number of the server (default: 16877)
-  -w WIDTH       set the screen width, in pixels (default: 1024)
-  -h HEIGHT      set the screen height, in pixels (default: 768)
-  -f             run the game in fullscreen
-  -?, --help     display this help, and exit
-      --version  display version information and exit
-
-
-REQUIREMENTS
+REQUIREMENTS FOR BUILDING
 
 The following libraries must be installed in order to build the common code for all parts of Leges Motus:
 
- Box2D 2.1
+ Box2D 2.3
+ 
+Compile Box2D 2.3 (you can get it from http://box2d.org/), and then copy the resulting files:
+- libBox2D.a to /usr/local/lib (or another location of your choice - use the LDFLAGS to point to it with -L) and
+- all header files to /usr/local/include (or another location of your choice - use the CFLAGS to point to it with -I).
 
 The following libraries must be installed in order to build and run the Leges Motus graphical client:
 
@@ -87,6 +75,25 @@ All of these are bundled in the Windows and Mac OS X packages, except for OpenGL
 
 If you do not have SDL_mixer installed and/or you would like to build without sound support, you may pass the --disable-sound option to configure.
 
+SPECIFYING THE DATA DIRECTORY
+
+By default, Leges Motus expects to find its data in /usr/local/share/games/legesmotus.  This path can be set at compile time by passing a --prefix argument to configure.  The path can be overridden at runtime by setting the $LM_DATA_DIR environment variable to the location containing the data.  The data can be found in the 'data' directory in the top-level source directory.
+
+
+RUNNING THE CLIENT ON *NIX
+
+To run the client, if Leges Motus is in your path, run the 'legesmotus' command.  You can also double click on legesmotus.exe on Windows and the Leges Motus application on Mac, but you cannot specify command line options in this manner.
+
+The client supports the following command-line options:
+  -n NAME        set your player name (default: your user name)
+  -t red|blue    set your team (default: auto-balanced)
+  -s SERVER      set the hostname of the server (default: use the server browser)
+  -p PORTNO      set the port number of the server (default: 16877)
+  -w WIDTH       set the screen width, in pixels (default: 1024)
+  -h HEIGHT      set the screen height, in pixels (default: 768)
+  -f             run the game in fullscreen
+  -?, --help     display this help, and exit
+      --version  display version information and exit
 
 RUNNING THE SERVER
 
@@ -109,11 +116,6 @@ The server supports the following command-line options:
 By default, the Leges Motus server will contact the meta server so other players on the Internet can connect to and play on the server.  If you would NOT like your server to appear in server browsers of other Internet users, pass the -l ("local") option to lmserver, or set the server configuration option "register_server" to "no".
 
 If a server is run behind a firewall, and it is registered with the meta server, the metaserver will attempt to traverse the firewall so that clients outside the firewall are able to connect to the server.  However, this technique does not work with all firewalls, and is not 100% reliable.  If you intend to host a long-running server behind a firewall, you are strongly recommended to modify your firewall settings to allow/forward UDP port 16877.
-
-
-SPECIFYING THE DATA DIRECTORY
-
-By default, Leges Motus expects to find its data in /usr/local/share/games/legesmotus.  This path can be set at compile time by passing a --prefix argument to configure.  The path can be overridden at runtime by setting the $LM_DATA_DIR environment variable to the location containing the data.  The data can be found in the 'data' directory in the top-level source directory.
 
 
 CONTROLS

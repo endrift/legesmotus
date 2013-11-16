@@ -32,7 +32,7 @@
 namespace LM {
 	class PhysicsDraw : public Widget {
 	private:
-		class Impl : public b2DebugDraw {
+		class Impl : public b2Draw {
 		private:
 			Color colorConv(const b2Color& color);
 			DrawContext* m_ctx;
