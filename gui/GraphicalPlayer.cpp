@@ -48,8 +48,8 @@ GraphicalPlayer::GraphicalPlayer(const char* name, uint32_t id, char team, Resou
 	Sprite front_leg(cache->get<Image>(color + "_frontleg.png"));
 	Sprite back_leg(cache->get<Image>(color + "_backleg.png"));
 
-	m_graphic_root.set_width(128);
-	m_graphic_root.set_height(128);
+	m_graphic_root.set_width(166);
+	m_graphic_root.set_height(166);
 	m_graphic_root.build_texture(cache);
 	m_root_bone.set_x(m_graphic_root.get_width()*0.5);
 	m_root_bone.set_y(m_graphic_root.get_height()*0.5);
@@ -252,5 +252,6 @@ Graphic* GraphicalPlayer::get_curr_visible_weapon_graphic() {
 		return get_weapon_graphic(PART_BACK_HAND|PART_FRONT_ARM|PART_UNFIRED);
 	} else {
 		DEBUG("No part found.");
+		return NULL;
 	}
 }

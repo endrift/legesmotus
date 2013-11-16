@@ -7,8 +7,8 @@
 	penetrate_players=0.75
 	penetrate_walls=0.0
 	max_penetration=3
-	normal=13,36:-15:front:back:rifle_noshot.png;4,20:-15:back:back:rifle_noshot.png
-	firing=13,36:-15:front:back:rifle_shot.png;4,20:-15:back:back:rifle_shot.png
+	normal=13,36:-15:front:back:rifle_noshot.png;-15,34:-15:back:front:rifle_noshot.png
+	firing=13,36:-15:front:back:rifle_shot.png;-15,34:-15:back:front:rifle_shot.png
 	firing_line_emitter_image_red=red_particle.png
 	firing_line_emitter_image_blue=blue_particle.png
 	firing_line_emitter=particle_speed=10.0|speed_variance=0.05|spawn_per_second=1000.0|spawn_variance=1.0|lifetime_millis=250|lifetime_variance=50|rotation_variance=6.28318|max_spawn=200|emitter_stop_spawning_millis=-1|emitter_lifetime_millis=-1|
@@ -22,8 +22,8 @@
 	degradation=0.01
 	cooldown=600
 	recoil=1.5
-	normal=12,55:-15:front:back:sgun_noshot.png;5,20:-15:back:back:sgun_noshot.png
-	firing=12,55:-15:front:back:sgun_shot.png;5,20:-15:back:back:sgun_shot.png
+	normal=12,55:-15:front:back:sgun_noshot.png;-17,59:-15:back:front:sgun_noshot.png
+	firing=12,55:-15:front:back:sgun_shot.png;-17,59:-15:back:front:sgun_shot.png
 	firing_radial_emitter_image_red=shot_red.png
 	firing_radial_emitter_image_blue=shot.png
 	firing_radial_emitter=particle_speed=1000.0|speed_variance=50.0|spawn_per_second=1000.0|spawn_variance=100.0|lifetime_millis=300|lifetime_variance=50|rotation_variance=0.3|max_spawn=5|emitter_stop_spawning_millis=-1|emitter_lifetime_millis=-1|
@@ -46,8 +46,8 @@
 	freeze=1000
 	cooldown=2000
 	recoil=4.0
-	normal=15,32:-15:front:front:cannon_back.png;15,32:-15:front:back:cannon_front.png;10,-1:-15:back:front:cannon_back.png;10,-1:-15:back:back:cannon_front.png
-	firing=15,32:-15:front:front:cannon_back.png;15,32:-15:front:back:cannon_front_shot.png;10,-1:-15:back:front:cannon_back.png;10,-1:-15:back:back:cannon_front_shot.png
+	normal=15,32:-15:front:front:cannon_back.png;15,32:-15:front:back:cannon_front.png;-13,32:-15:back:back:cannon_back.png;-13,32:-15:back:front:cannon_front.png
+	firing=15,32:-15:front:front:cannon_back.png;15,32:-15:front:back:cannon_front_shot.png;-13,32:-15:back:back:cannon_back.png;-13,32:-15:back:front:cannon_front_shot.png
 	pivot=0,0;
 	shape=poly:1000,-100;1000,100;0,0;
 #	move=false; # not yet implemented
